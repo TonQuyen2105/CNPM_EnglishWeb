@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Quản Trị Viên (Admin) - EnglishLearning</title>
+  
+  <!-- Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+
+  <style>
+    /* Topbar Search & Profile Dropdown Enhancements */
+    .topbar-search-box {
+      position: relative;
+      width: 280px;
+    }
+    .topbar-search-box input {
+      padding-left: 2.25rem;
+      height: 38px;
+      font-size: var(--font-size-xs);
+      background-color: var(--neutral-50);
+      border-radius: var(--radius-full);
+    }
+    .topbar-search-box .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .notification-wrapper {
+      position: relative;
+    }
+    .notification-badge-dot {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--danger-main);
+      border: 2px solid white;
+    }
+
+    .user-profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 4px 8px 4px 4px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all var(--transition-fast);
+    }
+    .user-profile-trigger:hover {
+      background-color: var(--neutral-100);
+      border-color: var(--border-color);
+    }
+  </style>
+</head>
+<body>
+  <!-- App Container (Được khởi tạo Router + Layout bởi admin.app.js) -->
+  <div id="app"></div>
+
+  <!-- App Bootstrap Script -->
+  <script type="module" src="../js/apps/admin.app.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Học Viên - EnglishLearning</title>
+  
+  <!-- Design System CSS -->
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+
+  <style>
+    .notification-wrapper {
+      position: relative;
+    }
+    .notification-badge-dot {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--danger-main);
+      border: 2px solid white;
+    }
+    .user-profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .user-profile-trigger:hover {
+      background-color: var(--neutral-100);
+      border-color: var(--border-color);
+    }
+  </style>
+</head>
+<body>
+  <!-- App Container (Được khởi tạo Router + Student Layout bởi student.app.js) -->
+  <div id="app"></div>
+
+  <!-- App Bootstrap Script -->
+  <script type="module" src="../js/apps/student.app.js"></script>
+</body>
+</html>

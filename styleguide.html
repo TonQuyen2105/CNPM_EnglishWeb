@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design System Style Guide - EnglishLearning</title>
+  
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+
+  <style>
+    .sg-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      margin-bottom: var(--space-8);
+      box-shadow: var(--shadow-sm);
+    }
+    .sg-section-title {
+      font-size: var(--font-size-xl);
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .sg-section-desc {
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--space-6);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: var(--space-4);
+    }
+    .color-swatch {
+      height: 70px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: flex-end;
+      padding: var(--space-2);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      box-shadow: var(--shadow-xs);
+    }
+  </style>
+</head>
+<body style="background-color: var(--bg-page);">
+
+  <header style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem 2rem; position: sticky; top: 0; z-index: 100;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="width: 36px; height: 36px; border-radius: 8px; background: var(--primary-600); display: flex; align-items: center; justify-content: center; color: white;">
+          🎨
+        </span>
+        <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0;">EnglishLearning Design System Preview</h2>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button id="btn-reset-db" class="btn btn-secondary btn-sm">
+          <span>🔄 Khôi phục Mock DB</span>
+        </button>
+        <a href="index.html" class="btn btn-primary btn-sm">
+          <span>Về trang Đăng nhập &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem;">
+    
+    <!-- 1. MÀU SẮC & TOKENS -->
+    <section class="sg-section">
+      <h3 class="sg-section-title">1. Bảng màu chủ đạo (Color Palette)</h3>
+      <p class="sg-section-desc">Tone xanh dương trí tuệ - trắng hiện đại, nhấn màu da trời (Sky) và các trạng thái rõ nét.</p>
+      
+      <h4 style="margin-bottom: 0.75rem; font-size: 0.9375rem;">Primary (Xanh dương)</h4>
+      <div class="grid grid-cols-4 gap-4" style="margin-bottom: 1.5rem;">
+        <div>
+          <div class="color-swatch" style="background: var(--primary-600); color: white;">#2563EB</div>
+          <small>Primary 600 (Chủ đạo)</small>
+        </div>
+        <div>
+          <div class="color-swatch" style="background: var(--primary-500); color: white;">#3B82F6</div>
+          <small>Primary 500 (Hover/Focus)</small>
+        </div>
+        <div>
+          <div class="color-swatch" style="background: var(--primary-100); color: var(--primary-900);">#DBEAFE</div>
+          <small>Primary 100 (Badge nhạt)</small>
+        </div>
+        <div>
+          <div class="color-swatch" style="background: var(--primary-50); color: var(--primary-900); border: 1px solid var(--border-color);">#EFF6FF</div>
+          <small>Primary 50 (Nền active)</small>
+        </div>
+      </div>
+
+      <h4 style="margin-bottom: 0.75rem; font-size: 0.9375rem;">Trạng thái (Status Colors - Nền nhạt + Chữ đậm)</h4>
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <div class="color-swatch" style="background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border);">Success (#10B981)</div>
+          <small>Thành công / Đang diễn ra</small>
+        </div>
+        <div>
+          <div class="color-swatch" style="background: var(--warning-bg); color: var(--warning-text); border: 1px solid var(--warning-border);">Warning (#F59E0B)</div>
+          <small>Cảnh báo / Chờ duyệt</small>
+        </div>
+        <div>
+          <div class="color-swatch" style="background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border);">Danger (#EF4444)</div>
+          <small>Nguy hiểm / Đã hủy / Thất bại</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. BUTTONS -->
+    <section class="sg-section">
+      <h3 class="sg-section-title">2. Nút bấm (Buttons)</h3>
+      <p class="sg-section-desc">Hỗ trợ đầy đủ biến thể: Primary, Secondary, Ghost, Danger, kích thước sm/md/lg và trạng thái Loading spinner.</p>
+      
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem;">
+        <button class="btn btn-primary">Primary Button</button>
+        <button class="btn btn-secondary">Secondary Button</button>
+        <button class="btn btn-ghost">Ghost Button</button>
+        <button class="btn btn-danger">Danger Button</button>
+        <button class="btn btn-danger-soft">Danger Soft</button>
+        <button class="btn btn-primary loading">Loading</button>
+      </div>
+
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <button class="btn btn-primary btn-sm">Small (sm)</button>
+        <button class="btn btn-primary">Normal (md)</button>
+        <button class="btn btn-primary btn-lg">Large (lg)</button>
+        <button class="btn btn-secondary btn-icon" title="Cài đặt">
+          <span id="btn-icon-sample"></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. BADGES & AVATARS -->
+    <section class="sg-section">
+      <h3 class="sg-section-title">3. Badges, Tags & Avatars</h3>
+      <p class="sg-section-desc">Hiển thị trạng thái lớp học, kết quả thi và avatar phân cấp người dùng.</p>
+      
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+        <span class="badge badge-primary"><span class="badge-dot"></span>Primary Badge</span>
+        <span class="badge badge-success"><span class="badge-dot"></span>Đang diễn ra</span>
+        <span class="badge badge-warning"><span class="badge-dot"></span>Chờ chấm bài</span>
+        <span class="badge badge-danger"><span class="badge-dot"></span>Đã hủy bỏ</span>
+        <span class="badge badge-neutral"><span class="badge-dot"></span>Đã hoàn thành</span>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="avatar avatar-sm">TH</div>
+        <div class="avatar avatar-md">AD</div>
+        <div class="avatar avatar-lg">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
+          <span class="avatar-status online"></span>
+        </div>
+        <div class="avatar avatar-xl">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Avatar">
+          <span class="avatar-status offline"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. STAT CARDS -->
+    <section class="sg-section">
+      <h3 class="sg-section-title">4. Thẻ thống kê (Stat Cards)</h3>
+      <p class="sg-section-desc">Card thông tin tổng quan số liệu quan trọng của trung tâm.</p>
+      
+      <div class="grid grid-cols-4 gap-6">
+        <div class="stat-card">
+          <div class="stat-info">
+            <span class="stat-label">Tổng học viên</span>
+            <span class="stat-value">40</span>
+            <span class="stat-sub text-success">
+              <span id="stat-trend-icon"></span> +12% tháng này
+            </span>
+          </div>
+          <div class="stat-icon primary" id="stat-icon-users"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-info">
+            <span class="stat-label">Lớp đang mở</span>
+            <span class="stat-value">10</span>
+            <span class="stat-sub text-muted">4 trạng thái</span>
+          </div>
+          <div class="stat-icon accent" id="stat-icon-book"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-info">
+            <span class="stat-label">Doanh thu ước tính</span>
+            <span class="stat-value" style="font-size: 1.5rem;" id="stat-revenue-value">...</span>
+            <span class="stat-sub text-muted">(tổng price enrollments)</span>
+          </div>
+          <div class="stat-icon success" id="stat-icon-award"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-info">
+            <span class="stat-label">Chờ chấm thi</span>
+            <span class="stat-value">1</span>
+            <span class="stat-sub text-warning">Bài thi tự luận</span>
+          </div>
+          <div class="stat-icon warning" id="stat-icon-clock"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. BIỂU ĐỒ SVG THUẦN (CHARTS) -->
+    <section class="sg-section">
+      <h3 class="sg-section-title">5. Biểu đồ trực quan SVG & CSS thuần (Không thư viện ngoài)</h3>
+      <p class="sg-section-desc">Bar Chart, Donut Chart và Line/Area Chart vẽ hoàn toàn bằng toán học SVG mượt mà.</p>
+      
+      <div class="grid grid-cols-2 gap-6">
+        <div class="card" style="padding: 1.25rem;">
+          <h4 style="font-size: 1rem; margin-bottom: 1rem;">Phân bổ học viên theo cấp độ</h4>
+          <div id="sample-donut-chart"></div>
+        </div>
+
+        <div class="card" style="padding: 1.25rem;">
+          <h4 style="font-size: 1rem; margin-bottom: 1rem;">Tiến độ học tập tuần gần nhất</h4>
+          <div id="sample-line-chart"></div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem; margin-top: 1.5rem;">
+        <h4 style="font-size: 1rem; margin-bottom: 1rem;">Số lượng bài học theo từng khóa học</h4>
+        <div id="sample-bar-chart"></div>
+      </div>
+    </section>
+
+    <!-- 6. DATA TABLE TƯƠNG TÁC -->
+    <section class="sg-section">
+      <h3 class="sg-section-title">6. Bảng dữ liệu tương tác (Data Table)</h3>
+      <p class="sg-section-desc">Hỗ trợ tìm kiếm tức thì, sắp xếp theo cột, responsive card trên di động.</p>
+      
+      <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <div class="input-with-icon" style="max-width: 320px;">
+          <span class="input-icon" id="search-table-icon"></span>
+          <input type="text" id="table-search-input" class="form-control" placeholder="Tìm kiếm nhanh giáo viên...">
+        </div>
+        <span class="text-secondary" style="font-size: 0.8125rem;">Click vào tiêu đề cột để sắp xếp</span>
+      </div>
+
+      <div id="sample-table-container"></div>
+    </section>
+
+    <!-- 7. THÔNG BÁO & HỘP THOẠI (TOAST & MODAL) -->
+    <section class="sg-section">
+      <h3 class="sg-section-title">7. Thông báo Toast & Confirm Dialog</h3>
+      <p class="sg-section-desc">Hộp thoại xác nhận thao tác nguy hiểm và thông báo đa dạng.</p>
+      
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button id="btn-toast-success" class="btn btn-secondary">Toast Thành công</button>
+        <button id="btn-toast-error" class="btn btn-secondary">Toast Báo lỗi</button>
+        <button id="btn-toast-warning" class="btn btn-secondary">Toast Cảnh báo</button>
+        <button id="btn-open-modal" class="btn btn-primary">Mở Modal Tiêu chuẩn</button>
+        <button id="btn-open-confirm" class="btn btn-danger">Hộp thoại Xác nhận Xóa</button>
+      </div>
+    </section>
+
+    <!-- 8. THỜI KHÓA BIỂU MẪU (TIMETABLE GRID) -->
+    <section class="sg-section">
+      <h3 class="sg-section-title">8. Lưới thời khóa biểu phòng học (Timetable Grid)</h3>
+      <p class="sg-section-desc">Trực quan hóa lịch học trong tuần không trùng phòng.</p>
+      
+      <div class="timetable">
+        <div class="timetable-header-cell">Khung giờ</div>
+        <div class="timetable-header-cell">Thứ 2</div>
+        <div class="timetable-header-cell">Thứ 3</div>
+        <div class="timetable-header-cell">Thứ 4</div>
+        <div class="timetable-header-cell">Thứ 5</div>
+        <div class="timetable-header-cell">Thứ 6</div>
+        <div class="timetable-header-cell">Thứ 7</div>
+        <div class="timetable-header-cell">Chủ Nhật</div>
+
+        <!-- Ca Chiều 1 -->
+        <div class="timetable-time-cell">14:00 - 15:30</div>
+        <div class="timetable-slot-cell">
+          <div class="timetable-class-card">
+            <strong>GRAM-01</strong>
+            <div>P. Lab 101</div>
+          </div>
+        </div>
+        <div class="timetable-slot-cell"></div>
+        <div class="timetable-slot-cell">
+          <div class="timetable-class-card">
+            <strong>GRAM-01</strong>
+            <div>P. Lab 101</div>
+          </div>
+        </div>
+        <div class="timetable-slot-cell"></div>
+        <div class="timetable-slot-cell"></div>
+        <div class="timetable-slot-cell"></div>
+        <div class="timetable-slot-cell"></div>
+
+        <!-- Ca Tối 1 -->
+        <div class="timetable-time-cell">17:45 - 19:15</div>
+        <div class="timetable-slot-cell">
+          <div class="timetable-class-card" style="border-left-color: var(--accent-500); background: var(--accent-50);">
+            <strong>COMM-01</strong>
+            <div>P. Giao tiếp 301</div>
+          </div>
+        </div>
+        <div class="timetable-slot-cell"></div>
+        <div class="timetable-slot-cell">
+          <div class="timetable-class-card" style="border-left-color: var(--accent-500); background: var(--accent-50);">
+            <strong>COMM-01</strong>
+            <div>P. Giao tiếp 301</div>
+          </div>
+        </div>
+        <div class="timetable-slot-cell"></div>
+        <div class="timetable-slot-cell">
+          <div class="timetable-class-card" style="border-left-color: var(--warning-main); background: var(--warning-bg);">
+            <strong>IELTS-F01</strong>
+            <div>P. VIP 401</div>
+          </div>
+        </div>
+        <div class="timetable-slot-cell"></div>
+        <div class="timetable-slot-cell"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module">
+    import { initSeedDatabase } from './js/data/seed.js';
+    import { TeacherModel, EnrollmentModel, CourseModel } from './js/models/index.js';
+    import { icon } from './js/ui/icons.js';
+    import { toast } from './js/ui/toast.js';
+    import { modal } from './js/ui/modal.js';
+    import { confirmDialog } from './js/ui/confirmDialog.js';
+    import { DataTable } from './js/ui/dataTable.js';
+    import { renderDonutChart, renderLineChart, renderBarChart } from './js/ui/charts.js';
+    import { formatCurrency } from './js/core/utils.js';
+
+    // 1. Gắn các icons
+    document.getElementById('btn-icon-sample').innerHTML = icon('settings', { size: 18 });
+    document.getElementById('stat-trend-icon').innerHTML = icon('trending', { size: 14 });
+    document.getElementById('stat-icon-users').innerHTML = icon('users', { size: 24 });
+    document.getElementById('stat-icon-book').innerHTML = icon('book', { size: 24 });
+    document.getElementById('stat-icon-award').innerHTML = icon('award', { size: 24 });
+    document.getElementById('stat-icon-clock').innerHTML = icon('clock', { size: 24 });
+    document.getElementById('search-table-icon').innerHTML = icon('search', { size: 18 });
+
+    // 2. Tải số liệu doanh thu ước tính
+    async function loadStats() {
+      const revData = await EnrollmentModel.calculateEstimatedRevenue();
+      document.getElementById('stat-revenue-value').textContent = formatCurrency(revData.totalEstimated);
+    }
+    loadStats();
+
+    // 3. Render Biểu đồ Donut
+    const donutEl = document.getElementById('sample-donut-chart');
+    donutEl.innerHTML = renderDonutChart({
+      data: [
+        { label: 'Cơ bản (Beginner)', value: 20, color: '#3B82F6' },
+        { label: 'Trung cấp (Intermediate)', value: 15, color: '#F59E0B' },
+        { label: 'Nâng cao (Advanced)', value: 5, color: '#EF4444' }
+      ],
+      size: 160,
+      centerLabel: 'Học viên'
+    });
+
+    // 4. Render Biểu đồ Line
+    const lineEl = document.getElementById('sample-line-chart');
+    lineEl.innerHTML = renderLineChart({
+      data: [
+        { label: 'T2', value: 35 },
+        { label: 'T3', value: 58 },
+        { label: 'T4', value: 42 },
+        { label: 'T5', value: 78 },
+        { label: 'T6', value: 65 },
+        { label: 'T7', value: 92 },
+        { label: 'CN', value: 48 }
+      ],
+      height: 200,
+      color: '#2563EB'
+    });
+
+    // 5. Render Biểu đồ Bar
+    const barEl = document.getElementById('sample-bar-chart');
+    barEl.innerHTML = renderBarChart({
+      data: [
+        { label: 'Giao tiếp K01', value: 12 },
+        { label: 'Giao tiếp K02', value: 10 },
+        { label: 'IELTS Nền tảng', value: 16 },
+        { label: 'IELTS Master', value: 14 },
+        { label: 'TOEIC 4 Kỹ năng', value: 8 },
+        { label: 'Ngữ pháp Nền tảng', value: 12 }
+      ],
+      height: 200,
+      color: '#0EA5E9'
+    });
+
+    // 6. Data Table Giáo viên
+    let dataTable;
+    async function initTable() {
+      const teachers = await TeacherModel.getAllWithUser();
+      dataTable = new DataTable({
+        columns: [
+          {
+            key: 'full_name',
+            label: 'Giáo viên',
+            sortable: true,
+            render: (val, row) => `
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="avatar avatar-sm">
+                  <img src="${row.avatar_url}" alt="${val}">
+                </div>
+                <div>
+                  <strong>${val}</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">${row.email}</div>
+                </div>
+              </div>
+            `
+          },
+          { key: 'qualification', label: 'Bằng cấp & Chứng chỉ', sortable: true },
+          {
+            key: 'is_verified',
+            label: 'Kiểm định hồ sơ',
+            sortable: true,
+            render: (val) => val === 1
+              ? `<span class="badge badge-success"><span class="badge-dot"></span>Đã xác minh</span>`
+              : `<span class="badge badge-warning"><span class="badge-dot"></span>Đang thẩm định</span>`
+          },
+          {
+            key: 'actions',
+            label: 'Thao tác',
+            render: (_, row) => `
+              <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Xem chi tiết giáo viên ${row.full_name}')">
+                Chi tiết
+              </button>
+            `
+          }
+        ],
+        data: teachers
+      });
+
+      const container = document.getElementById('sample-table-container');
+      container.innerHTML = dataTable.render();
+      dataTable.attachEvents(container, () => {
+        container.innerHTML = dataTable.render();
+        dataTable.attachEvents(container);
+      });
+
+      const searchInput = document.getElementById('table-search-input');
+      searchInput.addEventListener('input', (e) => {
+        dataTable.search(e.target.value);
+        container.innerHTML = dataTable.render();
+        dataTable.attachEvents(container);
+      });
+    }
+    initTable();
+
+    // 7. Toast Triggers
+    document.getElementById('btn-toast-success').addEventListener('click', () => {
+      toast.success('Lưu dữ liệu hệ thống thành công!', 'Tuyệt vời');
+    });
+    document.getElementById('btn-toast-error').addEventListener('click', () => {
+      toast.error('Không thể kết nối tới cơ sở dữ liệu. Vui lòng thử lại.', 'Lỗi hệ thống');
+    });
+    document.getElementById('btn-toast-warning').addEventListener('click', () => {
+      toast.warning('Tài khoản này chưa được kích hoạt đầy đủ các quyền.', 'Chú ý');
+    });
+
+    // 8. Modal & Confirm Triggers
+    document.getElementById('btn-open-modal').addEventListener('click', () => {
+      modal.open({
+        title: 'Cửa sổ Modal mẫu',
+        body: '<p>Đây là nội dung hiển thị trong modal tùy biến của EnglishLearning Design System. Modal có hiệu ứng làm mờ nền (backdrop blur) và phím tắt ESC để đóng.</p>',
+        footer: '<button type="button" class="btn btn-primary" data-dismiss="modal">Đóng cửa sổ</button>'
+      });
+    });
+
+    document.getElementById('btn-open-confirm').addEventListener('click', async () => {
+      const ok = await confirmDialog({
+        title: 'Xóa khóa học?',
+        message: 'Bạn có chắc chắn muốn xóa khóa học này không? Hành động này sẽ chuyển trạng thái khóa học sang dạng ẩn mềm (soft-delete).',
+        confirmText: 'Đồng ý xóa',
+        isDanger: true
+      });
+      if (ok) {
+        toast.success('Đã xác nhận xóa!');
+      } else {
+        toast.info('Đã hủy bỏ thao tác xóa.');
+      }
+    });
+
+    // 9. Nút Reset DB
+    document.getElementById('btn-reset-db').addEventListener('click', async () => {
+      const ok = await confirmDialog({
+        title: 'Đặt lại Cơ sở dữ liệu?',
+        message: 'Thao tác này sẽ khôi phục lại toàn bộ 21 bảng mock data về trạng thái ban đầu của hệ thống.',
+        confirmText: 'Đặt lại ngay',
+        isDanger: true
+      });
+      if (ok) {
+        initSeedDatabase(true);
+        toast.success('Đã khôi phục cơ sở dữ liệu mẫu thành công!');
+        setTimeout(() => location.reload(), 800);
+      }
+    });
+  </script>
+</body>
+</html>
