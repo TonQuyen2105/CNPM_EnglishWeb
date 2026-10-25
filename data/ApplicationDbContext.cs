@@ -1,4 +1,4 @@
-using CNPM_EnglishLearning.Models;
+using CNPM_EnglishLearning.Areas.Admin.Models;
 
 namespace CNPM_EnglishLearning.Data
 {
