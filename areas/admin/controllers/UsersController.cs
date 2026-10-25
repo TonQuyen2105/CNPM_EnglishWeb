@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using CNPM_EnglishLearning.Areas.Admin.Models;
+using CNPM_EnglishLearning.Data.Entities;
 using CNPM_EnglishLearning.Data;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
@@ -31,7 +31,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
         // POST: /Admin/Users/Create
         [HttpPost]
-        public IActionResult Create(UserModel model)
+        public IActionResult Create(User model)
         {
             if (ModelState.IsValid)
             {

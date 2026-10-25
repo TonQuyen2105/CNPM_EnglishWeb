@@ -47,11 +47,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context = new();
 
-        public IActionResult Index() => View("~/areas/admin/views/classes.html", _context.Classes);
+        public IActionResult Index() => View("~/areas/admin/views/classes.html", _context.CourseClasses);
 
         public IActionResult Detail(int id)
         {
-            var cls = _context.Classes.FirstOrDefault(c => c.Id == id) ?? _context.Classes.First();
+            var cls = _context.CourseClasses.FirstOrDefault(c => c.Id == id) ?? _context.CourseClasses.First();
             return View("~/areas/admin/views/class-detail.html", cls);
         }
     }

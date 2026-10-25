@@ -13,8 +13,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         {
             ViewBag.ActiveStudents = _context.Users.Count(u => u.Role == "student" && u.IsActive);
             ViewBag.TotalTeachers = _context.Users.Count(u => u.Role == "teacher");
-            ViewBag.OngoingClasses = _context.Classes.Count(c => c.Status == "ongoing");
-            ViewBag.EstimatedRevenue = "154.500.000 ₫";
+            ViewBag.OngoingClasses = _context.CourseClasses.Count(c => c.Status == "ongoing");
+            ViewBag.EstimatedRevenue = _context.CalculateEstimatedRevenue().ToString("N0") + " ₫";
 
             return View("~/areas/admin/views/dashboard.html");
         }
