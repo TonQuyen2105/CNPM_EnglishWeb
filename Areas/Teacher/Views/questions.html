@@ -199,7 +199,10 @@
       <p class="page-header-subtitle">Hệ thống câu hỏi theo các chủ đề Ngữ pháp, Từ vựng, Đọc hiểu và Viết</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary">Tạo câu hỏi mới</button>
+      <button class="btn btn-primary" data-modal-target="modal-create-question">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Tạo câu hỏi mới
+      </button>
     </div>
   </div>
 
@@ -222,10 +225,111 @@
         <p style="font-size: 0.9375rem; font-weight: 600;">Ms. Watson requested that all expense reports be submitted _______ Friday afternoon.</p>
         <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">A. by (Đúng) • B. during • C. at • D. until</div>
       </div>
+
+      <div style="padding: 1rem; background: var(--neutral-50); border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span class="badge badge-info">IELTS Speaking Part 2</span>
+          <span class="badge badge-warning">Độ khó: Nâng cao</span>
+        </div>
+        <p style="font-size: 0.9375rem; font-weight: 600;">"Describe an energetic person you know. You should say: who this person is, how you met them, what they do, and explain why you think they are energetic."</p>
+        <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">Dạng: Bài thi nói (1 phút chuẩn bị, 2 phút trình bày ghi âm)</div>
+      </div>
+
+      <div style="padding: 1rem; background: var(--neutral-50); border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span class="badge badge-info">Ngữ pháp Giao Tiếp</span>
+          <span class="badge badge-neutral">Độ khó: Cơ bản</span>
+        </div>
+        <p style="font-size: 0.9375rem; font-weight: 600;">If I _______ you, I would take that job offer immediately.</p>
+        <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">A. was • B. were (Đúng) • C. am • D. had been</div>
+      </div>
+
+      <div style="padding: 1rem; background: var(--neutral-50); border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span class="badge badge-info">TOEIC Listening Part 2</span>
+          <span class="badge badge-success">Độ khó: Trung bình</span>
+        </div>
+        <p style="font-size: 0.9375rem; font-weight: 600;">"Where did you leave the conference itinerary?"</p>
+        <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">A. At 3:00 PM • B. On the front reception desk (Đúng) • C. Yes, I enjoyed it</div>
+      </div>
     </div>
   </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal Tạo Câu Hỏi Mới -->
+  <div class="modal-backdrop" id="modal-create-question">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Thêm câu hỏi mới vào ngân hàng đề</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Bộ môn / Chương trình <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="ielts">Luyện Thi IELTS</option>
+                <option value="toeic">Luyện Thi TOEIC</option>
+                <option value="comm">Tiếng Anh Giao Tiếp</option>
+                <option value="kids">Tiếng Anh Thiếu Nhi</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Độ khó</label>
+              <select class="form-control">
+                <option value="easy">Cơ bản (Easy)</option>
+                <option value="medium" selected>Trung bình (Medium)</option>
+                <option value="hard">Nâng cao (Hard)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Nội dung câu hỏi / Đề bài <span class="required" style="color:red;">*</span></label>
+            <textarea class="form-control" rows="3" placeholder="Nhập câu hỏi, đoạn văn hoặc đề bài..." required></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-3" style="margin-bottom: 1rem;">
+            <div>
+              <label class="form-label" style="font-size: 0.8125rem;">Đáp án A</label>
+              <input type="text" class="form-control" placeholder="Lựa chọn A">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.8125rem;">Đáp án B</label>
+              <input type="text" class="form-control" placeholder="Lựa chọn B">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.8125rem;">Đáp án C</label>
+              <input type="text" class="form-control" placeholder="Lựa chọn C">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.8125rem;">Đáp án D</label>
+              <input type="text" class="form-control" placeholder="Lựa chọn D">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Đáp án chính xác <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="A">Đáp án A</option>
+                <option value="B">Đáp án B</option>
+                <option value="C">Đáp án C</option>
+                <option value="D">Đáp án D</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Điểm câu hỏi</label>
+              <input type="number" class="form-control" value="1.0" step="0.25">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Lưu câu hỏi</button>
+        </div>
+      </form>
     </div>
   </div>
 

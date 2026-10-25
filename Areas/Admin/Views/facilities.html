@@ -211,7 +211,10 @@
       <p class="page-header-subtitle">Trạng thái phòng học, trang thiết bị máy chiếu, micro, tai nghe</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary">Thêm phòng mới</button>
+      <button class="btn btn-primary" data-modal-target="modal-create-facility">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Thêm phòng mới
+      </button>
     </div>
   </div>
 
@@ -245,9 +248,93 @@
       <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.5rem 0;">Hội trường tổ chức thi thử IELTS Speaking mock test và Workshop.</p>
       <div style="font-size: 0.8125rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">Sức chứa: <strong>60 chỗ</strong> • Thiết bị: Màn chiếu lớn, 4 mic không dây</div>
     </div>
+
+    <div class="card" style="padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge badge-success">Đang sử dụng</span>
+        <span class="text-muted" style="font-size: 0.75rem;">Tầng 1</span>
+      </div>
+      <h3 style="font-size: 1.125rem; font-weight: 700;">Phòng LAB-02 (Listening Lab)</h3>
+      <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.5rem 0;">Phòng máy tính chuyên phục vụ luyện nghe TOEIC Part 1 - 4 với tai nghe chống ồn.</p>
+      <div style="font-size: 0.8125rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">Sức chứa: <strong>30 máy</strong> • Thiết bị: PC Dell Core i5, Tai nghe Audio-Technica</div>
+    </div>
+
+    <div class="card" style="padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge badge-warning">Đang bảo trì</span>
+        <span class="text-muted" style="font-size: 0.75rem;">Tầng 3</span>
+      </div>
+      <h3 style="font-size: 1.125rem; font-weight: 700;">Phòng C301 (Studio Speaking)</h3>
+      <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.5rem 0;">Phòng cách âm chuyên biệt luyện phỏng vấn 1-1 với giáo viên bản xứ.</p>
+      <div style="font-size: 0.8125rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">Sức chứa: <strong>12 chỗ</strong> • Thiết bị: Mút tiêu âm, Camera 4K thu hình</div>
+    </div>
+
+    <div class="card" style="padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge badge-success">Mở cửa tự do</span>
+        <span class="text-muted" style="font-size: 0.75rem;">Tầng 3</span>
+      </div>
+      <h3 style="font-size: 1.125rem; font-weight: 700;">Self-Study Zone (Khu Tự Học)</h3>
+      <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.5rem 0;">Không gian yên tĩnh học nhóm và làm bài tập về nhà với thư viện sách luyện thi.</p>
+      <div style="font-size: 0.8125rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">Sức chứa: <strong>45 chỗ</strong> • Thiết bị: Ổ cắm từng bàn, Wifi 6 tốc độ cao</div>
+    </div>
   </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal Thêm Phòng Học Mới -->
+  <div class="modal-backdrop" id="modal-create-facility">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Thêm phòng học mới</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên phòng học <span class="required" style="color:red;">*</span></label>
+              <input type="text" class="form-control" placeholder="Ví dụ: Phòng LAB-03" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Vị trí phòng <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="Tầng 1">Tầng 1 (Khu thực hành)</option>
+                <option value="Tầng 2">Tầng 2 (Khu phòng học lý thuyết)</option>
+                <option value="Tầng 3">Tầng 3 (Khu thi & Tự học)</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Sức chứa (chỗ ngồi) <span class="required" style="color:red;">*</span></label>
+              <input type="number" class="form-control" value="30" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái ban đầu</label>
+              <select class="form-control">
+                <option value="available">Sẵn sàng sử dụng</option>
+                <option value="in-use">Đang có lớp học</option>
+                <option value="maintenance">Đang bảo trì</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trang thiết bị chuyên dụng</label>
+            <input type="text" class="form-control" placeholder="Ví dụ: 30 máy tính Sony, Máy chiếu 4K, Loa trợ giảng...">
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ghi chú phòng học</label>
+            <textarea class="form-control" rows="2" placeholder="Ghi chú thêm về điều kiện phòng, quy định sử dụng..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Lưu phòng học</button>
+        </div>
+      </form>
     </div>
   </div>
 

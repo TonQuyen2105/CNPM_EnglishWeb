@@ -71,19 +71,60 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 4. Modal Dialogs: Đóng khi nhấn nút đóng hoặc backdrop
+  // 4. Modal Dialogs: Mở & Đóng tương tác
   document.addEventListener('click', (e) => {
+    // Mở modal khi bấm vào nút có data-modal-target hoặc data-toggle="modal"
+    const openBtn = e.target.closest('[data-modal-target]') || e.target.closest('[data-toggle="modal"]');
+    if (openBtn) {
+      e.preventDefault();
+      const modalId = openBtn.getAttribute('data-modal-target') || openBtn.getAttribute('data-target')?.replace('#', '');
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('open', 'show');
+      }
+      return;
+    }
+
+    // Đóng khi nhấn nút đóng hoặc backdrop
     const dismissBtn = e.target.closest('[data-dismiss="modal"]') || e.target.closest('.modal-close');
     if (dismissBtn) {
-      const modal = dismissBtn.closest('.modal-backdrop') || document.querySelector('.modal-backdrop.show');
+      e.preventDefault();
+      const modal = dismissBtn.closest('.modal-backdrop') || document.querySelector('.modal-backdrop.open, .modal-backdrop.show');
       if (modal) {
-        modal.classList.remove('show');
+        modal.classList.remove('open', 'show');
         setTimeout(() => {
-          if (modal.classList.contains('temp-modal')) {
-            modal.remove();
-          }
+          if (modal.classList.contains('temp-modal')) modal.remove();
         }, 200);
       }
+      return;
+    }
+
+    // Đóng khi click ngoài hộp thoại modal (vào vùng mờ backdrop)
+    if (e.target.classList.contains('modal-backdrop')) {
+      e.target.classList.remove('open', 'show');
+    }
+  });
+
+  // Xử lý submit các form thêm dữ liệu trong Modal (hiển thị thông báo thành công và đóng modal)
+  document.addEventListener('submit', (e) => {
+    const modalForm = e.target.closest('.modal-form, [data-modal-form]');
+    if (modalForm) {
+      e.preventDefault();
+      const submitBtn = modalForm.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang lưu...';
+      }
+      setTimeout(() => {
+        const modal = modalForm.closest('.modal-backdrop');
+        if (modal) modal.classList.remove('open', 'show');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Lưu thông tin';
+        }
+        alert('Thành công: Đã lưu thông tin mới vào hệ thống mô phỏng!');
+        modalForm.reset();
+      }, 500);
     }
   });
 

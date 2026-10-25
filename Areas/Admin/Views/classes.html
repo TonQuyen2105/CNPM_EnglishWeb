@@ -211,7 +211,10 @@
       <p class="page-header-subtitle">Danh sách tất cả các lớp đang mở, đang học và sắp khai giảng</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary">Tạo lớp học mới</button>
+      <button class="btn btn-primary" data-modal-target="modal-create-class">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Tạo lớp học mới
+      </button>
     </div>
   </div>
 
@@ -261,12 +264,120 @@
             <td><span class="badge badge-warning">Sắp khai giảng</span></td>
             <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
           </tr>
+          <tr>
+            <td><span class="badge badge-primary">KIDS-01</span></td>
+            <td><strong>Super Kids Khởi Động K01</strong></td>
+            <td>Phạm Quang Huy</td>
+            <td>Phòng LAB-01</td>
+            <td>T7-CN (09:00 - 10:30)</td>
+            <td><strong>14</strong> / 16</td>
+            <td><span class="badge badge-success">Đang diễn ra</span></td>
+            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-primary">IELTS-W02</span></td>
+            <td><strong>IELTS Writing Chuyên Sâu Tối</strong></td>
+            <td>Lê Thị Mai</td>
+            <td>Phòng A101</td>
+            <td>T3-T5 (18:00 - 20:00)</td>
+            <td><strong>10</strong> / 12</td>
+            <td><span class="badge badge-success">Đang diễn ra</span></td>
+            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-primary">BIZ-01</span></td>
+            <td><strong>Business English Giao Tiếp</strong></td>
+            <td>Nguyễn Văn Hùng</td>
+            <td>Phòng LAB-02</td>
+            <td>T2-T6 (19:30 - 21:00)</td>
+            <td><strong>8</strong> / 15</td>
+            <td><span class="badge badge-warning">Sắp khai giảng</span></td>
+            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-primary">COMM-02</span></td>
+            <td><strong>Giao Tiếp Phản Xạ K02</strong></td>
+            <td>Phạm Quang Huy</td>
+            <td>Phòng B202</td>
+            <td>T3-T5-T7 (19:30 - 21:00)</td>
+            <td><strong>20</strong> / 20</td>
+            <td><span class="badge badge-neutral">Đã kết thúc</span></td>
+            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal Tạo Lớp Học Mới -->
+  <div class="modal-backdrop" id="modal-create-class">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Tạo lớp học mới</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mã lớp học <span class="required" style="color:red;">*</span></label>
+              <input type="text" class="form-control" placeholder="Ví dụ: IELTS-A02" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên lớp học <span class="required" style="color:red;">*</span></label>
+              <input type="text" class="form-control" placeholder="Ví dụ: Luyện Thi IELTS 6.5+ Tối" required>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học trực thuộc <span class="required" style="color:red;">*</span></label>
+            <select class="form-control" required>
+              <option value="1">Tiếng Anh Giao Tiếp Cơ Bản</option>
+              <option value="2">Luyện Thi IELTS 6.5+</option>
+              <option value="3">TOEIC 750+ Cấp Tốc</option>
+              <option value="4">Tiếng Anh Trẻ Em Super Kids</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên phụ trách <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="1">ThS. Lê Thị Mai (IELTS 8.5)</option>
+                <option value="2">Nguyễn Văn Hùng (Giao tiếp & TOEIC)</option>
+                <option value="3">Phạm Quang Huy (TOEIC 980)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Phòng học <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="1">Phòng LAB-01 (Tầng 1 - 25 máy)</option>
+                <option value="2">Phòng A101 (Tầng 2 - 30 chỗ)</option>
+                <option value="3">Phòng B202 (Tầng 2 - 60 chỗ)</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Sĩ số tối đa</label>
+              <input type="number" class="form-control" value="20" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái lớp</label>
+              <select class="form-control">
+                <option value="upcoming">Sắp khai giảng</option>
+                <option value="ongoing">Đang diễn ra</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Tạo lớp học</button>
+        </div>
+      </form>
     </div>
   </div>
 

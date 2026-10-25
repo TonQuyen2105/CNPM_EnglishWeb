@@ -199,7 +199,10 @@
       <p class="page-header-subtitle">Soạn nội dung giáo án, tài liệu PDF, bài tập thực hành theo từng buổi</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary">Thêm bài học mới</button>
+      <button class="btn btn-primary" data-modal-target="modal-create-lesson">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Thêm bài học mới
+      </button>
     </div>
   </div>
 
@@ -229,10 +232,81 @@
         </div>
         <button class="btn btn-sm btn-secondary">Chỉnh sửa</button>
       </div>
+
+      <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="badge badge-primary">Bài 3</span>
+          <strong style="margin-left: 8px;">Hỏi đường, Đi lại & Đặt vé máy bay du lịch</strong>
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">Tài liệu: Travel_English_Phrases.pdf • Video thực cảnh sân bay</div>
+        </div>
+        <button class="btn btn-sm btn-secondary">Chỉnh sửa</button>
+      </div>
+
+      <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="badge badge-primary">Bài 4</span>
+          <strong style="margin-left: 8px;">Gọi món nhà hàng & Đàm thoại mua sắm</strong>
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">Tài liệu: Restaurant_Roleplay.pdf • Flashcards 30 từ vựng thực phẩm</div>
+        </div>
+        <button class="btn btn-sm btn-secondary">Chỉnh sửa</button>
+      </div>
+
+      <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="badge badge-primary">Bài 5</span>
+          <strong style="margin-left: 8px;">Kỹ năng viết Email công việc chuẩn văn phong quốc tế</strong>
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">Tài liệu: Email_Etiquette_Template.docx • Bài tập gửi giáo viên sửa</div>
+        </div>
+        <button class="btn btn-sm btn-secondary">Chỉnh sửa</button>
+      </div>
     </div>
   </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal Thêm Bài Học Mới -->
+  <div class="modal-backdrop" id="modal-create-lesson">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Thêm bài giảng mới vào giáo trình</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học giảng dạy <span class="required" style="color:red;">*</span></label>
+            <select class="form-control" required>
+              <option value="1">Tiếng Anh Giao Tiếp Cơ Bản</option>
+              <option value="2">Luyện Thi IELTS 6.5+</option>
+              <option value="3">TOEIC 750+ Cấp Tốc</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số thứ tự bài <span class="required" style="color:red;">*</span></label>
+              <input type="number" class="form-control" value="6" required>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên tiêu đề bài học <span class="required" style="color:red;">*</span></label>
+              <input type="text" class="form-control" placeholder="Ví dụ: Kỹ năng thuyết trình dự án" required>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tài liệu bài giảng (PDF / Slide / Video URL)</label>
+            <input type="text" class="form-control" placeholder="Nhập tên tệp hoặc đường link tài liệu">
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mục tiêu và tóm tắt buổi học</label>
+            <textarea class="form-control" rows="3" placeholder="Các mẫu câu chính, kiến thức trọng tâm cần nhớ..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Lưu bài học</button>
+        </div>
+      </form>
     </div>
   </div>
 

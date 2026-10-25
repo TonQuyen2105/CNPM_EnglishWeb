@@ -210,6 +210,12 @@
       <h1 class="page-header-title">Thời khóa biểu trung tâm</h1>
       <p class="page-header-subtitle">Lịch phân bổ phòng học và ca giảng dạy trong tuần</p>
     </div>
+    <div class="page-header-actions">
+      <button class="btn btn-primary" data-modal-target="modal-create-schedule">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Xếp lịch học mới
+      </button>
+    </div>
   </div>
 
   <div class="card" style="padding: 1.5rem;">
@@ -245,11 +251,20 @@
           <td><div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 8px; border-radius: 6px;"><strong style="color: #1D4ED8;">IELTS-B01</strong><br><small>Phòng A101 (GV: Mai)</small></div></td>
         </tr>
         <tr>
+          <td><strong>Chiều<br><small class="text-muted">14:00 - 17:00</small></strong></td>
+          <td><div style="background: #FEF3C7; border: 1px solid #FCD34D; padding: 8px; border-radius: 6px;"><strong style="color: #92400E;">KIDS-01</strong><br><small>Phòng LAB-01 (GV: Huy)</small></div></td>
+          <td>—</td>
+          <td><div style="background: #FEF3C7; border: 1px solid #FCD34D; padding: 8px; border-radius: 6px;"><strong style="color: #92400E;">KIDS-01</strong><br><small>Phòng LAB-01 (GV: Huy)</small></div></td>
+          <td>—</td>
+          <td><div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 8px; border-radius: 6px;"><strong style="color: #1D4ED8;">TOEIC-A01</strong><br><small>Phòng B202 (GV: Hùng)</small></div></td>
+          <td><div style="background: #FEF3C7; border: 1px solid #FCD34D; padding: 8px; border-radius: 6px;"><strong style="color: #92400E;">KIDS-01</strong><br><small>Phòng LAB-01 (GV: Huy)</small></div></td>
+        </tr>
+        <tr>
           <td><strong>Tối<br><small class="text-muted">18:00 - 21:00</small></strong></td>
           <td><div style="background: #ECFDF5; border: 1px solid #A7F3D0; padding: 8px; border-radius: 6px;"><strong style="color: #047857;">COMM-01</strong><br><small>Phòng LAB-01 (GV: Mai)</small></div></td>
-          <td>—</td>
+          <td><div style="background: #F3E8FF; border: 1px solid #D8B4FE; padding: 8px; border-radius: 6px;"><strong style="color: #6B21A8;">IELTS-W02</strong><br><small>Phòng A101 (GV: Mai)</small></div></td>
           <td><div style="background: #ECFDF5; border: 1px solid #A7F3D0; padding: 8px; border-radius: 6px;"><strong style="color: #047857;">COMM-01</strong><br><small>Phòng LAB-01 (GV: Mai)</small></div></td>
-          <td>—</td>
+          <td><div style="background: #F3E8FF; border: 1px solid #D8B4FE; padding: 8px; border-radius: 6px;"><strong style="color: #6B21A8;">IELTS-W02</strong><br><small>Phòng A101 (GV: Mai)</small></div></td>
           <td><div style="background: #ECFDF5; border: 1px solid #A7F3D0; padding: 8px; border-radius: 6px;"><strong style="color: #047857;">COMM-01</strong><br><small>Phòng LAB-01 (GV: Mai)</small></div></td>
           <td>—</td>
         </tr>
@@ -258,6 +273,63 @@
   </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal Xếp Lịch Học Mới -->
+  <div class="modal-backdrop" id="modal-create-schedule">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Xếp lịch giảng dạy mới</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lớp học cần xếp lịch <span class="required" style="color:red;">*</span></label>
+            <select class="form-control" required>
+              <option value="1">[COMM-01] Giao Tiếp Cơ Bản K01</option>
+              <option value="2">[IELTS-B01] Luyện Thi IELTS 6.5+ Sáng</option>
+              <option value="3">[TOEIC-A01] TOEIC Cấp Tốc Tối</option>
+              <option value="4">[KIDS-01] Super Kids Khởi Động K01</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Phòng học chỉ định <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="1">Phòng LAB-01 (Tầng 1)</option>
+                <option value="2">Phòng A101 (Tầng 2)</option>
+                <option value="3">Phòng B202 (Tầng 2)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ca học trong ngày <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="1">Ca Sáng (08:30 - 10:30)</option>
+                <option value="2">Ca Chiều (14:30 - 16:30)</option>
+                <option value="3">Ca Tối 1 (18:00 - 19:30)</option>
+                <option value="4">Ca Tối 2 (19:30 - 21:00)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thứ trong tuần <span class="required" style="color:red;">*</span></label>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px;">
+              <label style="font-size: 0.875rem;"><input type="checkbox" checked> Thứ 2</label>
+              <label style="font-size: 0.875rem;"><input type="checkbox"> Thứ 3</label>
+              <label style="font-size: 0.875rem;"><input type="checkbox" checked> Thứ 4</label>
+              <label style="font-size: 0.875rem;"><input type="checkbox"> Thứ 5</label>
+              <label style="font-size: 0.875rem;"><input type="checkbox" checked> Thứ 6</label>
+              <label style="font-size: 0.875rem;"><input type="checkbox"> Thứ 7</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Xác nhận xếp lịch</button>
+        </div>
+      </form>
     </div>
   </div>
 

@@ -187,24 +187,88 @@
     </div>
   </div>
 
-  <div class="card" style="max-width: 600px; padding: 1.5rem;">
-    <h3 class="card-title" style="margin-bottom: 1rem;">Gửi nhận xét mới</h3>
-    <div style="display: flex; flex-direction: column; gap: 14px;">
-      <div>
-        <label style="font-size: 0.8125rem; font-weight: 600;">Khóa học bạn muốn đánh giá</label>
-        <select class="form-control">
-          <option>Tiếng Anh Giao Tiếp Cơ Bản - COMM-01 (Cô Mai)</option>
-        </select>
+  <div class="grid grid-cols-12 gap-6">
+    <!-- Cột trái: Form gửi nhận xét -->
+    <div class="col-span-5">
+      <div class="card" style="padding: 1.5rem;">
+        <h3 class="card-title" style="margin-bottom: 1rem; font-size: 1.0625rem; font-weight: 700;">Gửi nhận xét mới</h3>
+        <form class="modal-form" data-modal-form style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="font-size: 0.8125rem; font-weight: 600; display: block; margin-bottom: 4px;">Khóa học bạn muốn đánh giá</label>
+            <select class="form-control">
+              <option>Tiếng Anh Giao Tiếp Cơ Bản - COMM-01 (Cô Mai)</option>
+              <option>Luyện Thi IELTS 6.5+ Sáng - IELTS-B01 (Cô Mai)</option>
+              <option>TOEIC Cấp Tốc Tối - TOEIC-A01 (Thầy Hùng)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.8125rem; font-weight: 600; display: block; margin-bottom: 4px;">Mức độ hài lòng</label>
+            <div style="font-size: 1.5rem; color: #F59E0B; cursor: pointer;">⭐⭐⭐⭐⭐</div>
+          </div>
+          <div>
+            <label style="font-size: 0.8125rem; font-weight: 600; display: block; margin-bottom: 4px;">Nội dung phản hồi</label>
+            <textarea class="form-control" rows="4" placeholder="Chia sẻ cảm nhận về giáo viên, phòng học, giáo trình..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Gửi đánh giá</button>
+        </form>
       </div>
-      <div>
-        <label style="font-size: 0.8125rem; font-weight: 600;">Mức độ hài lòng</label>
-        <div style="font-size: 1.5rem; color: #F59E0B; cursor: pointer;">⭐⭐⭐⭐⭐</div>
+    </div>
+
+    <!-- Cột phải: Các nhận xét đã đăng -->
+    <div class="col-span-7">
+      <h3 style="font-size: 1.0625rem; font-weight: 700; margin-bottom: 1rem;">Nhận xét gần đây từ học viên</h3>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Review 1 -->
+        <div class="card" style="padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white;">HA</div>
+              <div>
+                <strong>Nguyễn Hoàng Anh</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Lớp COMM-01 • 3 ngày trước</div>
+              </div>
+            </div>
+            <div style="color: #F59E0B;">⭐⭐⭐⭐⭐</div>
+          </div>
+          <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+            "Cô Mai dạy cực kỳ nhiệt tình, sửa từng âm IPA rất tỉ mỉ. Sau 1 tháng em đã tự tin nói chuyện không còn ngại ngùng như trước nữa!"
+          </p>
+        </div>
+
+        <!-- Review 2 -->
+        <div class="card" style="padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="avatar avatar-sm" style="background-color: #059669; color: white;">PN</div>
+              <div>
+                <strong>Trần Phương Nam</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Lớp IELTS-B01 • 5 ngày trước</div>
+              </div>
+            </div>
+            <div style="color: #F59E0B;">⭐⭐⭐⭐⭐</div>
+          </div>
+          <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+            "Bộ tài liệu Writing Task 2 rất chất lượng. Phòng Lab máy lạnh tai nghe xịn, thi thử mô phỏng rất giống kỳ thi IDP thật."
+          </p>
+        </div>
+
+        <!-- Review 3 -->
+        <div class="card" style="padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="avatar avatar-sm" style="background-color: #D97706; color: white;">ML</div>
+              <div>
+                <strong>Vũ Mai Linh</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Lớp TOEIC-A01 • 1 tuần trước</div>
+              </div>
+            </div>
+            <div style="color: #F59E0B;">⭐⭐⭐⭐☆</div>
+          </div>
+          <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+            "Thầy Hùng giảng bài vui tính và nhiều mẹo tránh bẫy Part 5 rất hay. Hy vọng trung tâm mở thêm ca học buổi sáng!"
+          </p>
+        </div>
       </div>
-      <div>
-        <label style="font-size: 0.8125rem; font-weight: 600;">Nội dung phản hồi</label>
-        <textarea class="form-control" rows="4" placeholder="Chia sẻ cảm nhận về giáo viên, phòng học, giáo trình..."></textarea>
-      </div>
-      <button class="btn btn-primary">Gửi đánh giá</button>
     </div>
   </div>
 

@@ -211,7 +211,7 @@
       <p class="page-header-subtitle">Hệ thống 12 khóa học tiếng Anh chuẩn hóa theo các cấp độ</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary">Tạo khóa học mới</button>
+      <button class="btn btn-primary" data-modal-target="modal-create-course">Tạo khóa học mới</button>
     </div>
   </div>
 
@@ -271,6 +271,122 @@
         <a href="course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
         <a href="classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
       </div>
+    </div>
+
+    <div class="card card-hover" style="overflow: hidden;">
+      <div style="height: 140px; background: linear-gradient(135deg, #4C1D95, #8B5CF6); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
+        <h3 style="color: white; margin: 0; font-size: 1.125rem;">Tiếng Anh Trẻ Em Super Kids</h3>
+      </div>
+      <div class="card-body">
+        <span class="badge badge-info">Thiếu nhi (6 - 12 tuổi)</span>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Phương pháp học qua bài hát, flashcard tương tác hình ảnh sinh động giúp bé phản xạ tự nhiên.</p>
+        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+          <span style="font-size: 0.8125rem; color: var(--text-muted);">20 bài học</span>
+          <strong style="color: var(--primary-600);">2.200.000 ₫</strong>
+        </div>
+      </div>
+      <div class="card-footer" style="display: flex; justify-content: space-between;">
+        <a href="course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
+        <a href="classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
+      </div>
+    </div>
+
+    <div class="card card-hover" style="overflow: hidden;">
+      <div style="height: 140px; background: linear-gradient(135deg, #1E293B, #475569); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
+        <h3 style="color: white; margin: 0; font-size: 1.125rem;">IELTS Writing Masterclass</h3>
+      </div>
+      <div class="card-body">
+        <span class="badge badge-warning">Học thuật (Advanced)</span>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Chuyên sâu Task 1 Biểu đồ & Task 2 Nghị luận xã hội với kho bài mẫu 8.0+ Band.</p>
+        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+          <span style="font-size: 0.8125rem; color: var(--text-muted);">28 bài học</span>
+          <strong style="color: var(--primary-600);">4.500.000 ₫</strong>
+        </div>
+      </div>
+      <div class="card-footer" style="display: flex; justify-content: space-between;">
+        <a href="course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
+        <a href="classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
+      </div>
+    </div>
+
+    <div class="card card-hover" style="overflow: hidden;">
+      <div style="height: 140px; background: linear-gradient(135deg, #831843, #DB2777); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
+        <h3 style="color: white; margin: 0; font-size: 1.125rem;">Business English Communication</h3>
+      </div>
+      <div class="card-body">
+        <span class="badge badge-primary">Thương mại (Intermediate)</span>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Tiếng Anh đàm phán, thuyết trình dự án, viết email chuyên nghiệp cho người đi làm.</p>
+        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+          <span style="font-size: 0.8125rem; color: var(--text-muted);">24 bài học</span>
+          <strong style="color: var(--primary-600);">3.800.000 ₫</strong>
+        </div>
+      </div>
+      <div class="card-footer" style="display: flex; justify-content: space-between;">
+        <a href="course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
+        <a href="classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
+      </div>
+    </div>
+  </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal Tạo Khóa Học Mới -->
+  <div class="modal-backdrop" id="modal-create-course">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Tạo khóa học mới</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên khóa học <span class="required" style="color:red;">*</span></label>
+            <input type="text" class="form-control" placeholder="Ví dụ: Luyện Thi IELTS 7.0+ Toàn Diện" required>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học trực thuộc <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="1">Tiếng Anh Giao Tiếp</option>
+                <option value="2">Luyện Thi TOEIC</option>
+                <option value="3">Luyện Thi IELTS</option>
+                <option value="4">Tiếng Anh Thiếu Nhi</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Cấp độ khóa học <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="beginner">Cơ bản (Beginner)</option>
+                <option value="intermediate">Trung cấp (Intermediate)</option>
+                <option value="advanced">Nâng cao (Advanced)</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí niêm yết (VNĐ) <span class="required" style="color:red;">*</span></label>
+              <input type="number" class="form-control" placeholder="Ví dụ: 3500000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số bài học dự kiến</label>
+              <input type="number" class="form-control" value="24">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mô tả mục tiêu khóa học</label>
+            <textarea class="form-control" rows="3" placeholder="Mô tả tóm tắt nội dung bài học, kết quả đầu ra cam kết..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Lưu khóa học</button>
+        </div>
+      </form>
     </div>
   </div>
 

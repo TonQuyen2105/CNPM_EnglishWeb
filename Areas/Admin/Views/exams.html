@@ -211,7 +211,10 @@
       <p class="page-header-subtitle">Hệ thống bài kiểm tra đầu vào, kiểm tra giữa kỳ và thi thử trực tuyến</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary">Tạo đề thi mới</button>
+      <button class="btn btn-primary" data-modal-target="modal-create-exam">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Tạo đề thi mới
+      </button>
     </div>
   </div>
 
@@ -257,12 +260,107 @@
             <td>94 lượt</td>
             <td><span class="badge badge-success">Đang mở</span></td>
           </tr>
+          <tr>
+            <td><strong>Kiểm tra định kỳ giữa khóa COMM</strong></td>
+            <td>Tiếng Anh Giao Tiếp</td>
+            <td>45 phút</td>
+            <td>40 câu</td>
+            <td>25 / 40</td>
+            <td>68 lượt</td>
+            <td><span class="badge badge-success">Đang mở</span></td>
+          </tr>
+          <tr>
+            <td><strong>TOEIC Full Test 200 Câu (Nghe & Đọc)</strong></td>
+            <td>Luyện Thi TOEIC</td>
+            <td>120 phút</td>
+            <td>200 câu</td>
+            <td>550 / 990</td>
+            <td>142 lượt</td>
+            <td><span class="badge badge-success">Đang mở</span></td>
+          </tr>
+          <tr>
+            <td><strong>IELTS Writing Task 1 & 2 Chấm Điểm AI</strong></td>
+            <td>Luyện Thi IELTS</td>
+            <td>60 phút</td>
+            <td>2 đề</td>
+            <td>6.0 / 9.0</td>
+            <td>56 lượt</td>
+            <td><span class="badge badge-warning">Đang chấm</span></td>
+          </tr>
+          <tr>
+            <td><strong>Super Kids Kiểm Tra Cuối Khóa K01</strong></td>
+            <td>Tiếng Anh Thiếu Nhi</td>
+            <td>30 phút</td>
+            <td>25 câu</td>
+            <td>18 / 25</td>
+            <td>32 lượt</td>
+            <td><span class="badge badge-neutral">Đã đóng</span></td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal Tạo Đề Thi Mới -->
+  <div class="modal-backdrop" id="modal-create-exam">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Tạo kỳ thi / đề thi mới</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tiêu đề bài thi <span class="required" style="color:red;">*</span></label>
+            <input type="text" class="form-control" placeholder="Ví dụ: Thi Thử TOEIC Full Test Tháng 11" required>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học trực thuộc <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="1">Tiếng Anh Giao Tiếp</option>
+                <option value="2">Luyện Thi TOEIC</option>
+                <option value="3">Luyện Thi IELTS</option>
+                <option value="4">Tiếng Anh Thiếu Nhi</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Loại bài thi <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="placement">Đánh giá đầu vào</option>
+                <option value="midterm">Kiểm tra giữa kỳ</option>
+                <option value="final">Kiểm tra cuối kỳ</option>
+                <option value="practice">Luyện tập tự do</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thời gian làm bài (Phút) <span class="required" style="color:red;">*</span></label>
+              <input type="number" class="form-control" value="60" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Điểm qua / Điểm chuẩn</label>
+              <input type="text" class="form-control" placeholder="Ví dụ: 25 / 40">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái đề thi</label>
+            <select class="form-control">
+              <option value="published">Đang mở (Cho phép học viên làm bài)</option>
+              <option value="draft">Bản nháp (Chưa công bố)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Lưu đề thi</button>
+        </div>
+      </form>
     </div>
   </div>
 

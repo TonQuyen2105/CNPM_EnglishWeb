@@ -677,7 +677,8 @@ select.form-control {
   transition: opacity var(--transition-normal), visibility var(--transition-normal);
 }
 
-.modal-backdrop.open {
+.modal-backdrop.open,
+.modal-backdrop.show {
   opacity: 1;
   visibility: visible;
 }
@@ -696,7 +697,8 @@ select.form-control {
   overflow: hidden;
 }
 
-.modal-backdrop.open .modal-dialog {
+.modal-backdrop.open .modal-dialog,
+.modal-backdrop.show .modal-dialog {
   transform: translateY(0) scale(1);
 }
 

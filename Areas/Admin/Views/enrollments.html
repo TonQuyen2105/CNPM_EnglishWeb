@@ -207,8 +207,14 @@
         
   <div class="page-header">
     <div>
-      <h1 class="page-header-title">Quản lý ghi danh & học phí</h1>
-      <p class="page-header-subtitle">Toàn bộ hồ sơ đăng ký khóa học và trạng thái thanh toán học phí</p>
+      <h1 class="page-header-title">Quản lý ghi danh & học viên khóa học</h1>
+      <p class="page-header-subtitle">Hồ sơ đăng ký lớp học và danh sách học viên theo từng khóa</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-primary" data-modal-target="modal-create-enrollment">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Ghi danh học viên mới
+      </button>
     </div>
   </div>
 
@@ -243,7 +249,61 @@
             <td><strong>5.800.000 ₫</strong></td>
             <td>Chuyển khoản (Techcombank)</td>
             <td>23/10/2026</td>
-            <td><span class="badge badge-success">Đã thu học phí</span></td>
+            <td><span class="badge badge-success">Đang học</span></td>
+          </tr>
+          <tr>
+            <td><strong>#ENR-103</strong></td>
+            <td>Lê Thị Kim Ngân</td>
+            <td><span class="badge badge-primary">TOEIC-A01</span> TOEIC Cấp Tốc Tối</td>
+            <td><strong>3.200.000 ₫</strong></td>
+            <td>Chuyển khoản (Momo)</td>
+            <td>22/10/2026</td>
+            <td><span class="badge badge-warning">Chờ mở lớp</span></td>
+          </tr>
+          <tr>
+            <td><strong>#ENR-104</strong></td>
+            <td>Vũ Mai Linh</td>
+            <td><span class="badge badge-primary">COMM-01</span> Giao Tiếp K01</td>
+            <td><strong>2.500.000 ₫</strong></td>
+            <td>Tiền mặt tại trung tâm</td>
+            <td>21/10/2026</td>
+            <td><span class="badge badge-success">Đang học</span></td>
+          </tr>
+          <tr>
+            <td><strong>#ENR-105</strong></td>
+            <td>Đặng Quốc Bảo</td>
+            <td><span class="badge badge-primary">IELTS-B01</span> IELTS 6.5+</td>
+            <td><strong>5.800.000 ₫</strong></td>
+            <td>Chuyển khoản (Vietcombank)</td>
+            <td>20/10/2026</td>
+            <td><span class="badge badge-success">Đang học</span></td>
+          </tr>
+          <tr>
+            <td><strong>#ENR-106</strong></td>
+            <td>Hoàng Thùy Dung</td>
+            <td><span class="badge badge-primary">KIDS-01</span> Super Kids K01</td>
+            <td><strong>2.200.000 ₫</strong></td>
+            <td>Chuyển khoản (VPBank)</td>
+            <td>19/10/2026</td>
+            <td><span class="badge badge-success">Đang học</span></td>
+          </tr>
+          <tr>
+            <td><strong>#ENR-107</strong></td>
+            <td>Phan Minh Trí</td>
+            <td><span class="badge badge-primary">COMM-02</span> Giao Tiếp Phản Xạ</td>
+            <td><strong>2.500.000 ₫</strong></td>
+            <td>Chuyển khoản (ACB)</td>
+            <td>15/09/2026</td>
+            <td><span class="badge badge-neutral">Đã hoàn thành</span></td>
+          </tr>
+          <tr>
+            <td><strong>#ENR-108</strong></td>
+            <td>Bùi Quỳnh Hoa</td>
+            <td><span class="badge badge-primary">BIZ-01</span> Business English</td>
+            <td><strong>3.800.000 ₫</strong></td>
+            <td>Chuyển khoản (MBBank)</td>
+            <td>24/10/2026</td>
+            <td><span class="badge badge-warning">Chờ mở lớp</span></td>
           </tr>
         </tbody>
       </table>
@@ -251,6 +311,56 @@
   </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal Ghi Danh Học Viên Mới -->
+  <div class="modal-backdrop" id="modal-create-enrollment">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Ghi danh học viên vào lớp</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học viên ghi danh <span class="required" style="color:red;">*</span></label>
+            <select class="form-control" required>
+              <option value="5">Nguyễn Hoàng Anh (student@el.com)</option>
+              <option value="6">Trần Phương Nam (nam.tran@el.com)</option>
+              <option value="7">Lê Thị Kim Ngân (ngan.le@el.com)</option>
+              <option value="8">Vũ Mai Linh (linh.vu@el.com)</option>
+              <option value="9">Đặng Quốc Bảo (bao.dang@el.com)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lớp học chỉ định <span class="required" style="color:red;">*</span></label>
+            <select class="form-control" required>
+              <option value="1">[COMM-01] Giao Tiếp Cơ Bản K01 (2.500.000 ₫)</option>
+              <option value="2">[IELTS-B01] Luyện Thi IELTS 6.5+ Sáng (5.800.000 ₫)</option>
+              <option value="3">[TOEIC-A01] TOEIC Cấp Tốc Tối (3.200.000 ₫)</option>
+              <option value="4">[KIDS-01] Super Kids Khởi Động K01 (2.200.000 ₫)</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ngày ghi danh</label>
+              <input type="date" class="form-control" value="2026-10-25">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái ghi danh</label>
+              <select class="form-control">
+                <option value="active">Đang học (Active)</option>
+                <option value="pending">Chờ khai giảng</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Xác nhận ghi danh</button>
+        </div>
+      </form>
     </div>
   </div>
 

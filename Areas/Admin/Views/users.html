@@ -211,7 +211,7 @@
       <p class="page-header-subtitle">Danh sách toàn bộ tài khoản Quản trị, Giảng viên và Học viên</p>
     </div>
     <div class="page-header-actions">
-      <button type="button" class="btn btn-primary">
+      <button type="button" class="btn btn-primary" data-modal-target="modal-create-user">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span>Thêm tài khoản mới</span>
       </button>
@@ -336,13 +336,77 @@
               <button class="btn btn-sm btn-secondary">Mở khóa</button>
             </td>
           </tr>
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="avatar avatar-sm" style="background: #059669; color: white;">VH</div>
+                <strong>Nguyễn Văn Hùng</strong>
+              </div>
+            </td>
+            <td>hung.nguyen@el.com</td>
+            <td><span class="badge badge-info">Giảng viên</span></td>
+            <td><span class="badge badge-success">Hoạt động</span></td>
+            <td>16/09/2026</td>
+            <td class="text-right">
+              <button class="btn btn-sm btn-secondary">Sửa</button>
+              <button class="btn btn-sm btn-danger">Khóa</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="avatar avatar-sm" style="background: #059669; color: white;">QH</div>
+                <strong>Phạm Quang Huy</strong>
+              </div>
+            </td>
+            <td>huy.pham@el.com</td>
+            <td><span class="badge badge-info">Giảng viên</span></td>
+            <td><span class="badge badge-success">Hoạt động</span></td>
+            <td>18/09/2026</td>
+            <td class="text-right">
+              <button class="btn btn-sm btn-secondary">Sửa</button>
+              <button class="btn btn-sm btn-danger">Khóa</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="avatar avatar-sm" style="background: #2563EB; color: white;">ML</div>
+                <strong>Vũ Mai Linh</strong>
+              </div>
+            </td>
+            <td>linh.vu@el.com</td>
+            <td><span class="badge badge-neutral">Học viên</span></td>
+            <td><span class="badge badge-success">Hoạt động</span></td>
+            <td>26/09/2026</td>
+            <td class="text-right">
+              <button class="btn btn-sm btn-secondary">Sửa</button>
+              <button class="btn btn-sm btn-danger">Khóa</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="avatar avatar-sm" style="background: #2563EB; color: white;">QB</div>
+                <strong>Đặng Quốc Bảo</strong>
+              </div>
+            </td>
+            <td>bao.dang@el.com</td>
+            <td><span class="badge badge-neutral">Học viên</span></td>
+            <td><span class="badge badge-success">Hoạt động</span></td>
+            <td>28/09/2026</td>
+            <td class="text-right">
+              <button class="btn btn-sm btn-secondary">Sửa</button>
+              <button class="btn btn-sm btn-danger">Khóa</button>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
 
     <!-- Pagination -->
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color);">
-      <span style="font-size: 0.8125rem; color: var(--text-muted);">Hiển thị 1 - 5 trong 47 tài khoản</span>
+      <span style="font-size: 0.8125rem; color: var(--text-muted);">Hiển thị 1 - 9 trong 47 tài khoản</span>
       <div style="display: flex; gap: 4px;">
         <button class="btn btn-sm btn-secondary" disabled>«</button>
         <button class="btn btn-sm btn-primary">1</button>
@@ -354,6 +418,53 @@
   </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal Thêm Tài Khoản Mới -->
+  <div class="modal-backdrop" id="modal-create-user">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Thêm tài khoản người dùng mới</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form class="modal-form" data-modal-form>
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Họ và tên <span class="required" style="color:red;">*</span></label>
+            <input type="text" class="form-control" placeholder="Ví dụ: Trần Văn Nam" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Địa chỉ Email <span class="required" style="color:red;">*</span></label>
+            <input type="email" class="form-control" placeholder="Ví dụ: nam.tran@el.com" required>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mật khẩu ban đầu <span class="required" style="color:red;">*</span></label>
+              <input type="password" class="form-control" value="123456" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Vai trò hệ thống <span class="required" style="color:red;">*</span></label>
+              <select class="form-control" required>
+                <option value="student">Học viên (Student)</option>
+                <option value="teacher">Giảng viên (Teacher)</option>
+                <option value="admin">Quản trị viên (Admin)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái tài khoản</label>
+            <select class="form-control">
+              <option value="1">Kích hoạt ngay (Hoạt động)</option>
+              <option value="0">Tạm khóa tài khoản</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+        </div>
+      </form>
     </div>
   </div>
 
