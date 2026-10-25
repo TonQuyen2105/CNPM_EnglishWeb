@@ -338,7 +338,7 @@
         </div>
 
         <!-- Form đăng nhập chính -->
-        <form id="login-form" novalidate>
+        <form id="login-form" method="POST" action="/Account/Login" novalidate>
           <!-- Email Field -->
           <div class="form-group" id="group-email">
             <label class="form-label" for="login-email">
@@ -428,81 +428,137 @@
     </div>
   </div>
 
-  <!-- Script Modules -->
-  <script type="module">
-    import { initSeedDatabase } from './data/seed.js';
-    import { auth } from './wwwroot/js/core/auth.js';
-    import { toast } from './wwwroot/lib/toast.js';
-    import { modal } from './wwwroot/lib/modal.js';
+  <!-- Interactive Script (Tương thích 100% khi mở file:// và khi chạy qua Server) -->
+  <script>
+    // 1. Danh sách tài khoản mẫu mặc định
+    const MOCK_USERS = [
+      { id: 1, email: 'admin@el.com', password: '123456', full_name: 'Nguyễn Quản Trị', role: 'admin', is_active: true },
+      { id: 2, email: 'teacher@el.com', password: '123456', full_name: 'Lê Thị Mai', role: 'teacher', is_active: true },
+      { id: 3, email: 'hung.nguyen@el.com', password: '123456', full_name: 'Nguyễn Văn Hùng', role: 'teacher', is_active: true },
+      { id: 4, email: 'huy.pham@el.com', password: '123456', full_name: 'Phạm Quang Huy', role: 'teacher', is_active: true },
+      { id: 5, email: 'student@el.com', password: '123456', full_name: 'Nguyễn Hoàng Anh', role: 'student', is_active: true },
+      { id: 6, email: 'nam.tran@el.com', password: '123456', full_name: 'Trần Phương Nam', role: 'student', is_active: true },
+      { id: 7, email: 'ngan.le@el.com', password: '123456', full_name: 'Lê Thị Kim Ngân', role: 'student', is_active: false }
+    ];
 
-    // 1. Tự động kiểm tra và khởi tạo Database nếu chưa có dữ liệu
-    initSeedDatabase();
-
-    // 2. Nếu đã đăng nhập trước đó và hợp lệ, tự động chuyển về cổng tương ứng
-    if (auth.isAuthenticated()) {
-      const user = auth.getCurrentUser();
-      if (user && user.role) {
-        toast.info(`Chào mừng trở lại, ${user.full_name}! Đang chuyển hướng...`);
+    // 2. Hệ thống Toast thông báo độc lập
+    const toast = {
+      show(message, type = 'info', title = 'Thông báo') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const item = document.createElement('div');
+        item.className = `toast toast-${type}`;
+        item.innerHTML = `
+          <div class="toast-body">
+            <div class="toast-title" style="font-weight: 700; margin-bottom: 2px;">${title}</div>
+            <div class="toast-message" style="font-size: 0.85rem;">${message}</div>
+          </div>
+        `;
+        container.appendChild(item);
         setTimeout(() => {
-          auth.redirectToPortal();
-        }, 600);
-      }
-    }
+          item.style.opacity = '0';
+          item.style.transform = 'translateY(-8px)';
+          item.style.transition = 'all 0.3s ease';
+          setTimeout(() => item.remove(), 300);
+        }, 3200);
+      },
+      success(msg, title = 'Thành công') { this.show(msg, 'success', title); },
+      error(msg, title = 'Lỗi') { this.show(msg, 'error', title); },
+      info(msg, title = 'Thông báo') { this.show(msg, 'info', title); }
+    };
 
-    // 3. Xử lý Toggle Ẩn / Hiện Mật khẩu
+    // 3. Modal Dialog "Quên mật khẩu"
+    const modal = {
+      open({ title, body, footer }) {
+        let modalEl = document.getElementById('app-modal');
+        if (!modalEl) {
+          modalEl = document.createElement('div');
+          modalEl.id = 'app-modal';
+          modalEl.className = 'modal-backdrop';
+          modalEl.innerHTML = `
+            <div class="modal-dialog">
+              <div class="modal-header">
+                <h3 class="modal-title" id="app-modal-title"></h3>
+                <button type="button" class="modal-close" id="app-modal-close" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+              </div>
+              <div class="modal-body" id="app-modal-body"></div>
+              <div class="modal-footer" id="app-modal-footer"></div>
+            </div>
+          `;
+          document.body.appendChild(modalEl);
+          document.getElementById('app-modal-close').onclick = () => modal.close();
+          modalEl.onclick = (e) => { if (e.target === modalEl) modal.close(); };
+        }
+        document.getElementById('app-modal-title').textContent = title;
+        document.getElementById('app-modal-body').innerHTML = body;
+        document.getElementById('app-modal-footer').innerHTML = footer;
+        modalEl.querySelectorAll('[data-dismiss="modal"]').forEach(b => b.onclick = () => modal.close());
+        modalEl.classList.add('is-open');
+      },
+      close() {
+        const modalEl = document.getElementById('app-modal');
+        if (modalEl) modalEl.classList.remove('is-open');
+      }
+    };
+
+    // 4. Toggle ẩn / hiện mật khẩu
     const passwordInput = document.getElementById('login-password');
     const togglePasswordBtn = document.getElementById('toggle-password-btn');
     const eyeIcon = document.getElementById('eye-icon');
 
-    togglePasswordBtn.addEventListener('click', () => {
-      const isPassword = passwordInput.getAttribute('type') === 'password';
-      passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-      
-      eyeIcon.innerHTML = isPassword
-        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
-        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
-    });
+    if (togglePasswordBtn && passwordInput) {
+      togglePasswordBtn.addEventListener('click', () => {
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        eyeIcon.innerHTML = isPassword
+          ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+          : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+      });
+    }
 
-    // 4. Xử lý Quick Login Pill Buttons
+    // 5. Nút Quick Login 1-Click (Admin / Teacher / Student)
     const demoBtns = document.querySelectorAll('.demo-pill-btn');
     const emailInput = document.getElementById('login-email');
 
     demoBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const email = btn.getAttribute('data-email');
-        emailInput.value = email;
-        passwordInput.value = '123456';
+        if (emailInput) emailInput.value = email;
+        if (passwordInput) passwordInput.value = '123456';
         clearErrors();
-        toast.info(`Đã điền tài khoản demo: ${email}`);
+        toast.info(`Đã điền tài khoản: ${email}`);
       });
     });
 
-    // 5. Quên mật khẩu Modal Dialog
+    // 6. Quên mật khẩu Dialog
     const forgotLink = document.getElementById('btn-forgot-password');
-    forgotLink.addEventListener('click', () => {
-      modal.open({
-        title: 'Khôi phục mật khẩu',
-        body: `
-          <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
-            <p>Hệ thống hiện tại đang sử dụng cơ sở dữ liệu mẫu độc lập.</p>
-            <div style="background-color: var(--primary-50); padding: 1rem; border-radius: 12px; margin: 1rem 0; border: 1px solid var(--primary-200);">
-              <strong style="color: var(--primary-700); display: block; margin-bottom: 0.5rem;">Tài khoản mặc định:</strong>
-              <ul style="list-style: disc; padding-left: 1.25rem; margin: 0; color: var(--text-primary);">
-                <li>Quản trị viên: <code>admin@el.com</code> / Mật khẩu: <code>123456</code></li>
-                <li>Giáo viên: <code>teacher@el.com</code> / Mật khẩu: <code>123456</code></li>
-                <li>Học sinh: <code>student@el.com</code> / Mật khẩu: <code>123456</code></li>
-              </ul>
+    if (forgotLink) {
+      forgotLink.addEventListener('click', () => {
+        modal.open({
+          title: 'Khôi phục mật khẩu',
+          body: `
+            <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+              <p>Hệ thống hiện tại đang sử dụng các tài khoản demo mặc định:</p>
+              <div style="background-color: var(--primary-50); padding: 1rem; border-radius: 12px; margin: 1rem 0; border: 1px solid var(--primary-200);">
+                <strong style="color: var(--primary-700); display: block; margin-bottom: 0.5rem;">Tài khoản mặc định:</strong>
+                <ul style="list-style: disc; padding-left: 1.25rem; margin: 0; color: var(--text-primary);">
+                  <li>Quản trị viên: <code>admin@el.com</code> / Mật khẩu: <code>123456</code></li>
+                  <li>Giáo viên: <code>teacher@el.com</code> / Mật khẩu: <code>123456</code></li>
+                  <li>Học sinh: <code>student@el.com</code> / Mật khẩu: <code>123456</code></li>
+                </ul>
+              </div>
             </div>
-            <p>Nếu bạn đã đổi mật khẩu và quên, vui lòng đặt lại cơ sở dữ liệu tại trang Style Guide hoặc liên hệ admin.</p>
-          </div>
-        `,
-        footer: `
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Đã hiểu</button>
-        `
+          `,
+          footer: `<button type="button" class="btn btn-primary" data-dismiss="modal">Đã hiểu</button>`
+        });
       });
-    });
+    }
 
-    // 6. Validation Form & Xử lý Submit
+    // 7. Xử lý Form Validation & Đăng nhập
     const loginForm = document.getElementById('login-form');
     const btnSubmit = document.getElementById('btn-submit');
     const groupEmail = document.getElementById('group-email');
@@ -511,69 +567,124 @@
     const errorPassword = document.getElementById('error-password');
 
     function clearErrors() {
-      groupEmail.classList.remove('has-error');
-      emailInput.classList.remove('is-invalid');
-      groupPassword.classList.remove('has-error');
-      passwordInput.classList.remove('is-invalid');
+      if (groupEmail) groupEmail.classList.remove('has-error');
+      if (emailInput) emailInput.classList.remove('is-invalid');
+      if (groupPassword) groupPassword.classList.remove('has-error');
+      if (passwordInput) passwordInput.classList.remove('is-invalid');
     }
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearErrors();
-
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-
-      let hasError = false;
-
-      // Validate email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email) {
-        groupEmail.classList.add('has-error');
-        emailInput.classList.add('is-invalid');
-        errorEmail.textContent = 'Vui lòng nhập địa chỉ email.';
-        hasError = true;
-      } else if (!emailRegex.test(email)) {
-        groupEmail.classList.add('has-error');
-        emailInput.classList.add('is-invalid');
-        errorEmail.textContent = 'Địa chỉ email không đúng định dạng.';
-        hasError = true;
+    function getPortalUrl(role) {
+      switch ((role || '').toLowerCase()) {
+        case 'admin':
+          return 'Areas/Admin/Views/dashboard.html';
+        case 'teacher':
+          return 'Areas/Teacher/Views/dashboard.html';
+        case 'student':
+          return 'Areas/Student/Views/dashboard.html';
+        default:
+          return 'index.html';
       }
+    }
 
-      // Validate password
-      if (!password) {
-        groupPassword.classList.add('has-error');
-        passwordInput.classList.add('is-invalid');
-        errorPassword.textContent = 'Vui lòng nhập mật khẩu.';
-        hasError = true;
-      }
+    if (loginForm) {
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        clearErrors();
 
-      if (hasError) return;
+        const email = (emailInput?.value || '').trim();
+        const password = passwordInput?.value || '';
 
-      // Loading State
-      btnSubmit.classList.add('loading');
-      btnSubmit.disabled = true;
+        let hasError = false;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      try {
-        const res = await auth.login(email, password);
-
-        if (res.success) {
-          toast.success(`Đăng nhập thành công! Xin chào ${res.user.full_name}.`, 'Đăng nhập thành công');
-          setTimeout(() => {
-            auth.redirectToPortal(res.user.role);
-          }, 600);
-        } else {
-          btnSubmit.classList.remove('loading');
-          btnSubmit.disabled = false;
-          toast.error(res.error || 'Đăng nhập thất bại.');
+        if (!email) {
+          if (groupEmail) groupEmail.classList.add('has-error');
+          if (emailInput) emailInput.classList.add('is-invalid');
+          if (errorEmail) errorEmail.textContent = 'Vui lòng nhập địa chỉ email.';
+          hasError = true;
+        } else if (!emailRegex.test(email)) {
+          if (groupEmail) groupEmail.classList.add('has-error');
+          if (emailInput) emailInput.classList.add('is-invalid');
+          if (errorEmail) errorEmail.textContent = 'Địa chỉ email không đúng định dạng.';
+          hasError = true;
         }
-      } catch (err) {
-        btnSubmit.classList.remove('loading');
-        btnSubmit.disabled = false;
-        toast.error('Có lỗi trong quá trình xử lý xác thực.');
-        console.error(err);
-      }
-    });
+
+        if (!password) {
+          if (groupPassword) groupPassword.classList.add('has-error');
+          if (passwordInput) passwordInput.classList.add('is-invalid');
+          if (errorPassword) errorPassword.textContent = 'Vui lòng nhập mật khẩu.';
+          hasError = true;
+        }
+
+        if (hasError) return;
+
+        if (btnSubmit) {
+          btnSubmit.classList.add('loading');
+          btnSubmit.disabled = true;
+        }
+
+        // Tìm người dùng trong MOCK_USERS hoặc localStorage
+        let user = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+        try {
+          const storedUsers = JSON.parse(localStorage.getItem('table_users') || '[]');
+          if (Array.isArray(storedUsers) && storedUsers.length > 0) {
+            const found = storedUsers.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
+            if (found) user = found;
+          }
+        } catch (_) {}
+
+        if (!user) {
+          if (btnSubmit) {
+            btnSubmit.classList.remove('loading');
+            btnSubmit.disabled = false;
+          }
+          if (groupEmail) groupEmail.classList.add('has-error');
+          if (emailInput) emailInput.classList.add('is-invalid');
+          if (errorEmail) errorEmail.textContent = 'Email hoặc mật khẩu không chính xác.';
+          toast.error('Email hoặc mật khẩu không chính xác.');
+          return;
+        }
+
+        if (user.password !== password) {
+          if (btnSubmit) {
+            btnSubmit.classList.remove('loading');
+            btnSubmit.disabled = false;
+          }
+          if (groupPassword) groupPassword.classList.add('has-error');
+          if (passwordInput) passwordInput.classList.add('is-invalid');
+          if (errorPassword) errorPassword.textContent = 'Mật khẩu không chính xác.';
+          toast.error('Mật khẩu không chính xác.');
+          return;
+        }
+
+        if (user.is_active === 0 || user.is_active === false) {
+          if (btnSubmit) {
+            btnSubmit.classList.remove('loading');
+            btnSubmit.disabled = false;
+          }
+          toast.error('Tài khoản này hiện đang bị khóa. Vui lòng liên hệ quản trị viên.');
+          return;
+        }
+
+        // Lưu thông tin phiên đăng nhập
+        try {
+          localStorage.setItem('session_user', JSON.stringify({
+            id: user.id,
+            email: user.email,
+            full_name: user.full_name,
+            role: user.role,
+            avatar_url: user.avatar_url || ''
+          }));
+        } catch (_) {}
+
+        toast.success(`Đăng nhập thành công! Xin chào ${user.full_name}.`, 'Đăng nhập thành công');
+
+        setTimeout(() => {
+          const targetUrl = getPortalUrl(user.role);
+          window.location.href = targetUrl;
+        }, 500);
+      });
+    }
   </script>
 </body>
 </html>

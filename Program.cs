@@ -2,6 +2,7 @@ using CNPM_EnglishLearning.Services.Interfaces;
 using CNPM_EnglishLearning.Services.Implementations;
 using CNPM_EnglishLearning.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,14 @@ app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/wwwroot"
+});
+
+// Cho phép truy cập trực tiếp các view tĩnh trong Areas/ nếu được gọi trực tiếp qua URL
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Areas")),
+    RequestPath = "/Areas"
 });
 
 app.UseRouting();
