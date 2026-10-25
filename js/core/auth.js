@@ -107,13 +107,13 @@ class AuthService {
 
     switch (targetRole) {
       case 'admin':
-        window.location.href = `${prefix}admin/index.html#/dashboard`;
+        window.location.href = `${prefix}admin/dashboard.html`;
         break;
       case 'teacher':
-        window.location.href = `${prefix}teacher/index.html#/dashboard`;
+        window.location.href = `${prefix}teacher/dashboard.html`;
         break;
       case 'student':
-        window.location.href = `${prefix}student/index.html#/dashboard`;
+        window.location.href = `${prefix}student/dashboard.html`;
         break;
       default:
         window.location.href = `${prefix}index.html`;
