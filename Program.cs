@@ -1,7 +1,15 @@
+using CNPM_EnglishLearning.Services.Interfaces;
+using CNPM_EnglishLearning.Services.Implementations;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add MVC services to the container
 builder.Services.AddControllersWithViews();
+
+// Register application services (Dependency Injection)
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IExamService, ExamService>();
 
 var app = builder.Build();
 
