@@ -1,11 +1,9 @@
 # 📚 Hệ Thống Quản Lý Trung Tâm Tiếng Anh - EnglishLearning
 
-Dự án được cấu trúc theo mô hình kiến trúc **ASP.NET Core MVC Areas** chuẩn hóa kết hợp giữa **HTML5, CSS3 và JavaScript thuần (ES6 Modules)**:
-- Thư mục `areas/` phân chia 3 phân hệ độc lập: **Quản trị viên (Admin)**, **Giảng viên (Teacher)**, và **Học viên (Student)**.
-- Mỗi phân hệ gồm 3 thành phần MVC: `models/`, `controllers/`, và `views/`.
-- Toàn bộ các trang trong `views/` là các tệp **`.html` hoàn chỉnh** đã tích hợp sẵn mã giao diện và **dữ liệu mẫu (dummy/mock data)** trực quan, mở trực tiếp trên trình duyệt mà không cần cài đặt môi trường backend phức tạp.
-- Thư mục tĩnh `wwwroot/` lưu trữ toàn bộ CSS Design System, JavaScript giao diện và các thư viện UI dùng chung.
-- Thư mục `data/` lưu trữ bộ cơ sở dữ liệu mẫu mô phỏng (Database Seed / JSON).
+Dự án được xây dựng theo kiến trúc **ASP.NET Core MVC Areas (.NET 9.0)** chuẩn hóa:
+- **Backend:** 100% bằng **C# (.cs)** với đầy đủ Models (Entities, Validation Attributes), Controllers (kế thừa `Microsoft.AspNetCore.Mvc.Controller`, định tuyến `[Area]`), và Data Context (`ApplicationDbContext.cs`, `DbInitializer.cs`).
+- **Frontend / Views:** Toàn bộ 39 trang trong `views/` là các file **`.html` thuần** đã tích hợp sẵn mã giao diện và **dữ liệu mẫu (dummy/mock data)** trực quan, có thể xem trực tiếp hoặc render qua C# Controller.
+- **Tài nguyên tĩnh:** Nằm trong `wwwroot/` gồm CSS Design System, icons SVG, biểu đồ và kịch bản tương tác UI.
 
 ---
 
