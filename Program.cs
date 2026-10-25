@@ -53,6 +53,10 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = ""
 });
 
+// Middleware tự động bắt và phân giải chính xác mọi đường dẫn HTML trên cả 3 cổng
+// (chống 100% lỗi trang trắng 404 khi học viên / giảng viên / admin chuyển trang)
+app.UseMiddleware<HtmlRouteMiddleware>();
+
 app.UseRouting();
 
 app.UseAuthorization();
