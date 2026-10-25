@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using CNPM_EnglishLearning.Data.Entities;
+using CNPM_EnglishLearning.Models;
 using CNPM_EnglishLearning.Data;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
