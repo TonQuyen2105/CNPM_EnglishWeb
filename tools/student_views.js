@@ -1,0 +1,186 @@
+/**
+ * Student Views Generator with rich mock HTML
+ */
+
+export function getStudentNav(activePage) {
+  const items = [
+    { id: 'dashboard.html', label: 'Trang chủ', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>' },
+    { id: 'courses.html', label: 'Khám phá khóa học', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>' },
+    { id: 'my-classes.html', label: 'Lớp của tôi', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>' },
+    { id: 'schedule.html', label: 'Thời khóa biểu', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>' },
+    { id: 'flashcards.html', label: 'Flashcards', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>' },
+    { id: 'exams.html', label: 'Luyện thi', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>' },
+    { id: 'progress.html', label: 'Tiến độ học tập', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>' }
+  ];
+
+  return items.map(item => {
+    const isActive = activePage === item.id ? 'active' : '';
+    return `
+      <a href="${item.id}" class="student-nav-link ${isActive}">
+        <span class="nav-icon">${item.icon}</span>
+        <span>${item.label}</span>
+      </a>
+    `;
+  }).join('');
+}
+
+export function wrapStudentPage({ title, activePage, content }) {
+  const navHtml = getStudentNav(activePage);
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} - EnglishStudent</title>
+  
+  <!-- CSS Design System -->
+  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/base.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+
+  <style>
+    .student-navbar-wrapper {
+      position: sticky; top: 0; z-index: var(--z-sticky);
+      background-color: #FFFFFF; border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .student-nav-container {
+      max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .student-nav-menu {
+      display: flex; align-items: center; gap: 0.25rem; overflow-x: auto;
+    }
+    .student-nav-link {
+      display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+      border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none; white-space: nowrap;
+      transition: all var(--transition-fast);
+    }
+    .student-nav-link:hover {
+      background-color: var(--neutral-100); color: var(--primary-600);
+    }
+    .student-nav-link.active {
+      background-color: var(--primary-50); color: var(--primary-600); font-weight: 700;
+    }
+    .student-streak-pill {
+      display: flex; align-items: center; gap: 4px; padding: 4px 10px;
+      background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+      border: 1px solid #FCD34D; border-radius: var(--radius-full);
+      font-size: 0.75rem; font-weight: 700; color: #92400E;
+    }
+    .notification-wrapper { position: relative; }
+    .notification-badge-dot {
+      position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
+      border-radius: 50%; background-color: var(--danger-main); border: 2px solid white;
+    }
+  </style>
+</head>
+<body style="background-color: var(--bg-page); min-height: 100vh; display: flex; flex-direction: column;">
+  <!-- Student Top Navbar -->
+  <header class="student-navbar-wrapper">
+    <div class="student-nav-container">
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <!-- Logo -->
+        <a href="dashboard.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          </div>
+          <span style="font-size: 1.0625rem; font-weight: 800; color: var(--primary-700); white-space: nowrap;">EnglishStudent</span>
+        </a>
+
+        <!-- Desktop Nav Links -->
+        <nav class="student-nav-menu">
+          ${navHtml}
+        </nav>
+      </div>
+
+      <!-- Right Controls -->
+      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
+          <span>🔥</span>
+          <span>5 ngày</span>
+        </div>
+
+        <!-- Bell -->
+        <div class="dropdown notification-wrapper">
+          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </button>
+          <div class="dropdown-menu" id="notifications-dropdown" style="width: 300px; right: 0;">
+            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.8125rem;">
+              Thông báo học tập
+            </div>
+            <div style="max-height: 250px; overflow-y: auto;">
+              <a href="flashcards.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
+                <strong style="display: block; font-size: 0.75rem; color: var(--primary-600);">🎯 Ôn tập từ vựng hôm nay</strong>
+                <small style="color: var(--text-muted);">Bạn có 25 từ vựng đến hạn ôn tập</small>
+              </a>
+              <a href="schedule.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
+                <strong style="display: block; font-size: 0.75rem;">⏰ Buổi học lúc 18:00</strong>
+                <small style="color: var(--text-muted);">Lớp Giao Tiếp COMM-01 tại Phòng LAB-01</small>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Profile -->
+        <div class="dropdown">
+          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white;">HA</div>
+            <div style="text-align: left; line-height: 1.2;" class="d-none d-md-block">
+              <div style="font-size: 0.8125rem; font-weight: 600;">Nguyễn Hoàng Anh</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">student@el.com</div>
+            </div>
+            <span style="color: var(--text-muted);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </div>
+
+          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 200px; right: 0;">
+            <div style="padding: 0.625rem 1rem; border-bottom: 1px solid var(--border-color);">
+              <div style="font-weight: 700; font-size: 0.875rem;">Nguyễn Hoàng Anh</div>
+              <span class="badge badge-primary" style="margin-top: 4px;">Học viên năng động</span>
+            </div>
+            <a href="profile.html" class="dropdown-item">
+              <span>Hồ sơ cá nhân</span>
+            </a>
+            <a href="my-classes.html" class="dropdown-item">
+              <span>Lớp của tôi</span>
+            </a>
+            <a href="results.html" class="dropdown-item">
+              <span>Kết quả bài thi</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout">
+              <span>Đăng xuất</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content Container -->
+  <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
+    ${content}
+  </main>
+
+  <footer style="margin-top: auto; border-top: 1px solid var(--border-color); background: white; padding: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
+    © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
+  </footer>
+
+  <!-- Shared Interactive Script -->
+  <script src="../../../wwwroot/js/site.js"></script>
+</body>
+</html>`;
+}

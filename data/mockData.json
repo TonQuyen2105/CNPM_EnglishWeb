@@ -1,0 +1,4084 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@el.com",
+      "password": "123456",
+      "full_name": "Nguyễn Quản Trị",
+      "avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+      "role": "admin",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "email": "teacher@el.com",
+      "password": "123456",
+      "full_name": "ThS. Trần Thu Hà",
+      "avatar_url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+      "role": "teacher",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "email": "john.smith@el.com",
+      "password": "123456",
+      "full_name": "John Smith (TESOL)",
+      "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+      "role": "teacher",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "email": "le.minh.tri@el.com",
+      "password": "123456",
+      "full_name": "Lê Minh Trí (IELTS 8.5)",
+      "avatar_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+      "role": "teacher",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "email": "vu.hoang.anh@el.com",
+      "password": "123456",
+      "full_name": "Vũ Hoàng Ánh (TOEIC 990)",
+      "avatar_url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
+      "role": "teacher",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "email": "sarah.connor@el.com",
+      "password": "123456",
+      "full_name": "Sarah Connor (CELTA)",
+      "avatar_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+      "role": "teacher",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "email": "pham.quang.huy@el.com",
+      "password": "123456",
+      "full_name": "Phạm Quang Huy",
+      "avatar_url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
+      "role": "teacher",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "email": "student@el.com",
+      "password": "123456",
+      "full_name": "Nguyễn Văn An",
+      "avatar_url": "https://images.unsplash.com/photo-1500000000000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "email": "student2@el.com",
+      "password": "123456",
+      "full_name": "Trần Thị Bích",
+      "avatar_url": "https://images.unsplash.com/photo-1500000100000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "email": "student3@el.com",
+      "password": "123456",
+      "full_name": "Lê Hoàng Cường",
+      "avatar_url": "https://images.unsplash.com/photo-1500000200000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "email": "student4@el.com",
+      "password": "123456",
+      "full_name": "Phạm Minh Dũng",
+      "avatar_url": "https://images.unsplash.com/photo-1500000300000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "email": "student5@el.com",
+      "password": "123456",
+      "full_name": "Đặng Thảo My",
+      "avatar_url": "https://images.unsplash.com/photo-1500000400000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "email": "student6@el.com",
+      "password": "123456",
+      "full_name": "Hoàng Quốc Bảo",
+      "avatar_url": "https://images.unsplash.com/photo-1500000500000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 14,
+      "email": "student7@el.com",
+      "password": "123456",
+      "full_name": "Vũ Mai Linh",
+      "avatar_url": "https://images.unsplash.com/photo-1500000600000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 15,
+      "email": "student8@el.com",
+      "password": "123456",
+      "full_name": "Bùi Đức Trọng",
+      "avatar_url": "https://images.unsplash.com/photo-1500000700000?w=150",
+      "role": "student",
+      "is_active": 0,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 16,
+      "email": "student9@el.com",
+      "password": "123456",
+      "full_name": "Đỗ Thùy Trang",
+      "avatar_url": "https://images.unsplash.com/photo-1500000800000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 17,
+      "email": "student10@el.com",
+      "password": "123456",
+      "full_name": "Hồ Tấn Phát",
+      "avatar_url": "https://images.unsplash.com/photo-1500000900000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 18,
+      "email": "student11@el.com",
+      "password": "123456",
+      "full_name": "Ngô Bảo Châu",
+      "avatar_url": "https://images.unsplash.com/photo-1500001000000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 19,
+      "email": "student12@el.com",
+      "password": "123456",
+      "full_name": "Dương Gia Huy",
+      "avatar_url": "https://images.unsplash.com/photo-1500001100000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 20,
+      "email": "student13@el.com",
+      "password": "123456",
+      "full_name": "Trương Khánh Linh",
+      "avatar_url": "https://images.unsplash.com/photo-1500001200000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 21,
+      "email": "student14@el.com",
+      "password": "123456",
+      "full_name": "Lý Quốc Tuấn",
+      "avatar_url": "https://images.unsplash.com/photo-1500001300000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 22,
+      "email": "student15@el.com",
+      "password": "123456",
+      "full_name": "Võ Thị Hồng",
+      "avatar_url": "https://images.unsplash.com/photo-1500001400000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 23,
+      "email": "student16@el.com",
+      "password": "123456",
+      "full_name": "Phan Thanh Bình",
+      "avatar_url": "https://images.unsplash.com/photo-1500001500000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 24,
+      "email": "student17@el.com",
+      "password": "123456",
+      "full_name": "Nguyễn Tiến Đạt",
+      "avatar_url": "https://images.unsplash.com/photo-1500001600000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 25,
+      "email": "student18@el.com",
+      "password": "123456",
+      "full_name": "Lưu Thị Hạnh",
+      "avatar_url": "https://images.unsplash.com/photo-1500001700000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 26,
+      "email": "student19@el.com",
+      "password": "123456",
+      "full_name": "Đoàn Nhật Minh",
+      "avatar_url": "https://images.unsplash.com/photo-1500001800000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 27,
+      "email": "student20@el.com",
+      "password": "123456",
+      "full_name": "Cao Ngọc Ánh",
+      "avatar_url": "https://images.unsplash.com/photo-1500001900000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 28,
+      "email": "student21@el.com",
+      "password": "123456",
+      "full_name": "Tô Hải Đăng",
+      "avatar_url": "https://images.unsplash.com/photo-1500002000000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 29,
+      "email": "student22@el.com",
+      "password": "123456",
+      "full_name": "Chu Đình Trọng",
+      "avatar_url": "https://images.unsplash.com/photo-1500002100000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 30,
+      "email": "student23@el.com",
+      "password": "123456",
+      "full_name": "Mai Diệu Hương",
+      "avatar_url": "https://images.unsplash.com/photo-1500002200000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 31,
+      "email": "student24@el.com",
+      "password": "123456",
+      "full_name": "Tạ Minh Khang",
+      "avatar_url": "https://images.unsplash.com/photo-1500002300000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 32,
+      "email": "student25@el.com",
+      "password": "123456",
+      "full_name": "Đinh Phương Thảo",
+      "avatar_url": "https://images.unsplash.com/photo-1500002400000?w=150",
+      "role": "student",
+      "is_active": 0,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 33,
+      "email": "student26@el.com",
+      "password": "123456",
+      "full_name": "Lương Thế Vinh",
+      "avatar_url": "https://images.unsplash.com/photo-1500002500000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 34,
+      "email": "student27@el.com",
+      "password": "123456",
+      "full_name": "Bạch Ngọc Trâm",
+      "avatar_url": "https://images.unsplash.com/photo-1500002600000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 35,
+      "email": "student28@el.com",
+      "password": "123456",
+      "full_name": "Thái Hoàng Long",
+      "avatar_url": "https://images.unsplash.com/photo-1500002700000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 36,
+      "email": "student29@el.com",
+      "password": "123456",
+      "full_name": "Trịnh Kim Ngân",
+      "avatar_url": "https://images.unsplash.com/photo-1500002800000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 37,
+      "email": "student30@el.com",
+      "password": "123456",
+      "full_name": "Quách Tuấn Du",
+      "avatar_url": "https://images.unsplash.com/photo-1500002900000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 38,
+      "email": "student31@el.com",
+      "password": "123456",
+      "full_name": "Đậu Thị Lan",
+      "avatar_url": "https://images.unsplash.com/photo-1500003000000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 39,
+      "email": "student32@el.com",
+      "password": "123456",
+      "full_name": "Kiều Anh Tuấn",
+      "avatar_url": "https://images.unsplash.com/photo-1500003100000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 40,
+      "email": "student33@el.com",
+      "password": "123456",
+      "full_name": "Nghiêm Xuân Mạnh",
+      "avatar_url": "https://images.unsplash.com/photo-1500003200000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 41,
+      "email": "student34@el.com",
+      "password": "123456",
+      "full_name": "Ôn Gia Bảo",
+      "avatar_url": "https://images.unsplash.com/photo-1500003300000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 42,
+      "email": "student35@el.com",
+      "password": "123456",
+      "full_name": "Tăng Thanh Hà",
+      "avatar_url": "https://images.unsplash.com/photo-1500003400000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 43,
+      "email": "student36@el.com",
+      "password": "123456",
+      "full_name": "Vương Đình Khang",
+      "avatar_url": "https://images.unsplash.com/photo-1500003500000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 44,
+      "email": "student37@el.com",
+      "password": "123456",
+      "full_name": "Ân Thị Yến",
+      "avatar_url": "https://images.unsplash.com/photo-1500003600000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 45,
+      "email": "student38@el.com",
+      "password": "123456",
+      "full_name": "Hứa Vĩ Văn",
+      "avatar_url": "https://images.unsplash.com/photo-1500003700000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 46,
+      "email": "student39@el.com",
+      "password": "123456",
+      "full_name": "La Thị Bông",
+      "avatar_url": "https://images.unsplash.com/photo-1500003800000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 47,
+      "email": "student40@el.com",
+      "password": "123456",
+      "full_name": "Cù Minh Tuấn",
+      "avatar_url": "https://images.unsplash.com/photo-1500003900000?w=150",
+      "role": "student",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "teachers": [
+    {
+      "id": 1,
+      "user_id": 2,
+      "bio": "Thạc sĩ Ngôn ngữ Anh tại ĐH Quốc Gia HN với hơn 8 năm giảng dạy luyện thi IELTS và Giao tiếp chuyên sâu.",
+      "qualification": "MA in Applied Linguistics, IELTS 8.5, TESOL",
+      "is_verified": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "user_id": 3,
+      "bio": "Chuyên gia bản ngữ đến từ Melbourne, Úc, chuyên trách phát âm nâng cao và phản xạ giao tiếp thương mại.",
+      "qualification": "Bachelor of Education, CELTA Grade A",
+      "is_verified": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "user_id": 4,
+      "bio": "Cựu giảng viên khoa tiếng Anh, chuyên gia luyện kỹ năng Writing & Speaking band 8.0+.",
+      "qualification": "IELTS 8.5 Overall, Cử nhân Sư phạm Tiếng Anh",
+      "is_verified": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "user_id": 5,
+      "bio": "Kinh nghiệm luyện thi TOEIC 4 kỹ năng hơn 6 năm với phương pháp tư duy sơ đồ và bẫy đề thi.",
+      "qualification": "TOEIC 990/990, Chứng chỉ giảng dạy quốc tế TESOL",
+      "is_verified": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "user_id": 6,
+      "bio": "Giáo viên bản ngữ Anh Quốc, nhiệt huyết với phương pháp phản xạ tương tác cho học sinh cơ bản và thiếu nhi.",
+      "qualification": "BA in English Literature, Trinity CertTESOL",
+      "is_verified": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "user_id": 7,
+      "bio": "Giáo viên trẻ triển vọng, đang hoàn tất hồ sơ kiểm định chuyên môn tại trung tâm.",
+      "qualification": "Cử nhân Ngôn ngữ Anh, IELTS 7.5 (Đang thẩm định hồ sơ)",
+      "is_verified": 0,
+      "created_at": "2026-10-18T08:00:00.000Z",
+      "updated_at": "2026-10-18T08:00:00.000Z"
+    }
+  ],
+  "subjects": [
+    {
+      "id": 1,
+      "name": "Tiếng Anh Giao Tiếp",
+      "description": "Rèn luyện phản xạ nghe nói tự nhiên, phong thái tự tin trong đời sống và công việc.",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Luyện Thi IELTS",
+      "description": "Chiến thuật làm bài và phát triển toàn diện 4 kỹ năng hướng tới band điểm mục tiêu.",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Luyện Thi TOEIC",
+      "description": "Củng cố từ vựng doanh nghiệp, ngữ pháp trọng tâm và bí quyết xử lý bài thi chuẩn xác.",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "Ngữ Pháp Chuyên Sâu",
+      "description": "Hệ thống hóa toàn bộ cấu trúc câu, thì và cách ứng dụng linh hoạt trong văn viết.",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Phát Âm Chuẩn Quốc Tế",
+      "description": "Chuẩn hóa 44 âm IPA, trọng âm từ, nối âm và ngữ điệu tự nhiên như người bản xứ.",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "name": "Tiếng Anh Trẻ Em & Thiếu Nhi",
+      "description": "Chương trình trực quan qua hình ảnh và trò chơi giúp các bé tiếp thu ngôn ngữ tự nhiên.",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "courses": [
+    {
+      "id": 1,
+      "subject_id": 1,
+      "title": "Tiếng Anh Giao Tiếp Cơ Bản (A1 - A2)",
+      "description": "Dành cho người mất gốc, làm quen với cách chào hỏi, giới thiệu bản thân và các chủ đề hàng ngày.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400",
+      "level": "beginner",
+      "price": 2500000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "subject_id": 1,
+      "title": "Tiếng Anh Giao Tiếp Đột Phá (B1 - B2)",
+      "description": "Thảo luận các chủ đề xã hội, thuyết trình tự tin và phản biện ý kiến linh hoạt.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400",
+      "level": "intermediate",
+      "price": 3200000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "subject_id": 1,
+      "title": "Tiếng Anh Thương Mại & Đàm Phán Chuyên Nghiệp",
+      "description": "Làm chủ giao tiếp trong môi trường công sở đa quốc gia, đàm phán hợp đồng và viết email chuyên nghiệp.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400",
+      "level": "advanced",
+      "price": 4500000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "subject_id": 2,
+      "title": "IELTS Foundation - Nền Tảng Band 4.5 - 5.5",
+      "description": "Xây dựng nền tảng từ vựng học thuật, ngữ pháp cốt lõi và làm quen định dạng bài thi IELTS.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400",
+      "level": "beginner",
+      "price": 3800000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "subject_id": 2,
+      "title": "IELTS Master Target 6.5 - 7.0",
+      "description": "Chiến thuật nâng cao cho cả 4 kỹ năng, tối ưu hóa điểm số Task 1 và Task 2 bài thi Writing.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400",
+      "level": "intermediate",
+      "price": 5200000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "subject_id": 2,
+      "title": "IELTS Advanced Expert 7.5 - 8.5",
+      "description": "Chinh phục band điểm xuất sắc với tư duy phản biện cao cấp, từ vựng C1-C2 và phong thái tự nhiên.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400",
+      "level": "advanced",
+      "price": 6800000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "subject_id": 3,
+      "title": "TOEIC Căn Bản Mục Tiêu 450 - 550",
+      "description": "Làm quen cấu trúc Listening và Reading, mẹo tránh bẫy thời gian thi trắc nghiệm.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1513258496099-48168024aec0?w=400",
+      "level": "beginner",
+      "price": 2200000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "subject_id": 3,
+      "title": "TOEIC Bứt Phá 4 Kỹ Năng 750+",
+      "description": "Luyện giải đề thực chiến kết hợp kỹ năng Speaking & Writing chuẩn quốc tế ETS.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400",
+      "level": "intermediate",
+      "price": 3600000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "subject_id": 4,
+      "title": "Ngữ Pháp Nền Tảng Cho Người Mới Bắt Đầu",
+      "description": "Nắm vững 12 thì cơ bản, cấu trúc câu đơn - câu ghép và các loại từ thông dụng.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400",
+      "level": "beginner",
+      "price": 1800000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "subject_id": 4,
+      "title": "Ngữ Pháp Học Thuật & Viết Luận Nâng Cao",
+      "description": "Mệnh đề quan hệ rút gọn, đảo ngữ, câu điều kiện hỗn hợp và phong cách viết học thuật.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400",
+      "level": "advanced",
+      "price": 2900000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "subject_id": 5,
+      "title": "Phát Âm IPA & Ngữ Điệu Tự Nhiên",
+      "description": "Triệt tiêu ngọng âm đuôi, làm chủ nguyên âm đôi và cách luyến láy như người bản ngữ.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400",
+      "level": "beginner",
+      "price": 1900000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "subject_id": 6,
+      "title": "Tiếng Anh Vui Nhộn Cho Trẻ Em (Cambridge Starters)",
+      "description": "Khơi gợi niềm say mê tiếng Anh cho bé thông qua bài hát, truyện kể hoạt họa và tương tác.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400",
+      "level": "beginner",
+      "price": 3000000,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "course_id": 1,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "course_id": 1,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "course_id": 1,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "course_id": 1,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "course_id": 1,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "course_id": 1,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "course_id": 1,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "course_id": 1,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "course_id": 2,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "course_id": 2,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "course_id": 2,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "course_id": 2,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "course_id": 2,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 14,
+      "course_id": 2,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 15,
+      "course_id": 2,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 16,
+      "course_id": 2,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 17,
+      "course_id": 3,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 18,
+      "course_id": 3,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 19,
+      "course_id": 3,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 20,
+      "course_id": 3,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 21,
+      "course_id": 3,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 22,
+      "course_id": 3,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 23,
+      "course_id": 3,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 24,
+      "course_id": 3,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 25,
+      "course_id": 4,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 26,
+      "course_id": 4,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 27,
+      "course_id": 4,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 28,
+      "course_id": 4,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 29,
+      "course_id": 4,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 30,
+      "course_id": 4,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 31,
+      "course_id": 4,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 32,
+      "course_id": 4,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 33,
+      "course_id": 5,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 34,
+      "course_id": 5,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 35,
+      "course_id": 5,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 36,
+      "course_id": 5,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 37,
+      "course_id": 5,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 38,
+      "course_id": 5,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 39,
+      "course_id": 5,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 40,
+      "course_id": 5,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 41,
+      "course_id": 6,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 42,
+      "course_id": 6,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 43,
+      "course_id": 6,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 44,
+      "course_id": 6,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 45,
+      "course_id": 6,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 46,
+      "course_id": 6,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 47,
+      "course_id": 6,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 48,
+      "course_id": 6,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 49,
+      "course_id": 7,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 50,
+      "course_id": 7,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 51,
+      "course_id": 7,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 52,
+      "course_id": 7,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 53,
+      "course_id": 7,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 54,
+      "course_id": 7,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 55,
+      "course_id": 7,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 56,
+      "course_id": 7,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 57,
+      "course_id": 8,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 58,
+      "course_id": 8,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 59,
+      "course_id": 8,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 60,
+      "course_id": 8,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 61,
+      "course_id": 8,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 62,
+      "course_id": 8,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 63,
+      "course_id": 8,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 64,
+      "course_id": 8,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 65,
+      "course_id": 9,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 66,
+      "course_id": 9,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 67,
+      "course_id": 9,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 68,
+      "course_id": 9,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 69,
+      "course_id": 9,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 70,
+      "course_id": 9,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 71,
+      "course_id": 9,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 72,
+      "course_id": 9,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 73,
+      "course_id": 10,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 74,
+      "course_id": 10,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 75,
+      "course_id": 10,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 76,
+      "course_id": 10,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 77,
+      "course_id": 10,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 78,
+      "course_id": 10,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 79,
+      "course_id": 10,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 80,
+      "course_id": 10,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 81,
+      "course_id": 11,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 82,
+      "course_id": 11,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 83,
+      "course_id": 11,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 84,
+      "course_id": 11,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 85,
+      "course_id": 11,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 86,
+      "course_id": 11,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 87,
+      "course_id": 11,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 88,
+      "course_id": 11,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 89,
+      "course_id": 12,
+      "title": "Bài 1: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 1,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 1 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 90,
+      "course_id": 12,
+      "title": "Bài 2: Cấu trúc ngữ pháp & Quy tắc phân biệt",
+      "order_index": 2,
+      "content_type": "grammar",
+      "content": "Nội dung học tập chi tiết của bài số 2 về phần GRAMMAR. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 91,
+      "course_id": 12,
+      "title": "Bài 3: Luyện nghe phản xạ & Bắt từ khóa then chốt",
+      "order_index": 3,
+      "content_type": "listening",
+      "content": "Nội dung học tập chi tiết của bài số 3 về phần LISTENING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 92,
+      "course_id": 12,
+      "title": "Bài 4: Kỹ năng Skimming, Scanning & Đọc hiểu nhanh",
+      "order_index": 4,
+      "content_type": "reading",
+      "content": "Nội dung học tập chi tiết của bài số 4 về phần READING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 93,
+      "course_id": 12,
+      "title": "Bài 5: Thực hành phát âm & Đối thoại tương tác",
+      "order_index": 5,
+      "content_type": "speaking",
+      "content": "Nội dung học tập chi tiết của bài số 5 về phần SPEAKING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 94,
+      "course_id": 12,
+      "title": "Bài 6: Kỹ thuật diễn đạt câu & Viết đoạn văn mạch lạc",
+      "order_index": 6,
+      "content_type": "writing",
+      "content": "Nội dung học tập chi tiết của bài số 6 về phần WRITING. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 95,
+      "course_id": 12,
+      "title": "Bài 7: Bài kiểm tra trắc nghiệm đánh giá tiến độ",
+      "order_index": 7,
+      "content_type": "quiz",
+      "content": "Nội dung học tập chi tiết của bài số 7 về phần QUIZ. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 96,
+      "course_id": 12,
+      "title": "Bài 8: Từ vựng trọng tâm & Ngữ cảnh ứng dụng",
+      "order_index": 8,
+      "content_type": "vocabulary",
+      "content": "Nội dung học tập chi tiết của bài số 8 về phần VOCABULARY. Tài liệu bao gồm lý thuyết, ví dụ phân tích thực tế và bài tập ứng dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "classrooms": [
+    {
+      "id": 1,
+      "name": "Phòng Lab 101",
+      "location": "Tầng 1 - Tòa nhà A",
+      "capacity": 25,
+      "description": "Trang bị 25 máy tính tai nghe chuẩn quốc tế",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Phòng Hội Thảo 202",
+      "location": "Tầng 2 - Tòa nhà A",
+      "capacity": 35,
+      "description": "Phòng đa năng có máy chiếu 4K và micro không dây",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Phòng Giao Tiếp 301",
+      "location": "Tầng 3 - Tòa nhà B",
+      "capacity": 18,
+      "description": "Bàn tròn tương tác, điều hòa và bảng thông minh",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "Phòng IELTS VIP 401",
+      "location": "Tầng 4 - Tòa nhà B",
+      "capacity": 15,
+      "description": "Không gian yên tĩnh chuyên sâu cho lớp kèm VIP",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Phòng Kids English 102",
+      "location": "Tầng 1 - Tòa nhà B",
+      "capacity": 20,
+      "description": "Thảm trải sàn màu sắc, đồ chơi và sách truyện hình",
+      "is_active": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "time_slots": [
+    {
+      "id": 1,
+      "name": "Ca Sáng 1",
+      "start_time": "08:00",
+      "end_time": "09:30",
+      "description": "Thứ 2, 4, 6 sáng",
+      "is_active": 1
+    },
+    {
+      "id": 2,
+      "name": "Ca Sáng 2",
+      "start_time": "09:45",
+      "end_time": "11:15",
+      "description": "Thứ 3, 5, 7 sáng",
+      "is_active": 1
+    },
+    {
+      "id": 3,
+      "name": "Ca Chiều 1",
+      "start_time": "14:00",
+      "end_time": "15:30",
+      "description": "Chiều các ngày",
+      "is_active": 1
+    },
+    {
+      "id": 4,
+      "name": "Ca Chiều 2",
+      "start_time": "15:45",
+      "end_time": "17:15",
+      "description": "Chiều muộn",
+      "is_active": 1
+    },
+    {
+      "id": 5,
+      "name": "Ca Tối 1",
+      "start_time": "17:45",
+      "end_time": "19:15",
+      "description": "Tối sớm",
+      "is_active": 1
+    },
+    {
+      "id": 6,
+      "name": "Ca Tối 2",
+      "start_time": "19:30",
+      "end_time": "21:00",
+      "description": "Tối muộn",
+      "is_active": 1
+    }
+  ],
+  "course_classes": [
+    {
+      "id": 1,
+      "course_id": 1,
+      "class_code": "COMM-01",
+      "class_name": "Giao Tiếp Cơ Bản K01",
+      "start_date": "2026-09-01",
+      "end_date": "2026-11-15",
+      "max_students": 20,
+      "price": 2500000,
+      "status": "ongoing",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "course_id": 2,
+      "class_name": "Giao Tiếp Đột Phá K02",
+      "class_code": "COMM-02",
+      "start_date": "2026-09-10",
+      "end_date": "2026-11-20",
+      "max_students": 18,
+      "price": 3200000,
+      "status": "ongoing",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "course_id": 4,
+      "class_code": "IELTS-F01",
+      "class_name": "IELTS Nền Tảng K01",
+      "start_date": "2026-11-10",
+      "end_date": "2027-01-20",
+      "max_students": 16,
+      "price": 3800000,
+      "status": "upcoming",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "course_id": 5,
+      "class_code": "IELTS-M01",
+      "class_name": "IELTS Master K01",
+      "start_date": "2026-08-15",
+      "end_date": "2026-10-20",
+      "max_students": 15,
+      "price": 5200000,
+      "status": "completed",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "course_id": 6,
+      "class_code": "IELTS-E01",
+      "class_name": "IELTS Expert K01",
+      "start_date": "2026-10-01",
+      "end_date": "2026-12-15",
+      "max_students": 12,
+      "price": 6800000,
+      "status": "ongoing",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "course_id": 7,
+      "class_code": "TOEIC-B01",
+      "class_name": "TOEIC Căn Bản K01",
+      "start_date": "2026-07-01",
+      "end_date": "2026-09-15",
+      "max_students": 22,
+      "price": 2200000,
+      "status": "completed",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "course_id": 8,
+      "class_code": "TOEIC-A01",
+      "class_name": "TOEIC 4 Kỹ Năng K01",
+      "start_date": "2026-11-01",
+      "end_date": "2027-01-15",
+      "max_students": 20,
+      "price": 3600000,
+      "status": "upcoming",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "course_id": 9,
+      "class_code": "GRAM-01",
+      "class_name": "Ngữ Pháp Nền Tảng K01",
+      "start_date": "2026-09-05",
+      "end_date": "2026-11-05",
+      "max_students": 25,
+      "price": 1800000,
+      "status": "ongoing",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "course_id": 11,
+      "class_code": "PRON-01",
+      "class_name": "Phát Âm IPA K01 (Tạm hoãn)",
+      "start_date": "2026-10-15",
+      "end_date": "2026-12-01",
+      "max_students": 15,
+      "price": 1900000,
+      "status": "cancelled",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "course_id": 12,
+      "class_code": "KIDS-01",
+      "class_name": "Tiếng Anh Thiếu Nhi K01",
+      "start_date": "2026-11-15",
+      "end_date": "2027-02-15",
+      "max_students": 15,
+      "price": 3000000,
+      "status": "upcoming",
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "class_teachers": [
+    {
+      "id": 1,
+      "class_id": 1,
+      "teacher_id": 1,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "class_id": 1,
+      "teacher_id": 2,
+      "role": "assistant",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "class_id": 2,
+      "teacher_id": 2,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "class_id": 3,
+      "teacher_id": 3,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "class_id": 4,
+      "teacher_id": 1,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "class_id": 5,
+      "teacher_id": 3,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "class_id": 6,
+      "teacher_id": 4,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "class_id": 7,
+      "teacher_id": 4,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "class_id": 8,
+      "teacher_id": 1,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "class_id": 10,
+      "teacher_id": 5,
+      "role": "main",
+      "assigned_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "class_schedules": [
+    {
+      "id": 1,
+      "class_id": 1,
+      "classroom_id": 3,
+      "time_slot_id": 5,
+      "day_of_week": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "class_id": 1,
+      "classroom_id": 3,
+      "time_slot_id": 5,
+      "day_of_week": 4,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "class_id": 2,
+      "classroom_id": 2,
+      "time_slot_id": 6,
+      "day_of_week": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "class_id": 2,
+      "classroom_id": 2,
+      "time_slot_id": 6,
+      "day_of_week": 5,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "class_id": 3,
+      "classroom_id": 4,
+      "time_slot_id": 5,
+      "day_of_week": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "class_id": 3,
+      "classroom_id": 4,
+      "time_slot_id": 5,
+      "day_of_week": 6,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "class_id": 5,
+      "classroom_id": 4,
+      "time_slot_id": 6,
+      "day_of_week": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "class_id": 5,
+      "classroom_id": 4,
+      "time_slot_id": 6,
+      "day_of_week": 5,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "class_id": 8,
+      "classroom_id": 1,
+      "time_slot_id": 3,
+      "day_of_week": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "class_id": 8,
+      "classroom_id": 1,
+      "time_slot_id": 3,
+      "day_of_week": 4,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "class_id": 10,
+      "classroom_id": 5,
+      "time_slot_id": 1,
+      "day_of_week": 7,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "class_lessons": [
+    {
+      "id": 1,
+      "class_id": 1,
+      "lesson_id": 1,
+      "schedule_id": 1,
+      "teacher_id": 1,
+      "schedule_date": "2026-09-13",
+      "status": "completed",
+      "notes": "Học sinh tiếp thu tốt, phản xạ nhanh",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "class_id": 1,
+      "lesson_id": 2,
+      "schedule_id": 1,
+      "teacher_id": 1,
+      "schedule_date": "2026-09-16",
+      "status": "completed",
+      "notes": "Học sinh tiếp thu tốt, phản xạ nhanh",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "class_id": 1,
+      "lesson_id": 3,
+      "schedule_id": 1,
+      "teacher_id": 1,
+      "schedule_date": "2026-09-19",
+      "status": "completed",
+      "notes": "Học sinh tiếp thu tốt, phản xạ nhanh",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "class_id": 1,
+      "lesson_id": 4,
+      "schedule_id": 1,
+      "teacher_id": 1,
+      "schedule_date": "2026-09-22",
+      "status": "completed",
+      "notes": "Học sinh tiếp thu tốt, phản xạ nhanh",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "class_id": 1,
+      "lesson_id": 5,
+      "schedule_id": 1,
+      "teacher_id": 1,
+      "schedule_date": "2026-09-25",
+      "status": "scheduled",
+      "notes": "",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "class_id": 1,
+      "lesson_id": 6,
+      "schedule_id": 1,
+      "teacher_id": 1,
+      "schedule_date": "2026-09-28",
+      "status": "scheduled",
+      "notes": "",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "class_id": 4,
+      "lesson_id": 1,
+      "schedule_id": 9,
+      "teacher_id": 1,
+      "schedule_date": "2026-10-14",
+      "status": "completed",
+      "notes": "Lớp làm bài tập ngữ pháp và bài đọc đầy đủ",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "class_id": 4,
+      "lesson_id": 2,
+      "schedule_id": 9,
+      "teacher_id": 1,
+      "schedule_date": "2026-10-16",
+      "status": "completed",
+      "notes": "Lớp làm bài tập ngữ pháp và bài đọc đầy đủ",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "class_id": 4,
+      "lesson_id": 3,
+      "schedule_id": 9,
+      "teacher_id": 1,
+      "schedule_date": "2026-10-18",
+      "status": "scheduled",
+      "notes": "",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "class_id": 4,
+      "lesson_id": 4,
+      "schedule_id": 9,
+      "teacher_id": 1,
+      "schedule_date": "2026-10-20",
+      "status": "scheduled",
+      "notes": "",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "class_id": 4,
+      "lesson_id": 5,
+      "schedule_id": 9,
+      "teacher_id": 1,
+      "schedule_date": "2026-10-22",
+      "status": "scheduled",
+      "notes": "",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "class_id": 4,
+      "lesson_id": 1,
+      "schedule_id": 9,
+      "teacher_id": 1,
+      "schedule_date": "2026-10-24",
+      "status": "scheduled",
+      "notes": "",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "enrollments": [
+    {
+      "id": 1,
+      "user_id": 8,
+      "class_id": 1,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "user_id": 9,
+      "class_id": 1,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "user_id": 10,
+      "class_id": 1,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "user_id": 11,
+      "class_id": 1,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 5,
+      "user_id": 12,
+      "class_id": 1,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 6,
+      "user_id": 13,
+      "class_id": 1,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 7,
+      "user_id": 14,
+      "class_id": 1,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 8,
+      "user_id": 15,
+      "class_id": 1,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 9,
+      "user_id": 16,
+      "class_id": 2,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 10,
+      "user_id": 17,
+      "class_id": 2,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 11,
+      "user_id": 18,
+      "class_id": 2,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 12,
+      "user_id": 19,
+      "class_id": 2,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 13,
+      "user_id": 20,
+      "class_id": 2,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 14,
+      "user_id": 21,
+      "class_id": 2,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 15,
+      "user_id": 22,
+      "class_id": 3,
+      "enrolled_at": "2026-10-18T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 16,
+      "user_id": 23,
+      "class_id": 3,
+      "enrolled_at": "2026-10-18T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 17,
+      "user_id": 24,
+      "class_id": 3,
+      "enrolled_at": "2026-10-18T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 18,
+      "user_id": 25,
+      "class_id": 3,
+      "enrolled_at": "2026-10-18T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 19,
+      "user_id": 26,
+      "class_id": 3,
+      "enrolled_at": "2026-10-18T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 20,
+      "user_id": 27,
+      "class_id": 4,
+      "enrolled_at": "2026-08-10",
+      "status": "completed"
+    },
+    {
+      "id": 21,
+      "user_id": 28,
+      "class_id": 4,
+      "enrolled_at": "2026-08-10",
+      "status": "completed"
+    },
+    {
+      "id": 22,
+      "user_id": 29,
+      "class_id": 4,
+      "enrolled_at": "2026-08-10",
+      "status": "completed"
+    },
+    {
+      "id": 23,
+      "user_id": 30,
+      "class_id": 4,
+      "enrolled_at": "2026-08-10",
+      "status": "completed"
+    },
+    {
+      "id": 24,
+      "user_id": 31,
+      "class_id": 4,
+      "enrolled_at": "2026-08-10",
+      "status": "completed"
+    },
+    {
+      "id": 25,
+      "user_id": 32,
+      "class_id": 4,
+      "enrolled_at": "2026-08-10",
+      "status": "completed"
+    },
+    {
+      "id": 26,
+      "user_id": 33,
+      "class_id": 5,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 27,
+      "user_id": 34,
+      "class_id": 5,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 28,
+      "user_id": 35,
+      "class_id": 5,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 29,
+      "user_id": 36,
+      "class_id": 5,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 30,
+      "user_id": 37,
+      "class_id": 5,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "id": 31,
+      "user_id": 8,
+      "class_id": 8,
+      "enrolled_at": "2026-09-15T08:00:00.000Z",
+      "status": "active"
+    }
+  ],
+  "user_progress": [
+    {
+      "id": 1,
+      "user_id": 8,
+      "lesson_id": 1,
+      "score": 90,
+      "is_completed": 1,
+      "completed_at": "2026-10-18T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "user_id": 8,
+      "lesson_id": 2,
+      "score": 95,
+      "is_completed": 1,
+      "completed_at": "2026-10-18T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "user_id": 8,
+      "lesson_id": 3,
+      "score": 85,
+      "is_completed": 1,
+      "completed_at": "2026-10-18T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "user_id": 8,
+      "lesson_id": 4,
+      "score": 90,
+      "is_completed": 1,
+      "completed_at": "2026-10-18T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "user_id": 8,
+      "lesson_id": 5,
+      "score": 95,
+      "is_completed": 1,
+      "completed_at": "2026-10-18T08:00:00.000Z"
+    }
+  ],
+  "course_reviews": [
+    {
+      "id": 1,
+      "user_id": 8,
+      "course_id": 1,
+      "rating": 5,
+      "comment": "Khoá học rất thực tế, thầy cô nhiệt tình chỉnh sửa phát âm từng từ.",
+      "created_at": "2026-10-18T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "user_id": 9,
+      "course_id": 1,
+      "rating": 5,
+      "comment": "Nội dung dễ hiểu, các buổi thực hành nói theo cặp rất vui và bổ ích.",
+      "created_at": "2026-10-18T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "user_id": 10,
+      "course_id": 1,
+      "rating": 4,
+      "comment": "Giáo trình rõ ràng, ước gì có thêm nhiều bài tập nói nâng cao hơn một chút.",
+      "created_at": "2026-10-18T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "user_id": 27,
+      "course_id": 4,
+      "rating": 5,
+      "comment": "Nhờ khoá học này mình đã tự tin thi đạt IELTS 6.0 vượt mục tiêu ban đầu!",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "user_id": 28,
+      "course_id": 4,
+      "rating": 5,
+      "comment": "Thầy Trí dạy kỹ năng viết Writing Task 1 cực kỳ tư duy và dễ áp dụng.",
+      "created_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "flashcards": [
+    {
+      "id": 1,
+      "user_id": 8,
+      "word": "Accomplish",
+      "meaning": "Hoàn thành, đạt được mục tiêu",
+      "phonetic": "/əˈkʌm.plɪʃ/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/accomplish--_gb_1.mp3",
+      "example_sentence": "She accomplished such a lot during her visit.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "user_id": 8,
+      "word": "Beneficial",
+      "meaning": "Có lợi, mang lại lợi ích",
+      "phonetic": "/ˌben.ɪˈfɪʃ.əl/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/beneficial--_gb_1.mp3",
+      "example_sentence": "A good diet is beneficial to health.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "user_id": 8,
+      "word": "Comprehensive",
+      "meaning": "Toàn diện, bao quát",
+      "phonetic": "/ˌkɒm.prɪˈhen.sɪv/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/comprehensive--_gb_1.mp3",
+      "example_sentence": "We offer a comprehensive training program.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "user_id": 8,
+      "word": "Demonstrate",
+      "meaning": "Chứng minh, minh họa",
+      "phonetic": "/ˈdem.ən.streɪt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/demonstrate--_gb_1.mp3",
+      "example_sentence": "The numbers clearly demonstrate the success.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "user_id": 8,
+      "word": "Efficient",
+      "meaning": "Hiệu quả, có năng suất cao",
+      "phonetic": "/ɪˈfɪʃ.ənt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/efficient--_gb_1.mp3",
+      "example_sentence": "The new system is much more efficient.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "user_id": 8,
+      "word": "Fluctuate",
+      "meaning": "Dao động, biến động liên tục",
+      "phonetic": "/ˈflʌk.tʃu.eɪt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/fluctuate--_gb_1.mp3",
+      "example_sentence": "Vegetable prices fluctuate according to the season.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "user_id": 8,
+      "word": "Generate",
+      "meaning": "Tạo ra, phát sinh",
+      "phonetic": "/ˈdʒen.ə.reɪt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/generate--_gb_1.mp3",
+      "example_sentence": "The program will generate new jobs.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "user_id": 8,
+      "word": "Hesitate",
+      "meaning": "Do dự, ngập ngừng",
+      "phonetic": "/ˈhez.ɪ.teɪt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/hesitate--_gb_1.mp3",
+      "example_sentence": "Do not hesitate to contact us if you need help.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "user_id": 8,
+      "word": "Implement",
+      "meaning": "Thi hành, triển khai",
+      "phonetic": "/ˈɪm.plɪ.ment/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/implement--_gb_1.mp3",
+      "example_sentence": "The changes will be implemented next month.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "user_id": 8,
+      "word": "Justify",
+      "meaning": "Bào chữa, biện minh hợp lý",
+      "phonetic": "/ˈdʒʌs.tɪ.faɪ/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/justify--_gb_1.mp3",
+      "example_sentence": "How can they justify paying such huge salaries?",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "user_id": 8,
+      "word": "Lucrative",
+      "meaning": "Sinh lợi cao, béo bở",
+      "phonetic": "/ˈluː.krə.tɪv/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/lucrative--_gb_1.mp3",
+      "example_sentence": "The merger proved to be very lucrative.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "user_id": 8,
+      "word": "Motivate",
+      "meaning": "Thúc đẩy, tạo động lực",
+      "phonetic": "/ˈməʊ.tɪ.veɪt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/motivate--_gb_1.mp3",
+      "example_sentence": "Teaching methods should motivate students to learn.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "user_id": 8,
+      "word": "Negotiate",
+      "meaning": "Đàm phán, thương lượng",
+      "phonetic": "/nəˈɡəʊ.ʃi.eɪt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/negotiate--_gb_1.mp3",
+      "example_sentence": "We need to negotiate a fair agreement.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 14,
+      "user_id": 8,
+      "word": "Obstacle",
+      "meaning": "Trở ngại, rào cản",
+      "phonetic": "/ˈɒb.stə.kəl/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/obstacle--_gb_1.mp3",
+      "example_sentence": "Fear of failure is the biggest obstacle.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 15,
+      "user_id": 8,
+      "word": "Prominent",
+      "meaning": "Nổi bật, xuất chúng",
+      "phonetic": "/ˈprɒm.ɪ.nənt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/prominent--_gb_1.mp3",
+      "example_sentence": "She is a prominent figure in education.",
+      "next_review_at": "2026-10-24T00:00:00.000Z",
+      "interval_days": 1,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 16,
+      "user_id": 8,
+      "word": "Qualitative",
+      "meaning": "Thuộc về chất lượng, định tính",
+      "phonetic": "/ˈkwɒl.ɪ.tə.tɪv/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/qualitative--_gb_1.mp3",
+      "example_sentence": "There was a qualitative change in his work.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 17,
+      "user_id": 8,
+      "word": "Resilient",
+      "meaning": "Kiên cường, mau hồi phục",
+      "phonetic": "/rɪˈzɪl.jənt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/resilient--_gb_1.mp3",
+      "example_sentence": "Children are remarkably resilient.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 18,
+      "user_id": 8,
+      "word": "Substantial",
+      "meaning": "Đáng kể, quan trọng",
+      "phonetic": "/səbˈstæn.ʃəl/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/substantial--_gb_1.mp3",
+      "example_sentence": "He won a substantial sum of money.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 19,
+      "user_id": 8,
+      "word": "Tolerant",
+      "meaning": "Khoan dung, chịu đựng tốt",
+      "phonetic": "/ˈtɒl.ər.ənt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/tolerant--_gb_1.mp3",
+      "example_sentence": "We must be tolerant of different opinions.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 20,
+      "user_id": 8,
+      "word": "Unprecedented",
+      "meaning": "Chưa từng có tiền lệ",
+      "phonetic": "/ʌnˈpres.ɪ.den.tɪd/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/unprecedented--_gb_1.mp3",
+      "example_sentence": "This situation is completely unprecedented.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 21,
+      "user_id": 8,
+      "word": "Versatile",
+      "meaning": "Linh hoạt, đa năng",
+      "phonetic": "/ˈvɜː.sə.taɪl/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/versatile--_gb_1.mp3",
+      "example_sentence": "He is a versatile actor.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 22,
+      "user_id": 8,
+      "word": "Widespread",
+      "meaning": "Lan rộng, phổ biến",
+      "phonetic": "/ˌwaɪdˈspred/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/widespread--_gb_1.mp3",
+      "example_sentence": "The storm caused widespread damage.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 23,
+      "user_id": 8,
+      "word": "Yield",
+      "meaning": "Sản lượng, mang lại",
+      "phonetic": "/jiːld/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/yield--_gb_1.mp3",
+      "example_sentence": "The investment yielded high returns.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 24,
+      "user_id": 8,
+      "word": "Zealous",
+      "meaning": "Sốt sắng, nhiệt tâm",
+      "phonetic": "/ˈzel.əs/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/zealous--_gb_1.mp3",
+      "example_sentence": "He is a zealous supporter of green energy.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 25,
+      "user_id": 8,
+      "word": "Ambiguous",
+      "meaning": "Mơ hồ, nước đôi",
+      "phonetic": "/æmˈbɪɡ.ju.əs/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/ambiguous--_gb_1.mp3",
+      "example_sentence": "The contract wording was ambiguous.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 26,
+      "user_id": 8,
+      "word": "Collaborate",
+      "meaning": "Hợp tác, cộng tác",
+      "phonetic": "/kəˈlæb.ə.reɪt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/collaborate--_gb_1.mp3",
+      "example_sentence": "Two teams collaborated on the research.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 27,
+      "user_id": 8,
+      "word": "Deteriorate",
+      "meaning": "Xuống cấp, xấu đi",
+      "phonetic": "/dɪˈtɪə.ri.ə.reɪt/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/deteriorate--_gb_1.mp3",
+      "example_sentence": "His health began to deteriorate rapidly.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 28,
+      "user_id": 8,
+      "word": "Endeavor",
+      "meaning": "Nỗ lực, cố gắng",
+      "phonetic": "/enˈdev.ər/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/endeavor--_gb_1.mp3",
+      "example_sentence": "They made every endeavor to finish on time.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 29,
+      "user_id": 8,
+      "word": "Feasible",
+      "meaning": "Khả thi, thực hiện được",
+      "phonetic": "/ˈfiː.zə.bəl/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/feasible--_gb_1.mp3",
+      "example_sentence": "Is the new project financially feasible?",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 30,
+      "user_id": 8,
+      "word": "Grasp",
+      "meaning": "Nắm bắt sâu sắc",
+      "phonetic": "/ɡrɑːsp/",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/grasp--_gb_1.mp3",
+      "example_sentence": "He has a firm grasp of the grammar rules.",
+      "next_review_at": "2026-10-28T00:00:00.000Z",
+      "interval_days": 3,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 31,
+      "user_id": 9,
+      "word": "Accomplish",
+      "meaning": "Hoàn thành, đạt được mục tiêu",
+      "phonetic": "/əˈkʌm.plɪʃ/",
+      "audio_url": "",
+      "example_sentence": "She accomplished such a lot during her visit.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 32,
+      "user_id": 9,
+      "word": "Beneficial",
+      "meaning": "Có lợi, mang lại lợi ích",
+      "phonetic": "/ˌben.ɪˈfɪʃ.əl/",
+      "audio_url": "",
+      "example_sentence": "A good diet is beneficial to health.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 33,
+      "user_id": 9,
+      "word": "Comprehensive",
+      "meaning": "Toàn diện, bao quát",
+      "phonetic": "/ˌkɒm.prɪˈhen.sɪv/",
+      "audio_url": "",
+      "example_sentence": "We offer a comprehensive training program.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 34,
+      "user_id": 9,
+      "word": "Demonstrate",
+      "meaning": "Chứng minh, minh họa",
+      "phonetic": "/ˈdem.ən.streɪt/",
+      "audio_url": "",
+      "example_sentence": "The numbers clearly demonstrate the success.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 35,
+      "user_id": 9,
+      "word": "Efficient",
+      "meaning": "Hiệu quả, có năng suất cao",
+      "phonetic": "/ɪˈfɪʃ.ənt/",
+      "audio_url": "",
+      "example_sentence": "The new system is much more efficient.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 36,
+      "user_id": 9,
+      "word": "Fluctuate",
+      "meaning": "Dao động, biến động liên tục",
+      "phonetic": "/ˈflʌk.tʃu.eɪt/",
+      "audio_url": "",
+      "example_sentence": "Vegetable prices fluctuate according to the season.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 37,
+      "user_id": 9,
+      "word": "Generate",
+      "meaning": "Tạo ra, phát sinh",
+      "phonetic": "/ˈdʒen.ə.reɪt/",
+      "audio_url": "",
+      "example_sentence": "The program will generate new jobs.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 38,
+      "user_id": 9,
+      "word": "Hesitate",
+      "meaning": "Do dự, ngập ngừng",
+      "phonetic": "/ˈhez.ɪ.teɪt/",
+      "audio_url": "",
+      "example_sentence": "Do not hesitate to contact us if you need help.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 39,
+      "user_id": 9,
+      "word": "Implement",
+      "meaning": "Thi hành, triển khai",
+      "phonetic": "/ˈɪm.plɪ.ment/",
+      "audio_url": "",
+      "example_sentence": "The changes will be implemented next month.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 40,
+      "user_id": 9,
+      "word": "Justify",
+      "meaning": "Bào chữa, biện minh hợp lý",
+      "phonetic": "/ˈdʒʌs.tɪ.faɪ/",
+      "audio_url": "",
+      "example_sentence": "How can they justify paying such huge salaries?",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 41,
+      "user_id": 9,
+      "word": "Lucrative",
+      "meaning": "Sinh lợi cao, béo bở",
+      "phonetic": "/ˈluː.krə.tɪv/",
+      "audio_url": "",
+      "example_sentence": "The merger proved to be very lucrative.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 42,
+      "user_id": 9,
+      "word": "Motivate",
+      "meaning": "Thúc đẩy, tạo động lực",
+      "phonetic": "/ˈməʊ.tɪ.veɪt/",
+      "audio_url": "",
+      "example_sentence": "Teaching methods should motivate students to learn.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 43,
+      "user_id": 9,
+      "word": "Negotiate",
+      "meaning": "Đàm phán, thương lượng",
+      "phonetic": "/nəˈɡəʊ.ʃi.eɪt/",
+      "audio_url": "",
+      "example_sentence": "We need to negotiate a fair agreement.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 44,
+      "user_id": 9,
+      "word": "Obstacle",
+      "meaning": "Trở ngại, rào cản",
+      "phonetic": "/ˈɒb.stə.kəl/",
+      "audio_url": "",
+      "example_sentence": "Fear of failure is the biggest obstacle.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 45,
+      "user_id": 9,
+      "word": "Prominent",
+      "meaning": "Nổi bật, xuất chúng",
+      "phonetic": "/ˈprɒm.ɪ.nənt/",
+      "audio_url": "",
+      "example_sentence": "She is a prominent figure in education.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 46,
+      "user_id": 9,
+      "word": "Qualitative",
+      "meaning": "Thuộc về chất lượng, định tính",
+      "phonetic": "/ˈkwɒl.ɪ.tə.tɪv/",
+      "audio_url": "",
+      "example_sentence": "There was a qualitative change in his work.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 47,
+      "user_id": 9,
+      "word": "Resilient",
+      "meaning": "Kiên cường, mau hồi phục",
+      "phonetic": "/rɪˈzɪl.jənt/",
+      "audio_url": "",
+      "example_sentence": "Children are remarkably resilient.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 48,
+      "user_id": 9,
+      "word": "Substantial",
+      "meaning": "Đáng kể, quan trọng",
+      "phonetic": "/səbˈstæn.ʃəl/",
+      "audio_url": "",
+      "example_sentence": "He won a substantial sum of money.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 49,
+      "user_id": 9,
+      "word": "Tolerant",
+      "meaning": "Khoan dung, chịu đựng tốt",
+      "phonetic": "/ˈtɒl.ər.ənt/",
+      "audio_url": "",
+      "example_sentence": "We must be tolerant of different opinions.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 50,
+      "user_id": 9,
+      "word": "Unprecedented",
+      "meaning": "Chưa từng có tiền lệ",
+      "phonetic": "/ʌnˈpres.ɪ.den.tɪd/",
+      "audio_url": "",
+      "example_sentence": "This situation is completely unprecedented.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 51,
+      "user_id": 9,
+      "word": "Versatile",
+      "meaning": "Linh hoạt, đa năng",
+      "phonetic": "/ˈvɜː.sə.taɪl/",
+      "audio_url": "",
+      "example_sentence": "He is a versatile actor.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 52,
+      "user_id": 9,
+      "word": "Widespread",
+      "meaning": "Lan rộng, phổ biến",
+      "phonetic": "/ˌwaɪdˈspred/",
+      "audio_url": "",
+      "example_sentence": "The storm caused widespread damage.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 53,
+      "user_id": 9,
+      "word": "Yield",
+      "meaning": "Sản lượng, mang lại",
+      "phonetic": "/jiːld/",
+      "audio_url": "",
+      "example_sentence": "The investment yielded high returns.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 54,
+      "user_id": 9,
+      "word": "Zealous",
+      "meaning": "Sốt sắng, nhiệt tâm",
+      "phonetic": "/ˈzel.əs/",
+      "audio_url": "",
+      "example_sentence": "He is a zealous supporter of green energy.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 55,
+      "user_id": 9,
+      "word": "Ambiguous",
+      "meaning": "Mơ hồ, nước đôi",
+      "phonetic": "/æmˈbɪɡ.ju.əs/",
+      "audio_url": "",
+      "example_sentence": "The contract wording was ambiguous.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 56,
+      "user_id": 9,
+      "word": "Collaborate",
+      "meaning": "Hợp tác, cộng tác",
+      "phonetic": "/kəˈlæb.ə.reɪt/",
+      "audio_url": "",
+      "example_sentence": "Two teams collaborated on the research.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 57,
+      "user_id": 9,
+      "word": "Deteriorate",
+      "meaning": "Xuống cấp, xấu đi",
+      "phonetic": "/dɪˈtɪə.ri.ə.reɪt/",
+      "audio_url": "",
+      "example_sentence": "His health began to deteriorate rapidly.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 58,
+      "user_id": 9,
+      "word": "Endeavor",
+      "meaning": "Nỗ lực, cố gắng",
+      "phonetic": "/enˈdev.ər/",
+      "audio_url": "",
+      "example_sentence": "They made every endeavor to finish on time.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 59,
+      "user_id": 9,
+      "word": "Feasible",
+      "meaning": "Khả thi, thực hiện được",
+      "phonetic": "/ˈfiː.zə.bəl/",
+      "audio_url": "",
+      "example_sentence": "Is the new project financially feasible?",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 60,
+      "user_id": 9,
+      "word": "Grasp",
+      "meaning": "Nắm bắt sâu sắc",
+      "phonetic": "/ɡrɑːsp/",
+      "audio_url": "",
+      "example_sentence": "He has a firm grasp of the grammar rules.",
+      "next_review_at": "2026-10-25T00:00:00.000Z",
+      "interval_days": 2,
+      "created_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "lesson_id": 1,
+      "question_text": "Choose the correct form: She _____ English every evening.",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "lesson_id": 1,
+      "question_text": "Which sentence is grammatically correct?",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "lesson_id": 2,
+      "question_text": "They haven’t seen each other _____ ten years.",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "lesson_id": 2,
+      "question_text": "If it rains tomorrow, we _____ at home.",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "lesson_id": 3,
+      "question_text": "Choose the word with the CLOSEST meaning to \"Accomplish\":",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "lesson_id": 3,
+      "question_text": "Neither the teacher nor the students _____ present yesterday.",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "lesson_id": 4,
+      "question_text": "Listen and choose the speaker’s main purpose in the conversation.",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "lesson_id": 4,
+      "question_text": "The meeting has been called _____ due to heavy rain.",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "lesson_id": 5,
+      "question_text": "By the time we arrived, the train _____ already.",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "lesson_id": 5,
+      "question_text": "He suggested that she _____ a doctor immediately.",
+      "audio_url": "",
+      "question_type": "multiple_choice",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "lesson_id": 1,
+      "question_text": "Fill in the blank: The sun _____ in the east.",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "lesson_id": 1,
+      "question_text": "Fill in the preposition: He is interested _____ learning foreign languages.",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "lesson_id": 2,
+      "question_text": "Fill in the blank: She has been living in Hanoi _____ 2018.",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 14,
+      "lesson_id": 2,
+      "question_text": "Fill in the correct comparative form: This exercise is _____ (easy) than that one.",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 15,
+      "lesson_id": 3,
+      "question_text": "Fill in the modal verb: You _____ not smoke inside the classroom.",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 16,
+      "lesson_id": 3,
+      "question_text": "Fill in the blank: Despite _____ hard, he failed the final exam. (study)",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 17,
+      "lesson_id": 4,
+      "question_text": "Fill in the blank: The book _____ I bought yesterday is interesting.",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 18,
+      "lesson_id": 4,
+      "question_text": "Fill in the blank: I look forward to _____ from you soon. (hear)",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 19,
+      "lesson_id": 5,
+      "question_text": "Fill in the blank: Hard work is the key _____ success.",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 20,
+      "lesson_id": 5,
+      "question_text": "Fill in the blank: He speaks English much more _____ than his brother. (fluent)",
+      "audio_url": "",
+      "question_type": "fill_blank",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 21,
+      "lesson_id": 11,
+      "question_text": "Find the word whose underlined part is pronounced differently: cat, fat, hat, car",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 22,
+      "lesson_id": 11,
+      "question_text": "Choose the word that has a different stress pattern from the others: \"record, present, produce, import",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 23,
+      "lesson_id": 11,
+      "question_text": "Which word has the stress on the third syllable: economic, photography, comfortable, beautiful",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 24,
+      "lesson_id": 11,
+      "question_text": "Listen to the audio reference and practice reading the sentence aloud: \"Thoughtful leaders communicate clearly under pressure.\"",
+      "audio_url": "https://ssl.gstatic.com/dictionary/static/sounds/oxford/thoughtful--_gb_1.mp3",
+      "question_type": "pronunciation",
+      "default_points": 15,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 25,
+      "lesson_id": 11,
+      "question_text": "Pronounce the \"-ed\" sound correctly: watched, wanted, played, washed",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 26,
+      "lesson_id": 11,
+      "question_text": "Choose the word with the silent \"b\": debt, doubt, climb, table",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 27,
+      "lesson_id": 11,
+      "question_text": "Listen and repeat with proper sentence intonation: \"Could you please pass me the salt?\"",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 15,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 28,
+      "lesson_id": 11,
+      "question_text": "Which word has the vowel sound /i:/: ship, sheep, sit, fit",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 29,
+      "lesson_id": 11,
+      "question_text": "Identify the word with the stress on the 1st syllable: arrive, decide, manage, contain",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 30,
+      "lesson_id": 11,
+      "question_text": "Pronunciation test: Practice the diphthong /aɪ/ in words: like, flight, high, time",
+      "audio_url": "",
+      "question_type": "pronunciation",
+      "default_points": 10,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 31,
+      "lesson_id": 6,
+      "question_text": "Write a short paragraph (80-100 words) introducing your favorite hobby and why it is important to you.",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 25,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 32,
+      "lesson_id": 6,
+      "question_text": "IELTS Writing Task 1: Summarize the main trends shown in the sales chart of tech devices from 2020 to 2025.",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 30,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 33,
+      "lesson_id": 6,
+      "question_text": "Essay question: Some people prefer working from home while others favor working in an office. Discuss both views and give your opinion.",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 30,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 34,
+      "lesson_id": 6,
+      "question_text": "Write a formal email requesting a leave of absence for 3 days due to personal matters.",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 20,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 35,
+      "lesson_id": 6,
+      "question_text": "Express your thoughts: How does artificial intelligence affect English language learning today?",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 25,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 36,
+      "lesson_id": 6,
+      "question_text": "Write an argumentative response: Should standardized exams like IELTS be required for university graduation?",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 30,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 37,
+      "lesson_id": 6,
+      "question_text": "Describe an unforgettable trip you took with your friends or family in about 120 words.",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 20,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 38,
+      "lesson_id": 6,
+      "question_text": "Business writing: Draft a response to an angry customer complaining about a delayed shipment.",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 25,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 39,
+      "lesson_id": 6,
+      "question_text": "Write an opinion paragraph about the importance of environmental conservation in urban areas.",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 25,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 40,
+      "lesson_id": 6,
+      "question_text": "Summary exercise: Read the article on renewable energy and synthesize the 3 main takeaways in 70 words.",
+      "audio_url": "",
+      "question_type": "essay",
+      "default_points": 20,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "question_options": [
+    {
+      "id": 1,
+      "question_id": 1,
+      "option_text": "practices",
+      "is_correct": 1
+    },
+    {
+      "id": 2,
+      "question_id": 1,
+      "option_text": "practice",
+      "is_correct": 0
+    },
+    {
+      "id": 3,
+      "question_id": 1,
+      "option_text": "practicing",
+      "is_correct": 0
+    },
+    {
+      "id": 4,
+      "question_id": 1,
+      "option_text": "are practicing",
+      "is_correct": 0
+    },
+    {
+      "id": 5,
+      "question_id": 2,
+      "option_text": "He don’t like coffee.",
+      "is_correct": 0
+    },
+    {
+      "id": 6,
+      "question_id": 2,
+      "option_text": "He doesn’t likes coffee.",
+      "is_correct": 0
+    },
+    {
+      "id": 7,
+      "question_id": 2,
+      "option_text": "He doesn’t like coffee.",
+      "is_correct": 1
+    },
+    {
+      "id": 8,
+      "question_id": 2,
+      "option_text": "He not like coffee.",
+      "is_correct": 0
+    },
+    {
+      "id": 9,
+      "question_id": 3,
+      "option_text": "since",
+      "is_correct": 0
+    },
+    {
+      "id": 10,
+      "question_id": 3,
+      "option_text": "for",
+      "is_correct": 1
+    },
+    {
+      "id": 11,
+      "question_id": 3,
+      "option_text": "in",
+      "is_correct": 0
+    },
+    {
+      "id": 12,
+      "question_id": 3,
+      "option_text": "during",
+      "is_correct": 0
+    },
+    {
+      "id": 13,
+      "question_id": 4,
+      "option_text": "will stay",
+      "is_correct": 1
+    },
+    {
+      "id": 14,
+      "question_id": 4,
+      "option_text": "stayed",
+      "is_correct": 0
+    },
+    {
+      "id": 15,
+      "question_id": 4,
+      "option_text": "stay",
+      "is_correct": 0
+    },
+    {
+      "id": 16,
+      "question_id": 4,
+      "option_text": "would stay",
+      "is_correct": 0
+    },
+    {
+      "id": 17,
+      "question_id": 5,
+      "option_text": "Achieve",
+      "is_correct": 1
+    },
+    {
+      "id": 18,
+      "question_id": 5,
+      "option_text": "Delay",
+      "is_correct": 0
+    },
+    {
+      "id": 19,
+      "question_id": 5,
+      "option_text": "Forget",
+      "is_correct": 0
+    },
+    {
+      "id": 20,
+      "question_id": 5,
+      "option_text": "Destroy",
+      "is_correct": 0
+    }
+  ],
+  "question_answers": [
+    {
+      "id": 1,
+      "question_id": 11,
+      "answer_text": "rises",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 2,
+      "question_id": 12,
+      "answer_text": "in",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 3,
+      "question_id": 13,
+      "answer_text": "since",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 4,
+      "question_id": 14,
+      "answer_text": "easier",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 5,
+      "question_id": 15,
+      "answer_text": "must",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 6,
+      "question_id": 16,
+      "answer_text": "studying",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 7,
+      "question_id": 17,
+      "answer_text": "which",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 8,
+      "question_id": 18,
+      "answer_text": "hearing",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 9,
+      "question_id": 19,
+      "answer_text": "to",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    },
+    {
+      "id": 10,
+      "question_id": 20,
+      "answer_text": "fluently",
+      "reference_audio_url": "",
+      "is_case_sensitive": 0
+    }
+  ],
+  "exams": [
+    {
+      "id": 1,
+      "course_id": 1,
+      "created_by_teacher_id": 1,
+      "title": "Đề Thi Giữa Kỳ Tiếng Anh Giao Tiếp Cơ Bản",
+      "description": "Kiểm tra từ vựng, ngữ pháp cơ bản và phản xạ hội thoại tình huống thường nhật.",
+      "duration_minutes": 45,
+      "pass_score": 50,
+      "max_attempts": 3,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "course_id": 4,
+      "created_by_teacher_id": 3,
+      "title": "IELTS Mock Test Đọc - Viết Nền Tảng Band 5.0",
+      "description": "Mô phỏng kỳ thi IELTS chính thức phần Reading & Writing Task 1.",
+      "duration_minutes": 60,
+      "pass_score": 60,
+      "max_attempts": 2,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "course_id": 7,
+      "created_by_teacher_id": 4,
+      "title": "TOEIC Mini Test 50 Câu Tiêu Chuẩn",
+      "description": "Đánh giá tốc độ phản xạ ngữ pháp và từ vựng Part 5 & Part 6.",
+      "duration_minutes": 40,
+      "pass_score": 55,
+      "max_attempts": null,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "course_id": 9,
+      "created_by_teacher_id": 1,
+      "title": "Kiểm Tra Tổng Hợp 12 Thì Tiếng Anh",
+      "description": "Bài kiểm tra chuyên đề nhận biết dấu hiệu và chuyển đổi câu chủ động - bị động.",
+      "duration_minutes": 30,
+      "pass_score": 70,
+      "max_attempts": 5,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "course_id": 5,
+      "created_by_teacher_id": 1,
+      "title": "IELTS Writing Essay Assessment (Chấm Thủ Công)",
+      "description": "Đề thi viết luận chuyên sâu yêu cầu giáo viên trực tiếp chấm và nhận xét chi tiết.",
+      "duration_minutes": 50,
+      "pass_score": 65,
+      "max_attempts": 1,
+      "is_published": 1,
+      "created_at": "2026-09-15T08:00:00.000Z",
+      "updated_at": "2026-09-15T08:00:00.000Z"
+    }
+  ],
+  "exam_questions": [
+    {
+      "id": 1,
+      "exam_id": 1,
+      "question_id": 1,
+      "points": 20,
+      "order_index": 1
+    },
+    {
+      "id": 2,
+      "exam_id": 1,
+      "question_id": 2,
+      "points": 20,
+      "order_index": 2
+    },
+    {
+      "id": 3,
+      "exam_id": 1,
+      "question_id": 11,
+      "points": 20,
+      "order_index": 3
+    },
+    {
+      "id": 4,
+      "exam_id": 1,
+      "question_id": 12,
+      "points": 20,
+      "order_index": 4
+    },
+    {
+      "id": 5,
+      "exam_id": 1,
+      "question_id": 31,
+      "points": 20,
+      "order_index": 5
+    },
+    {
+      "id": 6,
+      "exam_id": 5,
+      "question_id": 33,
+      "points": 100,
+      "order_index": 1
+    }
+  ],
+  "user_exams": [
+    {
+      "id": 1,
+      "user_id": 8,
+      "exam_id": 1,
+      "attempt_number": 1,
+      "started_at": "2026-10-15T09:00:00Z",
+      "submitted_at": "2026-10-15T09:38:00Z",
+      "total_score": 85,
+      "status": "passed"
+    },
+    {
+      "id": 2,
+      "user_id": 9,
+      "exam_id": 1,
+      "attempt_number": 1,
+      "started_at": "2026-10-16T10:00:00Z",
+      "submitted_at": "2026-10-16T10:44:00Z",
+      "total_score": 40,
+      "status": "failed"
+    },
+    {
+      "id": 3,
+      "user_id": 8,
+      "exam_id": 5,
+      "attempt_number": 1,
+      "started_at": "2026-10-23T14:00:00Z",
+      "submitted_at": "2026-10-23T14:45:00Z",
+      "total_score": null,
+      "status": "submitted"
+    },
+    {
+      "id": 4,
+      "user_id": 10,
+      "exam_id": 1,
+      "attempt_number": 1,
+      "started_at": "2026-10-24T07:15:00Z",
+      "submitted_at": "2026-10-24T07:55:00Z",
+      "total_score": null,
+      "status": "submitted"
+    }
+  ],
+  "user_exam_answers": [
+    {
+      "id": 1,
+      "user_exam_id": 1,
+      "question_id": 1,
+      "selected_option_id": 1,
+      "text_answer": "",
+      "score_earned": 20,
+      "grading_status": "auto_graded",
+      "graded_by_teacher_id": null,
+      "graded_at": "2026-10-15T09:38:00Z",
+      "feedback": "Chính xác!"
+    },
+    {
+      "id": 2,
+      "user_exam_id": 1,
+      "question_id": 11,
+      "selected_option_id": null,
+      "text_answer": "rises",
+      "score_earned": 20,
+      "grading_status": "auto_graded",
+      "graded_by_teacher_id": null,
+      "graded_at": "2026-10-15T09:38:00Z",
+      "feedback": "Chính xác!"
+    },
+    {
+      "id": 3,
+      "user_exam_id": 3,
+      "question_id": 33,
+      "selected_option_id": null,
+      "text_answer": "In recent years, the debate over working remotely versus working in a conventional office has intensified. On the one hand, remote work offers flexibility and cuts commuting time. On the other hand, offices foster real-time teamwork and camaraderie. In my view, a hybrid model that blends both is the optimal solution for sustainable productivity.",
+      "score_earned": null,
+      "grading_status": "pending_review",
+      "graded_by_teacher_id": null,
+      "graded_at": null,
+      "feedback": null
+    },
+    {
+      "id": 4,
+      "user_exam_id": 4,
+      "question_id": 31,
+      "selected_option_id": null,
+      "text_answer": "My favorite hobby is reading English literature. Not only does it enrich my vocabulary, but it also helps me explore diverse cultural perspectives and creative styles. I make it a habit to read at least 30 minutes every evening before going to bed.",
+      "score_earned": null,
+      "grading_status": "pending_review",
+      "graded_by_teacher_id": null,
+      "graded_at": null,
+      "feedback": null
+    }
+  ]
+}

@@ -1,155 +1,121 @@
 # 📚 Hệ Thống Quản Lý Trung Tâm Tiếng Anh - EnglishLearning
 
-Dự án Frontend được xây dựng hoàn toàn bằng **HTML5, CSS3 và JavaScript thuần (ES6 Modules)** theo kiến trúc **Multi-Page Application (MPA)** kết hợp mô hình **MVC (Model - View - Controller)** và hệ thống **Design System** hoàn chỉnh. Không sử dụng bất kỳ framework hay build tool nào, chạy trực tiếp trên trình duyệt hoặc VS Code Live Server.
-
-Mỗi trang trong hệ thống là một **tệp `.html` độc lập**, có thanh điều hướng riêng, liên kết trực tiếp giữa các file `.html` mà không phụ thuộc vào hash URL.
-
-Hệ thống bao gồm 3 phân hệ (cổng) độc lập:
-1. 🛡️ **Cổng Quản Trị Viên (Admin Portal - 15 file HTML):** Quản lý đào tạo, tài khoản, lớp học, xếp thời khóa biểu, tài chính & báo cáo.
-2. 👨‍🏫 **Cổng Giảng Viên (Teacher Portal - 11 file HTML):** Xem lịch dạy, soạn bài, quản lý lớp, ngân hàng câu hỏi, tạo đề và chấm thi tự luận.
-3. 🎓 **Cổng Học Viên (Student Portal - 16 file HTML):** Khám phá khóa học, xem lịch học, học bài đa phương tiện, luyện thi trực tuyến, ôn từ vựng Spaced Repetition (SRS) lật thẻ 3D, theo dõi tiến độ và huy hiệu thành tích.
+Dự án được cấu trúc theo mô hình kiến trúc **ASP.NET Core MVC Areas** chuẩn hóa kết hợp giữa **HTML5, CSS3 và JavaScript thuần (ES6 Modules)**:
+- Thư mục `areas/` phân chia 3 phân hệ độc lập: **Quản trị viên (Admin)**, **Giảng viên (Teacher)**, và **Học viên (Student)**.
+- Mỗi phân hệ gồm 3 thành phần MVC: `models/`, `controllers/`, và `views/`.
+- Toàn bộ các trang trong `views/` là các tệp **`.html` hoàn chỉnh** đã tích hợp sẵn mã giao diện và **dữ liệu mẫu (dummy/mock data)** trực quan, mở trực tiếp trên trình duyệt mà không cần cài đặt môi trường backend phức tạp.
+- Thư mục tĩnh `wwwroot/` lưu trữ toàn bộ CSS Design System, JavaScript giao diện và các thư viện UI dùng chung.
+- Thư mục `data/` lưu trữ bộ cơ sở dữ liệu mẫu mô phỏng (Database Seed / JSON).
 
 ---
 
-## 🗂️ CẤU TRÚC THƯ MỤC & CHÚ THÍCH TỪNG FILE HTML
+## 🗂️ SƠ ĐỒ CẤU TRÚC THƯ MỤC CHUẨN KIẾN TRÚC
 
 ```text
 CNPM_EnglishLearning/
-├── 📄 index.html                       # Trang đăng nhập tập trung & điều hướng phân quyền (Auth Gateway)
+├── 📄 index.html                       # Trang đăng nhập tập trung, chọn cổng và điều hướng
 ├── 📄 styleguide.html                  # Thư viện Design System hiển thị trực quan toàn bộ UI components
-├── 📄 .gitignore                       # Danh sách loại trừ các file rác khi đẩy code lên Git
-├── 📄 README.md                        # Tài liệu hướng dẫn & chú thích chi tiết toàn bộ file trong dự án
+├── 📄 .gitignore                       # Danh sách loại trừ khi đẩy code lên Git
+├── 📄 README.md                        # Tài liệu hướng dẫn chi tiết dự án
 │
-├── 📂 admin/                           # 15 FILE HTML CỦA CỔNG QUẢN TRỊ VIÊN
-│   ├── 📄 index.html                   # Chuyển hướng tự động vào dashboard.html
-│   ├── 📄 dashboard.html               # Bảng điều khiển tổng quan: 4 stat card, biểu đồ cột & donut, danh sách duyệt
-│   ├── 📄 users.html                   # Quản lý người dùng, lọc role, switch khóa tài khoản
-│   ├── 📄 teachers.html                # Quản lý giảng viên, nút xác minh hồ sơ, lớp đang dạy
-│   ├── 📄 subjects.html                # Quản lý môn học đào tạo
-│   ├── 📄 courses.html                 # Danh sách khóa học dạng lưới card, lọc môn/level, học phí
-│   ├── 📄 course-detail.html           # Chi tiết khóa học: Tab Thông tin | Bài học kéo thả | Lớp mở | Review
-│   ├── 📄 classes.html                 # Danh sách lớp học toàn hệ thống, mã lớp, sĩ số, trạng thái 4 màu
-│   ├── 📄 class-detail.html            # Chi tiết lớp học: Tab Giảng viên | Lịch học | Học viên | Buổi học
-│   ├── 📄 schedules.html               # Thời khóa biểu dạng lưới ma trận Ca học x Thứ 2-CN
-│   ├── 📄 facilities.html              # Quản lý cơ sở vật chất (2 tab: Phòng học & Khung giờ)
-│   ├── 📄 enrollments.html             # Danh sách ghi danh học viên toàn trường, doanh thu ước tính
-│   ├── 📄 reviews.html                 # Quản lý đánh giá khóa học, xếp hạng sao, duyệt nhận xét
-│   ├── 📄 exams.html                   # Quản lý ngân hàng đề thi chung toàn trung tâm
-│   └── 📄 reports.html                 # Báo cáo học vụ chuyên sâu & phân tích thống kê
+├── 📂 areas/                           # PHÂN VÙNG HỆ THỐNG (AREAS)
+│   ├── 📂 admin/                       # 1. CỔNG QUẢN TRỊ VIÊN (ADMIN AREA)
+│   │   ├── 📂 models/                  # Các lớp thực thể quản trị: UserModel, CourseModel, v.v.
+│   │   ├── 📂 controllers/             # Bộ điều phối nghiệp vụ: DashboardController, UsersController, v.v.
+│   │   └── 📂 views/                   # 14 FILE HTML GIAO DIỆN CHỨA DỮ LIỆU ẢO MẪU:
+│   │       ├── 📄 dashboard.html       # Bảng điều khiển: 4 stat card, biểu đồ cột & tròn, danh sách duyệt
+│   │       ├── 📄 users.html           # Quản lý người dùng, lọc vai trò, bảng tài khoản, modal thêm/sửa
+│   │       ├── 📄 teachers.html        # Quản lý đội ngũ giảng viên, bằng cấp, chứng chỉ, duyệt hồ sơ
+│   │       ├── 📄 subjects.html        # Quản lý môn học đào tạo (Giao tiếp, TOEIC, IELTS, Thiếu nhi)
+│   │       ├── 📄 courses.html         # Danh mục khóa học dạng lưới thẻ (Grid cards), học phí, cấp độ
+│   │       ├── 📄 course-detail.html   # Chi tiết khóa học: mô tả, chuẩn đầu ra, đề cương bài học
+│   │       ├── 📄 classes.html         # Danh sách lớp học toàn hệ thống, mã lớp, sĩ số, trạng thái
+│   │       ├── 📄 class-detail.html    # Chi tiết lớp học: giảng viên, phòng học, danh sách học viên
+│   │       ├── 📄 schedules.html       # Thời khóa biểu trung tâm dạng lưới ca học x Thứ 2-CN
+│   │       ├── 📄 facilities.html      # Cơ sở vật chất & phòng học (LAB, lý thuyết, hội thảo)
+│   │       ├── 📄 enrollments.html     # Quản lý ghi danh học viên, trạng thái thu học phí
+│   │       ├── 📄 reviews.html         # Đánh giá & phản hồi từ học viên, kiểm duyệt đánh giá
+│   │       ├── 📄 exams.html           # Ngân hàng đề thi và khảo thí toàn trường
+│   │       └── 📄 reports.html         # Báo cáo doanh thu, tăng trưởng học viên và phân tích
+│   │
+│   ├── 📂 teacher/                     # 2. CỔNG GIẢNG VIÊN (TEACHER AREA)
+│   │   ├── 📂 models/                  # Thực thể giảng viên: LessonModel, QuestionModel, v.v.
+│   │   ├── 📂 controllers/             # Bộ điều phối giảng dạy: TeacherClassesController, v.v.
+│   │   └── 📂 views/                   # 10 FILE HTML GIAO DIỆN CHỨA DỮ LIỆU ẢO MẪU:
+│   │       ├── 📄 dashboard.html       # Bảng làm việc: ca dạy hôm nay, bài nộp cần chấm, thống kê
+│   │       ├── 📄 classes.html         # Danh sách các lớp học phụ trách, sĩ số và lịch dạy
+│   │       ├── 📄 class-detail.html    # Chi tiết lớp học: danh sách học viên, điểm danh buổi học
+│   │       ├── 📄 schedule.html        # Thời khóa biểu giảng dạy cá nhân trong tuần
+│   │       ├── 📄 lessons.html         # Soạn bài giảng, giáo án, tài liệu đính kèm từng buổi
+│   │       ├── 📄 questions.html       # Ngân hàng câu hỏi trắc nghiệm & tự luận theo chủ đề
+│   │       ├── 📄 exams.html           # Quản lý đề thi của lớp & giao bài kiểm tra
+│   │       ├── 📄 grading.html         # Màn hình chấm bài tự luận: rubric tiêu chí, nhận xét giáo viên
+│   │       ├── 📄 results.html         # Sổ điểm học viên, điểm giữa kỳ, cuối khóa và xếp loại
+│   │       └── 📄 profile.html         # Hồ sơ chuyên môn giảng viên, học vị, chứng chỉ quốc tế
+│   │
+│   └── 📂 student/                     # 3. CỔNG HỌC VIÊN (STUDENT AREA)
+│       ├── 📂 models/                  # Thực thể học viên: FlashcardModel, UserProgressModel, v.v.
+│       ├── 📂 controllers/             # Bộ điều phối học tập: StudentCoursesController, v.v.
+│       └── 📂 views/                   # 15 FILE HTML GIAO DIỆN CHỨA DỮ LIỆU ẢO MẪU:
+│           ├── 📄 dashboard.html       # Trang chủ học tập: chuỗi streak 🔥, bài học dở dang, lối tắt
+│           ├── 📄 courses.html         # Khám phá các khóa học tiếng Anh, lọc theo trình độ
+│           ├── 📄 course-detail.html   # Chi tiết khóa học: giáo trình, học phí, đăng ký tư vấn
+│           ├── 📄 my-classes.html      # Danh sách lớp học đang tham gia và tiến độ hoàn thành
+│           ├── 📄 class-detail.html    # Trung tâm lớp học: lịch học tiếp theo, tài liệu buổi học
+│           ├── 📄 schedule.html        # Thời khóa biểu cá nhân của học sinh
+│           ├── 📄 learn.html           # Phòng học tương tác: video bài giảng, mẫu câu quan trọng
+│           ├── 📄 flashcards.html      # Thẻ từ vựng Spaced Repetition (SRS) hiệu ứng lật thẻ 3D
+│           ├── 📄 exams.html           # Danh sách bài thi trực tuyến & luyện tập tự do
+│           ├── 📄 take-exam.html       # Phòng thi thời gian thực: đồng hồ đếm ngược, bảng câu hỏi
+│           ├── 📄 results.html         # Lịch sử bài thi và điểm số đã đạt
+│           ├── 📄 result-detail.html   # Xem chi tiết bài giải và lời giải thích từng câu
+│           ├── 📄 progress.html        # Biểu đồ năng lực 4 kỹ năng Nghe - Nói - Đọc - Viết
+│           ├── 📄 reviews.html         # Gửi đánh giá và phản hồi về lớp học/giáo viên
+│           └── 📄 profile.html         # Hồ sơ cá nhân học viên, cập nhật thông tin
 │
-├── 📂 teacher/                         # 11 FILE HTML CỦA CỔNG GIẢNG VIÊN
-│   ├── 📄 index.html                   # Chuyển hướng tự động vào dashboard.html
-│   ├── 📄 dashboard.html               # Bảng việc cần làm hôm nay, lịch dạy trong ngày, bài thi chờ chấm
-│   ├── 📄 classes.html                 # Danh sách các lớp đang giảng dạy
-│   ├── 📄 class-detail.html            # Chi tiết lớp học: danh sách học viên, tiến độ buổi học, lịch học
-│   ├── 📄 schedule.html                # Lịch dạy tuần dạng thời khóa biểu lưới & xem tháng
-│   ├── 📄 lessons.html                 # Soạn thảo nội dung bài giảng & xem trước (Preview)
-│   ├── 📄 questions.html               # Ngân hàng câu hỏi động theo 4 loại định dạng câu hỏi
-│   ├── 📄 exams.html                   # Đề thi của tôi & Trình dựng đề 2 cột thêm/bớt/đổi điểm câu hỏi
-│   ├── 📄 grading.html                 # Màn hình chấm bài thi tự luận: câu trả lời, cho điểm, nhận xét mẫu
-│   ├── 📄 results.html                 # Bảng tổng hợp điểm số học viên theo từng lớp và đề thi
-│   └── 📄 profile.html                 # Hồ sơ giảng viên, học vị, chứng chỉ và tiểu sử
+├── 📂 data/                            # CƠ SỞ DỮ LIỆU MẪU (DATABASE SEED & MOCK)
+│   ├── 📄 seed.js                      # Mã nguồn khởi tạo cơ sở dữ liệu mô phỏng LocalStorage
+│   └── 📄 mockData.json                # Toàn bộ dữ liệu 22 bảng ở định dạng JSON chuẩn
 │
-├── 📂 student/                         # 16 FILE HTML CỦA CỔNG HỌC VIÊN
-│   ├── 📄 index.html                   # Chuyển hướng tự động vào dashboard.html
-│   ├── 📄 dashboard.html               # Bảng học tập: chuỗi streak 🔥, buổi học sắp tới, bài học dở dang
-│   ├── 📄 courses.html                 # Khám phá khóa học, tìm kiếm, lọc level, học phí
-│   ├── 📄 course-detail.html           # Chi tiết khóa học: giáo trình, lớp mở, đăng ký lớp
-│   ├── 📄 my-classes.html              # Lớp của tôi (3 tab: Đang học, Hoàn thành, Đã hủy) & tiến độ
-│   ├── 📄 class-detail.html            # Chi tiết lớp học & trạng thái hoàn thành từng bài học
-│   ├── 📄 schedule.html                # Thời khóa biểu cá nhân dạng lưới tuần và dạng danh sách (Agenda)
-│   ├── 📄 learn.html                   # Trình phát bài học: từ vựng phát âm, ngữ pháp, audio nghe, làm quiz
-│   ├── 📄 flashcards.html              # Thẻ từ vựng cá nhân & Màn hình ôn tập lật thẻ 3D (Spaced Repetition)
-│   ├── 📄 exams.html                   # Danh sách đề thi thuộc các khóa đang học
-│   ├── 📄 take-exam.html               # Màn làm bài thi: đồng hồ đếm ngược, palette câu hỏi, tự lưu nháp
-│   ├── 📄 results.html                 # Lịch sử kết quả thi toàn bộ các lần làm bài
-│   ├── 📄 result-detail.html           # Chi tiết bài thi: điểm tổng, phân tích đúng/sai, nhận xét của giáo viên
-│   ├── 📄 progress.html                # Tiến độ học: biểu đồ SVG điểm số, tỷ lệ hoàn thành, bộ 4 huy hiệu
-│   ├── 📄 reviews.html                 # Viết đánh giá khóa học: bộ chọn 1-5 sao tương tác & nhận xét
-│   └── 📄 profile.html                 # Hồ sơ học viên: sửa họ tên, xem trước avatar trực tiếp, đổi mật khẩu
-│
-├── 📂 assets/
-│   └── 📂 css/
-│       ├── 📄 tokens.css               # Biến thiết kế (Design Tokens): màu sắc, font, spacing, shadow, bo góc
-│       ├── 📄 base.css                 # Reset CSS và chuẩn hóa typography font Plus Jakarta Sans
-│       ├── 📄 layout.css               # Khung bố cục: Sidebar, Topbar, Student Navbar, Grid 12 cột, Responsive
-│       └── 📄 components.css           # Toàn bộ CSS linh kiện: Button, Card, Table, Modal, Badge, Thẻ 3D, Timer...
-│
-└── 📂 js/
-    ├── 📂 core/                        # Nhân lõi của ứng dụng (Core Utilities & Services)
-    │   ├── 📄 auth.js                  # Dịch vụ xác thực: quản lý session_user, đăng nhập, đăng xuất, Guards
-    │   ├── 📄 mpa.js                   # Điều hướng MPA độc lập, tự động chuyển đổi link và kiểm tra quyền
-    │   ├── 📄 router.js                # Bộ điều hướng SPA Hash-based (hỗ trợ chế độ SPA song song)
-    │   ├── 📄 storage.js               # Lớp bọc LocalStorage an toàn (hỗ trợ get, set, getTable, setTable)
-    │   ├── 📄 eventBus.js              # Cơ chế Event Emitter trung gian giúp các module giao tiếp phi tập trung
-    │   └── 📄 utils.js                 # Thư viện hàm tiện ích: format tiền tệ VND, format ngày tháng, getInitials...
-    │
-    ├── 📂 data/                        # Dữ liệu khởi tạo & cấu trúc cơ sở dữ liệu mẫu
-    │   └── 📄 seed.js                  # Khởi tạo mock data cho 18 bảng dữ liệu, tự động nâng cấp phiên bản DB (v2)
-    │
-    ├── 📂 ui/                          # Bộ linh kiện giao diện dùng chung (Reusable UI Components)
-    │   ├── 📄 icons.js                 # Thư viện inline SVG chuẩn hóa (home, book, calendar, play, volume...)
-    │   ├── 📄 modal.js                 # Popup Modal động đóng/mở linh hoạt kèm phím Esc và backdrop
-    │   ├── 📄 toast.js                 # Thông báo nổi góc màn hình (Toast Notifications: success, error, info)
-    │   ├── 📄 confirmDialog.js         # Hộp thoại xác nhận trước các hành động quan trọng (Xóa, Hủy, Nộp bài)
-    │   ├── 📄 dataTable.js             # Bảng dữ liệu tự động tích hợp phân trang, sắp xếp và tìm kiếm
-    │   ├── 📄 pagination.js            # Thanh phân trang chuẩn UI
-    │   ├── 📄 emptyState.js            # Giao diện hiển thị khi danh sách trống dữ liệu
-    │   ├── 📄 skeleton.js              # Hiệu ứng khung xương tải dữ liệu (Loading skeleton animation)
-    │   └── 📄 charts.js                # Bộ vẽ biểu đồ bằng SVG thuần (Bar chart, Donut chart, Line chart)
-    │
-    ├── 📂 models/                      # Lớp thực thể & Truy xuất dữ liệu (Tầng Model trong MVC)
-    │   ├── 📄 index.js                 # Tệp xuất tập trung (Export index) toàn bộ các Model
-    │   ├── 📄 BaseModel.js             # Lớp cha CRUD trừu tượng (Điểm kết nối để thay API Backend sau này)
-    │   ├── 📄 UserModel.js             # Quản lý tài khoản người dùng, đổi mật khẩu, phân quyền role
-    │   ├── 📄 TeacherModel.js          # Quản lý hồ sơ giảng viên, học vị, kinh nghiệm, kiểm định is_verified
-    │   ├── 📄 SubjectModel.js          # Quản lý môn học đào tạo (IELTS, TOEIC, Giao tiếp...)
-    │   ├── 📄 CourseModel.js           # Quản lý khóa học, join môn học, giáo trình bài học, tính điểm sao review
-    │   ├── 📄 LessonModel.js           # Quản lý bài giảng theo thứ tự order_index và content_type
-    │   ├── 📄 CourseClassModel.js      # Quản lý lớp học mở, sĩ số tối đa, trạng thái lớp, join giảng viên
-    │   ├── 📄 ClassModel.js            # Alias tương thích ngược cho CourseClassModel
-    │   ├── 📄 ClassroomModel.js        # Quản lý phòng học cơ sở vật chất, sức chứa
-    │   ├── 📄 TimeSlotModel.js         # Quản lý ca học / khung giờ học trong ngày
-    │   ├── 📄 ClassScheduleModel.js    # Quản lý xếp thời khóa biểu, thuật toán cảnh báo trùng phòng / trùng giờ GV
-    │   ├── 📄 ClassTeacherModel.js     # Quản lý phân công vai trò giảng viên chính (main) / trợ giảng (assistant)
-    │   ├── 📄 ClassLessonModel.js      # Quản lý tiến trình từng buổi học theo lịch thực tế của lớp
-    │   ├── 📄 EnrollmentModel.js       # Quản lý học viên đăng ký lớp, kiểm tra hết chỗ, hủy ghi danh, tính doanh thu
-    │   ├── 📄 UserProgressModel.js     # Quản lý tiến độ học bài, bài học dở dang gần nhất, ghi nhận điểm số
-    │   ├── 📄 CourseReviewModel.js     # Quản lý đánh giá và nhận xét 1-5 sao của học viên cho khóa học
-    │   ├── 📄 FlashcardModel.js        # Quản lý bộ thẻ từ vựng cá nhân, thuật toán lặp lại ngắt quãng (SRS)
-    │   ├── 📄 QuestionModel.js         # Quản lý ngân hàng câu hỏi (trắc nghiệm, điền từ, phát âm, tự luận)
-    │   ├── 📄 ExamModel.js             # Quản lý đề thi, câu hỏi trong đề, điểm đạt pass_score, thời lượng thi
-    │   └── 📄 UserExamModel.js         # Quản lý làm bài thi trực tuyến, chấm tự động, chấm tự luận & phản hồi GV
-    │
-    ├── 📂 views/                       # Lớp giao diện hiển thị HTML Template (Tầng View trong MVC)
-    │   ├── 📂 shared/LayoutView.js     # Layout Shell dùng chung
-    │   ├── 📂 admin/                   # 13 View của Cổng Admin
-    │   ├── 📂 teacher/                 # 9 View của Cổng Giảng Viên
-    │   └── 📂 student/                 # 11 View của Cổng Học Viên
-    │
-    └── 📂 controllers/                 # Lớp điều khiển logic nghiệp vụ (Tầng Controller trong MVC)
-        ├── 📂 shared/BaseController.js
-        ├── 📂 admin/                   # 12 Controller của Cổng Admin
-        ├── 📂 teacher/                 # 9 Controller của Cổng Giảng Viên
-        └── 📂 student/                 # 11 Controller của Cổng Học Viên
+└── 📂 wwwroot/                         # TÀI NGUYÊN TĨNH DÙNG CHUNG (STATIC ASSETS)
+    ├── 📂 css/                         # HỆ THỐNG DESIGN SYSTEM CSS THUẦN
+    │   ├── 📄 tokens.css               # Biến Design Tokens: màu sắc, typography, spacing, radius
+    │   ├── 📄 base.css                 # CSS Reset hiện đại, normalize, typography chuẩn
+    │   ├── 📄 layout.css               # CSS Layout: app-layout, sidebar, topbar, grid 12 cột
+    │   └── 📄 components.css           # 40+ UI components: Button, Card, Table, Badge, Modal, Form...
+    ├── 📂 js/                          # JAVASCRIPT GIAO DIỆN & TIỆN ÍCH DÙNG CHUNG
+    │   ├── 📄 site.js                  # Xử lý tương tác UI: mở/đóng sidebar mobile, dropdown, modal, tabs
+    │   └── 📂 core/                    # Module lõi: storage.js, auth.js, eventBus.js, utils.js
+    └── 📂 lib/                         # THƯ VIỆN UI ĐỘC LẬP
+        ├── 📄 icons.js                 # Bộ thư viện 40+ icon SVG thuần
+        ├── 📄 charts.js                # Bộ vẽ biểu đồ cột & donut bằng SVG thuần
+        ├── 📄 modal.js                 # Hộp thoại Modal tương tác
+        ├── 📄 toast.js                 # Thông báo Toast góc màn hình
+        └── 📄 dataTable.js             # Bảng dữ liệu tương tác
 ```
 
 ---
 
-## 🔑 TÀI KHOẢN MẪU DÙNG THỬ (DEMO ACCOUNTS)
+## 🚀 HƯỚNG DẪN MỞ VÀ TRẢI NGHIỆM GIAO DIỆN
 
-Mật khẩu mặc định cho toàn bộ tài khoản mẫu là: **`123456`**
+Bạn có thể xem trước giao diện theo 2 cách cực kỳ nhanh chóng:
 
-| Cổng phân hệ | Email đăng nhập | Họ và tên | File trang chủ |
-| :--- | :--- | :--- | :--- |
-| 🛡️ **Quản Trị Viên (Admin)** | `admin@el.com` | Quản trị viên hệ thống | [`admin/dashboard.html`](admin/dashboard.html) |
-| 👨‍🏫 **Giảng Viên (Teacher)** | `teacher@el.com` | Trần Thị Mai | [`teacher/dashboard.html`](teacher/dashboard.html) |
-| 🎓 **Học Viên (Student)** | `student@el.com` | Lê Quốc Bảo | [`student/dashboard.html`](student/dashboard.html) |
+### Cách 1: Mở trực tiếp bằng trình duyệt (Không cần server)
+- Nhấp đúp chuột vào bất kỳ file `.html` nào trong thư mục `areas/{admin, teacher, student}/views/` (ví dụ: `areas/admin/views/dashboard.html` hoặc `areas/student/views/flashcards.html`).
+- Giao diện sẽ hiển thị đầy đủ bảng dữ liệu, nút bấm, thẻ từ vựng 3D và bố cục chuyên nghiệp.
+- Mọi liên kết thanh điều hướng (Sidebar / Navbar) đã được trỏ trực tiếp đến các file `.html` cùng cấp.
+
+### Cách 2: Mở từ trang chủ `index.html`
+- Mở file `index.html` ở thư mục gốc.
+- Bạn có thể đăng nhập bằng các nút **1-Click Demo** (Admin / Teacher / Student) hoặc bấm trực tiếp vào các nút xem trước:
+  - 👑 **Cổng Quản Trị:** `areas/admin/views/dashboard.html`
+  - 👨‍🏫 **Cổng Giảng Viên:** `areas/teacher/views/dashboard.html`
+  - 🎓 **Cổng Học Viên:** `areas/student/views/dashboard.html`
 
 ---
 
-## 🚀 HƯỚNG DẪN CHẠY DỰ ÁN
+## 💡 ĐẶC ĐIỂM KỸ THUẬT NỔI BẬT
 
-1. Mở thư mục dự án bằng **Visual Studio Code**.
-2. Nhấp chuột phải vào file [`index.html`](index.html) -> Chọn **Open with Live Server**.
-3. Bạn có thể bấm trực tiếp vào bất kỳ file `.html` nào (ví dụ: `admin/users.html`, `teacher/schedule.html`, `student/flashcards.html`) để xem và thao tác trực tiếp trên trang đó!
+1. **Chuẩn kiến trúc ASP.NET Core MVC Areas:** Thư mục được tổ chức theo chuẩn công nghiệp, sẵn sàng để sau này gắn backend C# .NET, Node.js, Spring Boot hoặc PHP mà không cần thay đổi cấu trúc file.
+2. **HTML Thuần & Dữ Liệu Ảo Trực Quan:** Mỗi file trong `views/` chứa toàn bộ thẻ HTML và dữ liệu mẫu phong phú (tên học viên, điểm số, ca học, tiền tệ VND...), dễ dàng xem, chỉnh sửa mã HTML và tham khảo giao diện tổng quan.
+3. **Hiệu năng cao:** Không phụ thuộc thư viện bên ngoài (không dùng Bootstrap, jQuery, Tailwind hay CDN), tải trang nhanh tức thì và hoạt động hoàn hảo offline.
