@@ -26,7 +26,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
 
             var users = query.ToList();
-            return View("~/areas/admin/views/users.html", users);
+            return View("~/Areas/Admin/Views/users.html", users);
         }
 
         // POST: /Admin/Users/Create
@@ -39,7 +39,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 _context.Users.Add(model);
                 return RedirectToAction(nameof(Index));
             }
-            return View("~/areas/admin/views/users.html", model);
+            return View("~/Areas/Admin/Views/users.html", model);
         }
 
         // POST: /Admin/Users/ToggleStatus/5

@@ -23,6 +23,7 @@ yarn-error.log*
 # .NET build artifacts
 bin/
 obj/
+.aspnet/
 *.user
 *.suo
 .local/

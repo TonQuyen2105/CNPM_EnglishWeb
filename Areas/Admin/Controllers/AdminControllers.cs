@@ -9,7 +9,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context = new();
 
-        public IActionResult Index() => View("~/areas/admin/views/teachers.html", _context.Teachers);
+        public IActionResult Index() => View("~/Areas/Admin/Views/teachers.html", _context.Teachers);
 
         [HttpPost]
         public IActionResult Verify(int id)
@@ -25,7 +25,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context = new();
 
-        public IActionResult Index() => View("~/areas/admin/views/subjects.html", _context.Subjects);
+        public IActionResult Index() => View("~/Areas/Admin/Views/subjects.html", _context.Subjects);
     }
 
     [Area("Admin")]
@@ -33,12 +33,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context = new();
 
-        public IActionResult Index() => View("~/areas/admin/views/courses.html", _context.Courses);
+        public IActionResult Index() => View("~/Areas/Admin/Views/courses.html", _context.Courses);
 
         public IActionResult Detail(int id)
         {
             var course = _context.Courses.FirstOrDefault(c => c.Id == id) ?? _context.Courses.First();
-            return View("~/areas/admin/views/course-detail.html", course);
+            return View("~/Areas/Admin/Views/course-detail.html", course);
         }
     }
 
@@ -47,48 +47,48 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context = new();
 
-        public IActionResult Index() => View("~/areas/admin/views/classes.html", _context.CourseClasses);
+        public IActionResult Index() => View("~/Areas/Admin/Views/classes.html", _context.CourseClasses);
 
         public IActionResult Detail(int id)
         {
             var cls = _context.CourseClasses.FirstOrDefault(c => c.Id == id) ?? _context.CourseClasses.First();
-            return View("~/areas/admin/views/class-detail.html", cls);
+            return View("~/Areas/Admin/Views/class-detail.html", cls);
         }
     }
 
     [Area("Admin")]
     public class SchedulesController : Controller
     {
-        public IActionResult Index() => View("~/areas/admin/views/schedules.html");
+        public IActionResult Index() => View("~/Areas/Admin/Views/schedules.html");
     }
 
     [Area("Admin")]
     public class FacilitiesController : Controller
     {
-        public IActionResult Index() => View("~/areas/admin/views/facilities.html");
+        public IActionResult Index() => View("~/Areas/Admin/Views/facilities.html");
     }
 
     [Area("Admin")]
     public class EnrollmentsController : Controller
     {
-        public IActionResult Index() => View("~/areas/admin/views/enrollments.html");
+        public IActionResult Index() => View("~/Areas/Admin/Views/enrollments.html");
     }
 
     [Area("Admin")]
     public class ReviewsController : Controller
     {
-        public IActionResult Index() => View("~/areas/admin/views/reviews.html");
+        public IActionResult Index() => View("~/Areas/Admin/Views/reviews.html");
     }
 
     [Area("Admin")]
     public class ExamsController : Controller
     {
-        public IActionResult Index() => View("~/areas/admin/views/exams.html");
+        public IActionResult Index() => View("~/Areas/Admin/Views/exams.html");
     }
 
     [Area("Admin")]
     public class ReportsController : Controller
     {
-        public IActionResult Index() => View("~/areas/admin/views/reports.html");
+        public IActionResult Index() => View("~/Areas/Admin/Views/reports.html");
     }
 }

@@ -16,7 +16,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             ViewBag.OngoingClasses = _context.CourseClasses.Count(c => c.Status == "ongoing");
             ViewBag.EstimatedRevenue = _context.CalculateEstimatedRevenue().ToString("N0") + " ₫";
 
-            return View("~/areas/admin/views/dashboard.html");
+            return View("~/Areas/Admin/Views/dashboard.html");
         }
     }
 }
