@@ -101,19 +101,19 @@ class AuthService {
       return;
     }
 
-    const path = window.location.pathname;
+    const path = window.location.pathname.toLowerCase();
     const isInSubFolder = path.includes('/areas/');
     const prefix = isInSubFolder ? '../../../' : './';
 
     switch (targetRole) {
       case 'admin':
-        window.location.href = `${prefix}areas/admin/views/dashboard.html`;
+        window.location.href = `${prefix}Areas/Admin/Views/dashboard.html`;
         break;
       case 'teacher':
-        window.location.href = `${prefix}areas/teacher/views/dashboard.html`;
+        window.location.href = `${prefix}Areas/Teacher/Views/dashboard.html`;
         break;
       case 'student':
-        window.location.href = `${prefix}areas/student/views/dashboard.html`;
+        window.location.href = `${prefix}Areas/Student/Views/dashboard.html`;
         break;
       default:
         window.location.href = `${prefix}index.html`;
