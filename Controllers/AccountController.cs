@@ -41,7 +41,7 @@ namespace CNPM_EnglishLearning.Controllers
         // GET: /Account/Logout
         public IActionResult Logout()
         {
-            return RedirectToAction(nameof(Login));
+            return Redirect("/");
         }
     }
 }

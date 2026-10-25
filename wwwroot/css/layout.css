@@ -4,8 +4,83 @@
  */
 
 /* ==========================================================================
-   APP SHELL
+   STUDENT PORTAL NAVBAR (Responsive & Anti-Overflow)
    ========================================================================== */
+.student-navbar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky, 1020);
+  background-color: #FFFFFF;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.student-nav-container {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.student-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.student-nav-menu::-webkit-scrollbar {
+  display: none;
+}
+
+.student-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.student-nav-link:hover {
+  background-color: var(--neutral-100);
+  color: var(--primary-600);
+}
+
+.student-nav-link.active {
+  background-color: var(--primary-50);
+  color: var(--primary-600);
+  font-weight: 700;
+}
+
+.student-streak-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border: 1px solid #FCD34D;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #92400E;
+  white-space: nowrap;
+}
+
 .app-layout {
   display: flex;
   min-height: 100vh;

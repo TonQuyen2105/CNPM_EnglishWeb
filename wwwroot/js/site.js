@@ -54,15 +54,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 3. Xử lý Đăng xuất
-  const logoutBtn = document.getElementById('btn-topbar-logout');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
+  // 3. Xử lý Đăng xuất (Tương thích cả file:// và chạy qua Server)
+  const logoutBtns = document.querySelectorAll('#btn-topbar-logout, #sidebar-logout-btn, #btn-student-logout, .btn-logout, a[href*="logout"]');
+  logoutBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
       e.preventDefault();
-      // Chuyển về trang đăng nhập root
-      window.location.href = '../../../index.html';
+      try {
+        localStorage.removeItem('session_user');
+      } catch (_) {}
+
+      if (window.location.protocol === 'file:') {
+        window.location.href = '../../../index.html';
+      } else {
+        window.location.href = '/';
+      }
     });
-  }
+  });
 
   // 4. Modal Dialogs: Đóng khi nhấn nút đóng hoặc backdrop
   document.addEventListener('click', (e) => {

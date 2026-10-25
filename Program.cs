@@ -46,6 +46,13 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/Areas"
 });
 
+// Phục vụ các file tĩnh ở thư mục gốc (index.html, styleguide.html)
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(builder.Environment.ContentRootPath),
+    RequestPath = ""
+});
+
 app.UseRouting();
 
 app.UseAuthorization();
