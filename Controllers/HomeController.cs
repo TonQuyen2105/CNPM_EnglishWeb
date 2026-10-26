@@ -4,10 +4,11 @@ namespace CNPM_EnglishLearning.Controllers
 {
     public class HomeController : Controller
     {
-        // GET: / hoặc /index.html (Trang đăng nhập công khai)
+        // GET: / hoặc /index.html (Trang chủ công khai cho học viên và phụ huynh)
         [HttpGet("/")]
         [HttpGet("/index.html")]
-        [HttpGet("/Account/Login")]
+        [HttpGet("/Home")]
+        [HttpGet("/Home/Index")]
         public IActionResult Index()
         {
             return View("~/index.html");

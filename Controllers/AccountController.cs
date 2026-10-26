@@ -8,10 +8,13 @@ namespace CNPM_EnglishLearning.Controllers
     {
         private readonly ApplicationDbContext _context = new();
 
-        // GET: /Account/Login
+        // GET: /Account/Login hoặc /login.html hoặc /login
+        [HttpGet("/Account/Login")]
+        [HttpGet("/login")]
+        [HttpGet("/login.html")]
         public IActionResult Login()
         {
-            return View("~/index.html");
+            return View("~/login.html");
         }
 
         // POST: /Account/Login
@@ -26,7 +29,7 @@ namespace CNPM_EnglishLearning.Controllers
             if (user == null)
             {
                 ViewBag.Error = "Email hoặc mật khẩu không chính xác.";
-                return View("~/index.html");
+                return View("~/login.html");
             }
 
             // Chuyển hướng theo vai trò (Role-based redirect)

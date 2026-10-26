@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng nhập - Hệ Thống Quản Lý Trung Tâm Tiếng Anh EnglishLearning</title>
+  <title>EnglishLearning - Học Viện Tiếng Anh Chuẩn Quốc Tế | Trang Chủ</title>
   
   <!-- CSS Design System -->
   <link rel="stylesheet" href="wwwroot/css/tokens.css">
@@ -12,677 +12,914 @@
   <link rel="stylesheet" href="wwwroot/css/components.css">
 
   <style>
-    .auth-page {
-      min-height: 100vh;
-      display: flex;
-      background-color: var(--bg-page);
-    }
-
-    /* Left Hero Column */
-    .auth-hero-col {
-      flex: 1.1;
-      background: linear-gradient(145deg, #1E3A8A 0%, #2563EB 50%, #0EA5E9 100%);
-      color: white;
-      padding: var(--space-12) var(--space-10);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .auth-hero-col::before {
-      content: '';
-      position: absolute;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-      top: -100px;
-      left: -100px;
-      pointer-events: none;
-    }
-
-    .auth-hero-col::after {
-      content: '';
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(14,165,233,0.3) 0%, rgba(14,165,233,0) 70%);
-      bottom: -80px;
-      right: -80px;
-      pointer-events: none;
-    }
-
-    .hero-brand {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      font-size: var(--font-size-xl);
-      font-weight: var(--font-weight-extrabold);
-      letter-spacing: -0.02em;
-      position: relative;
-      z-index: 2;
-    }
-
-    .hero-brand-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-lg);
-      background: rgba(255, 255, 255, 0.2);
+    /* Public Navigation Bar */
+    .landing-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      max-width: 520px;
-      margin: var(--space-8) 0;
-    }
-
-    .hero-title {
-      color: #FFFFFF;
-      font-size: 2.5rem;
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: var(--space-4);
-    }
-
-    .hero-desc {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: var(--font-size-base);
-      line-height: 1.6;
-      margin-bottom: var(--space-8);
-    }
-
-    .hero-features {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    .hero-feature-item {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-medium);
-      color: rgba(255, 255, 255, 0.95);
-    }
-
-    .hero-feature-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .hero-footer {
-      position: relative;
-      z-index: 2;
-      font-size: var(--font-size-xs);
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    /* Right Form Column */
-    .auth-form-col {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: var(--space-8) var(--space-6);
-      background-color: var(--bg-surface);
-      overflow-y: auto;
-    }
-
-    .auth-form-card {
-      width: 100%;
-      max-width: 440px;
-    }
-
-    .auth-header {
-      margin-bottom: var(--space-6);
-    }
-
-    .auth-header h2 {
-      font-size: var(--font-size-2xl);
-      font-weight: 800;
-      color: var(--text-primary);
-      margin-bottom: var(--space-2);
-    }
-
-    .auth-header p {
-      color: var(--text-secondary);
-      font-size: var(--font-size-sm);
-    }
-
-    /* Demo Account Quick Pick */
-    .demo-accounts {
-      margin-bottom: var(--space-6);
-      background-color: var(--primary-50);
-      border: 1px dashed var(--primary-300);
-      border-radius: var(--radius-xl);
-      padding: var(--space-4);
-    }
-
-    .demo-accounts-title {
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-bold);
-      color: var(--primary-700);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: var(--space-3);
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .demo-pills {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-2);
-    }
-
-    .demo-pill-btn {
-      padding: var(--space-2) var(--space-2);
-      background-color: #FFFFFF;
-      border: 1px solid var(--primary-200);
-      border-radius: var(--radius-md);
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-semibold);
-      color: var(--primary-700);
-      text-align: center;
-      transition: all var(--transition-fast);
-      box-shadow: var(--shadow-xs);
-    }
-
-    .demo-pill-btn:hover {
-      background-color: var(--primary-600);
-      color: #FFFFFF;
-      border-color: var(--primary-600);
-      transform: translateY(-1px);
-    }
-
-    .demo-pill-btn span {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: normal;
-      color: inherit;
-      opacity: 0.8;
-    }
-
-    .form-options {
+    .landing-nav-container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      height: 72px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: var(--space-5);
+      gap: 1.5rem;
     }
 
-    .forgot-link {
-      font-size: var(--font-size-xs);
-      font-weight: var(--font-weight-semibold);
+    .landing-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .landing-brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    }
+
+    .landing-brand-text {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary-800);
+      letter-spacing: -0.02em;
+    }
+
+    .landing-brand-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background-color: var(--primary-50);
+      color: var(--primary-700);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+      border: 1px solid var(--primary-200);
+    }
+
+    .landing-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .landing-nav-link {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .landing-nav-link:hover {
       color: var(--primary-600);
     }
 
-    .forgot-link:hover {
-      text-decoration: underline;
+    .landing-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Hero Section */
+    .landing-hero {
+      position: relative;
+      background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #2563EB 100%);
+      color: white;
+      padding: 5rem 1.5rem 6.5rem 1.5rem;
+      overflow: hidden;
+    }
+
+    .landing-hero::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.25) 0%, rgba(14, 165, 233, 0) 70%);
+      top: -150px;
+      right: -100px;
+      pointer-events: none;
+    }
+
+    .landing-hero-content {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 3.5rem;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: var(--radius-full);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #93C5FD;
+      margin-bottom: 1.25rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-heading {
+      font-size: 3.25rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-heading span {
+      background: linear-gradient(135deg, #60A5FA, #93C5FD);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.125rem;
+      line-height: 1.6;
+      color: #E2E8F0;
+      margin-bottom: 2rem;
+      max-width: 620px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-stats-banner {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1.5rem;
+    }
+
+    .stat-number {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .stat-label {
+      font-size: 0.8125rem;
+      color: #CBD5E1;
+      margin-top: 2px;
+    }
+
+    /* Hero Card Login Quick Box */
+    .hero-quick-card {
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: var(--radius-2xl);
+      padding: 2rem;
+      color: var(--text-primary);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    /* Section Styles */
+    .section-wrapper {
+      padding: 5rem 1.5rem;
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 3.5rem auto;
+    }
+
+    .section-tag {
+      display: inline-block;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary-600);
+      margin-bottom: 0.5rem;
+    }
+
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.25;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Course Card Grid */
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+    }
+
+    .course-card-public {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all var(--transition-normal);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .course-card-public:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-300);
+    }
+
+    .course-card-header {
+      height: 150px;
+      padding: 1.5rem;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .course-card-body {
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Feature Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 1.75rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .feature-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background-color: var(--primary-50);
+      color: var(--primary-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Teachers Grid */
+    .teachers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .teacher-card-public {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      border: 1px solid var(--border-color);
+      text-align: center;
+      box-shadow: var(--shadow-xs);
     }
 
     /* Responsive */
-    @media (max-width: 900px) {
-      .auth-hero-col {
+    @media (max-width: 1024px) {
+      .landing-hero-content {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+      .course-grid, .teachers-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .landing-nav-links {
         display: none;
       }
-      .auth-form-col {
-        padding: var(--space-6) var(--space-4);
+    }
+
+    @media (max-width: 640px) {
+      .hero-heading {
+        font-size: 2.25rem;
+      }
+      .course-grid, .teachers-grid, .features-grid, .hero-stats-banner {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
-<body>
+<body style="background-color: #F8FAFC;">
 
-  <div class="auth-page">
-    <!-- Cột trái: Giới thiệu & Minh hoạ -->
-    <div class="auth-hero-col">
-      <div class="hero-brand">
-        <div class="hero-brand-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+  <!-- Header Navigation Công Khai -->
+  <header class="landing-header">
+    <div class="landing-nav-container">
+      <a href="index.html" class="landing-nav-brand">
+        <div class="landing-brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
             <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
             <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
           </svg>
         </div>
-        <span>EnglishLearning</span>
-      </div>
+        <div>
+          <span class="landing-brand-text">EnglishLearning</span>
+          <span class="landing-brand-badge">Academy</span>
+        </div>
+      </a>
 
-      <div class="hero-content">
-        <h1 class="hero-title">Nâng tầm quản trị đào tạo tiếng Anh chuẩn quốc tế</h1>
+      <!-- Menu links -->
+      <nav class="landing-nav-links">
+        <a href="#courses" class="landing-nav-link">Khóa học</a>
+        <a href="#pathway" class="landing-nav-link">Lộ trình đào tạo</a>
+        <a href="#features" class="landing-nav-link">Ưu điểm</a>
+        <a href="#teachers" class="landing-nav-link">Giảng viên</a>
+        <a href="#reviews" class="landing-nav-link">Cảm nhận học viên</a>
+        <a href="#contact" class="landing-nav-link">Liên hệ tư vấn</a>
+      </nav>
+
+      <!-- Nút Đăng nhập & Thi thử -->
+      <div class="landing-header-actions">
+        <a href="login.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+          <span>Đăng nhập</span>
+        </a>
+        <a href="#contact" class="btn btn-primary">Thi thử miễn phí</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="landing-hero">
+    <div class="landing-hero-content">
+      <div>
+        <div class="hero-badge">
+          <span>✨</span>
+          <span>Khóa học mới khai giảng tháng 11/2026 - Đăng ký nhận học bổng 20%</span>
+        </div>
+        <h1 class="hero-heading">
+          Chinh Phục Tiếng Anh – <span>Tự Tin Vươn Ra Thế Giới</span>
+        </h1>
         <p class="hero-desc">
-          Nền tảng tích hợp 3 cổng tương tác chuyên biệt cho Ban Quản trị, Giảng viên và Học viên. Quản lý lớp học, phân công giảng dạy, thẻ nhớ thông minh Spaced Repetition và ngân hàng đề thi toàn diện.
+          Học viện Anh ngữ ứng dụng công nghệ ghi nhớ <strong>Spaced Repetition</strong> cùng phương pháp phản xạ tương tác 1-kèm-1. Cam kết bứt phá chuẩn đầu ra IELTS 7.0+, TOEIC 750+, Giao tiếp lưu loát cho sinh viên và người đi làm.
         </p>
 
-        <div class="hero-features">
-          <div class="hero-feature-item">
-            <div class="hero-feature-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <span>3 Phân hệ tác nghiệp: Quản trị viên, Giáo viên và Học sinh</span>
-          </div>
+        <div class="hero-buttons">
+          <a href="#courses" class="btn btn-primary btn-lg" style="background-color: #3B82F6; border-color: #3B82F6;">
+            Khám phá các khóa học &rarr;
+          </a>
+          <a href="login.html" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.15); color: white; border-color: rgba(255,255,255,0.3); backdrop-filter: blur(8px);">
+            🔐 Vào Cổng Học Tập (Portal)
+          </a>
+        </div>
 
-          <div class="hero-feature-item">
-            <div class="hero-feature-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <span>Ghi nhớ 60+ từ vựng Spaced Repetition & luyện đề 4 dạng câu hỏi</span>
+        <div class="hero-stats-banner">
+          <div>
+            <div class="stat-number">5.000+</div>
+            <div class="stat-label">Học viên đã đào tạo</div>
           </div>
-
-          <div class="hero-feature-item">
-            <div class="hero-feature-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <span>Báo cáo tiến độ và ước tính doanh thu khóa học minh bạch</span>
+          <div>
+            <div class="stat-number">98.5%</div>
+            <div class="stat-label">Đạt cam kết đầu ra</div>
+          </div>
+          <div>
+            <div class="stat-number">8.5</div>
+            <div class="stat-label">IELTS Band cao nhất</div>
+          </div>
+          <div>
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Giảng viên chuẩn quốc tế</div>
           </div>
         </div>
       </div>
 
-      <div class="hero-footer">
-        © 2026 EnglishLearning Center Management System. Bản quyền thuộc về Trung tâm Tiếng Anh.
+      <!-- Khối Đăng Nhập Nhanh / Đăng Ký Trực Quan -->
+      <div class="hero-quick-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--primary-900);">Cổng Học Tập Trực Tuyến</h3>
+          <span class="badge badge-success">Sẵn sàng truy cập</span>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Hệ thống quản lý học tập tích hợp dành cho Học viên, Giảng viên và Quản trị viên.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem;">
+          <a href="login.html" class="btn btn-primary" style="width: 100%; padding: 12px; justify-content: center; font-size: 0.9375rem;">
+            🚀 Đăng nhập vào Hệ thống học tập
+          </a>
+          <div style="font-size: 0.75rem; text-align: center; color: var(--text-muted);">
+            Tài khoản dùng thử demo (1-Click Login): <code>admin@el.com</code>, <code>teacher@el.com</code>, <code>student@el.com</code>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+          <div style="font-weight: 700; font-size: 0.875rem; margin-bottom: 8px;">Tiện ích dành cho học viên:</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.8125rem; color: var(--text-secondary);">
+            <div style="display: flex; align-items: center; gap: 6px;">✓ Thẻ từ Spaced Repetition</div>
+            <div style="display: flex; align-items: center; gap: 6px;">✓ Thi thử IELTS/TOEIC</div>
+            <div style="display: flex; align-items: center; gap: 6px;">✓ Theo dõi tiến độ chi tiết</div>
+            <div style="display: flex; align-items: center; gap: 6px;">✓ Chấm bài Writing & Speaking</div>
+          </div>
+        </div>
       </div>
     </div>
+  </section>
 
-    <!-- Cột phải: Form Đăng nhập -->
-    <div class="auth-form-col">
-      <div class="auth-form-card">
-        <div class="auth-header">
-          <h2>Đăng nhập tài khoản</h2>
-          <p>Vui lòng nhập thông tin xác thực để truy cập vào hệ thống</p>
+  <!-- Danh mục Khóa học Nổi bật -->
+  <section class="section-wrapper" id="courses">
+    <div class="section-header">
+      <span class="section-tag">Chương trình đào tạo</span>
+      <h2 class="section-title">Khóa Học Trọng Điểm Tại EnglishLearning</h2>
+      <p class="section-subtitle">Lộ trình thiết kế bài bản theo khung tham chiếu Châu Âu (CEFR), đáp ứng mục tiêu giao tiếp và chứng chỉ quốc tế.</p>
+    </div>
+
+    <div class="course-grid">
+      <!-- Course 1 -->
+      <div class="course-card-public">
+        <div class="course-card-header" style="background: linear-gradient(135deg, #1E3A8A, #3B82F6);">
+          <span class="badge badge-success" style="align-self: flex-start;">Đang tuyển sinh</span>
+          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Tiếng Anh Giao Tiếp Cơ Bản</h3>
+        </div>
+        <div class="course-card-body">
+          <div>
+            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
+              <span class="badge badge-info">Cơ bản (Beginner)</span>
+              <span class="badge badge-neutral">24 buổi</span>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+              Khóa học nền tảng chuẩn hóa 44 âm IPA, luyện phản xạ đàm thoại 20 chủ đề thông dụng trong đời sống và công sở.
+            </p>
+          </div>
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
+              <strong style="color: var(--primary-600); font-size: 1.25rem;">2.500.000 ₫</strong>
+            </div>
+            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course 2 -->
+      <div class="course-card-public">
+        <div class="course-card-header" style="background: linear-gradient(135deg, #065F46, #10B981);">
+          <span class="badge badge-success" style="align-self: flex-start;">Khóa Hot</span>
+          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Luyện Thi IELTS 6.5+ / 7.5+</h3>
+        </div>
+        <div class="course-card-body">
+          <div>
+            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
+              <span class="badge badge-warning">Nâng cao (Advanced)</span>
+              <span class="badge badge-neutral">36 buổi</span>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+              Chiến thuật giải đề Writing Task 2, Speaking Part 2-3 và phòng thi thử Mock Test 1-kèm-1 cùng giảng viên IELTS 8.5.
+            </p>
+          </div>
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
+              <strong style="color: var(--primary-600); font-size: 1.25rem;">5.800.000 ₫</strong>
+            </div>
+            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course 3 -->
+      <div class="course-card-public">
+        <div class="course-card-header" style="background: linear-gradient(135deg, #7C2D12, #F97316);">
+          <span class="badge badge-success" style="align-self: flex-start;">Cam kết đầu ra</span>
+          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">TOEIC 750+ Cấp Tốc</h3>
+        </div>
+        <div class="course-card-body">
+          <div>
+            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
+              <span class="badge badge-primary">Trung cấp (Intermediate)</span>
+              <span class="badge badge-neutral">30 buổi</span>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+              Bộ bẫy Part 5, 6, 7 độc quyền và kỹ năng nghe bắt từ khóa Part 3, 4 giúp bứt phá 200+ điểm chỉ sau 2 tháng học.
+            </p>
+          </div>
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
+              <strong style="color: var(--primary-600); font-size: 1.25rem;">3.200.000 ₫</strong>
+            </div>
+            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course 4 -->
+      <div class="course-card-public">
+        <div class="course-card-header" style="background: linear-gradient(135deg, #4C1D95, #8B5CF6);">
+          <span class="badge badge-info" style="align-self: flex-start;">Dành cho bé</span>
+          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Tiếng Anh Trẻ Em Super Kids</h3>
+        </div>
+        <div class="course-card-body">
+          <div>
+            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
+              <span class="badge badge-info">Thiếu nhi (6 - 12 tuổi)</span>
+              <span class="badge badge-neutral">20 buổi</span>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+              Phương pháp học tương tác qua bài hát, flashcard hình ảnh vui nhộn, kích thích phản xạ ngôn ngữ tự nhiên như tiếng mẹ đẻ.
+            </p>
+          </div>
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
+              <strong style="color: var(--primary-600); font-size: 1.25rem;">2.200.000 ₫</strong>
+            </div>
+            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course 5 -->
+      <div class="course-card-public">
+        <div class="course-card-header" style="background: linear-gradient(135deg, #1E293B, #475569);">
+          <span class="badge badge-warning" style="align-self: flex-start;">Chuyên sâu</span>
+          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">IELTS Writing Masterclass</h3>
+        </div>
+        <div class="course-card-body">
+          <div>
+            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
+              <span class="badge badge-warning">Học thuật (Advanced)</span>
+              <span class="badge badge-neutral">28 buổi</span>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+              Chuyên sâu Task 1 Biểu đồ & Task 2 Nghị luận xã hội với kho bài mẫu 8.0+ Band và sửa bài viết luận chi tiết từng câu.
+            </p>
+          </div>
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
+              <strong style="color: var(--primary-600); font-size: 1.25rem;">4.500.000 ₫</strong>
+            </div>
+            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course 6 -->
+      <div class="course-card-public">
+        <div class="course-card-header" style="background: linear-gradient(135deg, #831843, #DB2777);">
+          <span class="badge badge-success" style="align-self: flex-start;">Người đi làm</span>
+          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Business English Communication</h3>
+        </div>
+        <div class="course-card-body">
+          <div>
+            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
+              <span class="badge badge-primary">Thương mại (Intermediate)</span>
+              <span class="badge badge-neutral">24 buổi</span>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+              Kỹ năng đàm phán hợp đồng, thuyết trình trước đối tác quốc tế, viết email chuyên nghiệp cho nhân viên công sở và quản lý.
+            </p>
+          </div>
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
+              <strong style="color: var(--primary-600); font-size: 1.25rem;">3.800.000 ₫</strong>
+            </div>
+            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lợi thế Đào tạo (Features) -->
+  <section style="background-color: white; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="section-wrapper" id="features">
+      <div class="section-header">
+        <span class="section-tag">Giá trị cốt lõi</span>
+        <h2 class="section-title">Tại Sao Nên Học Tại EnglishLearning?</h2>
+        <p class="section-subtitle">Môi trường học tập tiêu chuẩn quốc tế giúp bạn tối ưu hóa thời gian và chi phí.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+          </div>
+          <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Phòng LAB Chuẩn Khảo Thí</h3>
+          <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+            Trang bị máy tính cá nhân, tai nghe chống ồn Sony và phần mềm mô phỏng kỳ thi IELTS on Computer và TOEIC Online.
+          </p>
         </div>
 
-        <!-- Khối Đăng Nhập Nhanh Cho Demo -->
-        <div class="demo-accounts">
-          <div class="demo-accounts-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-            <span>Tài khoản Demo (1-Click Login)</span>
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           </div>
-          <div class="demo-pills">
-            <button type="button" class="demo-pill-btn" data-email="admin@el.com" data-role="Admin">
-              <strong>Admin</strong>
-              <span>Quản trị viên</span>
-            </button>
-            <button type="button" class="demo-pill-btn" data-email="teacher@el.com" data-role="Giáo viên">
-              <strong>Teacher</strong>
-              <span>Giảng viên</span>
-            </button>
-            <button type="button" class="demo-pill-btn" data-email="student@el.com" data-role="Học sinh">
-              <strong>Student</strong>
-              <span>Học viên</span>
-            </button>
+          <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Thẻ Từ Vựng Spaced Repetition</h3>
+          <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+            Ứng dụng thuật toán lặp lại ngắt quãng thông minh giúp học viên ghi nhớ 1.000+ từ vựng học thuật mà không bị quên.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Lớp Học Sĩ Số Vàng</h3>
+          <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+            Giới hạn tối đa 15 - 20 học viên/lớp để giảng viên theo sát từng bạn, chỉnh sửa phát âm và chấm bài viết luận trực tiếp.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Cam Kết Đầu Ra Bằng Văn Bản</h3>
+          <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+            Học lại hoàn toàn miễn phí 100% nếu học viên tham gia đầy đủ buổi học và làm bài tập nhưng chưa đạt band điểm kỳ vọng.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Đội ngũ Giảng viên Tiêu biểu -->
+  <section class="section-wrapper" id="teachers">
+    <div class="section-header">
+      <span class="section-tag">Đội ngũ chuyên gia</span>
+      <h2 class="section-title">Giảng Viên Tâm Huyết & Giàu Chuyên Môn</h2>
+      <p class="section-subtitle">100% giảng viên sở hữu chứng chỉ quốc tế IELTS 8.0+, TOEIC 980, Thạc sĩ TESOL và giáo viên bản ngữ.</p>
+    </div>
+
+    <div class="teachers-grid">
+      <div class="teacher-card-public">
+        <div class="avatar avatar-xl" style="background-color: #059669; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">LM</div>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 2px;">Cô Lê Thị Mai</h3>
+        <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">IELTS 8.5 • ThS. TESOL</div>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Chuyên gia đào tạo kỹ năng Speaking và Writing học thuật với hơn 7 năm kinh nghiệm.</p>
+      </div>
+
+      <div class="teacher-card-public">
+        <div class="avatar avatar-xl" style="background-color: #0284C7; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">JS</div>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 2px;">Thầy John Smith</h3>
+        <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">CELTA (Cambridge) • Bản xứ London</div>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Phụ trách phát âm chuẩn IPA Anh - Anh và phản xạ đàm thoại giao tiếp tự nhiên.</p>
+      </div>
+
+      <div class="teacher-card-public">
+        <div class="avatar avatar-xl" style="background-color: #2563EB; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">VH</div>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 2px;">Thầy Nguyễn Văn Hùng</h3>
+        <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">Thạc sĩ ĐH Ngoại Ngữ • TOEIC 980</div>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Hơn 8 năm giảng dạy TOEIC Cấp Tốc và phương pháp bóc tách bẫy đề thi độc quyền.</p>
+      </div>
+
+      <div class="teacher-card-public">
+        <div class="avatar avatar-xl" style="background-color: #7C3AED; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">TH</div>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 2px;">Cô Trần Thu Hà</h3>
+        <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">IELTS 8.0 • Thạc sĩ Ngôn ngữ Anh</div>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Chuyên gia bứt phá band điểm Writing Task 1 và Task 2 cho học viên mất gốc.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cảm nhận Học viên (Reviews) -->
+  <section style="background-color: #EFF6FF; border-top: 1px solid var(--primary-100); border-bottom: 1px solid var(--primary-100);">
+    <div class="section-wrapper" id="reviews">
+      <div class="section-header">
+        <span class="section-tag">Câu chuyện thành công</span>
+        <h2 class="section-title">Học Viên Nói Gì Về EnglishLearning?</h2>
+        <p class="section-subtitle">Hơn 5.000 học viên đã chinh phục mục tiêu tiếng Anh của mình cùng chúng tôi.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.75rem;">
+        <div class="card" style="padding: 1.75rem; background: white;">
+          <div style="color: #F59E0B; margin-bottom: 0.75rem; font-size: 1.25rem;">⭐⭐⭐⭐⭐</div>
+          <p style="font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem;">
+            "Em mất gốc tiếng Anh từ cấp 3. Sau khóa Giao tiếp COMM-01 của cô Mai, em đã tự tin phỏng vấn xin việc bằng tiếng Anh tại công ty đa quốc gia thành công!"
+          </p>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white;">HA</div>
+            <div>
+              <strong>Nguyễn Hoàng Anh</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Khóa Giao Tiếp COMM-01</div>
+            </div>
           </div>
         </div>
 
-        <!-- Form đăng nhập chính -->
-        <form id="login-form" method="POST" action="/Account/Login" novalidate>
-          <!-- Email Field -->
-          <div class="form-group" id="group-email">
-            <label class="form-label" for="login-email">
-              Địa chỉ Email <span class="required">*</span>
-            </label>
-            <div class="input-with-icon">
-              <span class="input-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                  <polyline points="22,6 12,13 2,6"></polyline>
-                </svg>
-              </span>
-              <input 
-                type="email" 
-                id="login-email" 
-                name="email" 
-                class="form-control" 
-                placeholder="ví dụ: admin@el.com" 
-                autocomplete="email"
-                required
-              >
+        <div class="card" style="padding: 1.75rem; background: white;">
+          <div style="color: #F59E0B; margin-bottom: 0.75rem; font-size: 1.25rem;">⭐⭐⭐⭐⭐</div>
+          <p style="font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem;">
+            "Bộ đề thi thử IELTS tại trung tâm mô phỏng cực sát kỳ thi IDP thật. Em thi thật đạt 7.5 Overall, trong đó Writing được 7.5 nhờ các bài chữa chi tiết của cô Hà."
+          </p>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="avatar avatar-sm" style="background-color: #059669; color: white;">PN</div>
+            <div>
+              <strong>Trần Phương Nam</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Đạt IELTS 7.5 (Target 6.5)</div>
             </div>
-            <div class="form-error" id="error-email">Vui lòng nhập địa chỉ email hợp lệ.</div>
           </div>
+        </div>
 
-          <!-- Password Field -->
-          <div class="form-group" id="group-password">
-            <label class="form-label" for="login-password">
-              Mật khẩu <span class="required">*</span>
-            </label>
-            <div class="input-with-icon">
-              <span class="input-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-              </span>
-              <input 
-                type="password" 
-                id="login-password" 
-                name="password" 
-                class="form-control has-right-icon" 
-                placeholder="Nhập mật khẩu (demo: 123456)" 
-                autocomplete="current-password"
-                required
-              >
-              <button type="button" class="input-icon-right" id="toggle-password-btn" aria-label="Ẩn / Hiện mật khẩu">
-                <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              </button>
+        <div class="card" style="padding: 1.75rem; background: white;">
+          <div style="color: #F59E0B; margin-bottom: 0.75rem; font-size: 1.25rem;">⭐⭐⭐⭐⭐</div>
+          <p style="font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem;">
+            "Thầy Hùng dạy rất hài hước và nhiều mẹo loại trừ bẫy Part 5, Part 7 cực kỳ hay. Sau 2 tháng học TOEIC cấp tốc, em tăng từ 520 lên 815 điểm!"
+          </p>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="avatar avatar-sm" style="background-color: #D97706; color: white;">ML</div>
+            <div>
+              <strong>Vũ Mai Linh</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Đạt TOEIC 815 Điểm</div>
             </div>
-            <div class="form-error" id="error-password">Vui lòng nhập mật khẩu.</div>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-          <!-- Options -->
-          <div class="form-options">
-            <label class="form-check">
-              <input type="checkbox" id="remember-me" checked>
-              <span>Ghi nhớ phiên đăng nhập</span>
-            </label>
-            <a href="javascript:void(0)" class="forgot-link" id="btn-forgot-password">Quên mật khẩu?</a>
+  <!-- Form Đăng ký tư vấn & Thi thử miễn phí -->
+  <section class="section-wrapper" id="contact">
+    <div style="background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); border-radius: var(--radius-2xl); padding: 4rem 3rem; color: white; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+      <div>
+        <span class="badge" style="background: rgba(255,255,255,0.2); color: white; margin-bottom: 1rem;">Đăng ký miễn phí</span>
+        <h2 style="font-size: 2.25rem; font-weight: 800; line-height: 1.25; margin-bottom: 1rem; color: white;">
+          Nhận Tư Vấn Lộ Trình & Bài Thi Thử Xếp Lớp Ngay Hôm Nay
+        </h2>
+        <p style="color: #E2E8F0; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          Để lại thông tin để chuyên gia học thuật của EnglishLearning liên hệ tư vấn lộ trình học phù hợp nhất với trình độ hiện tại của bạn.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9375rem;">
+          <div>📞 Hotline tư vấn 24/7: <strong>0909 123 456</strong></div>
+          <div>📍 Trụ sở chính: Tòa nhà EnglishLearning, Q.1, TP. Hồ Chí Minh</div>
+          <div>⏰ Giờ làm việc: 08:00 - 21:30 (Thứ 2 đến Chủ nhật)</div>
+        </div>
+      </div>
+
+      <!-- Form nhập -->
+      <div style="background: white; padding: 2.25rem; border-radius: var(--radius-xl); color: var(--text-primary); box-shadow: var(--shadow-xl);">
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--primary-900);">Đăng ký nhận ưu đãi 20%</h3>
+        <form id="public-register-form">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Họ và tên của bạn <span style="color:red;">*</span></label>
+            <input type="text" class="form-control" placeholder="Ví dụ: Nguyễn Văn An" required>
           </div>
-
-          <!-- Submit Button -->
-          <button type="submit" class="btn btn-primary btn-lg" id="btn-submit" style="width: 100%;">
-            <span>Đăng nhập hệ thống</span>
+          <div class="grid grid-cols-2 gap-3" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số điện thoại <span style="color:red;">*</span></label>
+              <input type="tel" class="form-control" placeholder="0912 345 678" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Email nhận kết quả</label>
+              <input type="email" class="form-control" placeholder="an.nguyen@gmail.com">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học bạn đang quan tâm</label>
+            <select class="form-control">
+              <option value="comm">Tiếng Anh Giao Tiếp Thực Chiến</option>
+              <option value="ielts">Luyện Thi IELTS 6.5+ / 7.5+</option>
+              <option value="toeic">Luyện Thi TOEIC 750+ Cấp Tốc</option>
+              <option value="kids">Tiếng Anh Thiếu Nhi Super Kids</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;">
+            Gửi yêu cầu đăng ký tư vấn &rarr;
           </button>
         </form>
+      </div>
+    </div>
+  </section>
 
-        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color); text-align: center;">
-          <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.75rem;">
-            Truy cập trực tiếp giao diện HTML (Static Preview):
+  <!-- Footer -->
+  <footer style="background-color: #0F172A; color: #94A3B8; padding: 4rem 1.5rem 2rem 1.5rem; border-top: 1px solid #1E293B;">
+    <div style="max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+          <div class="landing-brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
           </div>
-          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-            <a href="areas/admin/views/dashboard.html" class="btn btn-sm btn-secondary">👑 Cổng Quản Trị</a>
-            <a href="areas/teacher/views/dashboard.html" class="btn btn-sm btn-secondary">👨‍🏫 Cổng Giảng Viên</a>
-            <a href="areas/student/views/dashboard.html" class="btn btn-sm btn-secondary">🎓 Cổng Học Viên</a>
-          </div>
+          <span style="font-size: 1.25rem; font-weight: 800; color: white;">EnglishLearning</span>
         </div>
+        <p style="font-size: 0.875rem; line-height: 1.6; max-width: 380px;">
+          Hệ thống đào tạo Anh ngữ chuẩn quốc tế hàng đầu, tiên phong ứng dụng công nghệ Spaced Repetition và phòng học LAB khảo thí hiện đại.
+        </p>
+      </div>
 
-        <div style="margin-top: 1.25rem; text-align: center; font-size: 0.8125rem; color: var(--text-secondary);">
-          Xem trước các thành phần UI: <a href="styleguide.html" style="font-weight: 600;">Trang Design System Style Guide &rarr;</a>
+      <div>
+        <h4 style="color: white; font-size: 0.9375rem; font-weight: 700; margin-bottom: 1rem;">Chương trình học</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.875rem;">
+          <a href="#courses" style="color: #94A3B8; text-decoration: none;">Tiếng Anh Giao Tiếp</a>
+          <a href="#courses" style="color: #94A3B8; text-decoration: none;">Luyện Thi IELTS</a>
+          <a href="#courses" style="color: #94A3B8; text-decoration: none;">Luyện Thi TOEIC</a>
+          <a href="#courses" style="color: #94A3B8; text-decoration: none;">Tiếng Anh Trẻ Em</a>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="color: white; font-size: 0.9375rem; font-weight: 700; margin-bottom: 1rem;">Cổng trực tuyến</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.875rem;">
+          <a href="login.html" style="color: #60A5FA; text-decoration: none;">Đăng nhập hệ thống</a>
+          <a href="Areas/Student/Views/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Học viên (Student)</a>
+          <a href="Areas/Teacher/Views/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Giảng viên (Teacher)</a>
+          <a href="Areas/Admin/Views/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Quản trị (Admin)</a>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="color: white; font-size: 0.9375rem; font-weight: 700; margin-bottom: 1rem;">Hỗ trợ & Liên hệ</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.875rem;">
+          <div>Hotline: 0909 123 456</div>
+          <div>Email: contact@el.com</div>
+          <div>Địa chỉ: Q.1, TP. Hồ Chí Minh</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Interactive Script (Tương thích 100% khi mở file:// và khi chạy qua Server) -->
+    <div style="max-width: 1320px; margin: 0 auto; border-top: 1px solid #1E293B; padding-top: 1.5rem; text-align: center; font-size: 0.8125rem;">
+      © 2026 EnglishLearning Center Management System. Bản quyền thuộc về Trung tâm Tiếng Anh.
+    </div>
+  </footer>
+
+  <!-- Notification Toast -->
+  <div class="toast-container"></div>
+
+  <!-- Interactive Script -->
   <script>
-    // 1. Danh sách tài khoản mẫu mặc định
-    const MOCK_USERS = [
-      { id: 1, email: 'admin@el.com', password: '123456', full_name: 'Nguyễn Quản Trị', role: 'admin', is_active: true },
-      { id: 2, email: 'teacher@el.com', password: '123456', full_name: 'Lê Thị Mai', role: 'teacher', is_active: true },
-      { id: 3, email: 'hung.nguyen@el.com', password: '123456', full_name: 'Nguyễn Văn Hùng', role: 'teacher', is_active: true },
-      { id: 4, email: 'huy.pham@el.com', password: '123456', full_name: 'Phạm Quang Huy', role: 'teacher', is_active: true },
-      { id: 5, email: 'student@el.com', password: '123456', full_name: 'Nguyễn Hoàng Anh', role: 'student', is_active: true },
-      { id: 6, email: 'nam.tran@el.com', password: '123456', full_name: 'Trần Phương Nam', role: 'student', is_active: true },
-      { id: 7, email: 'ngan.le@el.com', password: '123456', full_name: 'Lê Thị Kim Ngân', role: 'student', is_active: false }
-    ];
-
-    // 2. Hệ thống Toast thông báo độc lập
-    const toast = {
-      show(message, type = 'info', title = 'Thông báo') {
-        let container = document.querySelector('.toast-container');
-        if (!container) {
-          container = document.createElement('div');
-          container.className = 'toast-container';
-          document.body.appendChild(container);
-        }
-        const item = document.createElement('div');
-        item.className = `toast toast-${type}`;
-        item.innerHTML = `
-          <div class="toast-body">
-            <div class="toast-title" style="font-weight: 700; margin-bottom: 2px;">${title}</div>
-            <div class="toast-message" style="font-size: 0.85rem;">${message}</div>
-          </div>
-        `;
-        container.appendChild(item);
-        setTimeout(() => {
-          item.style.opacity = '0';
-          item.style.transform = 'translateY(-8px)';
-          item.style.transition = 'all 0.3s ease';
-          setTimeout(() => item.remove(), 300);
-        }, 3200);
-      },
-      success(msg, title = 'Thành công') { this.show(msg, 'success', title); },
-      error(msg, title = 'Lỗi') { this.show(msg, 'error', title); },
-      info(msg, title = 'Thông báo') { this.show(msg, 'info', title); }
-    };
-
-    // 3. Modal Dialog "Quên mật khẩu"
-    const modal = {
-      open({ title, body, footer }) {
-        let modalEl = document.getElementById('app-modal');
-        if (!modalEl) {
-          modalEl = document.createElement('div');
-          modalEl.id = 'app-modal';
-          modalEl.className = 'modal-backdrop';
-          modalEl.innerHTML = `
-            <div class="modal-dialog">
-              <div class="modal-header">
-                <h3 class="modal-title" id="app-modal-title"></h3>
-                <button type="button" class="modal-close" id="app-modal-close" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
-              </div>
-              <div class="modal-body" id="app-modal-body"></div>
-              <div class="modal-footer" id="app-modal-footer"></div>
-            </div>
-          `;
-          document.body.appendChild(modalEl);
-          document.getElementById('app-modal-close').onclick = () => modal.close();
-          modalEl.onclick = (e) => { if (e.target === modalEl) modal.close(); };
-        }
-        document.getElementById('app-modal-title').textContent = title;
-        document.getElementById('app-modal-body').innerHTML = body;
-        document.getElementById('app-modal-footer').innerHTML = footer;
-        modalEl.querySelectorAll('[data-dismiss="modal"]').forEach(b => b.onclick = () => modal.close());
-        modalEl.classList.add('is-open');
-      },
-      close() {
-        const modalEl = document.getElementById('app-modal');
-        if (modalEl) modalEl.classList.remove('is-open');
-      }
-    };
-
-    // 4. Toggle ẩn / hiện mật khẩu
-    const passwordInput = document.getElementById('login-password');
-    const togglePasswordBtn = document.getElementById('toggle-password-btn');
-    const eyeIcon = document.getElementById('eye-icon');
-
-    if (togglePasswordBtn && passwordInput) {
-      togglePasswordBtn.addEventListener('click', () => {
-        const isPassword = passwordInput.getAttribute('type') === 'password';
-        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-        eyeIcon.innerHTML = isPassword
-          ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
-          : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
-      });
-    }
-
-    // 5. Nút Quick Login 1-Click (Admin / Teacher / Student)
-    const demoBtns = document.querySelectorAll('.demo-pill-btn');
-    const emailInput = document.getElementById('login-email');
-
-    demoBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const email = btn.getAttribute('data-email');
-        if (emailInput) emailInput.value = email;
-        if (passwordInput) passwordInput.value = '123456';
-        clearErrors();
-        toast.info(`Đã điền tài khoản: ${email}`);
-      });
-    });
-
-    // 6. Quên mật khẩu Dialog
-    const forgotLink = document.getElementById('btn-forgot-password');
-    if (forgotLink) {
-      forgotLink.addEventListener('click', () => {
-        modal.open({
-          title: 'Khôi phục mật khẩu',
-          body: `
-            <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
-              <p>Hệ thống hiện tại đang sử dụng các tài khoản demo mặc định:</p>
-              <div style="background-color: var(--primary-50); padding: 1rem; border-radius: 12px; margin: 1rem 0; border: 1px solid var(--primary-200);">
-                <strong style="color: var(--primary-700); display: block; margin-bottom: 0.5rem;">Tài khoản mặc định:</strong>
-                <ul style="list-style: disc; padding-left: 1.25rem; margin: 0; color: var(--text-primary);">
-                  <li>Quản trị viên: <code>admin@el.com</code> / Mật khẩu: <code>123456</code></li>
-                  <li>Giáo viên: <code>teacher@el.com</code> / Mật khẩu: <code>123456</code></li>
-                  <li>Học sinh: <code>student@el.com</code> / Mật khẩu: <code>123456</code></li>
-                </ul>
-              </div>
-            </div>
-          `,
-          footer: `<button type="button" class="btn btn-primary" data-dismiss="modal">Đã hiểu</button>`
-        });
-      });
-    }
-
-    // 7. Xử lý Form Validation & Đăng nhập
-    const loginForm = document.getElementById('login-form');
-    const btnSubmit = document.getElementById('btn-submit');
-    const groupEmail = document.getElementById('group-email');
-    const groupPassword = document.getElementById('group-password');
-    const errorEmail = document.getElementById('error-email');
-    const errorPassword = document.getElementById('error-password');
-
-    function clearErrors() {
-      if (groupEmail) groupEmail.classList.remove('has-error');
-      if (emailInput) emailInput.classList.remove('is-invalid');
-      if (groupPassword) groupPassword.classList.remove('has-error');
-      if (passwordInput) passwordInput.classList.remove('is-invalid');
-    }
-
-    function getPortalUrl(role) {
-      switch ((role || '').toLowerCase()) {
-        case 'admin':
-          return 'Areas/Admin/Views/dashboard.html';
-        case 'teacher':
-          return 'Areas/Teacher/Views/dashboard.html';
-        case 'student':
-          return 'Areas/Student/Views/dashboard.html';
-        default:
-          return 'index.html';
-      }
-    }
-
-    if (loginForm) {
-      loginForm.addEventListener('submit', (e) => {
+    const form = document.getElementById('public-register-form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
         e.preventDefault();
-        clearErrors();
-
-        const email = (emailInput?.value || '').trim();
-        const password = passwordInput?.value || '';
-
-        let hasError = false;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!email) {
-          if (groupEmail) groupEmail.classList.add('has-error');
-          if (emailInput) emailInput.classList.add('is-invalid');
-          if (errorEmail) errorEmail.textContent = 'Vui lòng nhập địa chỉ email.';
-          hasError = true;
-        } else if (!emailRegex.test(email)) {
-          if (groupEmail) groupEmail.classList.add('has-error');
-          if (emailInput) emailInput.classList.add('is-invalid');
-          if (errorEmail) errorEmail.textContent = 'Địa chỉ email không đúng định dạng.';
-          hasError = true;
-        }
-
-        if (!password) {
-          if (groupPassword) groupPassword.classList.add('has-error');
-          if (passwordInput) passwordInput.classList.add('is-invalid');
-          if (errorPassword) errorPassword.textContent = 'Vui lòng nhập mật khẩu.';
-          hasError = true;
-        }
-
-        if (hasError) return;
-
-        if (btnSubmit) {
-          btnSubmit.classList.add('loading');
-          btnSubmit.disabled = true;
-        }
-
-        // Tìm người dùng trong MOCK_USERS hoặc localStorage
-        let user = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
-        try {
-          const storedUsers = JSON.parse(localStorage.getItem('table_users') || '[]');
-          if (Array.isArray(storedUsers) && storedUsers.length > 0) {
-            const found = storedUsers.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
-            if (found) user = found;
-          }
-        } catch (_) {}
-
-        if (!user) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
-          if (groupEmail) groupEmail.classList.add('has-error');
-          if (emailInput) emailInput.classList.add('is-invalid');
-          if (errorEmail) errorEmail.textContent = 'Email hoặc mật khẩu không chính xác.';
-          toast.error('Email hoặc mật khẩu không chính xác.');
-          return;
-        }
-
-        if (user.password !== password) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
-          if (groupPassword) groupPassword.classList.add('has-error');
-          if (passwordInput) passwordInput.classList.add('is-invalid');
-          if (errorPassword) errorPassword.textContent = 'Mật khẩu không chính xác.';
-          toast.error('Mật khẩu không chính xác.');
-          return;
-        }
-
-        if (user.is_active === 0 || user.is_active === false) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
-          toast.error('Tài khoản này hiện đang bị khóa. Vui lòng liên hệ quản trị viên.');
-          return;
-        }
-
-        // Lưu thông tin phiên đăng nhập
-        try {
-          localStorage.setItem('session_user', JSON.stringify({
-            id: user.id,
-            email: user.email,
-            full_name: user.full_name,
-            role: user.role,
-            avatar_url: user.avatar_url || ''
-          }));
-        } catch (_) {}
-
-        toast.success(`Đăng nhập thành công! Xin chào ${user.full_name}.`, 'Đăng nhập thành công');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang gửi thông tin...';
 
         setTimeout(() => {
-          const targetUrl = getPortalUrl(user.role);
-          window.location.href = targetUrl;
-        }, 500);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Gửi yêu cầu đăng ký tư vấn →';
+          form.reset();
+
+          // Show Toast notification
+          const container = document.querySelector('.toast-container');
+          if (container) {
+            const item = document.createElement('div');
+            item.className = 'toast toast-success';
+            item.innerHTML = `
+              <div class="toast-body">
+                <div class="toast-title" style="font-weight: 700;">Đăng ký thành công!</div>
+                <div class="toast-message" style="font-size: 0.85rem;">Cảm ơn bạn. Chuyên viên học vụ của EnglishLearning sẽ liên hệ tư vấn trong 15 phút tới.</div>
+              </div>
+            `;
+            container.appendChild(item);
+            setTimeout(() => {
+              item.style.opacity = '0';
+              item.style.transition = 'all 0.3s ease';
+              setTimeout(() => item.remove(), 300);
+            }, 3500);
+          }
+        }, 600);
       });
     }
   </script>

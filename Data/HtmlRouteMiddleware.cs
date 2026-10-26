@@ -53,15 +53,24 @@ namespace CNPM_EnglishLearning.Data
             MapDefaultArea("Teacher", "dashboard.html");
             MapDefaultArea("Student", "dashboard.html");
 
-            // 3. Ánh xạ các trang gốc (Login, Style Guide)
+            // 3. Ánh xạ các trang gốc (Trang chủ công khai, Đăng nhập, Style Guide)
             var indexFile = Path.Combine(_contentRoot, "index.html");
             if (File.Exists(indexFile))
             {
                 _viewMap["/"] = indexFile;
                 _viewMap["/index.html"] = indexFile;
-                _viewMap["/Account/Login"] = indexFile;
-                _viewMap["/Account/Logout"] = indexFile;
-                _viewMap["/logout"] = indexFile;
+                _viewMap["/Home"] = indexFile;
+                _viewMap["/Home/Index"] = indexFile;
+            }
+
+            var loginFile = Path.Combine(_contentRoot, "login.html");
+            if (File.Exists(loginFile))
+            {
+                _viewMap["/login.html"] = loginFile;
+                _viewMap["/login"] = loginFile;
+                _viewMap["/Account/Login"] = loginFile;
+                _viewMap["/Account/Logout"] = loginFile;
+                _viewMap["/logout"] = loginFile;
             }
 
             var styleguideFile = Path.Combine(_contentRoot, "styleguide.html");
