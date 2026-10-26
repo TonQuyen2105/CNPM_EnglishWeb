@@ -102,6 +102,8 @@ namespace CNPM_EnglishLearning.Data
                 new Flashcard { Id = 1, UserId = 5, Word = "Negotiation", Meaning = "Sự đàm phán, thương lượng", Phonetic = "/nɪˌɡoʊ.ʃiˈeɪ.ʃən/", ExampleSentence = "The agreement was reached after months of tough negotiations.", IntervalDays = 1, CreatedAt = pastMonth },
                 new Flashcard { Id = 2, UserId = 5, Word = "Comprehensive", Meaning = "Toàn diện, bao quát", Phonetic = "/ˌkɑːm.prəˈhen.sɪv/", ExampleSentence = "We offer a comprehensive training programme for all new staff.", IntervalDays = 3, CreatedAt = pastMonth }
             });
+
+            Console.WriteLine($"[DbInitializer] Đã nạp thành công dữ liệu mẫu vào ApplicationDbContext: {context.Users.Count} Users, {context.Teachers.Count} Teachers, {context.Courses.Count} Courses, {context.Enrollments.Count} Enrollments.");
         }
     }
 }
