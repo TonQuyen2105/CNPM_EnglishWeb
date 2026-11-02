@@ -2,9 +2,13 @@ using CNPM_EnglishLearning.Services.Interfaces;
 using CNPM_EnglishLearning.Services.Implementations;
 using CNPM_EnglishLearning.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add MVC services to the container
 builder.Services.AddControllersWithViews();
@@ -21,9 +25,6 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IExamService, ExamService>();
 
 var app = builder.Build();
-
-// Khởi tạo và nạp dữ liệu mẫu vào ApplicationDbContext khi ứng dụng khởi động
-var initialDb = new ApplicationDbContext();
 
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
@@ -75,20 +76,19 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Endpoint kiểm tra nhanh trạng thái dữ liệu mẫu trong ApplicationDbContext
-app.MapGet("/api/db-status", () =>
+app.MapGet("/api/db-status", (ApplicationDbContext db) =>
 {
-    var db = new ApplicationDbContext();
     return Results.Ok(new
     {
         status = "Success",
         message = "ApplicationDbContext đã được nạp dữ liệu mẫu từ DbInitializer!",
-        users = db.Users.Count,
-        teachers = db.Teachers.Count,
-        subjects = db.Subjects.Count,
-        courses = db.Courses.Count,
-        classes = db.CourseClasses.Count,
-        enrollments = db.Enrollments.Count,
-        flashcards = db.Flashcards.Count,
+        users = db.Users.Count(),
+        teachers = db.Teachers.Count(),
+        subjects = db.Subjects.Count(),
+        courses = db.Courses.Count(),
+        classes = db.CourseClasses.Count(),
+        enrollments = db.Enrollments.Count(),
+        flashcards = db.Flashcards.Count(),
         estimatedRevenue = db.CalculateEstimatedRevenue()
     });
 });
