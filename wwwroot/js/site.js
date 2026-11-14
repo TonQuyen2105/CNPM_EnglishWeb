@@ -57,8 +57,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Xử lý Đăng xuất (Tương thích cả file:// và chạy qua Server)
   const logoutBtns = document.querySelectorAll('#btn-topbar-logout, #sidebar-logout-btn, #btn-student-logout, .btn-logout, a[href*="logout"]');
   logoutBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       e.preventDefault();
+      if (window.location.protocol !== 'file:') {
+        try {
+          const response = await fetch('/Account/TeacherSession', { method: 'DELETE' });
+          if (!response.ok) throw new Error('Logout failed');
+        } catch (_) {
+          alert('Chưa đăng xuất được. Vui lòng thử lại.');
+          return;
+        }
+      }
       try {
         localStorage.removeItem('session_user');
       } catch (_) {}

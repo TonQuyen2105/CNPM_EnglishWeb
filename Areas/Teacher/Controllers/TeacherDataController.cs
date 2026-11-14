@@ -1,0 +1,150 @@
+using System.Security.Claims;
+using CNPM_EnglishLearning.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace CNPM_EnglishLearning.Areas.Teacher.Controllers;
+
+[Area("Teacher")]
+[Authorize(Roles = "teacher")]
+[Route("api/teacher")]
+public class TeacherDataController(ApplicationDbContext db) : ControllerBase
+{
+    [HttpGet("{page}")]
+    public async Task<IActionResult> Get(string page, int? id, CancellationToken cancellationToken)
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            return Forbid();
+
+        var profile = await (
+            from teacher in db.Teachers
+            join user in db.Users on teacher.UserId equals user.Id
+            where user.Id == userId && user.IsActive && user.Role == "teacher"
+            select new
+            {
+                teacher.Id, user.FullName, user.Email, teacher.Bio,
+                teacher.Qualification, teacher.IsVerified
+            }).SingleOrDefaultAsync(cancellationToken);
+        if (profile is null)
+            return Forbid();
+
+        var classes = db.CourseClasses.Where(courseClass => db.ClassTeachers.Any(
+            assignment => assignment.TeacherId == profile.Id && assignment.ClassId == courseClass.Id));
+        var courses = db.Courses.Where(course => classes.Any(courseClass => courseClass.CourseId == course.Id));
+        var lessons = db.Lessons.Where(lesson => courses.Any(course => course.Id == lesson.CourseId));
+        var exams = db.Exams.Where(exam => exam.CreatedByTeacherId == profile.Id);
+        var attempts = db.UserExams.Where(attempt => exams.Any(exam => exam.Id == attempt.ExamId)
+            && attempt.SubmittedAt != null);
+        var schedule =
+            from item in db.ClassSchedules
+            join courseClass in classes on item.ClassId equals courseClass.Id
+            join room in db.Classrooms on item.ClassroomId equals room.Id
+            join slot in db.TimeSlots on item.TimeSlotId equals slot.Id
+            orderby item.DayOfWeek, slot.StartTime
+            select new
+            {
+                courseClass.ClassCode, courseClass.ClassName, item.DayOfWeek,
+                Room = room.Name, slot.StartTime, slot.EndTime,
+                courseClass.StartDate, courseClass.EndDate, courseClass.Status
+            };
+
+        object data;
+        switch (page)
+        {
+            case "dashboard":
+                var today = DateTime.UtcNow.AddHours(7).Date;
+                var day = (int)today.DayOfWeek + 1;
+                var date = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+                data = new
+                {
+                    ActiveClasses = await classes.CountAsync(c => c.Status == "ongoing", cancellationToken),
+                    Students = await db.Enrollments.Where(e => e.Status == "active"
+                        && classes.Any(c => c.Id == e.ClassId)).Select(e => e.UserId).Distinct().CountAsync(cancellationToken),
+                    Pending = await db.UserExamAnswers.CountAsync(a => a.GradingStatus == "pending_review"
+                        && attempts.Any(t => t.Id == a.UserExamId), cancellationToken),
+                    Today = await schedule.Where(s => s.DayOfWeek == day && s.Status != "cancelled"
+                        && s.StartDate <= date && s.EndDate >= date).ToListAsync(cancellationToken)
+                };
+                break;
+            case "classes":
+                data = await classes.OrderBy(c => c.ClassCode).Select(c => new
+                {
+                    c.Id, c.ClassCode, c.ClassName, c.Status, c.MaxStudents,
+                    Students = db.Enrollments.Count(e => e.ClassId == c.Id && e.Status == "active")
+                }).ToListAsync(cancellationToken);
+                break;
+            case "class-detail":
+                var detail = await classes.Where(c => c.Id == id).Select(c => new
+                {
+                    c.ClassCode, c.ClassName, c.StartDate, c.EndDate, c.Status
+                }).SingleOrDefaultAsync(cancellationToken);
+                if (detail is null)
+                    return NotFound();
+                data = new
+                {
+                    Class = detail,
+                    Students = await (
+                        from enrollment in db.Enrollments
+                        join user in db.Users on enrollment.UserId equals user.Id
+                        where enrollment.ClassId == id
+                        orderby user.FullName
+                        select new { user.FullName, user.Email, enrollment.Status }).ToListAsync(cancellationToken)
+                };
+                break;
+            case "schedule":
+                data = await schedule.ToListAsync(cancellationToken);
+                break;
+            case "lessons":
+                data = await (
+                    from lesson in lessons
+                    join course in courses on lesson.CourseId equals course.Id
+                    orderby course.Title, lesson.OrderIndex
+                    select new { Course = course.Title, lesson.OrderIndex, lesson.Title, lesson.ContentType, lesson.Content })
+                    .ToListAsync(cancellationToken);
+                break;
+            case "questions":
+                data = await db.Questions.Where(q => lessons.Any(l => l.Id == q.LessonId)
+                    || db.ExamQuestions.Any(eq => eq.QuestionId == q.Id && exams.Any(e => e.Id == eq.ExamId)))
+                    .OrderBy(q => q.Id).Select(q => new
+                    {
+                        q.QuestionText, q.QuestionType, q.DefaultPoints,
+                        Options = db.QuestionOptions.Where(o => o.QuestionId == q.Id)
+                            .OrderBy(o => o.Id).Select(o => new { o.OptionText, o.IsCorrect }).ToList(),
+                        Answers = db.QuestionAnswers.Where(a => a.QuestionId == q.Id)
+                            .OrderBy(a => a.Id).Select(a => a.AnswerText).ToList()
+                    })
+                    .ToListAsync(cancellationToken);
+                break;
+            case "exams":
+                data = await exams.OrderBy(e => e.Title).Select(e => new
+                {
+                    e.Title, e.DurationMinutes, e.IsPublished,
+                    Course = db.Courses.Where(c => c.Id == e.CourseId).Select(c => c.Title).FirstOrDefault(),
+                    Questions = db.ExamQuestions.Count(q => q.ExamId == e.Id),
+                    Submissions = attempts.Count(a => a.ExamId == e.Id)
+                }).ToListAsync(cancellationToken);
+                break;
+            case "grading":
+                // The workspace loads classes first, then the selected roster and attempt.
+                data = Array.Empty<object>();
+                break;
+            case "results":
+                data = await (
+                    from attempt in attempts
+                    join exam in exams on attempt.ExamId equals exam.Id
+                    join student in db.Users on attempt.UserId equals student.Id
+                    orderby attempt.SubmittedAt descending
+                    select new { exam.Title, student.FullName, attempt.AttemptNumber, attempt.TotalScore, attempt.Status })
+                    .ToListAsync(cancellationToken);
+                break;
+            case "profile":
+                data = profile;
+                break;
+            default:
+                return NotFound();
+        }
+
+        return Ok(new { profile, data });
+    }
+}

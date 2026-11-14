@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using CNPM_EnglishLearning.Areas.Teacher.ViewModels;
-using CNPM_EnglishLearning.Data;
 
 namespace CNPM_EnglishLearning.Areas.Teacher.Controllers
 {
@@ -14,7 +12,7 @@ namespace CNPM_EnglishLearning.Areas.Teacher.Controllers
     public class ClassesController : Controller
     {
         public IActionResult Index() => View("~/Areas/Teacher/Views/classes.html");
-        public IActionResult Detail(int id) => View("~/Areas/Teacher/Views/class-detail.html");
+        public IActionResult Detail(int id) => Redirect($"/Teacher/class-detail.html?id={id}");
     }
 
     [Area("Teacher")]
@@ -46,12 +44,6 @@ namespace CNPM_EnglishLearning.Areas.Teacher.Controllers
     {
         public IActionResult Index() => View("~/Areas/Teacher/Views/grading.html");
 
-        [HttpPost]
-        public IActionResult SubmitGrade(GradingViewModel model)
-        {
-            // Xử lý lưu điểm bài thi tự luận
-            return RedirectToAction(nameof(Index));
-        }
     }
 
     [Area("Teacher")]

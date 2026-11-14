@@ -320,29 +320,6 @@
         </div>
 
         <!-- Khối Đăng Nhập Nhanh Cho Demo -->
-        <div class="demo-accounts">
-          <div class="demo-accounts-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-            <span>Tài khoản Demo (1-Click Login)</span>
-          </div>
-          <div class="demo-pills">
-            <button type="button" class="demo-pill-btn" data-email="admin@el.com" data-role="Admin">
-              <strong>Admin</strong>
-              <span>Quản trị viên</span>
-            </button>
-            <button type="button" class="demo-pill-btn" data-email="teacher@el.com" data-role="Giáo viên">
-              <strong>Teacher</strong>
-              <span>Giảng viên</span>
-            </button>
-            <button type="button" class="demo-pill-btn" data-email="student@el.com" data-role="Học sinh">
-              <strong>Student</strong>
-              <span>Học viên</span>
-            </button>
-          </div>
-        </div>
-
         <!-- Form đăng nhập chính -->
         <form id="login-form" method="POST" action="/Account/Login" novalidate>
           <!-- Email Field -->
@@ -387,7 +364,7 @@
                 id="login-password" 
                 name="password" 
                 class="form-control has-right-icon" 
-                placeholder="Nhập mật khẩu (demo: 123456)" 
+                placeholder="Nhập mật khẩu"
                 autocomplete="current-password"
                 required
               >
@@ -437,15 +414,7 @@
   <!-- Interactive Script (Tương thích 100% khi mở file:// và khi chạy qua Server) -->
   <script>
     // 1. Danh sách tài khoản mẫu mặc định
-    const MOCK_USERS = [
-      { id: 1, email: 'admin@el.com', password: '123456', full_name: 'Nguyễn Quản Trị', role: 'admin', is_active: true },
-      { id: 2, email: 'teacher@el.com', password: '123456', full_name: 'Lê Thị Mai', role: 'teacher', is_active: true },
-      { id: 3, email: 'hung.nguyen@el.com', password: '123456', full_name: 'Nguyễn Văn Hùng', role: 'teacher', is_active: true },
-      { id: 4, email: 'huy.pham@el.com', password: '123456', full_name: 'Phạm Quang Huy', role: 'teacher', is_active: true },
-      { id: 5, email: 'student@el.com', password: '123456', full_name: 'Nguyễn Hoàng Anh', role: 'student', is_active: true },
-      { id: 6, email: 'nam.tran@el.com', password: '123456', full_name: 'Trần Phương Nam', role: 'student', is_active: true },
-      { id: 7, email: 'ngan.le@el.com', password: '123456', full_name: 'Lê Thị Kim Ngân', role: 'student', is_active: false }
-    ];
+
 
     // 2. Hệ thống Toast thông báo độc lập
     const toast = {
@@ -526,19 +495,7 @@
       });
     }
 
-    // 5. Nút Quick Login 1-Click (Admin / Teacher / Student)
-    const demoBtns = document.querySelectorAll('.demo-pill-btn');
     const emailInput = document.getElementById('login-email');
-
-    demoBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const email = btn.getAttribute('data-email');
-        if (emailInput) emailInput.value = email;
-        if (passwordInput) passwordInput.value = '123456';
-        clearErrors();
-        toast.info(`Đã điền tài khoản: ${email}`);
-      });
-    });
 
     // 6. Quên mật khẩu Dialog
     const forgotLink = document.getElementById('btn-forgot-password');
@@ -593,7 +550,7 @@
     }
 
     if (loginForm) {
-      loginForm.addEventListener('submit', (e) => {
+      loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearErrors();
 
@@ -629,66 +586,44 @@
           btnSubmit.disabled = true;
         }
 
-        // Tìm người dùng trong MOCK_USERS hoặc localStorage
-        let user = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
         try {
-          const storedUsers = JSON.parse(localStorage.getItem('table_users') || '[]');
-          if (Array.isArray(storedUsers) && storedUsers.length > 0) {
-            const found = storedUsers.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
-            if (found) user = found;
+          const response = await fetch('/Account/Session', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email, password,
+              remember: document.getElementById('remember-me').checked
+            })
+          });
+          if (!response.ok) {
+            let message = 'Không kết nối được hệ thống đăng nhập. Vui lòng thử lại.';
+            if (response.status === 401)
+              message = 'Email hoặc mật khẩu không chính xác, hoặc tài khoản đã bị khóa.';
+            if (response.status === 403)
+              message = 'Tài khoản chưa có quyền truy cập hoặc chưa có hồ sơ giảng viên.';
+            if (response.status === 404)
+              message = 'Hãy khởi động lại ứng dụng và mở trang đăng nhập trên cổng ASP.NET.';
+            errorPassword.textContent = message;
+            groupPassword.classList.add('has-error');
+            toast.error(message);
+            return;
           }
-        } catch (_) {}
 
-        if (!user) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
-          if (groupEmail) groupEmail.classList.add('has-error');
-          if (emailInput) emailInput.classList.add('is-invalid');
-          if (errorEmail) errorEmail.textContent = 'Email hoặc mật khẩu không chính xác.';
-          toast.error('Email hoặc mật khẩu không chính xác.');
-          return;
+          const user = await response.json();
+          // Other portals still read this display information. Authorization uses the server cookie.
+          try {
+            localStorage.setItem('session_user', JSON.stringify({
+              id: user.id, email: user.email, full_name: user.fullName, role: user.role
+            }));
+          } catch (_) {}
+          window.location.href = '/' + getPortalUrl(user.role);
+        } catch (_) {
+          toast.error('Không kết nối được server. Hãy mở trang bằng địa chỉ của dotnet run.');
+        } finally {
+          btnSubmit.classList.remove('loading');
+          btnSubmit.disabled = false;
         }
-
-        if (user.password !== password) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
-          if (groupPassword) groupPassword.classList.add('has-error');
-          if (passwordInput) passwordInput.classList.add('is-invalid');
-          if (errorPassword) errorPassword.textContent = 'Mật khẩu không chính xác.';
-          toast.error('Mật khẩu không chính xác.');
-          return;
-        }
-
-        if (user.is_active === 0 || user.is_active === false) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
-          toast.error('Tài khoản này hiện đang bị khóa. Vui lòng liên hệ quản trị viên.');
-          return;
-        }
-
-        // Lưu thông tin phiên đăng nhập
-        try {
-          localStorage.setItem('session_user', JSON.stringify({
-            id: user.id,
-            email: user.email,
-            full_name: user.full_name,
-            role: user.role,
-            avatar_url: user.avatar_url || ''
-          }));
-        } catch (_) {}
-
-        toast.success(`Đăng nhập thành công! Xin chào ${user.full_name}.`, 'Đăng nhập thành công');
-
-        setTimeout(() => {
-          const targetUrl = getPortalUrl(user.role);
-          window.location.href = targetUrl;
-        }, 500);
       });
     }
   </script>
