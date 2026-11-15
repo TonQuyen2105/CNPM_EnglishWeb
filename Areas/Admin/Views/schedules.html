@@ -317,16 +317,7 @@
   <script src="../../../wwwroot/js/site.js"></script>
   <script>
     (function () {
-      let dropdownsPopulated = false;
-
-      const CARD_PALETTES = [
-        { bg: '#EFF6FF', border: '#BFDBFE', title: '#1D4ED8' },
-        { bg: '#ECFDF5', border: '#A7F3D0', title: '#047857' },
-        { bg: '#FEF3C7', border: '#FCD34D', title: '#92400E' },
-        { bg: '#F3E8FF', border: '#D8B4FE', title: '#6B21A8' },
-        { bg: '#FFF1F2', border: '#FECDD3', title: '#BE123C' }
-      ];
-
+      // ===== Helpers dùng chung =====
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -336,6 +327,130 @@
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#39;');
       }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      // Skeleton loading cho bảng
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      // Hàng thông báo trạng thái (empty / error) trong bảng
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      // Gắn nút "Thử lại" vào hàng lỗi
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+      const COLS = 8;
+      let needLookups = true;
+      let hasLoadedOnce = false;
+      let loadController = null;
+
+      const CARD_PALETTES = [
+        { bg: '#EFF6FF', border: '#BFDBFE', title: '#1D4ED8' },
+        { bg: '#ECFDF5', border: '#A7F3D0', title: '#047857' },
+        { bg: '#FEF3C7', border: '#FCD34D', title: '#92400E' },
+        { bg: '#F3E8FF', border: '#D8B4FE', title: '#6B21A8' },
+        { bg: '#FFF1F2', border: '#FECDD3', title: '#BE123C' }
+      ];
 
       function showError(msg) {
         const box = document.getElementById('schedule-form-error');
@@ -350,7 +465,7 @@
       }
 
       function populateOptions(data) {
-        if (dropdownsPopulated) return;
+        if (!needLookups) return;
 
         const filterRoom = document.getElementById('filter-classroom');
         const filterTeacher = document.getElementById('filter-teacher');
@@ -362,6 +477,12 @@
         const teachers = Array.isArray(data.teachers) ? data.teachers : [];
         const classes = Array.isArray(data.classes) ? data.classes : [];
         const slots = Array.isArray(data.timeSlots) ? data.timeSlots : [];
+
+        const prevFilterRoom = filterRoom.value;
+        const prevFilterTeacher = filterTeacher.value;
+        const prevSchedClass = schedClass.value;
+        const prevSchedRoom = schedRoom.value;
+        const prevSchedSlot = schedSlot.value;
 
         filterRoom.innerHTML = '<option value="">Tất cả phòng học</option>' +
           rooms.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join('');
@@ -381,29 +502,34 @@
           ? '<option value="">-- Chưa có ca học --</option>'
           : slots.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.timeRange)})</option>`).join('');
 
-        dropdownsPopulated = true;
+        if (prevFilterRoom && rooms.some(r => String(r.id) === prevFilterRoom)) filterRoom.value = prevFilterRoom;
+        if (prevFilterTeacher && teachers.some(t => String(t.id) === prevFilterTeacher)) filterTeacher.value = prevFilterTeacher;
+        if (prevSchedClass && classes.some(c => String(c.id) === prevSchedClass)) schedClass.value = prevSchedClass;
+        if (prevSchedRoom && rooms.some(r => String(r.id) === prevSchedRoom)) schedRoom.value = prevSchedRoom;
+        if (prevSchedSlot && slots.some(s => String(s.id) === prevSchedSlot)) schedSlot.value = prevSchedSlot;
+
+        needLookups = false;
       }
 
-      async function deleteSchedule(id) {
+      async function deleteSchedule(id, btn) {
         if (!confirm('Bạn có chắc muốn xóa buổi học này khỏi thời khóa biểu?')) return;
+        if (btn) btn.disabled = true;
+
         try {
-          const res = await fetch(`/Admin/api/Schedules/Delete/${id}`, { method: 'POST' });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) {
-            alert(data.message || 'Không thể xóa lịch học.');
-            return;
-          }
+          const data = await postJson(`/Admin/api/Schedules/Delete/${id}`);
+          showToast(data.message || 'Đã xóa lịch học thành công.');
           await loadWeeklySchedules();
         } catch (err) {
           console.error(err);
-          alert('Lỗi kết nối khi xóa lịch học.');
+          showToast(err.message, 'error');
+          if (btn) btn.disabled = false;
         }
       }
 
       function renderGrid(timeSlots, schedules) {
         const tbody = document.getElementById('weekly-schedule-tbody');
         if (!timeSlots || timeSlots.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Chưa có dữ liệu ca học (TimeSlots).</td></tr>';
+          tbody.innerHTML = stateRow(COLS, 'Chưa có dữ liệu ca học', 'Chưa có ca học (TimeSlots) nào đang kích hoạt trong hệ thống.');
           return;
         }
 
@@ -440,33 +566,87 @@
             </tr>
           `;
         }).join('');
-
-        tbody.querySelectorAll('.btn-delete-schedule').forEach(btn => {
-          btn.addEventListener('click', () => deleteSchedule(Number(btn.getAttribute('data-id'))));
-        });
       }
 
       async function loadWeeklySchedules() {
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        const tbody = document.getElementById('weekly-schedule-tbody');
+        if (!hasLoadedOnce) {
+          tbody.innerHTML = skeletonRows(COLS, 4);
+        } else {
+          tbody.style.opacity = '0.55';
+        }
+
         const roomVal = document.getElementById('filter-classroom').value;
         const teacherVal = document.getElementById('filter-teacher').value;
 
         const params = new URLSearchParams();
         if (roomVal) params.set('classroomId', roomVal);
         if (teacherVal) params.set('teacherId', teacherVal);
+        if (!needLookups) params.set('lookups', 'false');
 
         try {
-          const res = await fetch(`/Admin/api/Schedules/Weekly?${params.toString()}`);
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+          const data = await fetchJson(`/Admin/api/Schedules/Weekly?${params.toString()}`, { signal: controller.signal });
+          if (data.classrooms || data.teachers || data.classes) {
+            populateOptions(data);
           }
-          const data = await res.json();
-          populateOptions(data);
           renderGrid(data.timeSlots, data.schedules);
+          hasLoadedOnce = true;
         } catch (err) {
+          if (isAbortError(err)) return;
           console.error('Lỗi tải thời khóa biểu:', err);
-          document.getElementById('weekly-schedule-tbody').innerHTML =
-            `<tr><td colspan="8" style="text-align: center; color: var(--danger-text); padding: 2rem;">${escapeHtml(err.message || 'Không thể tải dữ liệu thời khóa biểu từ máy chủ.')}</td></tr>`;
+          tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            tbody.style.opacity = '';
+          }
+        }
+      }
+
+      async function submitScheduleForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showError('');
+
+        const checkedDays = Array.from(document.querySelectorAll('input[name="sched-days"]:checked'))
+          .map(cb => parseInt(cb.value, 10))
+          .filter(n => !isNaN(n));
+
+        const payload = {
+          classId: parseInt(document.getElementById('sched-class-id').value, 10) || 0,
+          classroomId: parseInt(document.getElementById('sched-classroom-id').value, 10) || 0,
+          timeSlotId: parseInt(document.getElementById('sched-timeslot-id').value, 10) || 0,
+          daysOfWeek: checkedDays
+        };
+
+        if (payload.classId <= 0 || payload.classroomId <= 0 || payload.timeSlotId <= 0) {
+          showError('Vui lòng chọn đầy đủ lớp học, phòng học và ca học.');
+          return;
+        }
+        if (payload.daysOfWeek.length === 0) {
+          showError('Vui lòng chọn ít nhất một thứ trong tuần.');
+          return;
+        }
+
+        const submitBtn = document.getElementById('sched-submit-btn');
+        setBusy(submitBtn, true);
+
+        try {
+          const data = await postJson('/Admin/api/Schedules/Create', payload);
+          document.querySelectorAll('input[name="sched-days"]').forEach(cb => { cb.checked = false; });
+          closeModal('modal-create-schedule');
+          showToast(data.message || 'Xếp lịch học thành công.');
+          await loadWeeklySchedules();
+        } catch (err) {
+          console.error(err);
+          showError(err.message);
+        } finally {
+          setBusy(submitBtn, false);
         }
       }
 
@@ -481,61 +661,26 @@
           loadWeeklySchedules();
         });
 
-        document.getElementById('btn-open-create-schedule').addEventListener('click', () => {
-          showError('');
-        });
-
-        const form = document.getElementById('create-schedule-form');
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          showError('');
-
-          const checkedDays = Array.from(document.querySelectorAll('input[name="sched-days"]:checked'))
-            .map(cb => parseInt(cb.value, 10))
-            .filter(n => !isNaN(n));
-
-          const payload = {
-            classId: parseInt(document.getElementById('sched-class-id').value, 10) || 0,
-            classroomId: parseInt(document.getElementById('sched-classroom-id').value, 10) || 0,
-            timeSlotId: parseInt(document.getElementById('sched-timeslot-id').value, 10) || 0,
-            daysOfWeek: checkedDays
-          };
-
-          if (payload.daysOfWeek.length === 0) {
-            showError('Vui lòng chọn ít nhất một thứ trong tuần.');
+        // Event delegation cho nút Xóa lịch và Thử lại
+        document.getElementById('weekly-schedule-tbody').addEventListener('click', (e) => {
+          const delBtn = e.target.closest('.btn-delete-schedule');
+          if (delBtn) {
+            deleteSchedule(Number(delBtn.getAttribute('data-id')), delBtn);
             return;
           }
-
-          const submitBtn = document.getElementById('sched-submit-btn');
-          const origText = submitBtn.textContent;
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Đang lưu...';
-
-          try {
-            const res = await fetch('/Admin/api/Schedules/Create', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) {
-              showError(data.message || 'Xếp lịch thất bại do xung đột thời khóa biểu.');
-              return;
-            }
-
-            document.querySelectorAll('input[name="sched-days"]').forEach(cb => { cb.checked = false; });
-            const modal = document.getElementById('modal-create-schedule');
-            if (modal) modal.classList.remove('open', 'show');
-            await loadWeeklySchedules();
-          } catch (err) {
-            console.error(err);
-            showError('Lỗi kết nối tới máy chủ.');
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = origText;
+          if (e.target.closest('[data-retry-load]')) {
+            loadWeeklySchedules();
           }
         });
+
+        document.getElementById('btn-open-create-schedule').addEventListener('click', () => {
+          showError('');
+          document.querySelectorAll('input[name="sched-days"]').forEach(cb => { cb.checked = false; });
+          needLookups = true;
+          loadWeeklySchedules();
+        });
+
+        document.getElementById('create-schedule-form').addEventListener('submit', submitScheduleForm);
       });
     })();
   </script>

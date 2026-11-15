@@ -330,6 +330,7 @@
   <script src="../../../wwwroot/js/site.js"></script>
   <script>
     (function () {
+      // ===== Helpers dùng chung =====
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -340,16 +341,132 @@
           .replace(/'/g, '&#39;');
       }
 
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
       function formatCurrency(val) {
         return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
       }
 
-      function formatDate(dateStr) {
-        if (!dateStr) return '--';
-        const d = new Date(dateStr);
+      // Định dạng dd/MM/yyyy (không phụ thuộc locale của trình duyệt)
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
         if (isNaN(d.getTime())) return '--';
-        return d.toLocaleDateString('vi-VN');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
       }
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      // Skeleton loading cho bảng
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      // Hàng thông báo trạng thái (empty / error) trong bảng
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      // Gắn nút "Thử lại" vào hàng lỗi
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+      let loadController = null;
 
       function renderEnrollmentStatus(status) {
         switch ((status || '').toLowerCase()) {
@@ -364,118 +481,137 @@
         }
       }
 
+      function renderLoadingState() {
+        document.getElementById('monthly-chart-container').innerHTML =
+          '<div class="skeleton skeleton-rect" style="height: 100%;"></div>';
+        document.getElementById('level-distribution-container').innerHTML =
+          '<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div>';
+        document.getElementById('recent-enrollments-tbody').innerHTML = skeletonRows(6, 5);
+      }
+
+      function renderKpi(kpi) {
+        document.getElementById('kpi-total-students').textContent = kpi.totalStudents ?? 0;
+        document.getElementById('kpi-active-students-sub').textContent = `↗ ${kpi.activeStudents ?? 0} tài khoản đang hoạt động`;
+        document.getElementById('kpi-ongoing-classes').textContent = kpi.ongoingClasses ?? 0;
+        document.getElementById('kpi-upcoming-classes-sub').textContent = `${kpi.upcomingClasses ?? 0} lớp sắp khai giảng`;
+        document.getElementById('kpi-active-enrollments').textContent = kpi.activeEnrollments ?? 0;
+        document.getElementById('kpi-estimated-revenue').textContent = formatCurrency(kpi.estimatedRevenue);
+        document.getElementById('kpi-revenue-sub').textContent = `↗ Từ ${kpi.revenueEnrollmentCount ?? 0} lượt ghi danh hợp lệ`;
+      }
+
+      function renderMonthlyChart(data) {
+        document.getElementById('chart-year-badge').textContent = `Năm ${data.chartYear || new Date().getFullYear()}`;
+        const monthly = Array.isArray(data.monthlyEnrollments) ? data.monthlyEnrollments : [];
+        const maxCount = Math.max(1, ...monthly.map(m => m.count || 0));
+
+        document.getElementById('monthly-chart-container').innerHTML = monthly.map(m => {
+          const count = m.count || 0;
+          const barHeight = count > 0 ? Math.max(16, Math.round((count / maxCount) * 155)) : 4;
+          const isPeak = count > 0 && count === maxCount;
+          const bgColor = count === 0 ? 'var(--neutral-200)' : (isPeak ? 'var(--primary-600)' : 'var(--primary-500)');
+          const textStyle = isPeak ? 'font-weight: 700; color: var(--primary-600);' : 'color: var(--text-muted);';
+          return `
+            <div style="flex: 1; text-align: center; min-width: 24px;" title="${escapeHtml(m.label)}: ${count} lượt">
+              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">${count}</div>
+              <div style="height: ${barHeight}px; width: 70%; max-width: 32px; background: ${bgColor}; border-radius: 4px 4px 0 0; margin: 0 auto; transition: height 0.3s ease;"></div>
+              <span style="font-size: 0.75rem; ${textStyle} margin-top: 6px; display: block;">${escapeHtml(m.label)}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderLevelDistribution(data) {
+        const levels = Array.isArray(data.levelDistribution) ? data.levelDistribution : [];
+        document.getElementById('level-dist-subtitle').textContent =
+          `Phân bổ ${data.totalLevelEnrollments ?? 0} lượt ghi danh theo trình độ`;
+
+        const levelColors = { beginner: '#3B82F6', intermediate: '#F59E0B', advanced: '#EF4444' };
+
+        document.getElementById('level-distribution-container').innerHTML = levels.map(lv => `
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 4px;">
+              <span>${escapeHtml(lv.label)}</span>
+              <strong>${lv.count ?? 0} lượt (${lv.percentage ?? 0}%)</strong>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" style="width: ${lv.percentage ?? 0}%; background-color: ${levelColors[lv.level] || '#3B82F6'};"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderRecentEnrollments(items) {
+        const tbody = document.getElementById('recent-enrollments-tbody');
+        const recents = Array.isArray(items) ? items : [];
+
+        if (recents.length === 0) {
+          tbody.innerHTML = stateRow(6, 'Chưa có dữ liệu ghi danh', 'Các lượt ghi danh mới nhất sẽ hiển thị tại đây.');
+          return;
+        }
+
+        tbody.innerHTML = recents.map(r => `
+          <tr>
+            <td>
+              <strong>${escapeHtml(r.studentName)}</strong><br>
+              <small class="text-muted">${escapeHtml(r.studentEmail)}</small>
+            </td>
+            <td>
+              <a href="/Admin/class-detail.html?id=${encodeURIComponent(r.classId)}" style="text-decoration: none;">
+                <span class="badge badge-primary">${escapeHtml(r.classCode)}</span>
+              </a>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(r.className)}</div>
+            </td>
+            <td>${escapeHtml(r.courseTitle)}</td>
+            <td><strong>${formatCurrency(r.price)}</strong></td>
+            <td>${formatDate(r.enrolledAt)}</td>
+            <td>${renderEnrollmentStatus(r.status)}</td>
+          </tr>
+        `).join('');
+      }
+
       async function loadDashboard() {
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
         const refreshBtn = document.getElementById('btn-refresh-dashboard');
         if (refreshBtn) refreshBtn.disabled = true;
+        renderLoadingState();
 
         try {
-          const res = await fetch('/Admin/api/Dashboard/Summary');
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
-          }
-          const data = await res.json();
-
-          // 1. Render KPI
-          const kpi = data.kpi || {};
-          document.getElementById('kpi-total-students').textContent = kpi.totalStudents ?? 0;
-          document.getElementById('kpi-active-students-sub').textContent = `↗ ${kpi.activeStudents ?? 0} tài khoản đang hoạt động`;
-
-          document.getElementById('kpi-ongoing-classes').textContent = kpi.ongoingClasses ?? 0;
-          document.getElementById('kpi-upcoming-classes-sub').textContent = `${kpi.upcomingClasses ?? 0} lớp sắp khai giảng`;
-
-          document.getElementById('kpi-active-enrollments').textContent = kpi.activeEnrollments ?? 0;
-
-          document.getElementById('kpi-estimated-revenue').textContent = formatCurrency(kpi.estimatedRevenue);
-          document.getElementById('kpi-revenue-sub').textContent = `↗ Từ ${kpi.revenueEnrollmentCount ?? 0} lượt ghi danh hợp lệ`;
-
-          // 2. Render 12-month bar chart
-          document.getElementById('chart-year-badge').textContent = `Năm ${data.chartYear || new Date().getFullYear()}`;
-          const monthly = Array.isArray(data.monthlyEnrollments) ? data.monthlyEnrollments : [];
-          const maxCount = Math.max(1, ...monthly.map(m => m.count || 0));
-          const chartContainer = document.getElementById('monthly-chart-container');
-
-          chartContainer.innerHTML = monthly.map(m => {
-            const count = m.count || 0;
-            const barHeight = count > 0 ? Math.max(16, Math.round((count / maxCount) * 155)) : 4;
-            const isPeak = count > 0 && count === maxCount;
-            const bgColor = count === 0 ? 'var(--neutral-200)' : (isPeak ? 'var(--primary-600)' : 'var(--primary-500)');
-            const textStyle = isPeak ? 'font-weight: 700; color: var(--primary-600);' : 'color: var(--text-muted);';
-            return `
-              <div style="flex: 1; text-align: center; min-width: 24px;" title="${escapeHtml(m.label)}: ${count} lượt">
-                <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">${count}</div>
-                <div style="height: ${barHeight}px; width: 70%; max-width: 32px; background: ${bgColor}; border-radius: 4px 4px 0 0; margin: 0 auto; transition: height 0.3s ease;"></div>
-                <span style="font-size: 0.75rem; ${textStyle} margin-top: 6px; display: block;">${escapeHtml(m.label)}</span>
-              </div>
-            `;
-          }).join('');
-
-          // 3. Render Level Distribution
-          const levels = Array.isArray(data.levelDistribution) ? data.levelDistribution : [];
-          const totalLevel = data.totalLevelEnrollments ?? 0;
-          document.getElementById('level-dist-subtitle').textContent = `Phân bổ ${totalLevel} lượt ghi danh theo trình độ`;
-
-          const levelColors = {
-            beginner: '#3B82F6',
-            intermediate: '#F59E0B',
-            advanced: '#EF4444'
-          };
-
-          document.getElementById('level-distribution-container').innerHTML = levels.map(lv => `
-            <div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 4px;">
-                <span>${escapeHtml(lv.label)}</span>
-                <strong>${lv.count ?? 0} lượt (${lv.percentage ?? 0}%)</strong>
-              </div>
-              <div class="progress">
-                <div class="progress-bar" style="width: ${lv.percentage ?? 0}%; background-color: ${levelColors[lv.level] || '#3B82F6'};"></div>
-              </div>
-            </div>
-          `).join('');
-
-          // 4. Render 10 Recent Enrollments
-          const recents = Array.isArray(data.recentEnrollments) ? data.recentEnrollments : [];
-          const tbody = document.getElementById('recent-enrollments-tbody');
-
-          if (recents.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chưa có dữ liệu ghi danh nào.</td></tr>';
-          } else {
-            tbody.innerHTML = recents.map(r => `
-              <tr>
-                <td>
-                  <strong>${escapeHtml(r.studentName)}</strong><br>
-                  <small class="text-muted">${escapeHtml(r.studentEmail)}</small>
-                </td>
-                <td>
-                  <a href="/Admin/class-detail.html?id=${encodeURIComponent(r.classId)}" style="text-decoration: none;">
-                    <span class="badge badge-primary">${escapeHtml(r.classCode)}</span>
-                  </a>
-                  <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(r.className)}</div>
-                </td>
-                <td>${escapeHtml(r.courseTitle)}</td>
-                <td><strong>${formatCurrency(r.price)}</strong></td>
-                <td>${formatDate(r.enrolledAt)}</td>
-                <td>${renderEnrollmentStatus(r.status)}</td>
-              </tr>
-            `).join('');
-          }
+          const data = await fetchJson('/Admin/api/Dashboard/Summary', { signal: controller.signal });
+          renderKpi(data.kpi || {});
+          renderMonthlyChart(data);
+          renderLevelDistribution(data);
+          renderRecentEnrollments(data.recentEnrollments);
         } catch (err) {
+          if (isAbortError(err)) return;
           console.error('Lỗi tải Dashboard:', err);
-          const tbody = document.getElementById('recent-enrollments-tbody');
-          if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger-text); padding: 1.5rem;">${escapeHtml(err.message || 'Không thể kết nối máy chủ để tải dữ liệu.')}</td></tr>`;
-          }
+          document.getElementById('chart-year-badge').textContent = 'Lỗi tải';
+          document.getElementById('level-dist-subtitle').textContent = 'Không thể tải dữ liệu phân bổ';
+          document.getElementById('monthly-chart-container').innerHTML = '';
+          document.getElementById('level-distribution-container').innerHTML = '';
+          document.getElementById('recent-enrollments-tbody').innerHTML = errorRowWithRetry(6, err.message);
+          showToast(err.message, 'error');
         } finally {
-          if (refreshBtn) refreshBtn.disabled = false;
+          if (loadController === controller) {
+            loadController = null;
+            if (refreshBtn) refreshBtn.disabled = false;
+          }
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         loadDashboard();
+
         const refreshBtn = document.getElementById('btn-refresh-dashboard');
         if (refreshBtn) {
           refreshBtn.addEventListener('click', loadDashboard);
         }
+
+        document.getElementById('recent-enrollments-tbody').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) loadDashboard();
+        });
       });
     })();
   </script>

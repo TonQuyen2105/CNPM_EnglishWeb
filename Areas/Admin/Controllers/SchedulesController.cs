@@ -9,10 +9,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     public class SchedulesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<SchedulesController> _logger;
 
-        public SchedulesController(ApplicationDbContext context)
+        public SchedulesController(ApplicationDbContext context, ILogger<SchedulesController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -37,15 +39,21 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             return $"{start:hh\\:mm} - {end:hh\\:mm}";
         }
 
+        /// <param name="lookups">
+        /// true: trả kèm danh sách phòng, giảng viên, lớp đang mở (dropdown bộ lọc + modal).
+        /// Frontend chỉ yêu cầu ở lần tải đầu tiên; các lần lọc sau gửi false.
+        /// </param>
         [HttpGet("/Admin/api/Schedules/Weekly")]
-        public async Task<IActionResult> Weekly(int? classroomId, int? teacherId)
+        public async Task<IActionResult> Weekly(int? classroomId, int? teacherId, CancellationToken cancellationToken, bool lookups = true)
         {
             try
             {
-                var rawTimeSlots = await _context.TimeSlots.AsNoTracking()
+                var rawTimeSlots = await _context.TimeSlots
+                    .AsNoTracking()
                     .Where(ts => ts.IsActive)
                     .OrderBy(ts => ts.StartTime)
-                    .ToListAsync();
+                    .Select(ts => new { ts.Id, ts.Name, ts.StartTime, ts.EndTime, ts.Description })
+                    .ToListAsync(cancellationToken);
 
                 var timeSlots = rawTimeSlots.Select(ts => new
                 {
@@ -82,22 +90,47 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     scheduleQuery = scheduleQuery.Where(x => x.classroomId == cid);
                 }
 
-                var rawSchedules = await scheduleQuery.ToListAsync();
+                // Lọc theo giảng viên chính ngay trên PostgreSQL (EXISTS) thay vì kéo toàn bộ lịch về RAM rồi lọc
+                if (teacherId.HasValue && teacherId.Value > 0)
+                {
+                    var tid = teacherId.Value;
+                    scheduleQuery = scheduleQuery.Where(x => _context.ClassTeachers.Any(ct =>
+                        ct.ClassId == x.classId && ct.Role == "main" && ct.TeacherId == tid));
+                }
 
-                var allMainTeachers = await (
-                    from ct in _context.ClassTeachers.AsNoTracking()
-                    join t in _context.Teachers.AsNoTracking() on ct.TeacherId equals t.Id
-                    join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
-                    where ct.Role == "main"
-                    select new
-                    {
-                        ct.ClassId,
-                        TeacherId = t.Id,
-                        TeacherName = u.FullName
-                    }
-                ).ToListAsync();
+                var rawSchedules = await scheduleQuery.ToListAsync(cancellationToken);
 
-                var teacherByClass = allMainTeachers
+                var openClasses = lookups
+                    ? await _context.CourseClasses
+                        .AsNoTracking()
+                        .Where(cc => cc.Status == "upcoming" || cc.Status == "ongoing")
+                        .OrderBy(cc => cc.ClassCode)
+                        .Select(cc => new { cc.Id, cc.ClassCode, cc.ClassName, cc.Status })
+                        .ToListAsync(cancellationToken)
+                    : [];
+
+                // Chỉ tải giảng viên chính của các lớp thực sự xuất hiện trong kết quả
+                var neededClassIds = rawSchedules.Select(s => s.classId)
+                    .Concat(openClasses.Select(c => c.Id))
+                    .Distinct()
+                    .ToList();
+
+                var mainTeachers = neededClassIds.Count == 0
+                    ? []
+                    : await (
+                        from ct in _context.ClassTeachers.AsNoTracking()
+                        join t in _context.Teachers.AsNoTracking() on ct.TeacherId equals t.Id
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where ct.Role == "main" && neededClassIds.Contains(ct.ClassId)
+                        select new
+                        {
+                            ct.ClassId,
+                            TeacherId = t.Id,
+                            TeacherName = u.FullName
+                        }
+                    ).ToListAsync(cancellationToken);
+
+                var teacherByClass = mainTeachers
                     .GroupBy(x => x.ClassId)
                     .ToDictionary(g => g.Key, g => g.First());
 
@@ -121,17 +154,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             teacherName = tInfo?.TeacherName ?? "Chưa phân công"
                         };
                     })
-                    .Where(s => !teacherId.HasValue || teacherId.Value <= 0 || s.teacherId == teacherId.Value)
                     .OrderBy(s => s.dayOfWeek)
                     .ThenBy(s => s.classCode)
                     .ToList();
 
-                var openClassesRaw = await _context.CourseClasses.AsNoTracking()
-                    .Where(cc => cc.Status == "upcoming" || cc.Status == "ongoing")
-                    .OrderBy(cc => cc.ClassCode)
-                    .ToListAsync();
+                if (!lookups)
+                {
+                    return Ok(new { success = true, timeSlots, schedules });
+                }
 
-                var classes = openClassesRaw.Select(cc =>
+                var classes = openClasses.Select(cc =>
                 {
                     teacherByClass.TryGetValue(cc.Id, out var tInfo);
                     return new
@@ -145,7 +177,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     };
                 }).ToList();
 
-                var classrooms = await _context.Classrooms.AsNoTracking()
+                var classrooms = await _context.Classrooms
+                    .AsNoTracking()
                     .Where(r => r.IsActive)
                     .OrderBy(r => r.Name)
                     .Select(r => new
@@ -155,7 +188,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         location = r.Location,
                         capacity = r.Capacity
                     })
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
 
                 var teachers = await (
                     from t in _context.Teachers.AsNoTracking()
@@ -168,10 +201,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         fullName = u.FullName,
                         qualification = t.Qualification
                     }
-                ).ToListAsync();
+                ).ToListAsync(cancellationToken);
 
                 return Ok(new
                 {
+                    success = true,
                     timeSlots,
                     schedules,
                     classes,
@@ -179,37 +213,42 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     teachers
                 });
             }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Không thể tải thời khóa biểu tuần.", detail = ex.Message });
+                _logger.LogError(ex, "Không thể tải thời khóa biểu tuần.");
+                return this.ApiServerError("Không thể tải thời khóa biểu tuần.");
             }
         }
 
         [HttpPost("/Admin/api/Schedules/Create")]
-        public async Task<IActionResult> Create([FromBody] ScheduleCreateDto? dto)
+        public async Task<IActionResult> Create([FromBody] ScheduleCreateDto? dto, CancellationToken cancellationToken)
         {
             if (dto == null)
             {
-                return BadRequest(new { message = "Dữ liệu gửi lên không hợp lệ." });
+                return this.ApiBadRequest("Dữ liệu gửi lên không hợp lệ.");
             }
 
             if (dto.ClassId <= 0 || dto.ClassroomId <= 0 || dto.TimeSlotId <= 0)
             {
-                return BadRequest(new { message = "Vui lòng chọn đầy đủ lớp học, phòng học và ca học." });
+                return this.ApiBadRequest("Vui lòng chọn đầy đủ lớp học, phòng học và ca học.");
             }
 
             if (dto.DaysOfWeek == null || dto.DaysOfWeek.Count == 0)
             {
-                return BadRequest(new { message = "Vui lòng chọn ít nhất một ngày trong tuần." });
+                return this.ApiBadRequest("Vui lòng chọn ít nhất một ngày trong tuần.");
             }
 
             var days = dto.DaysOfWeek.Distinct().OrderBy(d => d).ToList();
             if (days.Any(d => d < 1 || d > 7))
             {
-                return BadRequest(new { message = "Giá trị ngày trong tuần phải nằm trong khoảng từ 1 (Thứ 2) đến 7 (Chủ Nhật)." });
+                return this.ApiBadRequest("Giá trị ngày trong tuần phải nằm trong khoảng từ 1 (Thứ 2) đến 7 (Chủ Nhật).");
             }
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var classId = dto.ClassId;
@@ -218,43 +257,47 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 // Khóa giao dịch mức PostgreSQL (pg_advisory_xact_lock) theo Lớp, Phòng và Giảng viên chính để chống xếp lịch trùng đồng thời.
                 long classLockKey = 100_000_000L + classId;
                 long roomLockKey = 200_000_000L + classroomId;
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({classLockKey})");
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({roomLockKey})");
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({classLockKey})", cancellationToken);
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({roomLockKey})", cancellationToken);
 
                 var classroom = await _context.Classrooms
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(r => r.Id == classroomId);
+                    .Where(r => r.Id == classroomId)
+                    .Select(r => new { r.Name, r.Capacity, r.IsActive })
+                    .FirstOrDefaultAsync(cancellationToken);
                 if (classroom == null || !classroom.IsActive)
                 {
-                    await transaction.RollbackAsync();
-                    return BadRequest(new { message = "Phòng học không tồn tại hoặc đang tạm ngưng sử dụng." });
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Phòng học không tồn tại hoặc đang tạm ngưng sử dụng.");
                 }
 
                 var targetClass = await _context.CourseClasses
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(c => c.Id == classId);
+                    .Where(c => c.Id == classId)
+                    .Select(c => new { c.ClassCode, c.Status, c.MaxStudents })
+                    .FirstOrDefaultAsync(cancellationToken);
                 if (targetClass == null || targetClass.Status == "cancelled")
                 {
-                    await transaction.RollbackAsync();
-                    return BadRequest(new { message = "Lớp học không tồn tại hoặc đã bị hủy." });
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Lớp học không tồn tại hoặc đã bị hủy.");
                 }
 
                 if (classroom.Capacity < targetClass.MaxStudents)
                 {
-                    await transaction.RollbackAsync();
-                    return BadRequest(new
-                    {
-                        message = $"Sức chứa phòng {classroom.Name} ({classroom.Capacity} chỗ) không đủ cho sĩ số tối đa của lớp {targetClass.ClassCode} ({targetClass.MaxStudents} học viên)."
-                    });
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest(
+                        $"Sức chứa phòng {classroom.Name} ({classroom.Capacity} chỗ) không đủ cho sĩ số tối đa của lớp {targetClass.ClassCode} ({targetClass.MaxStudents} học viên).");
                 }
 
                 var timeSlot = await _context.TimeSlots
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(ts => ts.Id == dto.TimeSlotId);
+                    .Where(ts => ts.Id == dto.TimeSlotId)
+                    .Select(ts => new { ts.Name, ts.StartTime, ts.EndTime, ts.IsActive })
+                    .FirstOrDefaultAsync(cancellationToken);
                 if (timeSlot == null || !timeSlot.IsActive)
                 {
-                    await transaction.RollbackAsync();
-                    return BadRequest(new { message = "Ca học không tồn tại hoặc đang ngừng sử dụng." });
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Ca học không tồn tại hoặc đang ngừng sử dụng.");
                 }
 
                 var slotStart = timeSlot.StartTime;
@@ -266,12 +309,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
                     where ct.ClassId == classId && ct.Role == "main"
                     select new { TeacherId = t.Id, TeacherName = u.FullName }
-                ).FirstOrDefaultAsync();
+                ).FirstOrDefaultAsync(cancellationToken);
 
                 if (mainTeacher != null)
                 {
                     long teacherLockKey = 300_000_000L + mainTeacher.TeacherId;
-                    await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({teacherLockKey})");
+                    await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({teacherLockKey})", cancellationToken);
                 }
 
                 var timeLabel = $"{timeSlot.Name} ({FormatTimeRange(slotStart, slotEnd)})";
@@ -286,7 +329,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                           && ts.StartTime < slotEnd
                           && slotStart < ts.EndTime
                     select new { cs.DayOfWeek, ts.Name, ts.StartTime, ts.EndTime }
-                ).ToListAsync();
+                ).ToListAsync(cancellationToken);
 
                 // 2. Trùng phòng học theo khoảng thời gian giao nhau (lớp có Status != "cancelled")
                 var roomConflicts = await (
@@ -299,7 +342,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                           && ts.StartTime < slotEnd
                           && slotStart < ts.EndTime
                     select new { cs.DayOfWeek, cc.ClassCode, cc.ClassName, ts.Name, ts.StartTime, ts.EndTime }
-                ).ToListAsync();
+                ).ToListAsync(cancellationToken);
 
                 // 3. Trùng giảng viên chính theo khoảng thời gian giao nhau
                 var teacherConflicts = mainTeacher == null
@@ -325,41 +368,35 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             StartTime = ts.StartTime,
                             EndTime = ts.EndTime
                         }
-                    ).ToListAsync();
+                    ).ToListAsync(cancellationToken);
 
                 foreach (var day in days)
                 {
                     var sameClassConflict = sameClassConflicts.FirstOrDefault(x => x.DayOfWeek == day);
                     if (sameClassConflict != null)
                     {
-                        await transaction.RollbackAsync();
+                        await transaction.RollbackAsync(CancellationToken.None);
                         var conflictRange = $"{sameClassConflict.Name} ({FormatTimeRange(sameClassConflict.StartTime, sameClassConflict.EndTime)})";
-                        return BadRequest(new
-                        {
-                            message = $"Lớp {targetClass.ClassCode} đã có lịch học trùng/giao giờ vào {FormatDayFull(day)}, {conflictRange}."
-                        });
+                        return this.ApiBadRequest(
+                            $"Lớp {targetClass.ClassCode} đã có lịch học trùng/giao giờ vào {FormatDayFull(day)}, {conflictRange}.");
                     }
 
                     var roomConflict = roomConflicts.FirstOrDefault(x => x.DayOfWeek == day);
                     if (roomConflict != null)
                     {
-                        await transaction.RollbackAsync();
+                        await transaction.RollbackAsync(CancellationToken.None);
                         var conflictRange = $"{roomConflict.Name} ({FormatTimeRange(roomConflict.StartTime, roomConflict.EndTime)})";
-                        return BadRequest(new
-                        {
-                            message = $"Trùng phòng học: Phòng {classroom.Name} vào {FormatDayFull(day)}, khung giờ {timeLabel} bị giao với ca {conflictRange} của lớp {roomConflict.ClassCode} ({roomConflict.ClassName})."
-                        });
+                        return this.ApiBadRequest(
+                            $"Trùng phòng học: Phòng {classroom.Name} vào {FormatDayFull(day)}, khung giờ {timeLabel} bị giao với ca {conflictRange} của lớp {roomConflict.ClassCode} ({roomConflict.ClassName}).");
                     }
 
                     var teacherConflict = teacherConflicts.FirstOrDefault(x => x.DayOfWeek == day);
                     if (teacherConflict != null && mainTeacher != null)
                     {
-                        await transaction.RollbackAsync();
+                        await transaction.RollbackAsync(CancellationToken.None);
                         var conflictRange = $"{teacherConflict.Name} ({FormatTimeRange(teacherConflict.StartTime, teacherConflict.EndTime)})";
-                        return BadRequest(new
-                        {
-                            message = $"Trùng giảng viên: Giảng viên {mainTeacher.TeacherName} đã dạy lớp {teacherConflict.ClassCode} ({teacherConflict.ClassName}) vào {FormatDayFull(day)}, ca {conflictRange} (giao với {timeLabel})."
-                        });
+                        return this.ApiBadRequest(
+                            $"Trùng giảng viên: Giảng viên {mainTeacher.TeacherName} đã dạy lớp {teacherConflict.ClassCode} ({teacherConflict.ClassName}) vào {FormatDayFull(day)}, ca {conflictRange} (giao với {timeLabel}).");
                     }
                 }
 
@@ -374,41 +411,52 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }).ToList();
 
                 _context.ClassSchedules.AddRange(newSchedules);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
                 {
+                    success = true,
                     message = $"Đã xếp thành công {newSchedules.Count} buổi học trong tuần cho lớp {targetClass.ClassCode}.",
                     count = newSchedules.Count
                 });
             }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, new { message = "Không thể xếp lịch học.", detail = ex.Message });
+                _logger.LogError(ex, "Không thể xếp lịch học cho lớp {ClassId}.", dto.ClassId);
+                await transaction.RollbackAsync(CancellationToken.None);
+                return this.ApiServerError("Không thể xếp lịch học.");
             }
         }
 
         [HttpPost("/Admin/api/Schedules/Delete/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             try
             {
-                var schedule = await _context.ClassSchedules.FirstOrDefaultAsync(s => s.Id == id);
+                var schedule = await _context.ClassSchedules.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
                 if (schedule == null)
                 {
-                    return NotFound(new { message = "Không tìm thấy lịch học cần xóa." });
+                    return this.ApiNotFound("Không tìm thấy lịch học cần xóa.");
                 }
 
                 _context.ClassSchedules.Remove(schedule);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
-                return Ok(new { message = "Đã xóa lịch học thành công." });
+                return Ok(new { success = true, message = "Đã xóa lịch học thành công." });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Không thể xóa lịch học.", detail = ex.Message });
+                _logger.LogError(ex, "Không thể xóa lịch học {ScheduleId}.", id);
+                return this.ApiServerError("Không thể xóa lịch học.");
             }
         }
 

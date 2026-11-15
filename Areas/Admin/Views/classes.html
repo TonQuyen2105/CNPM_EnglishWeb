@@ -314,7 +314,7 @@
           <div class="grid grid-cols-3 gap-4" style="margin-bottom: 0.5rem;">
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Sĩ số tối đa <span class="required" style="color:red;">*</span></label>
-              <input type="number" id="cls-max-students" class="form-control" value="20" min="1" required>
+              <input type="number" id="cls-max-students" class="form-control" value="20" min="1" max="1000" required>
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí (₫) <span class="required" style="color:red;">*</span></label>
@@ -341,9 +341,7 @@
   <script src="../../../wwwroot/js/site.js"></script>
   <script>
     (function () {
-      let coursesList = [];
-      let dropdownsLoaded = false;
-
+      // ===== Helpers dùng chung =====
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -354,16 +352,135 @@
           .replace(/'/g, '&#39;');
       }
 
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
       function formatCurrency(val) {
         return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
       }
 
-      function formatDate(dateStr) {
-        if (!dateStr) return '--';
-        const d = new Date(dateStr);
+      // Định dạng dd/MM/yyyy (không phụ thuộc locale của trình duyệt)
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
         if (isNaN(d.getTime())) return '--';
-        return d.toLocaleDateString('vi-VN');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
       }
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      // Skeleton loading cho bảng
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      // Hàng thông báo trạng thái (empty / error) trong bảng
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      // Gắn nút "Thử lại" vào hàng lỗi
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+      const COLS = 7;
+      let coursesList = [];
+      let dropdownsLoaded = false;
+      let hasLoadedOnce = false;
+      let loadController = null;
 
       function renderStatusBadge(status) {
         switch ((status || '').toLowerCase()) {
@@ -393,34 +510,40 @@
       }
 
       function populateDropdowns(courses, teachers) {
+        if (dropdownsLoaded) return;
         coursesList = Array.isArray(courses) ? courses : [];
         const courseSelect = document.getElementById('cls-course-id');
         const teacherSelect = document.getElementById('cls-teacher-id');
 
-        if (!dropdownsLoaded) {
-          courseSelect.innerHTML = coursesList.length === 0
-            ? '<option value="">-- Chưa có khóa học --</option>'
-            : coursesList.map(c => `<option value="${c.id}" data-price="${c.price}">${escapeHtml(c.title)} (${formatCurrency(c.price)})</option>`).join('');
+        courseSelect.innerHTML = coursesList.length === 0
+          ? '<option value="">-- Chưa có khóa học --</option>'
+          : coursesList.map(c => `<option value="${c.id}" data-price="${c.price}">${escapeHtml(c.title)} (${formatCurrency(c.price)})</option>`).join('');
 
-          if (coursesList.length > 0) {
-            document.getElementById('cls-price').value = coursesList[0].price ?? 0;
-          }
-
-          const tList = Array.isArray(teachers) ? teachers : [];
-          teacherSelect.innerHTML = '<option value="">-- Chưa phân công giảng viên --</option>' +
-            tList.map(t => {
-              const qual = t.qualification ? ` (${escapeHtml(t.qualification)})` : '';
-              return `<option value="${t.id}">${escapeHtml(t.fullName)}${qual}</option>`;
-            }).join('');
-
-          dropdownsLoaded = true;
+        if (coursesList.length > 0) {
+          document.getElementById('cls-price').value = coursesList[0].price ?? 0;
         }
+
+        const tList = Array.isArray(teachers) ? teachers : [];
+        teacherSelect.innerHTML = '<option value="">-- Chưa phân công giảng viên --</option>' +
+          tList.map(t => {
+            const qual = t.qualification ? ` (${escapeHtml(t.qualification)})` : '';
+            return `<option value="${t.id}">${escapeHtml(t.fullName)}${qual}</option>`;
+          }).join('');
+
+        dropdownsLoaded = true;
+      }
+
+      function hasActiveFilter() {
+        return !!document.getElementById('classes-search-input').value.trim() ||
+          document.getElementById('classes-status-filter').value !== 'all';
       }
 
       function renderClasses(items) {
         const tbody = document.getElementById('classes-tbody');
         if (!items || items.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Không tìm thấy lớp học phù hợp.</td></tr>';
+          tbody.innerHTML = hasActiveFilter()
+            ? stateRow(COLS, 'Không tìm thấy lớp học phù hợp', 'Hãy thử đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái.')
+            : stateRow(COLS, 'Chưa có lớp học nào', 'Nhấn "Tạo lớp học" để thêm lớp học đầu tiên.');
           return;
         }
 
@@ -449,26 +572,40 @@
       }
 
       async function loadClasses() {
+        // Hủy request cũ khi người dùng gõ / đổi bộ lọc liên tục
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        const tbody = document.getElementById('classes-tbody');
+        if (!hasLoadedOnce) {
+          tbody.innerHTML = skeletonRows(COLS, 5);
+        } else {
+          tbody.style.opacity = '0.55';
+        }
+
         const search = document.getElementById('classes-search-input').value.trim();
         const status = document.getElementById('classes-status-filter').value;
 
         const params = new URLSearchParams();
         if (status && status !== 'all') params.set('status', status);
         if (search) params.set('search', search);
+        if (dropdownsLoaded) params.set('lookups', 'false');
 
         try {
-          const res = await fetch(`/Admin/api/Classes/List?${params.toString()}`);
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
-          }
-          const data = await res.json();
+          const data = await fetchJson(`/Admin/api/Classes/List?${params.toString()}`, { signal: controller.signal });
           populateDropdowns(data.courses, data.teachers);
           renderClasses(data.items);
+          hasLoadedOnce = true;
         } catch (err) {
+          if (isAbortError(err)) return;
           console.error('Lỗi tải danh sách lớp:', err);
-          document.getElementById('classes-tbody').innerHTML =
-            `<tr><td colspan="7" style="text-align: center; color: var(--danger-text); padding: 1.5rem;">${escapeHtml(err.message || 'Không thể tải danh sách lớp học.')}</td></tr>`;
+          tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            tbody.style.opacity = '';
+          }
         }
       }
 
@@ -476,23 +613,87 @@
         const today = new Date();
         const nextTwoMonths = new Date();
         nextTwoMonths.setMonth(nextTwoMonths.getMonth() + 2);
+        const toInputValue = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const startEl = document.getElementById('cls-start-date');
         const endEl = document.getElementById('cls-end-date');
-        if (startEl && !startEl.value) startEl.value = today.toISOString().split('T')[0];
-        if (endEl && !endEl.value) endEl.value = nextTwoMonths.toISOString().split('T')[0];
+        if (startEl && !startEl.value) startEl.value = toInputValue(today);
+        if (endEl && !endEl.value) endEl.value = toInputValue(nextTwoMonths);
+      }
+
+      async function submitClassForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showFormError('');
+
+        const teacherVal = document.getElementById('cls-teacher-id').value;
+        const payload = {
+          classCode: document.getElementById('cls-code').value.trim(),
+          className: document.getElementById('cls-name').value.trim(),
+          courseId: parseInt(document.getElementById('cls-course-id').value, 10) || 0,
+          teacherId: teacherVal ? parseInt(teacherVal, 10) : null,
+          startDate: document.getElementById('cls-start-date').value,
+          endDate: document.getElementById('cls-end-date').value,
+          maxStudents: parseInt(document.getElementById('cls-max-students').value, 10) || 0,
+          price: parseFloat(document.getElementById('cls-price').value) || 0,
+          status: document.getElementById('cls-status').value
+        };
+
+        if (!payload.classCode || !payload.className) {
+          showFormError('Mã lớp và tên lớp không được để trống.');
+          return;
+        }
+        if (!payload.startDate || !payload.endDate || new Date(payload.endDate) <= new Date(payload.startDate)) {
+          showFormError('Ngày kết thúc phải sau ngày khai giảng.');
+          return;
+        }
+
+        const submitBtn = document.getElementById('cls-submit-btn');
+        setBusy(submitBtn, true);
+
+        try {
+          const data = await postJson('/Admin/api/Classes/Create', payload);
+          e.target.reset();
+          initDefaultDates();
+          if (coursesList.length > 0) {
+            document.getElementById('cls-price').value = coursesList[0].price ?? 0;
+          }
+          closeModal('modal-create-class');
+          showToast(data.message || 'Tạo lớp học thành công.');
+          await loadClasses();
+        } catch (err) {
+          console.error(err);
+          showFormError(err.message);
+        } finally {
+          setBusy(submitBtn, false);
+        }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         initDefaultDates();
         loadClasses();
 
-        document.getElementById('btn-filter-classes').addEventListener('click', loadClasses);
-        document.getElementById('classes-status-filter').addEventListener('change', loadClasses);
-        document.getElementById('classes-search-input').addEventListener('keydown', (e) => {
+        const searchInput = document.getElementById('classes-search-input');
+        const debouncedLoad = debounce(loadClasses, 300);
+
+        document.getElementById('btn-filter-classes').addEventListener('click', () => {
+          debouncedLoad.cancel();
+          loadClasses();
+        });
+        document.getElementById('classes-status-filter').addEventListener('change', () => {
+          debouncedLoad.cancel();
+          loadClasses();
+        });
+        searchInput.addEventListener('input', debouncedLoad);
+        searchInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
+            debouncedLoad.cancel();
             loadClasses();
           }
+        });
+
+        document.getElementById('classes-tbody').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) loadClasses();
         });
 
         document.getElementById('cls-course-id').addEventListener('change', (e) => {
@@ -507,67 +708,7 @@
           initDefaultDates();
         });
 
-        const form = document.getElementById('create-class-form');
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          showFormError('');
-
-          const teacherVal = document.getElementById('cls-teacher-id').value;
-          const payload = {
-            classCode: document.getElementById('cls-code').value.trim(),
-            className: document.getElementById('cls-name').value.trim(),
-            courseId: parseInt(document.getElementById('cls-course-id').value, 10) || 0,
-            teacherId: teacherVal ? parseInt(teacherVal, 10) : null,
-            startDate: document.getElementById('cls-start-date').value,
-            endDate: document.getElementById('cls-end-date').value,
-            maxStudents: parseInt(document.getElementById('cls-max-students').value, 10) || 0,
-            price: parseFloat(document.getElementById('cls-price').value) || 0,
-            status: document.getElementById('cls-status').value
-          };
-
-          if (!payload.classCode || !payload.className) {
-            showFormError('Mã lớp và tên lớp không được để trống.');
-            return;
-          }
-          if (!payload.startDate || !payload.endDate || new Date(payload.endDate) <= new Date(payload.startDate)) {
-            showFormError('Ngày kết thúc phải sau ngày khai giảng.');
-            return;
-          }
-
-          const submitBtn = document.getElementById('cls-submit-btn');
-          const origText = submitBtn.textContent;
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Đang lưu...';
-
-          try {
-            const res = await fetch('/Admin/api/Classes/Create', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) {
-              showFormError(data.message || 'Không thể tạo lớp học mới.');
-              return;
-            }
-
-            form.reset();
-            initDefaultDates();
-            if (coursesList.length > 0) {
-              document.getElementById('cls-price').value = coursesList[0].price ?? 0;
-            }
-            const modal = document.getElementById('modal-create-class');
-            if (modal) modal.classList.remove('open', 'show');
-            await loadClasses();
-          } catch (err) {
-            console.error(err);
-            showFormError('Lỗi kết nối tới máy chủ.');
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = origText;
-          }
-        });
+        document.getElementById('create-class-form').addEventListener('submit', submitClassForm);
       });
     })();
   </script>

@@ -8,10 +8,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<DashboardController> _logger;
 
-        public DashboardController(ApplicationDbContext context)
+        public DashboardController(ApplicationDbContext context, ILogger<DashboardController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: /Admin/Dashboard
@@ -21,65 +23,85 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         }
 
         [HttpGet("/Admin/api/Dashboard/Summary")]
-        public async Task<IActionResult> Summary()
+        public async Task<IActionResult> Summary(CancellationToken cancellationToken)
         {
             try
             {
-                var totalStudents = await _context.Users.AsNoTracking().CountAsync(u => u.Role == "student");
-                var activeStudents = await _context.Users.AsNoTracking().CountAsync(u => u.Role == "student" && u.IsActive);
-                var ongoingClasses = await _context.CourseClasses.AsNoTracking().CountAsync(c => c.Status == "ongoing");
-                var upcomingClasses = await _context.CourseClasses.AsNoTracking().CountAsync(c => c.Status == "upcoming");
-                var activeEnrollments = await _context.Enrollments.AsNoTracking().CountAsync(e => e.Status == "active");
+                // 1. KPI học viên: 1 truy vấn GROUP BY thay cho 2 truy vấn COUNT riêng lẻ
+                var studentStats = await _context.Users.AsNoTracking()
+                    .Where(u => u.Role == "student")
+                    .GroupBy(u => u.IsActive)
+                    .Select(g => new { IsActive = g.Key, Count = g.Count() })
+                    .ToListAsync(cancellationToken);
+                var totalStudents = studentStats.Sum(x => x.Count);
+                var activeStudents = studentStats.Where(x => x.IsActive).Sum(x => x.Count);
+
+                // 2. KPI lớp học: 1 truy vấn GROUP BY thay cho 2 truy vấn COUNT
+                var classStatusCounts = await _context.CourseClasses.AsNoTracking()
+                    .Where(c => c.Status == "ongoing" || c.Status == "upcoming")
+                    .GroupBy(c => c.Status)
+                    .Select(g => new { Status = g.Key, Count = g.Count() })
+                    .ToDictionaryAsync(x => x.Status, x => x.Count, cancellationToken);
+                var ongoingClasses = classStatusCounts.GetValueOrDefault("ongoing");
+                var upcomingClasses = classStatusCounts.GetValueOrDefault("upcoming");
+
+                // 3. KPI ghi danh: 1 truy vấn GROUP BY thay cho 2 truy vấn COUNT
+                var enrollmentStatusCounts = await _context.Enrollments.AsNoTracking()
+                    .GroupBy(e => e.Status)
+                    .Select(g => new { Status = g.Key, Count = g.Count() })
+                    .ToDictionaryAsync(x => x.Status, x => x.Count, cancellationToken);
+                var activeEnrollments = enrollmentStatusCounts.GetValueOrDefault("active");
+                var revenueEnrollmentCount = activeEnrollments + enrollmentStatusCounts.GetValueOrDefault("completed");
 
                 var estimatedRevenue = await (
                     from e in _context.Enrollments.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                     where e.Status == "active" || e.Status == "completed"
                     select (decimal?)cc.Price
-                ).SumAsync() ?? 0m;
+                ).SumAsync(cancellationToken) ?? 0m;
 
-                var revenueEnrollmentCount = await _context.Enrollments.AsNoTracking()
-                    .CountAsync(e => e.Status == "active" || e.Status == "completed");
-
-                // Monthly enrollments (12 months of current year, or latest year with data)
+                // 4. Ghi danh theo tháng (12 tháng của năm hiện tại, hoặc năm mới nhất có dữ liệu)
                 var targetYear = DateTime.UtcNow.Year;
-                var hasCurrentYear = await _context.Enrollments.AsNoTracking().AnyAsync(e => e.EnrolledAt.Year == targetYear);
+                var hasCurrentYear = await _context.Enrollments.AsNoTracking()
+                    .AnyAsync(e => e.EnrolledAt.Year == targetYear, cancellationToken);
                 if (!hasCurrentYear)
                 {
                     var latestEnrollmentDate = await _context.Enrollments.AsNoTracking()
                         .OrderByDescending(e => e.EnrolledAt)
                         .Select(e => (DateTime?)e.EnrolledAt)
-                        .FirstOrDefaultAsync();
+                        .FirstOrDefaultAsync(cancellationToken);
                     if (latestEnrollmentDate.HasValue)
                     {
                         targetYear = latestEnrollmentDate.Value.Year;
                     }
                 }
 
-                var rawMonthly = await _context.Enrollments.AsNoTracking()
-                    .Where(e => e.EnrolledAt.Year == targetYear)
+                // Lọc theo khoảng thời gian (sargable) thay vì EXTRACT(year) để tận dụng index trên enrolled_at
+                var yearStart = new DateTime(targetYear, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                var yearEnd = yearStart.AddYears(1);
+                var monthlyLookup = await _context.Enrollments.AsNoTracking()
+                    .Where(e => e.EnrolledAt >= yearStart && e.EnrolledAt < yearEnd)
                     .GroupBy(e => e.EnrolledAt.Month)
                     .Select(g => new { Month = g.Key, Count = g.Count() })
-                    .ToListAsync();
+                    .ToDictionaryAsync(x => x.Month, x => x.Count, cancellationToken);
 
-                var monthlyLookup = rawMonthly.ToDictionary(x => x.Month, x => x.Count);
                 var monthlyEnrollments = Enumerable.Range(1, 12)
                     .Select(m => new
                     {
                         month = m,
                         label = $"T{m}",
-                        count = monthlyLookup.TryGetValue(m, out var c) ? c : 0
+                        count = monthlyLookup.GetValueOrDefault(m)
                     })
                     .ToList();
 
-                // Level distribution across Enrollments -> CourseClasses -> Courses
+                // 5. Phân bổ trình độ: Enrollments -> CourseClasses -> Courses (GROUP BY trên PostgreSQL)
                 var rawLevels = await (
                     from e in _context.Enrollments.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                     join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id
                     group e by c.Level into g
                     select new { Level = g.Key, Count = g.Count() }
-                ).ToListAsync();
+                ).ToListAsync(cancellationToken);
 
                 var levelCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -102,32 +124,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 var totalLevelCount = levelCounts.Values.Sum();
+                double Percent(int count) => totalLevelCount > 0 ? Math.Round(count * 100.0 / totalLevelCount, 1) : 0.0;
+
                 var levelDistribution = new[]
                 {
-                    new
-                    {
-                        level = "beginner",
-                        label = "Cơ bản (Beginner)",
-                        count = levelCounts["beginner"],
-                        percentage = totalLevelCount > 0 ? Math.Round(levelCounts["beginner"] * 100.0 / totalLevelCount, 1) : 0.0
-                    },
-                    new
-                    {
-                        level = "intermediate",
-                        label = "Trung cấp (Intermediate)",
-                        count = levelCounts["intermediate"],
-                        percentage = totalLevelCount > 0 ? Math.Round(levelCounts["intermediate"] * 100.0 / totalLevelCount, 1) : 0.0
-                    },
-                    new
-                    {
-                        level = "advanced",
-                        label = "Nâng cao (Advanced)",
-                        count = levelCounts["advanced"],
-                        percentage = totalLevelCount > 0 ? Math.Round(levelCounts["advanced"] * 100.0 / totalLevelCount, 1) : 0.0
-                    }
+                    new { level = "beginner", label = "Cơ bản (Beginner)", count = levelCounts["beginner"], percentage = Percent(levelCounts["beginner"]) },
+                    new { level = "intermediate", label = "Trung cấp (Intermediate)", count = levelCounts["intermediate"], percentage = Percent(levelCounts["intermediate"]) },
+                    new { level = "advanced", label = "Nâng cao (Advanced)", count = levelCounts["advanced"], percentage = Percent(levelCounts["advanced"]) }
                 };
 
-                // Top 10 recent enrollments
+                // 6. Top 10 ghi danh gần nhất (chỉ kéo đúng 10 dòng, đúng các cột cần hiển thị)
                 var recentEnrollments = await (
                     from e in _context.Enrollments.AsNoTracking()
                     join u in _context.Users.AsNoTracking() on e.UserId equals u.Id
@@ -147,10 +153,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         enrolledAt = e.EnrolledAt,
                         status = e.Status
                     }
-                ).Take(10).ToListAsync();
+                ).Take(10).ToListAsync(cancellationToken);
 
                 return Ok(new
                 {
+                    success = true,
                     kpi = new
                     {
                         totalStudents,
@@ -168,9 +175,14 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     recentEnrollments
                 });
             }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Không thể tải dữ liệu tổng quan.", detail = ex.Message });
+                _logger.LogError(ex, "Không thể tải dữ liệu tổng quan Dashboard.");
+                return this.ApiServerError("Không thể tải dữ liệu tổng quan.");
             }
         }
     }

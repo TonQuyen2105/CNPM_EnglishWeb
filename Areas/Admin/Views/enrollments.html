@@ -310,6 +310,7 @@
   <script src="../../../wwwroot/js/site.js"></script>
   <script>
     (function () {
+      // ===== Helpers dùng chung =====
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -320,16 +321,134 @@
           .replace(/'/g, '&#39;');
       }
 
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
       function formatCurrency(val) {
         return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
       }
 
-      function formatDate(dateStr) {
-        if (!dateStr) return '--';
-        const d = new Date(dateStr);
+      // Định dạng dd/MM/yyyy (không phụ thuộc locale của trình duyệt)
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
         if (isNaN(d.getTime())) return '--';
-        return d.toLocaleDateString('vi-VN');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
       }
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      // Skeleton loading cho bảng
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      // Hàng thông báo trạng thái (empty / error) trong bảng
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      // Gắn nút "Thử lại" vào hàng lỗi
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+      const COLS = 8;
+      let needLookups = true;
+      let hasLoadedOnce = false;
+      let loadController = null;
 
       function renderStatusBadge(status) {
         switch ((status || '').toLowerCase()) {
@@ -378,28 +497,30 @@
         if (prevClass && cList.some(c => String(c.id) === prevClass)) classSelect.value = prevClass;
       }
 
+      function hasActiveFilter() {
+        return !!document.getElementById('enrollments-search-input').value.trim() ||
+          document.getElementById('enrollments-status-filter').value !== 'all';
+      }
+
       async function updateStatus(id, newStatus) {
         try {
-          const res = await fetch(`/Admin/api/Enrollments/UpdateStatus/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus })
-          });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) {
-            alert(data.message || 'Không thể cập nhật trạng thái ghi danh.');
-          }
-          await loadEnrollments();
+          const data = await postJson(`/Admin/api/Enrollments/UpdateStatus/${id}`, { status: newStatus });
+          showToast(data.message || 'Cập nhật trạng thái ghi danh thành công.');
         } catch (err) {
           console.error(err);
-          alert('Lỗi kết nối khi cập nhật trạng thái.');
+          showToast(err.message, 'error');
+        } finally {
+          needLookups = true; // sĩ số các lớp thay đổi -> làm mới dropdown ở lần tải sau
+          await loadEnrollments();
         }
       }
 
       function renderEnrollments(items) {
         const tbody = document.getElementById('enrollments-tbody');
         if (!items || items.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chưa có dữ liệu ghi danh phù hợp.</td></tr>';
+          tbody.innerHTML = hasActiveFilter()
+            ? stateRow(COLS, 'Không tìm thấy bản ghi ghi danh phù hợp', 'Hãy thử đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái.')
+            : stateRow(COLS, 'Chưa có dữ liệu ghi danh', 'Nhấn "Ghi danh học viên" để thêm bản ghi đầu tiên.');
           return;
         }
 
@@ -429,100 +550,122 @@
             </td>
           </tr>
         `).join('');
-
-        tbody.querySelectorAll('.enr-status-select').forEach(sel => {
-          sel.addEventListener('change', () => {
-            sel.disabled = true;
-            updateStatus(Number(sel.getAttribute('data-id')), sel.value).finally(() => { sel.disabled = false; });
-          });
-        });
       }
 
       async function loadEnrollments() {
+        // Hủy request cũ khi người dùng gõ / đổi bộ lọc liên tục
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        const tbody = document.getElementById('enrollments-tbody');
+        if (!hasLoadedOnce) {
+          tbody.innerHTML = skeletonRows(COLS, 5);
+        } else {
+          tbody.style.opacity = '0.55';
+        }
+
         const search = document.getElementById('enrollments-search-input').value.trim();
         const status = document.getElementById('enrollments-status-filter').value;
 
         const params = new URLSearchParams();
         if (status && status !== 'all') params.set('status', status);
         if (search) params.set('search', search);
+        if (!needLookups) params.set('lookups', 'false');
 
         try {
-          const res = await fetch(`/Admin/api/Enrollments/List?${params.toString()}`);
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+          const data = await fetchJson(`/Admin/api/Enrollments/List?${params.toString()}`, { signal: controller.signal });
+          if (data.students || data.classes) {
+            populateDropdowns(data.students, data.classes);
+            needLookups = false;
           }
-          const data = await res.json();
-          populateDropdowns(data.students, data.classes);
           renderEnrollments(data.items);
+          hasLoadedOnce = true;
         } catch (err) {
+          if (isAbortError(err)) return;
           console.error('Lỗi tải danh sách ghi danh:', err);
-          document.getElementById('enrollments-tbody').innerHTML =
-            `<tr><td colspan="8" style="text-align: center; color: var(--danger-text); padding: 1.5rem;">${escapeHtml(err.message || 'Không thể tải dữ liệu ghi danh.')}</td></tr>`;
+          tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            tbody.style.opacity = '';
+          }
+        }
+      }
+
+      async function submitEnrollmentForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showError('');
+
+        const payload = {
+          userId: parseInt(document.getElementById('enr-user-id').value, 10) || 0,
+          classId: parseInt(document.getElementById('enr-class-id').value, 10) || 0,
+          status: document.getElementById('enr-status').value
+        };
+
+        if (payload.userId <= 0 || payload.classId <= 0) {
+          showError('Vui lòng chọn học viên và lớp học hợp lệ.');
+          return;
+        }
+
+        const submitBtn = document.getElementById('enr-submit-btn');
+        setBusy(submitBtn, true);
+
+        try {
+          const data = await postJson('/Admin/api/Enrollments/Create', payload);
+          closeModal('modal-create-enrollment');
+          showToast(data.message || 'Ghi danh học viên thành công.');
+          needLookups = true;
+          await loadEnrollments();
+        } catch (err) {
+          console.error(err);
+          showError(err.message);
+        } finally {
+          setBusy(submitBtn, false);
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         loadEnrollments();
 
-        document.getElementById('btn-filter-enrollments').addEventListener('click', loadEnrollments);
-        document.getElementById('enrollments-status-filter').addEventListener('change', loadEnrollments);
-        document.getElementById('enrollments-search-input').addEventListener('keydown', (e) => {
+        const searchInput = document.getElementById('enrollments-search-input');
+        const debouncedLoad = debounce(loadEnrollments, 300);
+
+        document.getElementById('btn-filter-enrollments').addEventListener('click', () => {
+          debouncedLoad.cancel();
+          loadEnrollments();
+        });
+        document.getElementById('enrollments-status-filter').addEventListener('change', () => {
+          debouncedLoad.cancel();
+          loadEnrollments();
+        });
+        searchInput.addEventListener('input', debouncedLoad);
+        searchInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
+            debouncedLoad.cancel();
             loadEnrollments();
           }
+        });
+
+        // Event delegation cho nút Thử lại và ô đổi trạng thái (không gắn lại listener sau mỗi lần render)
+        const tbody = document.getElementById('enrollments-tbody');
+        tbody.addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) loadEnrollments();
+        });
+        tbody.addEventListener('change', (e) => {
+          const sel = e.target.closest('.enr-status-select');
+          if (!sel) return;
+          sel.disabled = true;
+          updateStatus(Number(sel.getAttribute('data-id')), sel.value);
         });
 
         document.getElementById('btn-open-create-enrollment').addEventListener('click', () => {
           showError('');
         });
 
-        const form = document.getElementById('create-enrollment-form');
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          showError('');
-
-          const payload = {
-            userId: parseInt(document.getElementById('enr-user-id').value, 10) || 0,
-            classId: parseInt(document.getElementById('enr-class-id').value, 10) || 0,
-            status: document.getElementById('enr-status').value
-          };
-
-          if (payload.userId <= 0 || payload.classId <= 0) {
-            showError('Vui lòng chọn học viên và lớp học hợp lệ.');
-            return;
-          }
-
-          const submitBtn = document.getElementById('enr-submit-btn');
-          const origText = submitBtn.textContent;
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Đang lưu...';
-
-          try {
-            const res = await fetch('/Admin/api/Enrollments/Create', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) {
-              showError(data.message || 'Ghi danh học viên thất bại.');
-              return;
-            }
-
-            const modal = document.getElementById('modal-create-enrollment');
-            if (modal) modal.classList.remove('open', 'show');
-            await loadEnrollments();
-          } catch (err) {
-            console.error(err);
-            showError('Lỗi kết nối tới máy chủ.');
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = origText;
-          }
-        });
+        document.getElementById('create-enrollment-form').addEventListener('submit', submitEnrollmentForm);
       });
     })();
   </script>

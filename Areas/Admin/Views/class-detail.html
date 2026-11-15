@@ -286,8 +286,7 @@
   <script src="../../../wwwroot/js/site.js"></script>
   <script>
     (function () {
-      let currentClassId = null;
-
+      // ===== Helpers dùng chung =====
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -298,12 +297,134 @@
           .replace(/'/g, '&#39;');
       }
 
-      function formatDate(dateStr) {
-        if (!dateStr) return '--';
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '--';
-        return d.toLocaleDateString('vi-VN');
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
       }
+
+      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
+      }
+
+      // Định dạng dd/MM/yyyy (không phụ thuộc locale của trình duyệt)
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '--';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
+      }
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      // Skeleton loading cho bảng
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      // Hàng thông báo trạng thái (empty / error) trong bảng
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      // Gắn nút "Thử lại" vào hàng lỗi
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+      const COLS = 7;
+      let currentClassId = null;
+      let hasLoadedOnce = false;
+      let loadController = null;
 
       function renderClassStatusBadge(status) {
         switch ((status || '').toLowerCase()) {
@@ -343,122 +464,148 @@
         return null;
       }
 
+      function renderLoadingState() {
+        const tbody = document.getElementById('detail-students-tbody');
+        if (!hasLoadedOnce) {
+          document.getElementById('detail-schedules-container').innerHTML =
+            '<div class="skeleton skeleton-text" style="width: 240px; height: 42px;"></div>';
+          tbody.innerHTML = skeletonRows(COLS, 4);
+        } else {
+          tbody.style.opacity = '0.55';
+        }
+      }
+
       async function updateEnrollmentStatus(enrollmentId, newStatus) {
         try {
-          const res = await fetch('/Admin/api/Classes/UpdateEnrollmentStatus', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enrollmentId, status: newStatus })
+          const data = await postJson('/Admin/api/Classes/UpdateEnrollmentStatus', {
+            enrollmentId,
+            status: newStatus
           });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) {
-            alert(data.message || 'Không thể cập nhật trạng thái ghi danh.');
-            await loadClassDetail();
-            return;
-          }
-          await loadClassDetail();
+          showToast(data.message || 'Cập nhật trạng thái ghi danh thành công.');
         } catch (err) {
           console.error(err);
-          alert('Lỗi kết nối khi cập nhật trạng thái.');
+          showToast(err.message, 'error');
+        } finally {
+          await loadClassDetail();
         }
+      }
+
+      function renderClassDetail(data) {
+        const info = data.classInfo || {};
+        document.getElementById('detail-class-title').textContent = `Lớp ${info.classCode}: ${info.className}`;
+        document.getElementById('detail-class-subtitle').textContent =
+          `Khóa học: ${info.courseTitle} • Giảng viên: ${info.teacherName} • Thời gian: ${formatDate(info.startDate)} - ${formatDate(info.endDate)}`;
+        document.getElementById('detail-class-status-badge').innerHTML = renderClassStatusBadge(info.status);
+
+        document.getElementById('detail-kpi-students').textContent = `${info.activeStudents} / ${info.maxStudents}`;
+        document.getElementById('detail-kpi-lessons').textContent = `${info.totalLessons} bài`;
+        document.getElementById('detail-kpi-attendance').textContent = `${info.averageAttendance ?? 0}%`;
+        document.getElementById('detail-kpi-score').textContent =
+          info.averageMidtermScore !== null && info.averageMidtermScore !== undefined
+            ? info.averageMidtermScore
+            : 'Chưa có';
+
+        // Lịch học trong tuần
+        const schedules = Array.isArray(data.schedules) ? data.schedules : [];
+        const schedBox = document.getElementById('detail-schedules-container');
+        if (schedules.length === 0) {
+          schedBox.innerHTML = '<span class="text-muted" style="font-size: 0.875rem;">Lớp này chưa được xếp lịch học cố định.</span>';
+        } else {
+          schedBox.innerHTML = schedules.map(s => `
+            <div style="background: var(--primary-50); border: 1px solid var(--primary-200); border-radius: var(--radius-md); padding: 0.5rem 0.875rem; font-size: 0.8125rem;">
+              <strong style="color: var(--primary-700);">${escapeHtml(s.dayLabel)}</strong> • ${escapeHtml(s.timeRange)}
+              <div style="color: var(--text-secondary); font-size: 0.75rem;">${escapeHtml(s.classroomName)} (${escapeHtml(s.timeSlotName)})</div>
+            </div>
+          `).join('');
+        }
+
+        // Danh sách học viên
+        const students = Array.isArray(data.students) ? data.students : [];
+        document.getElementById('detail-students-heading').textContent = `Danh sách học viên trong lớp (${students.length} lượt ghi danh)`;
+        const tbody = document.getElementById('detail-students-tbody');
+
+        if (students.length === 0) {
+          tbody.innerHTML = stateRow(COLS, 'Chưa có học viên nào', 'Chưa có học viên nào ghi danh vào lớp này.');
+          return;
+        }
+
+        tbody.innerHTML = students.map((st, idx) => {
+          const scoreDisplay = st.midtermScore !== null && st.midtermScore !== undefined
+            ? `<strong>${st.midtermScore}</strong>`
+            : '<span class="text-muted">Chưa có</span>';
+
+          return `
+            <tr>
+              <td>${idx + 1}</td>
+              <td><strong>${escapeHtml(st.fullName)}</strong></td>
+              <td>${escapeHtml(st.email)}</td>
+              <td>${st.completedLessons}/${st.totalLessons} bài (<strong>${st.attendancePercent}%</strong>)</td>
+              <td>${scoreDisplay}</td>
+              <td>${renderEnrollmentStatusBadge(st.status)}</td>
+              <td class="text-right">
+                <select class="form-control enrollment-status-select" data-enrollment-id="${st.enrollmentId}" style="width: auto; display: inline-block; padding: 4px 8px; font-size: 0.8125rem;">
+                  <option value="active" ${st.status === 'active' ? 'selected' : ''}>Active (Đang học)</option>
+                  <option value="completed" ${st.status === 'completed' ? 'selected' : ''}>Completed (Hoàn thành)</option>
+                  <option value="cancelled" ${st.status === 'cancelled' ? 'selected' : ''}>Cancelled (Đã hủy)</option>
+                </select>
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
 
       async function loadClassDetail() {
         currentClassId = getClassIdFromUrl();
+        const tbody = document.getElementById('detail-students-tbody');
+
         if (!currentClassId) {
           document.getElementById('detail-class-title').textContent = 'Không xác định được mã lớp';
           document.getElementById('detail-class-subtitle').textContent = 'Vui lòng chọn một lớp từ danh sách lớp học.';
-          document.getElementById('detail-students-tbody').innerHTML =
-            '<tr><td colspan="7" style="text-align: center; color: var(--danger-text); padding: 1.5rem;">Thiếu tham số id lớp học trên URL (ví dụ: class-detail.html?id=1).</td></tr>';
+          document.getElementById('detail-schedules-container').innerHTML = '';
+          tbody.innerHTML = stateRow(COLS, 'Thiếu mã lớp học', 'Thiếu tham số id lớp học trên URL (ví dụ: /Admin/class-detail.html?id=1).', 'danger');
           return;
         }
 
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+        renderLoadingState();
+
         try {
-          const res = await fetch(`/Admin/api/Classes/Detail/${currentClassId}`);
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) {
-            document.getElementById('detail-class-title').textContent = data.message || 'Không tìm thấy lớp học';
-            document.getElementById('detail-students-tbody').innerHTML =
-              `<tr><td colspan="7" style="text-align: center; color: var(--danger-text); padding: 1.5rem;">${escapeHtml(data.message || 'Không thể tải dữ liệu lớp học.')}</td></tr>`;
-            return;
-          }
-
-          const info = data.classInfo;
-          document.getElementById('detail-class-title').textContent = `Lớp ${info.classCode}: ${info.className}`;
-          document.getElementById('detail-class-subtitle').textContent =
-            `Khóa học: ${info.courseTitle} • Giảng viên: ${info.teacherName} • Thời gian: ${formatDate(info.startDate)} - ${formatDate(info.endDate)}`;
-          document.getElementById('detail-class-status-badge').innerHTML = renderClassStatusBadge(info.status);
-
-          document.getElementById('detail-kpi-students').textContent = `${info.activeStudents} / ${info.maxStudents}`;
-          document.getElementById('detail-kpi-lessons').textContent = `${info.totalLessons} bài`;
-          document.getElementById('detail-kpi-attendance').textContent = `${info.averageAttendance ?? 0}%`;
-          document.getElementById('detail-kpi-score').textContent =
-            info.averageMidtermScore !== null && info.averageMidtermScore !== undefined
-              ? info.averageMidtermScore
-              : 'Chưa có';
-
-          // Render schedules
-          const schedules = Array.isArray(data.schedules) ? data.schedules : [];
-          const schedBox = document.getElementById('detail-schedules-container');
-          if (schedules.length === 0) {
-            schedBox.innerHTML = '<span class="text-muted" style="font-size: 0.875rem;">Lớp này chưa được xếp lịch học cố định.</span>';
-          } else {
-            schedBox.innerHTML = schedules.map(s => `
-              <div style="background: var(--primary-50); border: 1px solid var(--primary-200); border-radius: var(--radius-md); padding: 0.5rem 0.875rem; font-size: 0.8125rem;">
-                <strong style="color: var(--primary-700);">${escapeHtml(s.dayLabel)}</strong> • ${escapeHtml(s.timeRange)}
-                <div style="color: var(--text-secondary); font-size: 0.75rem;">${escapeHtml(s.classroomName)} (${escapeHtml(s.timeSlotName)})</div>
-              </div>
-            `).join('');
-          }
-
-          // Render students
-          const students = Array.isArray(data.students) ? data.students : [];
-          document.getElementById('detail-students-heading').textContent = `Danh sách học viên trong lớp (${students.length} lượt ghi danh)`;
-          const tbody = document.getElementById('detail-students-tbody');
-
-          if (students.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chưa có học viên nào ghi danh vào lớp này.</td></tr>';
-          } else {
-            tbody.innerHTML = students.map((st, idx) => {
-              const scoreDisplay = st.midtermScore !== null && st.midtermScore !== undefined
-                ? `<strong>${st.midtermScore}</strong>`
-                : '<span class="text-muted">Chưa có</span>';
-
-              return `
-                <tr>
-                  <td>${idx + 1}</td>
-                  <td><strong>${escapeHtml(st.fullName)}</strong></td>
-                  <td>${escapeHtml(st.email)}</td>
-                  <td>${st.completedLessons}/${st.totalLessons} bài (<strong>${st.attendancePercent}%</strong>)</td>
-                  <td>${scoreDisplay}</td>
-                  <td>${renderEnrollmentStatusBadge(st.status)}</td>
-                  <td class="text-right">
-                    <select class="form-control enrollment-status-select" data-enrollment-id="${st.enrollmentId}" style="width: auto; display: inline-block; padding: 4px 8px; font-size: 0.8125rem;">
-                      <option value="active" ${st.status === 'active' ? 'selected' : ''}>Active (Đang học)</option>
-                      <option value="completed" ${st.status === 'completed' ? 'selected' : ''}>Completed (Hoàn thành)</option>
-                      <option value="cancelled" ${st.status === 'cancelled' ? 'selected' : ''}>Cancelled (Đã hủy)</option>
-                    </select>
-                  </td>
-                </tr>
-              `;
-            }).join('');
-
-            tbody.querySelectorAll('.enrollment-status-select').forEach(sel => {
-              sel.addEventListener('change', () => {
-                const enrId = Number(sel.getAttribute('data-enrollment-id'));
-                sel.disabled = true;
-                updateEnrollmentStatus(enrId, sel.value).finally(() => { sel.disabled = false; });
-              });
-            });
-          }
+          const data = await fetchJson(`/Admin/api/Classes/Detail/${encodeURIComponent(currentClassId)}`, { signal: controller.signal });
+          renderClassDetail(data);
+          hasLoadedOnce = true;
         } catch (err) {
+          if (isAbortError(err)) return;
           console.error('Lỗi tải chi tiết lớp:', err);
-          document.getElementById('detail-students-tbody').innerHTML =
-            '<tr><td colspan="7" style="text-align: center; color: var(--danger-text); padding: 1.5rem;">Lỗi kết nối khi tải chi tiết lớp học.</td></tr>';
+          document.getElementById('detail-class-title').textContent = 'Không thể tải thông tin lớp học';
+          document.getElementById('detail-class-subtitle').textContent = err.message;
+          document.getElementById('detail-schedules-container').innerHTML = '';
+          tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            tbody.style.opacity = '';
+          }
         }
       }
 
-      document.addEventListener('DOMContentLoaded', loadClassDetail);
+      document.addEventListener('DOMContentLoaded', () => {
+        loadClassDetail();
+
+        // Event delegation cho nút Thử lại và dropdown cập nhật trạng thái ghi danh
+        const tbody = document.getElementById('detail-students-tbody');
+        tbody.addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) loadClassDetail();
+        });
+        tbody.addEventListener('change', (e) => {
+          const sel = e.target.closest('.enrollment-status-select');
+          if (!sel) return;
+          sel.disabled = true;
+          updateEnrollmentStatus(Number(sel.getAttribute('data-enrollment-id')), sel.value);
+        });
+      });
     })();
   </script>
 </body>

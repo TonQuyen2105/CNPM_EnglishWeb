@@ -264,7 +264,7 @@
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trang thiết bị & Mô tả phòng học</label>
-            <textarea id="facility-description" class="form-control" rows="3" placeholder="Ví dụ: 30 máy tính Sony, Máy chiếu 4K, Loa trợ giảng..."></textarea>
+            <textarea id="facility-description" class="form-control" rows="3" maxlength="1000" placeholder="Ví dụ: 30 máy tính Sony, Máy chiếu 4K, Loa trợ giảng..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -279,8 +279,7 @@
   <script src="../../../wwwroot/js/site.js"></script>
   <script>
     (function () {
-      let facilitiesCache = [];
-
+      // ===== Helpers dùng chung =====
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -290,6 +289,120 @@
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#39;');
       }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      // Skeleton loading cho bảng
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      // Hàng thông báo trạng thái (empty / error) trong bảng
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      // Gắn nút "Thử lại" vào hàng lỗi
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+      let facilitiesCache = [];
+      let loadController = null;
 
       function showError(msg) {
         const errBox = document.getElementById('facility-form-error');
@@ -327,29 +440,43 @@
         document.getElementById('facility-modal-title').textContent = `Cập nhật phòng: ${item.name}`;
         document.getElementById('facility-submit-btn').textContent = 'Cập nhật';
         showError('');
-        const modal = document.getElementById('modal-create-facility');
-        if (modal) modal.classList.add('open', 'show');
+        openModal('modal-create-facility');
       }
 
-      async function toggleFacilityStatus(id) {
+      async function toggleFacilityStatus(id, btn) {
+        if (btn) btn.disabled = true;
         try {
-          const res = await fetch(`/Admin/api/Facilities/ToggleStatus/${id}`, { method: 'POST' });
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) {
-            alert(data.message || 'Không thể đổi trạng thái phòng học.');
-            return;
-          }
+          const data = await postJson(`/Admin/api/Facilities/ToggleStatus/${id}`);
+          showToast(data.message || 'Đã đổi trạng thái phòng học.');
           await loadFacilities();
         } catch (err) {
           console.error(err);
-          alert('Lỗi kết nối khi đổi trạng thái phòng học.');
+          showToast(err.message, 'error');
+          if (btn) btn.disabled = false;
         }
+      }
+
+      function renderLoadingState() {
+        const card = `
+          <div class="card" style="padding: 1.5rem;">
+            <div class="skeleton skeleton-text sm"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text sm"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>`;
+        document.getElementById('facilities-grid').innerHTML = card.repeat(3);
       }
 
       function renderFacilities(items) {
         const grid = document.getElementById('facilities-grid');
         if (!items || items.length === 0) {
-          grid.innerHTML = '<div class="card" style="padding: 2rem; grid-column: span 3; text-align: center; color: var(--text-muted);">Chưa có phòng học nào trong hệ thống.</div>';
+          grid.innerHTML = `
+            <div class="card" style="grid-column: span 3;">
+              <div class="empty-state" style="padding: 2rem 1rem;">
+                <div class="empty-state-title">Chưa có phòng học nào</div>
+                <div class="empty-state-text" style="margin-bottom: 0;">Nhấn "Thêm phòng học" để tạo phòng học đầu tiên trong hệ thống.</div>
+              </div>
+            </div>`;
           return;
         }
 
@@ -386,30 +513,76 @@
             </div>
           `;
         }).join('');
+      }
 
-        grid.querySelectorAll('.btn-edit-facility').forEach(btn => {
-          btn.addEventListener('click', () => openEditMode(Number(btn.getAttribute('data-id'))));
-        });
-
-        grid.querySelectorAll('.btn-toggle-facility').forEach(btn => {
-          btn.addEventListener('click', () => toggleFacilityStatus(Number(btn.getAttribute('data-id'))));
-        });
+      function renderLoadError(message) {
+        document.getElementById('facilities-grid').innerHTML = `
+          <div class="card" style="grid-column: span 3;">
+            <div class="empty-state" style="padding: 2rem 1rem;">
+              <div class="empty-state-title" style="color: var(--danger-text);">Không thể tải danh sách phòng học</div>
+              <div class="empty-state-text">${escapeHtml(message)}</div>
+              <button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>
+            </div>
+          </div>`;
       }
 
       async function loadFacilities() {
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        if (facilitiesCache.length === 0) renderLoadingState();
+
         try {
-          const res = await fetch('/Admin/api/Facilities/List');
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
-          }
-          const data = await res.json();
+          const data = await fetchJson('/Admin/api/Facilities/List', { signal: controller.signal });
           facilitiesCache = Array.isArray(data.items) ? data.items : [];
           renderFacilities(facilitiesCache);
         } catch (err) {
+          if (isAbortError(err)) return;
           console.error('Lỗi tải phòng học:', err);
-          document.getElementById('facilities-grid').innerHTML =
-            `<div class="card" style="padding: 1.5rem; grid-column: span 3; text-align: center; color: var(--danger-text);">${escapeHtml(err.message || 'Không thể tải danh sách phòng học.')}</div>`;
+          renderLoadError(err.message);
+        } finally {
+          if (loadController === controller) loadController = null;
+        }
+      }
+
+      async function submitFacilityForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showError('');
+
+        const id = document.getElementById('facility-id').value;
+        const payload = {
+          name: document.getElementById('facility-name').value.trim(),
+          location: document.getElementById('facility-location').value.trim(),
+          capacity: parseInt(document.getElementById('facility-capacity').value, 10) || 0,
+          description: document.getElementById('facility-description').value.trim(),
+          isActive: document.getElementById('facility-active').value === 'true'
+        };
+
+        if (!payload.name) {
+          showError('Tên phòng học không được để trống.');
+          return;
+        }
+        if (payload.capacity <= 0) {
+          showError('Sức chứa phải lớn hơn 0.');
+          return;
+        }
+
+        const submitBtn = document.getElementById('facility-submit-btn');
+        setBusy(submitBtn, true);
+
+        try {
+          const url = id ? `/Admin/api/Facilities/Update/${id}` : '/Admin/api/Facilities/Create';
+          const data = await postJson(url, payload, id ? 'PUT' : 'POST');
+          closeModal('modal-create-facility');
+          showToast(data.message || 'Lưu phòng học thành công.');
+          await loadFacilities();
+        } catch (err) {
+          console.error(err);
+          showError(err.message);
+        } finally {
+          setBusy(submitBtn, false);
         }
       }
 
@@ -421,61 +594,26 @@
           openBtn.addEventListener('click', openCreateMode);
         }
 
+        // Event delegation: không cần gắn lại listener sau mỗi lần render lưới phòng học
+        document.getElementById('facilities-grid').addEventListener('click', (e) => {
+          const editBtn = e.target.closest('.btn-edit-facility');
+          if (editBtn) {
+            openEditMode(Number(editBtn.getAttribute('data-id')));
+            return;
+          }
+          const toggleBtn = e.target.closest('.btn-toggle-facility');
+          if (toggleBtn) {
+            toggleFacilityStatus(Number(toggleBtn.getAttribute('data-id')), toggleBtn);
+            return;
+          }
+          if (e.target.closest('[data-retry-load]')) {
+            loadFacilities();
+          }
+        });
+
         const form = document.getElementById('facility-form');
         if (form) {
-          form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            showError('');
-
-            const id = document.getElementById('facility-id').value;
-            const payload = {
-              name: document.getElementById('facility-name').value.trim(),
-              location: document.getElementById('facility-location').value.trim(),
-              capacity: parseInt(document.getElementById('facility-capacity').value, 10) || 0,
-              description: document.getElementById('facility-description').value.trim(),
-              isActive: document.getElementById('facility-active').value === 'true'
-            };
-
-            if (!payload.name) {
-              showError('Tên phòng học không được để trống.');
-              return;
-            }
-            if (payload.capacity <= 0) {
-              showError('Sức chứa phải lớn hơn 0.');
-              return;
-            }
-
-            const submitBtn = document.getElementById('facility-submit-btn');
-            const origText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Đang lưu...';
-
-            try {
-              const url = id ? `/Admin/api/Facilities/Update/${id}` : '/Admin/api/Facilities/Create';
-              const method = id ? 'PUT' : 'POST';
-              const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-              });
-              const data = await res.json().catch(() => ({}));
-              if (!res.ok) {
-                showError(data.message || 'Lưu thông tin phòng học thất bại.');
-                return;
-              }
-
-              const modal = document.getElementById('modal-create-facility');
-              if (modal) modal.classList.remove('open', 'show');
-              await loadFacilities();
-            } catch (err) {
-              console.error(err);
-              showError('Lỗi kết nối tới máy chủ.');
-            } finally {
-              submitBtn.disabled = false;
-              submitBtn.textContent = origText;
-            }
-          });
+          form.addEventListener('submit', submitFacilityForm);
         }
       });
     })();
