@@ -211,10 +211,34 @@
       <p class="page-header-subtitle">Hệ thống bài kiểm tra đầu vào, kiểm tra giữa kỳ và thi thử trực tuyến</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary" data-modal-target="modal-create-exam">
+      <button type="button" class="btn btn-primary" id="btn-open-create-exam" data-modal-target="modal-exam">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Tạo đề thi mới
       </button>
+    </div>
+  </div>
+
+  <!-- Bộ lọc & Tìm kiếm -->
+  <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+    <div class="grid grid-cols-12 gap-4 items-center">
+      <div class="col-span-5">
+        <input type="text" id="exams-search-input" class="form-control" placeholder="Tìm theo tên đề thi, khóa học hoặc giảng viên...">
+      </div>
+      <div class="col-span-3">
+        <select id="exams-course-filter" class="form-control">
+          <option value="0">Tất cả khóa học</option>
+        </select>
+      </div>
+      <div class="col-span-2">
+        <select id="exams-status-filter" class="form-control">
+          <option value="all">Tất cả trạng thái</option>
+          <option value="true">Đang mở (Công bố)</option>
+          <option value="false">Bản nháp</option>
+        </select>
+      </div>
+      <div class="col-span-2 text-right">
+        <button type="button" class="btn btn-secondary" id="btn-reset-exams" style="width: 100%;">Đặt lại</button>
+      </div>
     </div>
   </div>
 
@@ -224,77 +248,18 @@
         <thead>
           <tr>
             <th>Tên bài thi</th>
-            <th>Môn học</th>
+            <th>Khóa học / Môn học</th>
             <th>Thời gian</th>
             <th>Số câu</th>
             <th>Điểm qua</th>
             <th>Lượt thi</th>
             <th>Trạng thái</th>
+            <th class="text-right">Thao tác</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="exams-tbody">
           <tr>
-            <td><strong>Kiểm tra đầu vào tổng quát</strong></td>
-            <td>Chung</td>
-            <td>45 phút</td>
-            <td>40 câu</td>
-            <td>20 / 40</td>
-            <td>128 lượt</td>
-            <td><span class="badge badge-success">Đang mở</span></td>
-          </tr>
-          <tr>
-            <td><strong>IELTS Reading Mock Test 1</strong></td>
-            <td>Luyện Thi IELTS</td>
-            <td>60 phút</td>
-            <td>40 câu</td>
-            <td>24 / 40</td>
-            <td>85 lượt</td>
-            <td><span class="badge badge-success">Đang mở</span></td>
-          </tr>
-          <tr>
-            <td><strong>TOEIC Mini Test 50 Câu</strong></td>
-            <td>Luyện Thi TOEIC</td>
-            <td>35 phút</td>
-            <td>50 câu</td>
-            <td>30 / 50</td>
-            <td>94 lượt</td>
-            <td><span class="badge badge-success">Đang mở</span></td>
-          </tr>
-          <tr>
-            <td><strong>Kiểm tra định kỳ giữa khóa COMM</strong></td>
-            <td>Tiếng Anh Giao Tiếp</td>
-            <td>45 phút</td>
-            <td>40 câu</td>
-            <td>25 / 40</td>
-            <td>68 lượt</td>
-            <td><span class="badge badge-success">Đang mở</span></td>
-          </tr>
-          <tr>
-            <td><strong>TOEIC Full Test 200 Câu (Nghe & Đọc)</strong></td>
-            <td>Luyện Thi TOEIC</td>
-            <td>120 phút</td>
-            <td>200 câu</td>
-            <td>550 / 990</td>
-            <td>142 lượt</td>
-            <td><span class="badge badge-success">Đang mở</span></td>
-          </tr>
-          <tr>
-            <td><strong>IELTS Writing Task 1 & 2 Chấm Điểm AI</strong></td>
-            <td>Luyện Thi IELTS</td>
-            <td>60 phút</td>
-            <td>2 đề</td>
-            <td>6.0 / 9.0</td>
-            <td>56 lượt</td>
-            <td><span class="badge badge-warning">Đang chấm</span></td>
-          </tr>
-          <tr>
-            <td><strong>Super Kids Kiểm Tra Cuối Khóa K01</strong></td>
-            <td>Tiếng Anh Thiếu Nhi</td>
-            <td>30 phút</td>
-            <td>25 câu</td>
-            <td>18 / 25</td>
-            <td>32 lượt</td>
-            <td><span class="badge badge-neutral">Đã đóng</span></td>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải danh sách đề thi...</td>
           </tr>
         </tbody>
       </table>
@@ -305,60 +270,64 @@
     </div>
   </div>
 
-  <!-- Modal Tạo Đề Thi Mới -->
-  <div class="modal-backdrop" id="modal-create-exam">
+  <!-- Modal Tạo / Chỉnh sửa Đề Thi -->
+  <div class="modal-backdrop" id="modal-exam">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Tạo kỳ thi / đề thi mới</h3>
+        <h3 class="modal-title" id="exam-modal-title">Tạo kỳ thi / đề thi mới</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
-      <form class="modal-form" data-modal-form>
+      <form id="exam-form">
+        <input type="hidden" id="exam-id" value="">
         <div class="modal-body">
+          <div id="exam-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
           <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tiêu đề bài thi <span class="required" style="color:red;">*</span></label>
-            <input type="text" class="form-control" placeholder="Ví dụ: Thi Thử TOEIC Full Test Tháng 11" required>
+            <input type="text" id="exam-title" class="form-control" placeholder="Ví dụ: Thi Thử TOEIC Full Test Tháng 11" maxlength="200" required>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học trực thuộc <span class="required" style="color:red;">*</span></label>
-              <select class="form-control" required>
-                <option value="1">Tiếng Anh Giao Tiếp</option>
-                <option value="2">Luyện Thi TOEIC</option>
-                <option value="3">Luyện Thi IELTS</option>
-                <option value="4">Tiếng Anh Thiếu Nhi</option>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học trực thuộc</label>
+              <select id="exam-course-id" class="form-control">
+                <option value="">-- Đánh giá chung --</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Loại bài thi <span class="required" style="color:red;">*</span></label>
-              <select class="form-control" required>
-                <option value="placement">Đánh giá đầu vào</option>
-                <option value="midterm">Kiểm tra giữa kỳ</option>
-                <option value="final">Kiểm tra cuối kỳ</option>
-                <option value="practice">Luyện tập tự do</option>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên phụ trách <span class="required" style="color:red;">*</span></label>
+              <select id="exam-teacher-id" class="form-control" required>
+                <option value="">-- Đang tải giảng viên --</option>
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thời gian làm bài (Phút) <span class="required" style="color:red;">*</span></label>
-              <input type="number" class="form-control" value="60" required>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thời lượng (Phút) <span class="required" style="color:red;">*</span></label>
+              <input type="number" id="exam-duration" class="form-control" value="45" min="1" max="600" required>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Điểm qua / Điểm chuẩn</label>
-              <input type="text" class="form-control" placeholder="Ví dụ: 25 / 40">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Điểm qua <span class="required" style="color:red;">*</span></label>
+              <input type="number" id="exam-pass-score" class="form-control" value="50" min="0" max="10000" required>
             </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số lượt tối đa</label>
+              <input type="number" id="exam-max-attempts" class="form-control" placeholder="Không giới hạn" min="1">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mô tả đề thi</label>
+            <textarea id="exam-description" class="form-control" rows="2" maxlength="2000" placeholder="Hướng dẫn làm bài, nội dung trọng tâm..."></textarea>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái đề thi</label>
-            <select class="form-control">
-              <option value="published">Đang mở (Cho phép học viên làm bài)</option>
-              <option value="draft">Bản nháp (Chưa công bố)</option>
+            <select id="exam-published" class="form-control">
+              <option value="true">Công bố ngay (Cho phép học viên làm bài)</option>
+              <option value="false">Bản nháp (Chưa công bố)</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" class="btn btn-primary">Lưu đề thi</button>
+          <button type="submit" class="btn btn-primary" id="exam-submit-btn">Lưu đề thi</button>
         </div>
       </form>
     </div>
@@ -366,5 +335,372 @@
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>
+  <script>
+    (function () {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      function skeletonRows(cols, rows = 5) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+
+      const COLS = 8;
+      let needLookups = true;
+      let hasLoadedOnce = false;
+      let examsCache = [];
+      let loadController = null;
+
+      function showFormError(msg) {
+        const box = document.getElementById('exam-form-error');
+        if (!box) return;
+        if (msg) {
+          box.textContent = msg;
+          box.style.display = 'block';
+        } else {
+          box.textContent = '';
+          box.style.display = 'none';
+        }
+      }
+
+      function populateLookups(courses, teachers) {
+        if (Array.isArray(courses)) {
+          const filterSel = document.getElementById('exams-course-filter');
+          const formSel = document.getElementById('exam-course-id');
+          const cur = filterSel.value;
+          filterSel.innerHTML = '<option value="0">Tất cả khóa học</option>' +
+            courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+          if (cur) filterSel.value = cur;
+
+          formSel.innerHTML = '<option value="">-- Đánh giá chung --</option>' +
+            courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+        }
+
+        if (Array.isArray(teachers)) {
+          const tSel = document.getElementById('exam-teacher-id');
+          if (teachers.length === 0) {
+            tSel.innerHTML = '<option value="">-- Chưa có giảng viên --</option>';
+          } else {
+            tSel.innerHTML = teachers
+              .map(t => `<option value="${t.id}">${escapeHtml(t.fullName)}${t.isVerified ? '' : ' (Chờ duyệt)'}</option>`)
+              .join('');
+          }
+        }
+      }
+
+      function openCreateMode() {
+        document.getElementById('exam-id').value = '';
+        document.getElementById('exam-title').value = '';
+        document.getElementById('exam-course-id').value = '';
+        document.getElementById('exam-duration').value = '45';
+        document.getElementById('exam-pass-score').value = '50';
+        document.getElementById('exam-max-attempts').value = '';
+        document.getElementById('exam-description').value = '';
+        document.getElementById('exam-published').value = 'true';
+        document.getElementById('exam-modal-title').textContent = 'Tạo kỳ thi / đề thi mới';
+        document.getElementById('exam-submit-btn').textContent = 'Lưu đề thi';
+        showFormError('');
+      }
+
+      function openEditMode(id) {
+        const ex = examsCache.find(x => x.id === id);
+        if (!ex) return;
+        document.getElementById('exam-id').value = ex.id;
+        document.getElementById('exam-title').value = ex.title || '';
+        document.getElementById('exam-course-id').value = ex.courseId ? String(ex.courseId) : '';
+        if (ex.createdByTeacherId) {
+          document.getElementById('exam-teacher-id').value = String(ex.createdByTeacherId);
+        }
+        document.getElementById('exam-duration').value = String(ex.durationMinutes ?? 45);
+        document.getElementById('exam-pass-score').value = String(ex.passScore ?? 50);
+        document.getElementById('exam-max-attempts').value = ex.maxAttempts ? String(ex.maxAttempts) : '';
+        document.getElementById('exam-description').value = ex.description || '';
+        document.getElementById('exam-published').value = ex.isPublished ? 'true' : 'false';
+        document.getElementById('exam-modal-title').textContent = `Cập nhật đề thi: ${ex.title}`;
+        document.getElementById('exam-submit-btn').textContent = 'Lưu thay đổi';
+        showFormError('');
+        openModal('modal-exam');
+      }
+
+      function renderExams(items) {
+        const tbody = document.getElementById('exams-tbody');
+        if (!Array.isArray(items) || items.length === 0) {
+          tbody.innerHTML = stateRow(COLS, 'Chưa có đề thi nào', 'Chưa có đề thi phù hợp với điều kiện lọc hiện tại.');
+          return;
+        }
+
+        tbody.innerHTML = items.map(e => {
+          const statusBadge = e.isPublished
+            ? '<span class="badge badge-success">Đang mở</span>'
+            : '<span class="badge badge-neutral">Bản nháp</span>';
+          const toggleBtn = e.isPublished
+            ? `<button type="button" class="btn btn-sm btn-secondary" data-toggle-exam="${e.id}">Ẩn đề</button>`
+            : `<button type="button" class="btn btn-sm btn-primary" data-toggle-exam="${e.id}">Công bố</button>`;
+
+          return `
+            <tr>
+              <td>
+                <strong>${escapeHtml(e.title)}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">GV tạo: ${escapeHtml(e.teacherName)}</div>
+              </td>
+              <td>
+                <div>${escapeHtml(e.courseTitle)}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(e.subjectName)}</div>
+              </td>
+              <td>${e.durationMinutes} phút</td>
+              <td><strong>${e.questionCount ?? 0}</strong> câu</td>
+              <td>${e.passScore} điểm</td>
+              <td>${e.attemptCount ?? 0} lượt</td>
+              <td>${statusBadge}</td>
+              <td class="text-right">
+                <div style="display: inline-flex; gap: 6px;">
+                  ${toggleBtn}
+                  <button type="button" class="btn btn-sm btn-secondary" data-edit-exam="${e.id}">Sửa</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      async function loadExams() {
+        const tbody = document.getElementById('exams-tbody');
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        if (!hasLoadedOnce) {
+          tbody.innerHTML = skeletonRows(COLS, 5);
+        } else {
+          tbody.style.opacity = '0.55';
+        }
+
+        try {
+          const params = new URLSearchParams({
+            search: (document.getElementById('exams-search-input').value || '').trim(),
+            courseId: document.getElementById('exams-course-filter').value || '0',
+            published: document.getElementById('exams-status-filter').value || 'all',
+            lookups: String(needLookups)
+          });
+
+          const data = await fetchJson(`/Admin/api/Exams/List?${params.toString()}`, { signal: controller.signal });
+          examsCache = Array.isArray(data.items) ? data.items : [];
+          if (needLookups) {
+            populateLookups(data.courses, data.teachers);
+            needLookups = false;
+          }
+          renderExams(examsCache);
+          hasLoadedOnce = true;
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải đề thi:', err);
+          tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            tbody.style.opacity = '';
+          }
+        }
+      }
+
+      async function togglePublishExam(id, btn) {
+        if (btn) btn.disabled = true;
+        try {
+          const data = await postJson(`/Admin/api/Exams/TogglePublish/${id}`);
+          showToast(data.message || 'Đã cập nhật trạng thái đề thi.');
+          await loadExams();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message, 'error');
+          if (btn) btn.disabled = false;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadExams();
+
+        const debouncedSearch = debounce(loadExams, 300);
+        document.getElementById('exams-search-input').addEventListener('input', debouncedSearch);
+        ['exams-course-filter', 'exams-status-filter'].forEach(id => {
+          document.getElementById(id).addEventListener('change', () => {
+            debouncedSearch.cancel();
+            loadExams();
+          });
+        });
+
+        document.getElementById('btn-reset-exams').addEventListener('click', () => {
+          debouncedSearch.cancel();
+          document.getElementById('exams-search-input').value = '';
+          document.getElementById('exams-course-filter').value = '0';
+          document.getElementById('exams-status-filter').value = 'all';
+          loadExams();
+        });
+
+        document.getElementById('btn-open-create-exam').addEventListener('click', openCreateMode);
+
+        document.getElementById('exams-tbody').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) {
+            loadExams();
+            return;
+          }
+          const toggleBtn = e.target.closest('[data-toggle-exam]');
+          if (toggleBtn) {
+            togglePublishExam(Number(toggleBtn.getAttribute('data-toggle-exam')), toggleBtn);
+            return;
+          }
+          const editBtn = e.target.closest('[data-edit-exam]');
+          if (editBtn) {
+            openEditMode(Number(editBtn.getAttribute('data-edit-exam')));
+          }
+        });
+
+        document.getElementById('exam-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showFormError('');
+
+          const id = document.getElementById('exam-id').value;
+          const isEdit = Boolean(id);
+          const courseVal = document.getElementById('exam-course-id').value;
+          const maxAttVal = document.getElementById('exam-max-attempts').value;
+
+          const payload = {
+            title: document.getElementById('exam-title').value.trim(),
+            courseId: courseVal ? Number(courseVal) : null,
+            createdByTeacherId: Number(document.getElementById('exam-teacher-id').value) || 0,
+            durationMinutes: Number(document.getElementById('exam-duration').value) || 45,
+            passScore: Number(document.getElementById('exam-pass-score').value) || 0,
+            maxAttempts: maxAttVal ? Number(maxAttVal) : null,
+            description: document.getElementById('exam-description').value.trim(),
+            isPublished: document.getElementById('exam-published').value === 'true'
+          };
+
+          const btn = document.getElementById('exam-submit-btn');
+          setBusy(btn, true);
+          try {
+            const url = isEdit ? `/Admin/api/Exams/Update/${encodeURIComponent(id)}` : '/Admin/api/Exams/Create';
+            const data = await postJson(url, payload);
+            closeModal('modal-exam');
+            showToast(data.message || 'Lưu đề thi thành công.');
+            await loadExams();
+          } catch (err) {
+            console.error(err);
+            showFormError(err.message);
+            showToast(err.message, 'error');
+          } finally {
+            setBusy(btn, false);
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

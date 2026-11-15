@@ -212,29 +212,64 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-2 gap-6">
-    <div class="card" style="padding: 1.5rem;">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-        <div>
-          <strong>Nguyễn Hoàng Anh</strong>
-          <div style="color: #F59E0B; font-size: 0.875rem;">⭐⭐⭐⭐⭐ 5/5 sao</div>
-        </div>
-        <span class="text-muted" style="font-size: 0.75rem;">2 ngày trước</span>
+  <!-- Thống kê nhanh -->
+  <div class="grid grid-cols-4 gap-6" style="margin-bottom: 1.25rem;">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Tổng số đánh giá</span>
+        <span class="stat-value" id="stat-total-reviews">--</span>
       </div>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Cô Mai dạy rất nhiệt tình, sửa phát âm từng từ chi tiết. Sau khóa học em tự tin nói tiếng Anh hơn rất nhiều!</p>
-      <div style="font-size: 0.75rem; color: var(--primary-600); font-weight: 600; margin-top: 0.75rem;">Khóa học: Tiếng Anh Giao Tiếp Cơ Bản</div>
     </div>
-
-    <div class="card" style="padding: 1.5rem;">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-        <div>
-          <strong>Trần Phương Nam</strong>
-          <div style="color: #F59E0B; font-size: 0.875rem;">⭐⭐⭐⭐⭐ 5/5 sao</div>
-        </div>
-        <span class="text-muted" style="font-size: 0.75rem;">4 ngày trước</span>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Điểm trung bình</span>
+        <span class="stat-value" style="color: #D97706;" id="stat-avg-rating">--</span>
       </div>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Tài liệu và ngân hàng đề thi bám sát đề thi thật tại IDP. Phòng LAB nghe tai nghe rất rõ.</p>
-      <div style="font-size: 0.75rem; color: var(--primary-600); font-weight: 600; margin-top: 0.75rem;">Khóa học: Luyện Thi IELTS 6.5+</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Đánh giá 5 sao</span>
+        <span class="stat-value text-success" id="stat-five-star">--</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Cần lưu ý (≤ 2 sao)</span>
+        <span class="stat-value text-danger" id="stat-low-rating">--</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bộ lọc & Tìm kiếm -->
+  <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+    <div class="grid grid-cols-12 gap-4 items-center">
+      <div class="col-span-5">
+        <input type="text" id="reviews-search-input" class="form-control" placeholder="Tìm theo tên học viên, khóa học hoặc nội dung phản hồi...">
+      </div>
+      <div class="col-span-3">
+        <select id="reviews-course-filter" class="form-control">
+          <option value="0">Tất cả khóa học</option>
+        </select>
+      </div>
+      <div class="col-span-2">
+        <select id="reviews-rating-filter" class="form-control">
+          <option value="0">Tất cả số sao</option>
+          <option value="5">5 sao</option>
+          <option value="4">4 sao</option>
+          <option value="3">3 sao</option>
+          <option value="2">2 sao</option>
+          <option value="1">1 sao</option>
+        </select>
+      </div>
+      <div class="col-span-2 text-right">
+        <button type="button" class="btn btn-secondary" id="btn-reset-reviews" style="width: 100%;">Đặt lại</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-6" id="reviews-grid">
+    <div class="card" style="padding: 2rem; grid-column: span 2; text-align: center; color: var(--text-muted);">
+      Đang tải phản hồi và đánh giá từ cơ sở dữ liệu...
     </div>
   </div>
 
@@ -244,5 +279,224 @@
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>
+  <script>
+    (function () {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '--';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
+      }
+
+      function formatRelativeTime(value) {
+        if (!value) return '--';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '--';
+        const diffSec = Math.floor((Date.now() - d.getTime()) / 1000);
+        if (diffSec < 60) return 'Vừa xong';
+        const diffMin = Math.floor(diffSec / 60);
+        if (diffMin < 60) return `${diffMin} phút trước`;
+        const diffHour = Math.floor(diffMin / 60);
+        if (diffHour < 24) return `${diffHour} giờ trước`;
+        const diffDay = Math.floor(diffHour / 24);
+        if (diffDay < 30) return `${diffDay} ngày trước`;
+        return formatDate(value);
+      }
+
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      function renderStars(rating) {
+        const count = Math.max(0, Math.min(5, Number(rating) || 0));
+        return '★'.repeat(count) + '☆'.repeat(5 - count);
+      }
+
+      let needLookups = true;
+      let loadController = null;
+
+      function populateCourseFilter(courses) {
+        if (!Array.isArray(courses)) return;
+        const select = document.getElementById('reviews-course-filter');
+        const current = select.value;
+        select.innerHTML = '<option value="0">Tất cả khóa học</option>' +
+          courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+        if (current) select.value = current;
+      }
+
+      function renderReviews(items) {
+        const grid = document.getElementById('reviews-grid');
+        if (!Array.isArray(items) || items.length === 0) {
+          grid.innerHTML =
+            '<div class="card" style="padding: 2.5rem; grid-column: span 2; text-align: center;">' +
+            '<div style="font-weight: 700; margin-bottom: 0.25rem;">Chưa có đánh giá nào phù hợp</div>' +
+            '<div style="font-size: 0.875rem; color: var(--text-muted);">Học viên chưa gửi phản hồi hoặc không có đánh giá khớp bộ lọc hiện tại.</div>' +
+            '</div>';
+          return;
+        }
+
+        grid.innerHTML = items.map(r => {
+          const comment = r.comment
+            ? escapeHtml(r.comment)
+            : '<span style="color: var(--text-muted); font-style: italic;">Học viên chỉ gửi đánh giá sao, không kèm nhận xét.</span>';
+
+          return `
+            <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 0.75rem;">
+                  <div>
+                    <strong>${escapeHtml(r.studentName)}</strong>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.studentEmail)}</div>
+                    <div style="color: #F59E0B; font-size: 0.9375rem; margin-top: 4px; letter-spacing: 1px;">
+                      ${renderStars(r.rating)} <span style="color: var(--text-primary); font-weight: 600; font-size: 0.8125rem; letter-spacing: 0;">${r.rating}/5 sao</span>
+                    </div>
+                  </div>
+                  <span class="text-muted" style="font-size: 0.75rem; white-space: nowrap;" title="${formatDate(r.createdAt)}">${formatRelativeTime(r.createdAt)}</span>
+                </div>
+                <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin: 0;">${comment}</p>
+              </div>
+              <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                <a href="/Admin/course-detail.html?id=${r.courseId}" style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">
+                  Khóa học: ${escapeHtml(r.courseTitle)}
+                </a>
+                ${r.subjectName ? `<span class="badge badge-neutral">${escapeHtml(r.subjectName)}</span>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      async function loadReviews() {
+        const grid = document.getElementById('reviews-grid');
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        try {
+          const params = new URLSearchParams({
+            search: (document.getElementById('reviews-search-input').value || '').trim(),
+            courseId: document.getElementById('reviews-course-filter').value || '0',
+            rating: document.getElementById('reviews-rating-filter').value || '0',
+            lookups: String(needLookups)
+          });
+
+          const data = await fetchJson(`/Admin/api/Reviews/List?${params.toString()}`, { signal: controller.signal });
+          if (needLookups && Array.isArray(data.courses)) {
+            populateCourseFilter(data.courses);
+            needLookups = false;
+          }
+
+          if (data.stats) {
+            document.getElementById('stat-total-reviews').textContent = data.stats.totalReviews ?? 0;
+            document.getElementById('stat-avg-rating').textContent = `${data.stats.averageRating ?? 0} / 5.0`;
+            document.getElementById('stat-five-star').textContent = data.stats.fiveStarCount ?? 0;
+            document.getElementById('stat-low-rating').textContent = data.stats.lowRatingCount ?? 0;
+          }
+
+          renderReviews(data.items);
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải đánh giá:', err);
+          grid.innerHTML =
+            '<div class="card" style="padding: 2rem; grid-column: span 2; text-align: center;">' +
+            `<div style="color: var(--danger-text); font-weight: 700; margin-bottom: 0.5rem;">${escapeHtml(err.message)}</div>` +
+            '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+            '</div>';
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) loadController = null;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadReviews();
+
+        const debouncedSearch = debounce(loadReviews, 300);
+        document.getElementById('reviews-search-input').addEventListener('input', debouncedSearch);
+        document.getElementById('reviews-course-filter').addEventListener('change', () => {
+          debouncedSearch.cancel();
+          loadReviews();
+        });
+        document.getElementById('reviews-rating-filter').addEventListener('change', () => {
+          debouncedSearch.cancel();
+          loadReviews();
+        });
+        document.getElementById('btn-reset-reviews').addEventListener('click', () => {
+          debouncedSearch.cancel();
+          document.getElementById('reviews-search-input').value = '';
+          document.getElementById('reviews-course-filter').value = '0';
+          document.getElementById('reviews-rating-filter').value = '0';
+          loadReviews();
+        });
+
+        document.getElementById('reviews-grid').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) loadReviews();
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

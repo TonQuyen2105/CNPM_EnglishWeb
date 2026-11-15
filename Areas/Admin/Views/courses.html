@@ -208,126 +208,56 @@
   <div class="page-header">
     <div>
       <h1 class="page-header-title">Quản lý chương trình khóa học</h1>
-      <p class="page-header-subtitle">Hệ thống 12 khóa học tiếng Anh chuẩn hóa theo các cấp độ</p>
+      <p class="page-header-subtitle" id="courses-subtitle">Đang tải danh sách khóa học từ hệ thống...</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary" data-modal-target="modal-create-course">Tạo khóa học mới</button>
+      <button type="button" class="btn btn-primary" id="btn-open-create-course">Tạo khóa học mới</button>
     </div>
   </div>
 
-  <div class="grid grid-cols-3 gap-6">
-    <div class="card card-hover" style="overflow: hidden;">
-      <div style="height: 140px; background: linear-gradient(135deg, #1E3A8A, #3B82F6); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
-        <h3 style="color: white; margin: 0; font-size: 1.125rem;">Tiếng Anh Giao Tiếp Cơ Bản</h3>
-      </div>
-      <div class="card-body">
-        <span class="badge badge-info">Cơ bản (Beginner)</span>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Khóa học dành cho người mất gốc, làm quen với 44 âm IPA và các mẫu câu hàng ngày.</p>
-        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">24 bài học</span>
-          <strong style="color: var(--primary-600);">2.500.000 ₫</strong>
+  <!-- Thanh lọc & tìm kiếm -->
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-body" style="padding: 1rem 1.25rem;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.75rem; align-items: end;">
+        <div class="form-group" style="margin: 0;">
+          <label class="form-label" style="font-size: 0.8125rem;">Tìm kiếm</label>
+          <input type="text" id="filter-search" class="form-control" placeholder="Tên khóa học, môn học, mô tả...">
         </div>
-      </div>
-      <div class="card-footer" style="display: flex; justify-content: space-between;">
-        <a href="/Admin/course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
+        <div class="form-group" style="margin: 0;">
+          <label class="form-label" style="font-size: 0.8125rem;">Môn học</label>
+          <select id="filter-subject" class="form-control">
+            <option value="0">Tất cả môn học</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label class="form-label" style="font-size: 0.8125rem;">Cấp độ</label>
+          <select id="filter-level" class="form-control">
+            <option value="all">Tất cả cấp độ</option>
+            <option value="beginner">Cơ bản (Beginner)</option>
+            <option value="intermediate">Trung cấp (Intermediate)</option>
+            <option value="advanced">Nâng cao (Advanced)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <label class="form-label" style="font-size: 0.8125rem;">Trạng thái</label>
+          <select id="filter-published" class="form-control">
+            <option value="all">Tất cả</option>
+            <option value="published">Đang mở (Published)</option>
+            <option value="draft">Bản nháp (Draft)</option>
+          </select>
+        </div>
+        <div>
+          <button type="button" id="btn-reset-filters" class="btn btn-secondary">Đặt lại</button>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="card card-hover" style="overflow: hidden;">
-      <div style="height: 140px; background: linear-gradient(135deg, #065F46, #10B981); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
-        <h3 style="color: white; margin: 0; font-size: 1.125rem;">Luyện Thi IELTS 6.5+</h3>
-      </div>
-      <div class="card-body">
-        <span class="badge badge-warning">Nâng cao (Advanced)</span>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Chiến thuật giải đề Writing Task 2 và Speaking Part 2-3 bứt phá band điểm.</p>
-        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">36 bài học</span>
-          <strong style="color: var(--primary-600);">5.800.000 ₫</strong>
-        </div>
-      </div>
-      <div class="card-footer" style="display: flex; justify-content: space-between;">
-        <a href="/Admin/course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
-      </div>
-    </div>
+  <div id="courses-alert" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.875rem;"></div>
 
-    <div class="card card-hover" style="overflow: hidden;">
-      <div style="height: 140px; background: linear-gradient(135deg, #7C2D12, #F97316); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
-        <h3 style="color: white; margin: 0; font-size: 1.125rem;">TOEIC 750+ Cấp Tốc</h3>
-      </div>
-      <div class="card-body">
-        <span class="badge badge-primary">Trung cấp (Intermediate)</span>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Bộ bẫy đề thi Part 5, 6, 7 và kỹ năng nghe hiểu bắt từ khóa Part 3, 4.</p>
-        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">30 bài học</span>
-          <strong style="color: var(--primary-600);">3.200.000 ₫</strong>
-        </div>
-      </div>
-      <div class="card-footer" style="display: flex; justify-content: space-between;">
-        <a href="/Admin/course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
-      </div>
-    </div>
-
-    <div class="card card-hover" style="overflow: hidden;">
-      <div style="height: 140px; background: linear-gradient(135deg, #4C1D95, #8B5CF6); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
-        <h3 style="color: white; margin: 0; font-size: 1.125rem;">Tiếng Anh Trẻ Em Super Kids</h3>
-      </div>
-      <div class="card-body">
-        <span class="badge badge-info">Thiếu nhi (6 - 12 tuổi)</span>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Phương pháp học qua bài hát, flashcard tương tác hình ảnh sinh động giúp bé phản xạ tự nhiên.</p>
-        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">20 bài học</span>
-          <strong style="color: var(--primary-600);">2.200.000 ₫</strong>
-        </div>
-      </div>
-      <div class="card-footer" style="display: flex; justify-content: space-between;">
-        <a href="/Admin/course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
-      </div>
-    </div>
-
-    <div class="card card-hover" style="overflow: hidden;">
-      <div style="height: 140px; background: linear-gradient(135deg, #1E293B, #475569); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
-        <h3 style="color: white; margin: 0; font-size: 1.125rem;">IELTS Writing Masterclass</h3>
-      </div>
-      <div class="card-body">
-        <span class="badge badge-warning">Học thuật (Advanced)</span>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Chuyên sâu Task 1 Biểu đồ & Task 2 Nghị luận xã hội với kho bài mẫu 8.0+ Band.</p>
-        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">28 bài học</span>
-          <strong style="color: var(--primary-600);">4.500.000 ₫</strong>
-        </div>
-      </div>
-      <div class="card-footer" style="display: flex; justify-content: space-between;">
-        <a href="/Admin/course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
-      </div>
-    </div>
-
-    <div class="card card-hover" style="overflow: hidden;">
-      <div style="height: 140px; background: linear-gradient(135deg, #831843, #DB2777); color: white; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-        <span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>
-        <h3 style="color: white; margin: 0; font-size: 1.125rem;">Business English Communication</h3>
-      </div>
-      <div class="card-body">
-        <span class="badge badge-primary">Thương mại (Intermediate)</span>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.5rem;">Tiếng Anh đàm phán, thuyết trình dự án, viết email chuyên nghiệp cho người đi làm.</p>
-        <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">24 bài học</span>
-          <strong style="color: var(--primary-600);">3.800.000 ₫</strong>
-        </div>
-      </div>
-      <div class="card-footer" style="display: flex; justify-content: space-between;">
-        <a href="/Admin/course-detail.html" class="btn btn-sm btn-secondary">Chi tiết</a>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-primary">Xem lớp mở</a>
-      </div>
+  <div id="courses-grid" class="grid grid-cols-3 gap-6">
+    <div class="card" style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: var(--text-muted);">
+      Đang tải dữ liệu khóa học...
     </div>
   </div>
 
@@ -342,59 +272,276 @@
         <h3 class="modal-title">Tạo khóa học mới</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
-      <form class="modal-form" data-modal-form>
+      <form id="create-course-form">
         <div class="modal-body">
+          <div id="create-course-error" style="display: none; margin-bottom: 1rem; padding: 0.625rem 0.875rem; border-radius: 0.375rem; background: #FEE2E2; color: #991B1B; font-size: 0.8125rem;"></div>
           <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên khóa học <span class="required" style="color:red;">*</span></label>
-            <input type="text" class="form-control" placeholder="Ví dụ: Luyện Thi IELTS 7.0+ Toàn Diện" required>
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên khóa học <span style="color:red;">*</span></label>
+            <input type="text" id="create-title" class="form-control" placeholder="Ví dụ: Luyện Thi IELTS 7.0+ Toàn Diện" maxlength="200" required>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học trực thuộc <span class="required" style="color:red;">*</span></label>
-              <select class="form-control" required>
-                <option value="1">Tiếng Anh Giao Tiếp</option>
-                <option value="2">Luyện Thi TOEIC</option>
-                <option value="3">Luyện Thi IELTS</option>
-                <option value="4">Tiếng Anh Thiếu Nhi</option>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học trực thuộc <span style="color:red;">*</span></label>
+              <select id="create-subject-id" class="form-control" required>
+                <option value="">-- Chọn môn học --</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Cấp độ khóa học <span class="required" style="color:red;">*</span></label>
-              <select class="form-control" required>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Cấp độ khóa học <span style="color:red;">*</span></label>
+              <select id="create-level" class="form-control" required>
                 <option value="beginner">Cơ bản (Beginner)</option>
                 <option value="intermediate">Trung cấp (Intermediate)</option>
                 <option value="advanced">Nâng cao (Advanced)</option>
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí niêm yết (VNĐ) <span class="required" style="color:red;">*</span></label>
-              <input type="number" class="form-control" placeholder="Ví dụ: 3500000" required>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí (VNĐ) <span style="color:red;">*</span></label>
+              <input type="number" id="create-price" class="form-control" min="0" step="1000" value="0" placeholder="Ví dụ: 3500000" required>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số bài học dự kiến</label>
-              <input type="number" class="form-control" value="24">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số bài học khởi tạo</label>
+              <input type="number" id="create-lesson-count" class="form-control" min="0" max="100" value="0" placeholder="0 - 100">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái phát hành</label>
+              <select id="create-is-published" class="form-control">
+                <option value="true">Đang mở (Published)</option>
+                <option value="false">Bản nháp (Draft)</option>
+              </select>
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mô tả mục tiêu khóa học</label>
-            <textarea class="form-control" rows="3" placeholder="Mô tả tóm tắt nội dung bài học, kết quả đầu ra cam kết..."></textarea>
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mô tả &amp; mục tiêu khóa học</label>
+            <textarea id="create-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả tóm tắt nội dung bài học, kết quả đầu ra cam kết..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" class="btn btn-primary">Lưu khóa học</button>
+          <button type="submit" id="btn-save-course" class="btn btn-primary">Lưu khóa học</button>
         </div>
       </form>
     </div>
   </div>
 
-      </main>
-    </div>
-  </div>
-
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>
+  <script>
+    (function () {
+      const GRADIENTS = [
+        'linear-gradient(135deg, #1E3A8A, #3B82F6)',
+        'linear-gradient(135deg, #065F46, #10B981)',
+        'linear-gradient(135deg, #7C2D12, #F97316)',
+        'linear-gradient(135deg, #4C1D95, #8B5CF6)',
+        'linear-gradient(135deg, #1E293B, #475569)',
+        'linear-gradient(135deg, #831843, #DB2777)'
+      ];
+
+      const LEVEL_META = {
+        beginner: { label: 'Cơ bản (Beginner)', badge: 'badge-info' },
+        intermediate: { label: 'Trung cấp (Intermediate)', badge: 'badge-primary' },
+        advanced: { label: 'Nâng cao (Advanced)', badge: 'badge-warning' }
+      };
+
+      const gridEl = document.getElementById('courses-grid');
+      const subtitleEl = document.getElementById('courses-subtitle');
+      const alertEl = document.getElementById('courses-alert');
+      const searchEl = document.getElementById('filter-search');
+      const subjectEl = document.getElementById('filter-subject');
+      const levelEl = document.getElementById('filter-level');
+      const publishedEl = document.getElementById('filter-published');
+      const resetBtn = document.getElementById('btn-reset-filters');
+
+      const modalEl = document.getElementById('modal-create-course');
+      const openCreateBtn = document.getElementById('btn-open-create-course');
+      const createForm = document.getElementById('create-course-form');
+      const createErrorEl = document.getElementById('create-course-error');
+      const createSubjectEl = document.getElementById('create-subject-id');
+      const saveBtn = document.getElementById('btn-save-course');
+
+      let searchTimer = null;
+      let lookupsLoaded = false;
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function formatCurrency(amount) {
+        const num = Number(amount || 0);
+        return num.toLocaleString('vi-VN') + ' ₫';
+      }
+
+      function showAlert(message, isError) {
+        alertEl.textContent = message;
+        alertEl.style.display = 'block';
+        alertEl.style.background = isError ? '#FEE2E2' : '#DCFCE7';
+        alertEl.style.color = isError ? '#991B1B' : '#166534';
+        if (!isError) {
+          setTimeout(() => { alertEl.style.display = 'none'; }, 4000);
+        }
+      }
+
+      function populateSubjects(subjects) {
+        if (!Array.isArray(subjects)) return;
+        const currentFilter = subjectEl.value;
+        subjectEl.innerHTML = '<option value="0">Tất cả môn học</option>' +
+          subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
+        if (currentFilter) subjectEl.value = currentFilter;
+
+        createSubjectEl.innerHTML = '<option value="">-- Chọn môn học --</option>' +
+          subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
+        lookupsLoaded = true;
+      }
+
+      function renderCourses(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+          gridEl.innerHTML = `
+            <div class="card" style="grid-column: 1 / -1; padding: 2.5rem; text-align: center; color: var(--text-muted);">
+              Không tìm thấy khóa học nào phù hợp với bộ lọc hiện tại.
+            </div>`;
+          return;
+        }
+
+        gridEl.innerHTML = items.map((c, idx) => {
+          const grad = GRADIENTS[idx % GRADIENTS.length];
+          const lv = LEVEL_META[(c.level || 'beginner').toLowerCase()] || { label: c.level || 'Cơ bản', badge: 'badge-info' };
+          const statusBadge = c.isPublished
+            ? '<span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>'
+            : '<span class="badge badge-secondary" style="align-self: flex-start; background: rgba(255,255,255,0.2); color: #fff;">Bản nháp</span>';
+          const desc = c.description ? escapeHtml(c.description) : 'Chưa có mô tả mục tiêu cho khóa học này.';
+          const shortDesc = desc.length > 130 ? desc.slice(0, 127) + '...' : desc;
+
+          return `
+            <div class="card card-hover" style="overflow: hidden; display: flex; flex-direction: column;">
+              <div style="height: 140px; background: ${grad}; color: white; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                  ${statusBadge}
+                  <span style="font-size: 0.75rem; opacity: 0.9;">${escapeHtml(c.subjectName)}</span>
+                </div>
+                <h3 style="color: white; margin: 0; font-size: 1.125rem; line-height: 1.3;">${escapeHtml(c.title)}</h3>
+              </div>
+              <div class="card-body" style="flex: 1;">
+                <span class="badge ${lv.badge}">${escapeHtml(lv.label)}</span>
+                <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.625rem; min-height: 2.5rem;">${shortDesc}</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+                  <span style="font-size: 0.8125rem; color: var(--text-muted);">${Number(c.lessonCount || 0)} bài học &bull; ${Number(c.classCount || 0)} lớp</span>
+                  <strong style="color: var(--primary-600);">${formatCurrency(c.price)}</strong>
+                </div>
+              </div>
+              <div class="card-footer" style="display: flex; justify-content: space-between;">
+                <a href="/Admin/course-detail.html?id=${c.id}" class="btn btn-sm btn-secondary">Chi tiết &amp; Giáo trình</a>
+                <a href="/Admin/classes.html?courseId=${c.id}" class="btn btn-sm btn-primary">Xem lớp mở</a>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      async function loadCourses() {
+        const params = new URLSearchParams();
+        const search = searchEl.value.trim();
+        if (search) params.set('search', search);
+        if (subjectEl.value && subjectEl.value !== '0') params.set('subjectId', subjectEl.value);
+        if (levelEl.value !== 'all') params.set('level', levelEl.value);
+        if (publishedEl.value !== 'all') params.set('published', publishedEl.value);
+        params.set('lookups', lookupsLoaded ? 'false' : 'true');
+
+        try {
+          const res = await fetch('/Admin/api/Courses/List?' + params.toString(), {
+            headers: { 'Accept': 'application/json' }
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.message || 'Không thể tải danh sách khóa học.');
+          }
+          if (data.subjects) {
+            populateSubjects(data.subjects);
+          }
+          const items = data.items || [];
+          const publishedCount = items.filter(x => x.isPublished).length;
+          subtitleEl.textContent = `Hiện có ${items.length} khóa học (${publishedCount} đang mở) trong hệ thống`;
+          renderCourses(items);
+        } catch (err) {
+          subtitleEl.textContent = 'Không thể tải dữ liệu khóa học';
+          gridEl.innerHTML = `<div class="card" style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: #991B1B;">${escapeHtml(err.message)}</div>`;
+        }
+      }
+
+      function openCreateModal() {
+        createForm.reset();
+        document.getElementById('create-price').value = '0';
+        document.getElementById('create-lesson-count').value = '0';
+        document.getElementById('create-is-published').value = 'true';
+        createErrorEl.style.display = 'none';
+        modalEl.classList.add('open');
+      }
+
+      function closeCreateModal() {
+        modalEl.classList.remove('open');
+      }
+
+      openCreateBtn.addEventListener('click', openCreateModal);
+
+      createForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        createErrorEl.style.display = 'none';
+
+        const payload = {
+          subjectId: Number(createSubjectEl.value || 0),
+          title: document.getElementById('create-title').value.trim(),
+          level: document.getElementById('create-level').value,
+          price: Number(document.getElementById('create-price').value || 0),
+          lessonCount: Number(document.getElementById('create-lesson-count').value || 0),
+          isPublished: document.getElementById('create-is-published').value === 'true',
+          description: document.getElementById('create-description').value.trim()
+        };
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Đang lưu...';
+        try {
+          const res = await fetch('/Admin/api/Courses/Create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.message || 'Không thể tạo khóa học mới.');
+          }
+          closeCreateModal();
+          showAlert(data.message || 'Đã tạo khóa học mới thành công.', false);
+          await loadCourses();
+        } catch (err) {
+          createErrorEl.textContent = err.message;
+          createErrorEl.style.display = 'block';
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Lưu khóa học';
+        }
+      });
+
+      searchEl.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadCourses, 300);
+      });
+      subjectEl.addEventListener('change', loadCourses);
+      levelEl.addEventListener('change', loadCourses);
+      publishedEl.addEventListener('change', loadCourses);
+      resetBtn.addEventListener('click', function () {
+        searchEl.value = '';
+        subjectEl.value = '0';
+        levelEl.value = 'all';
+        publishedEl.value = 'all';
+        loadCourses();
+      });
+
+      loadCourses();
+    })();
+  </script>
 </body>
 </html>

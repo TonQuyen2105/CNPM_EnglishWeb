@@ -26,7 +26,7 @@ namespace CNPM_EnglishLearning.Models.Entities
         public DateTime? SubmittedAt { get; set; }
 
         [Column("total_score")]
-        public decimal? TotalScore { get; set; }
+        public int? TotalScore { get; set; }
 
         [Column("status")]
         [MaxLength(20)]

@@ -211,126 +211,57 @@
       <p class="page-header-subtitle">Hồ sơ chuyên môn, chứng chỉ quốc tế và các lớp học đang phụ trách</p>
     </div>
     <div class="page-header-actions">
-      <button class="btn btn-primary" data-modal-target="modal-create-teacher">
+      <button type="button" class="btn btn-primary" id="btn-open-create-teacher" data-modal-target="modal-create-teacher">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Thêm giảng viên mới
       </button>
     </div>
   </div>
 
-  <div class="grid grid-cols-3 gap-6">
-    <div class="card" style="padding: 1.5rem;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
-        <div class="avatar avatar-lg" style="background: #2563EB; color: white;">VH</div>
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Nguyễn Văn Hùng</h3>
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">hung.nguyen@el.com</span>
-        </div>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <span class="badge badge-success">Đã xác minh</span>
-        <span class="badge badge-info" style="margin-left: 4px;">Thạc sĩ TESOL</span>
-      </div>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Hơn 8 năm kinh nghiệm giảng dạy tiếng Anh giao tiếp và luyện thi chứng chỉ quốc tế tại các trường đại học.</p>
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.8125rem;">
-        <span>Lớp phụ trách: <strong>2 lớp</strong></span>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-secondary">Xem lớp</a>
+  <!-- Thống kê & Bộ lọc -->
+  <div class="grid grid-cols-3 gap-6" style="margin-bottom: 1.25rem;">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Tổng giảng viên</span>
+        <span class="stat-value" id="stat-total-teachers">--</span>
       </div>
     </div>
-
-    <div class="card" style="padding: 1.5rem;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
-        <div class="avatar avatar-lg" style="background: #059669; color: white;">LM</div>
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Lê Thị Mai</h3>
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">teacher@el.com</span>
-        </div>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <span class="badge badge-success">Đã xác minh</span>
-        <span class="badge badge-info" style="margin-left: 4px;">IELTS 8.5</span>
-      </div>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Chuyên gia đào tạo kỹ năng Speaking và Writing học thuật với hàng trăm học viên đạt band 7.0+.</p>
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.8125rem;">
-        <span>Lớp phụ trách: <strong>3 lớp</strong></span>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-secondary">Xem lớp</a>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Đã xác minh hồ sơ</span>
+        <span class="stat-value text-success" id="stat-verified-teachers">--</span>
       </div>
     </div>
-
-    <div class="card" style="padding: 1.5rem;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
-        <div class="avatar avatar-lg" style="background: #D97706; color: white;">QH</div>
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Phạm Quang Huy</h3>
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">huy.pham@el.com</span>
-        </div>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <span class="badge badge-warning">Chờ duyệt hồ sơ</span>
-        <span class="badge badge-info" style="margin-left: 4px;">TOEIC 980</span>
-      </div>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Hồ sơ vừa đăng ký ứng tuyển bộ môn TOEIC Cấp Tốc, đang gửi tài liệu chứng chỉ bổ sung.</p>
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.8125rem;">
-        <span>Lớp phụ trách: <strong>0 lớp</strong></span>
-        <button class="btn btn-sm btn-primary">Duyệt hồ sơ</button>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Chờ duyệt hồ sơ</span>
+        <span class="stat-value" style="color: var(--warning-main, #D97706);" id="stat-pending-teachers">--</span>
       </div>
     </div>
+  </div>
 
-    <div class="card" style="padding: 1.5rem;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
-        <div class="avatar avatar-lg" style="background: #7C3AED; color: white;">TH</div>
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">ThS. Trần Thu Hà</h3>
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">ha.tran@el.com</span>
-        </div>
+  <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+      <div class="input-with-icon" style="flex: 1; min-width: 240px; max-width: 420px;">
+        <span class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
+        <input type="text" id="teachers-search-input" class="form-control" placeholder="Tìm theo tên, email, trình độ hoặc kinh nghiệm...">
       </div>
-      <div style="margin-bottom: 1rem;">
-        <span class="badge badge-success">Đã xác minh</span>
-        <span class="badge badge-info" style="margin-left: 4px;">IELTS 8.0</span>
-      </div>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Thạc sĩ Ngôn ngữ Anh ĐH Ngoại Ngữ, có 6 năm giảng dạy Academic Writing và Critical Thinking.</p>
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.8125rem;">
-        <span>Lớp phụ trách: <strong>2 lớp</strong></span>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-secondary">Xem lớp</a>
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <select id="teachers-verified-filter" class="form-control" style="min-width: 210px;">
+          <option value="all">Tất cả trạng thái hồ sơ</option>
+          <option value="true">Đã xác minh (Verified)</option>
+          <option value="false">Chờ duyệt hồ sơ (Pending)</option>
+        </select>
+        <button type="button" class="btn btn-secondary" id="btn-reset-teachers">Đặt lại</button>
       </div>
     </div>
+  </div>
 
-    <div class="card" style="padding: 1.5rem;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
-        <div class="avatar avatar-lg" style="background: #0284C7; color: white;">JS</div>
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">John Smith</h3>
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">john.smith@el.com</span>
-        </div>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <span class="badge badge-success">Đã xác minh</span>
-        <span class="badge badge-info" style="margin-left: 4px;">CELTA (Cambridge)</span>
-      </div>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Giáo viên bản xứ đến từ London, chuyên phụ trách phát âm chuẩn IPA và phản xạ đàm thoại chuyên nghiệp.</p>
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.8125rem;">
-        <span>Lớp phụ trách: <strong>2 lớp</strong></span>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-secondary">Xem lớp</a>
-      </div>
-    </div>
-
-    <div class="card" style="padding: 1.5rem;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
-        <div class="avatar avatar-lg" style="background: #E11D48; color: white;">QN</div>
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Đặng Quỳnh Như</h3>
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">nhu.dang@el.com</span>
-        </div>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <span class="badge badge-success">Đã xác minh</span>
-        <span class="badge badge-info" style="margin-left: 4px;">TOEIC 950</span>
-      </div>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Chuyên gia tương tác giảng dạy tiếng Anh thiếu nhi và khóa giao tiếp nền tảng cho người mới bắt đầu.</p>
-      <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.8125rem;">
-        <span>Lớp phụ trách: <strong>1 lớp</strong></span>
-        <a href="/Admin/classes.html" class="btn btn-sm btn-secondary">Xem lớp</a>
-      </div>
+  <div class="grid grid-cols-3 gap-6" id="teachers-grid">
+    <div class="card" style="padding: 2rem; grid-column: span 3; text-align: center; color: var(--text-muted);">
+      Đang tải danh sách giảng viên từ cơ sở dữ liệu...
     </div>
   </div>
 
@@ -345,37 +276,107 @@
         <h3 class="modal-title">Thêm giảng viên vào hệ thống</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
-      <form class="modal-form" data-modal-form>
+      <form id="create-teacher-form">
         <div class="modal-body">
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Họ và tên giảng viên <span class="required" style="color:red;">*</span></label>
-            <input type="text" class="form-control" placeholder="Ví dụ: ThS. Hoàng Minh Đức" required>
+          <div id="teacher-create-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Họ và tên giảng viên <span class="required" style="color:red;">*</span></label>
+              <input type="text" id="tc-fullname" class="form-control" placeholder="Ví dụ: ThS. Hoàng Minh Đức" maxlength="100" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mật khẩu đăng nhập</label>
+              <input type="password" id="tc-password" class="form-control" value="123456" minlength="6" maxlength="255">
+            </div>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Email giảng viên <span class="required" style="color:red;">*</span></label>
-              <input type="email" class="form-control" placeholder="Ví dụ: duc.hoang@el.com" required>
+              <input type="email" id="tc-email" class="form-control" placeholder="Ví dụ: duc.hoang@el.com" maxlength="150" required>
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trình độ / Chứng chỉ <span class="required" style="color:red;">*</span></label>
-              <input type="text" class="form-control" placeholder="Ví dụ: IELTS 8.0, ThS. TESOL" required>
+              <input type="text" id="tc-qualification" class="form-control" placeholder="Ví dụ: IELTS 8.0, ThS. TESOL" maxlength="200" required>
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Kinh nghiệm & Giới thiệu chuyên môn</label>
-            <textarea class="form-control" rows="3" placeholder="Tóm tắt số năm kinh nghiệm, các thế mạnh giảng dạy..."></textarea>
+            <textarea id="tc-bio" class="form-control" rows="3" maxlength="2000" placeholder="Tóm tắt số năm kinh nghiệm, các thế mạnh giảng dạy..."></textarea>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái kiểm duyệt hồ sơ</label>
-            <select class="form-control">
-              <option value="1">Đã xác minh (Verified)</option>
-              <option value="0">Chờ duyệt hồ sơ (Pending)</option>
+            <select id="tc-verified" class="form-control">
+              <option value="true">Đã xác minh (Verified)</option>
+              <option value="false">Chờ duyệt hồ sơ (Pending)</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" class="btn btn-primary">Lưu giảng viên</button>
+          <button type="submit" class="btn btn-primary" id="tc-create-submit-btn">Lưu giảng viên</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Xem / Cập nhật Hồ Sơ Giảng Viên -->
+  <div class="modal-backdrop" id="modal-teacher-detail">
+    <div class="modal-dialog" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="td-modal-title">Hồ sơ giảng viên</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form id="teacher-detail-form">
+        <input type="hidden" id="td-id" value="">
+        <div class="modal-body">
+          <div id="teacher-detail-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="avatar avatar-lg" id="td-avatar" style="background: #2563EB; color: white;">GV</div>
+              <div>
+                <div style="font-weight: 700; font-size: 1rem;" id="td-display-name">--</div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted);" id="td-display-email">--</div>
+              </div>
+            </div>
+            <div id="td-status-badge"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Họ và tên <span class="required" style="color:red;">*</span></label>
+              <input type="text" id="td-fullname" class="form-control" maxlength="100" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trình độ / Chứng chỉ <span class="required" style="color:red;">*</span></label>
+              <input type="text" id="td-qualification" class="form-control" maxlength="200" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Kinh nghiệm & Giới thiệu chuyên môn</label>
+            <textarea id="td-bio" class="form-control" rows="3" maxlength="2000"></textarea>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái xác minh</label>
+            <select id="td-verified" class="form-control">
+              <option value="true">Đã xác minh (Verified)</option>
+              <option value="false">Chờ duyệt hồ sơ (Pending)</option>
+            </select>
+          </div>
+
+          <div>
+            <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Các lớp được phân công</div>
+            <div id="td-classes-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;"></div>
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <button type="button" class="btn btn-success" id="td-quick-verify-btn" style="display: none;">Duyệt hồ sơ ngay</button>
+          <div style="display: flex; gap: 8px; margin-left: auto;">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary" id="td-save-btn">Lưu cập nhật</button>
+          </div>
         </div>
       </form>
     </div>
@@ -383,5 +384,371 @@
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>
+  <script>
+    (function () {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      function getInitials(name) {
+        const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return 'GV';
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+      }
+
+      const AVATAR_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED', '#0284C7', '#E11D48'];
+      let teachersCache = [];
+      let loadController = null;
+
+      function showBoxError(elId, msg) {
+        const box = document.getElementById(elId);
+        if (!box) return;
+        if (msg) {
+          box.textContent = msg;
+          box.style.display = 'block';
+        } else {
+          box.textContent = '';
+          box.style.display = 'none';
+        }
+      }
+
+      function renderTeachers(items) {
+        const grid = document.getElementById('teachers-grid');
+        if (!Array.isArray(items) || items.length === 0) {
+          grid.innerHTML =
+            '<div class="card" style="padding: 2.5rem; grid-column: span 3; text-align: center;">' +
+            '<div style="font-weight: 700; margin-bottom: 0.25rem;">Chưa có hồ sơ giảng viên nào phù hợp</div>' +
+            '<div style="font-size: 0.875rem; color: var(--text-muted);">Hãy thử thay đổi bộ lọc hoặc bấm "Thêm giảng viên mới".</div>' +
+            '</div>';
+          return;
+        }
+
+        grid.innerHTML = items.map((t, idx) => {
+          const bg = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+          const statusBadge = t.isVerified
+            ? '<span class="badge badge-success">Đã xác minh</span>'
+            : '<span class="badge badge-warning">Chờ duyệt hồ sơ</span>';
+          const qualBadge = t.qualification
+            ? `<span class="badge badge-info" style="margin-left: 4px;">${escapeHtml(t.qualification)}</span>`
+            : '<span class="badge badge-neutral" style="margin-left: 4px;">Chưa cập nhật bằng cấp</span>';
+          const bioText = t.bio
+            ? escapeHtml(t.bio)
+            : '<span style="color: var(--text-muted); font-style: italic;">Chưa có mô tả kinh nghiệm giảng dạy.</span>';
+
+          const verifyBtn = !t.isVerified
+            ? `<button type="button" class="btn btn-sm btn-primary" data-verify-teacher="${t.id}">Duyệt hồ sơ</button>`
+            : `<a href="/Admin/classes.html" class="btn btn-sm btn-secondary">Xem lớp</a>`;
+
+          return `
+            <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
+                  <div class="avatar avatar-lg" style="background: ${bg}; color: white;">${escapeHtml(getInitials(t.fullName))}</div>
+                  <div style="min-width: 0;">
+                    <h3 style="font-size: 1rem; font-weight: 700; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(t.fullName)}</h3>
+                    <span style="font-size: 0.8125rem; color: var(--text-muted); word-break: break-all;">${escapeHtml(t.email)}</span>
+                  </div>
+                </div>
+                <div style="margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 4px;">
+                  ${statusBadge}
+                  ${qualBadge}
+                </div>
+                <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">${bioText}</p>
+              </div>
+              <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.8125rem;">
+                <span>Lớp phụ trách: <strong>${t.classCount ?? 0} lớp</strong></span>
+                <div style="display: flex; gap: 6px;">
+                  <button type="button" class="btn btn-sm btn-secondary" data-view-teacher="${t.id}">Xem hồ sơ</button>
+                  ${verifyBtn}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function openTeacherDetail(id) {
+        const t = teachersCache.find(x => x.id === id);
+        if (!t) return;
+
+        document.getElementById('td-id').value = t.id;
+        document.getElementById('td-modal-title').textContent = `Hồ sơ giảng viên: ${t.fullName}`;
+        document.getElementById('td-avatar').textContent = getInitials(t.fullName);
+        document.getElementById('td-display-name').textContent = t.fullName;
+        document.getElementById('td-display-email').textContent = t.email;
+        document.getElementById('td-status-badge').innerHTML = t.isVerified
+          ? '<span class="badge badge-success">Đã xác minh</span>'
+          : '<span class="badge badge-warning">Chờ duyệt hồ sơ</span>';
+        document.getElementById('td-fullname').value = t.fullName || '';
+        document.getElementById('td-qualification').value = t.qualification || '';
+        document.getElementById('td-bio').value = t.bio || '';
+        document.getElementById('td-verified').value = t.isVerified ? 'true' : 'false';
+
+        const quickVerifyBtn = document.getElementById('td-quick-verify-btn');
+        quickVerifyBtn.style.display = t.isVerified ? 'none' : 'inline-flex';
+
+        const clsBox = document.getElementById('td-classes-list');
+        const classes = Array.isArray(t.classes) ? t.classes : [];
+        if (classes.length === 0) {
+          clsBox.innerHTML = '<div style="font-size: 0.8125rem; color: var(--text-muted); padding: 0.5rem 0;">Chưa được phân công lớp học nào.</div>';
+        } else {
+          clsBox.innerHTML = classes.map(c => `
+            <div style="padding: 8px 10px; background: var(--neutral-50); border: 1px solid var(--border-color); border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8125rem;">
+              <div>
+                <strong>${escapeHtml(c.classCode)}</strong> — ${escapeHtml(c.className || c.courseTitle)}
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(c.courseTitle)} (${c.role === 'assistant' ? 'Trợ giảng' : 'Giảng viên chính'})</div>
+              </div>
+              <a href="/Admin/class-detail.html?id=${c.classId}" class="btn btn-sm btn-secondary">Chi tiết</a>
+            </div>
+          `).join('');
+        }
+
+        showBoxError('teacher-detail-error', '');
+        openModal('modal-teacher-detail');
+      }
+
+      async function loadTeachers() {
+        const grid = document.getElementById('teachers-grid');
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        try {
+          const params = new URLSearchParams({
+            search: (document.getElementById('teachers-search-input').value || '').trim(),
+            verified: document.getElementById('teachers-verified-filter').value || 'all'
+          });
+          const data = await fetchJson(`/Admin/api/Teachers/List?${params.toString()}`, { signal: controller.signal });
+          teachersCache = Array.isArray(data.items) ? data.items : [];
+
+          if (data.stats) {
+            document.getElementById('stat-total-teachers').textContent = data.stats.totalCount ?? 0;
+            document.getElementById('stat-verified-teachers').textContent = data.stats.verifiedCount ?? 0;
+            document.getElementById('stat-pending-teachers').textContent = data.stats.pendingCount ?? 0;
+          }
+
+          renderTeachers(teachersCache);
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải giảng viên:', err);
+          grid.innerHTML =
+            '<div class="card" style="padding: 2rem; grid-column: span 3; text-align: center;">' +
+            `<div style="color: var(--danger-text); font-weight: 700; margin-bottom: 0.5rem;">${escapeHtml(err.message)}</div>` +
+            '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+            '</div>';
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) loadController = null;
+        }
+      }
+
+      async function verifyTeacher(id, btn) {
+        setBusy(btn, true, 'Đang duyệt...');
+        try {
+          const data = await postJson(`/Admin/api/Teachers/Verify/${id}`);
+          showToast(data.message || 'Đã duyệt hồ sơ giảng viên.');
+          closeModal('modal-teacher-detail');
+          await loadTeachers();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message, 'error');
+        } finally {
+          setBusy(btn, false);
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadTeachers();
+
+        const debouncedSearch = debounce(loadTeachers, 300);
+        document.getElementById('teachers-search-input').addEventListener('input', debouncedSearch);
+        document.getElementById('teachers-verified-filter').addEventListener('change', () => {
+          debouncedSearch.cancel();
+          loadTeachers();
+        });
+        document.getElementById('btn-reset-teachers').addEventListener('click', () => {
+          debouncedSearch.cancel();
+          document.getElementById('teachers-search-input').value = '';
+          document.getElementById('teachers-verified-filter').value = 'all';
+          loadTeachers();
+        });
+
+        document.getElementById('btn-open-create-teacher').addEventListener('click', () => {
+          showBoxError('teacher-create-error', '');
+          document.getElementById('create-teacher-form').reset();
+          document.getElementById('tc-password').value = '123456';
+        });
+
+        document.getElementById('teachers-grid').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) {
+            loadTeachers();
+            return;
+          }
+          const viewBtn = e.target.closest('[data-view-teacher]');
+          if (viewBtn) {
+            openTeacherDetail(Number(viewBtn.getAttribute('data-view-teacher')));
+            return;
+          }
+          const verifyBtn = e.target.closest('[data-verify-teacher]');
+          if (verifyBtn) {
+            verifyTeacher(Number(verifyBtn.getAttribute('data-verify-teacher')), verifyBtn);
+          }
+        });
+
+        document.getElementById('create-teacher-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showBoxError('teacher-create-error', '');
+          const payload = {
+            fullName: document.getElementById('tc-fullname').value.trim(),
+            email: document.getElementById('tc-email').value.trim(),
+            password: document.getElementById('tc-password').value,
+            qualification: document.getElementById('tc-qualification').value.trim(),
+            bio: document.getElementById('tc-bio').value.trim(),
+            isVerified: document.getElementById('tc-verified').value === 'true'
+          };
+
+          const btn = document.getElementById('tc-create-submit-btn');
+          setBusy(btn, true);
+          try {
+            const data = await postJson('/Admin/api/Teachers/Create', payload);
+            closeModal('modal-create-teacher');
+            document.getElementById('create-teacher-form').reset();
+            showToast(data.message || 'Thêm giảng viên thành công.');
+            await loadTeachers();
+          } catch (err) {
+            console.error(err);
+            showBoxError('teacher-create-error', err.message);
+            showToast(err.message, 'error');
+          } finally {
+            setBusy(btn, false);
+          }
+        });
+
+        document.getElementById('teacher-detail-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showBoxError('teacher-detail-error', '');
+          const id = document.getElementById('td-id').value;
+          const payload = {
+            fullName: document.getElementById('td-fullname').value.trim(),
+            qualification: document.getElementById('td-qualification').value.trim(),
+            bio: document.getElementById('td-bio').value.trim(),
+            isVerified: document.getElementById('td-verified').value === 'true'
+          };
+
+          const btn = document.getElementById('td-save-btn');
+          setBusy(btn, true);
+          try {
+            const data = await postJson(`/Admin/api/Teachers/Update/${encodeURIComponent(id)}`, payload);
+            closeModal('modal-teacher-detail');
+            showToast(data.message || 'Cập nhật hồ sơ giảng viên thành công.');
+            await loadTeachers();
+          } catch (err) {
+            console.error(err);
+            showBoxError('teacher-detail-error', err.message);
+            showToast(err.message, 'error');
+          } finally {
+            setBusy(btn, false);
+          }
+        });
+
+        document.getElementById('td-quick-verify-btn').addEventListener('click', function () {
+          const id = Number(document.getElementById('td-id').value);
+          if (id) verifyTeacher(id, this);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

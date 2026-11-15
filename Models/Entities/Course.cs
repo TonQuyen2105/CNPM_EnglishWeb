@@ -29,7 +29,7 @@ namespace CNPM_EnglishLearning.Models.Entities
 
         [Column("level")]
         [MaxLength(20)]
-        public string Level { get; set; } = "beginner"; // beginner, intermediate, advanced
+        public string? Level { get; set; } = "beginner"; // beginner, intermediate, advanced
 
         [Column("price")]
         public decimal Price { get; set; } = 0;

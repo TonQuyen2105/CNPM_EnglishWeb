@@ -511,7 +511,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         group ue.TotalScore by ue.UserId into g
                         select new { UserId = g.Key, MaxScore = g.Max() }
                     ).ToDictionaryAsync(x => x.UserId, x => x.MaxScore, cancellationToken)
-                    : new Dictionary<int, decimal?>();
+                    : new Dictionary<int, int?>();
 
                 var students = enrollments.Select(e =>
                 {
