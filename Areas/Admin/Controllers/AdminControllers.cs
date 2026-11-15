@@ -43,38 +43,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     }
 
     [Area("Admin")]
-    public class ClassesController : Controller
-    {
-        private readonly ApplicationDbContext _context = new();
-
-        public IActionResult Index() => View("~/Areas/Admin/Views/classes.html", _context.CourseClasses);
-
-        public IActionResult Detail(int id)
-        {
-            var cls = _context.CourseClasses.FirstOrDefault(c => c.Id == id) ?? _context.CourseClasses.First();
-            return View("~/Areas/Admin/Views/class-detail.html", cls);
-        }
-    }
-
-    [Area("Admin")]
-    public class SchedulesController : Controller
-    {
-        public IActionResult Index() => View("~/Areas/Admin/Views/schedules.html");
-    }
-
-    [Area("Admin")]
-    public class FacilitiesController : Controller
-    {
-        public IActionResult Index() => View("~/Areas/Admin/Views/facilities.html");
-    }
-
-    [Area("Admin")]
-    public class EnrollmentsController : Controller
-    {
-        public IActionResult Index() => View("~/Areas/Admin/Views/enrollments.html");
-    }
-
-    [Area("Admin")]
     public class ReviewsController : Controller
     {
         public IActionResult Index() => View("~/Areas/Admin/Views/reviews.html");
