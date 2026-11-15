@@ -280,7 +280,18 @@ function calendar(rows) {
 }
 
 function render(page, data, profile) {
-  if (page === 'grading') { openGradingClasses(); return; }
+  if (page === 'grading') {
+    const params = new URLSearchParams(window.location.search);
+    const classId = Number(params.get('classId')), examId = Number(params.get('examId')), attemptId = Number(params.get('attemptId'));
+    if ([classId, examId, attemptId].every(id => Number.isSafeInteger(id) && id > 0)) openGradingAttempt(classId, examId, attemptId);
+    else if ([classId, examId].every(id => Number.isSafeInteger(id) && id > 0)) openGradingRoster(classId, examId);
+    else openGradingClasses();
+    return;
+  }
+  if (page === 'results') { openGradebook(); return; }
+  if (page === 'lessons') { openLessonWorkspace(); return; }
+  if (page === 'questions') { openQuestionBank(); return; }
+  if (page === 'exams') { openExamWorkspace(); return; }
   if (page === 'dashboard') {
     document.querySelector('.page-header-title').textContent = 'Chào mừng trở lại, ' + profile.fullName + '!';
     const grid = element('div', null, 'grid grid-cols-4 gap-6 teacher-stats');
@@ -435,7 +446,7 @@ function showState(title, message, loginUrl) {
 }
 
 function addPageActions(page, data) {
-  if (page === 'grading') return;
+  if (['grading', 'results', 'lessons', 'questions', 'exams'].includes(page)) return;
   const header = document.querySelector('.page-header');
   header.querySelector('.teacher-primary-action')?.remove();
   const destinations = {
@@ -618,6 +629,14 @@ function openGradingAttempt(classId, examId, attemptId) {
     };
     const header = panel(data.attempt.fullName);
     header.append(element('p', data.attempt.title + ' · Lượt ' + data.attempt.attemptNumber, 'teacher-muted'), gradingButton('← Danh sách học viên', leave));
+    if (new URLSearchParams(window.location.search).get('from') === 'results') {
+      const back = gradingButton('← Sổ điểm', () => {
+        if (dirty && !window.confirm('Rời bài chấm và bỏ thay đổi chưa lưu?')) return;
+        dirty = false; window.removeEventListener('beforeunload', protect);
+        window.location.href = '/Teacher/results.html?classId=' + classId + '&examId=' + examId;
+      });
+      header.append(back);
+    }
     const fields = [];
     for (const [index, answer] of data.answers.entries()) {
       const card = panel('Câu ' + (index + 1) + ' · Tối đa ' + answer.points + ' điểm');
@@ -665,7 +684,9 @@ function openGradingAttempt(classId, examId, attemptId) {
       try {
         const result = await gradingRequest('/attempts/' + attemptId, { method: 'POST', headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': data.token }, body: JSON.stringify({ classId, answers: fields.map(f => ({ id: f.id, score: Number(f.score.value), feedback: f.feedback.value, expectedGradedAt: f.expectedGradedAt })) }) });
         dirty = false; window.removeEventListener('beforeunload', protect);
-        await openGradingRoster(classId, examId, result.message);
+        if (new URLSearchParams(window.location.search).get('from') === 'results') {
+          window.location.href = '/Teacher/results.html?classId=' + classId + '&examId=' + examId;
+        } else await openGradingRoster(classId, examId, result.message);
       } catch (error) { message.textContent = error.message; }
       finally { save.disabled = false; save.textContent = saveLabel; }
     });

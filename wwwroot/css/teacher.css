@@ -151,3 +151,38 @@ summary { cursor:pointer; font-size:12px; color:#4f46e5; font-weight:600; paddin
 .teacher-grading-actions [role=alert] { color:#b42332; margin-bottom:8px; }
 .teacher-save-success { padding:16px; margin:16px 0; background:#ecfdf3; color:#167047; border-radius:8px; }
 @media(max-width:600px) { .teacher-grading-actions .btn { width:100%; } }
+.gradebook-stats { margin:24px 0; }
+.gradebook-number { display:block; font-size:28px; font-variant-numeric:tabular-nums; margin-top:8px; }
+.gradebook-filters { margin-top:24px; flex-wrap:wrap; }
+.gradebook-filters .teacher-search { flex:1; min-width:180px; }
+.gradebook-row-actions { display:flex; flex-wrap:wrap; gap:8px; min-width:160px; }
+@media(max-width:600px) { .gradebook-number { font-size:22px; } .gradebook-filters .btn { width:100%; } }
+.lesson-toolbar { margin:24px 0; flex-wrap:wrap; }
+.lesson-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+.lesson-form .teacher-search { max-width:100%; font-weight:400; }
+.lesson-form textarea { min-height:260px; line-height:1.8; }
+.lesson-shared-note { margin:16px 0; padding:16px; border-radius:8px; background:#eef2ff; color:#4338ca; }
+.lesson-form-error { color:#b42332; margin:16px 0; }
+.lesson-content { margin-top:24px; }
+@media(max-width:600px) { .lesson-toolbar .btn { width:100%; } .lesson-actions .btn { flex:1; } }
+.question-toolbar { margin:24px 0; flex-wrap:wrap; }
+.question-toolbar .teacher-search { flex:1; min-width:180px; }
+.question-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+.question-form .teacher-search { max-width:100%; font-weight:400; }
+.question-form textarea { min-height:220px; line-height:1.8; }
+.question-shared-note { margin:16px 0; padding:16px; border-radius:8px; background:#eef2ff; color:#4338ca; }
+.question-form-error { color:#b42332; margin:16px 0; }
+.question-delete { color:#b42332; border-color:#ecc9cd; margin-top:16px; }
+@media(max-width:600px) { .question-toolbar .btn { width:100%; } .question-actions .btn { flex:1; } }
+.exam-toolbar { margin:24px 0; flex-wrap:wrap; }
+.exam-toolbar .teacher-search { flex:1; min-width:180px; }
+.exam-actions { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; }
+.exam-form { display:flex; flex-direction:column; gap:24px; }
+.exam-form .teacher-field .teacher-search { max-width:100%; font-weight:400; }
+.exam-form textarea { line-height:1.8; resize:vertical; }
+.exam-note { margin:16px 0; padding:16px; border-radius:8px; background:#eef2ff; color:#4338ca; }
+.exam-error { color:#b42332; margin:16px 0; }
+.exam-form .teacher-grading-actions { margin:0; }
+.exam-form .teacher-stack .teacher-copy { margin-top:0; }
+#teacher-data > .card + .exam-error, #teacher-data > .exam-actions + .card { margin-top:24px; }
+@media(max-width:600px) { .exam-toolbar .btn { width:100%; } .exam-actions .btn { flex:1; } }

@@ -143,6 +143,41 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Keep Teacher entry links canonical before legacy static Views can be served.
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path;
+    var teacherPage = path.StartsWithSegments("/Teacher", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWithSegments("/Areas/Teacher/Views", StringComparison.OrdinalIgnoreCase);
+    var teacherApi = path.StartsWithSegments("/api/teacher", StringComparison.OrdinalIgnoreCase);
+    var loginPage = path.Equals(new PathString("/login.html"), StringComparison.OrdinalIgnoreCase)
+        || path.Equals(new PathString("/login"), StringComparison.OrdinalIgnoreCase);
+    var teacherAsset = new[] { "/css/teacher.css", "/js/teacher.js", "/js/teacher-exams.js", "/wwwroot/js/teacher-exams.js", "/js/teacher-questions.js", "/wwwroot/js/teacher-questions.js", "/js/teacher-lessons.js", "/wwwroot/js/teacher-lessons.js", "/js/teacher-gradebook.js", "/wwwroot/js/teacher-gradebook.js", "/wwwroot/css/teacher.css", "/wwwroot/js/teacher.js" }
+        .Contains(path.Value, StringComparer.OrdinalIgnoreCase);
+    if (teacherPage || teacherApi || loginPage || teacherAsset)
+        context.Response.OnStarting(() =>
+        {
+            context.Response.Headers.CacheControl = teacherAsset ? "no-cache" : "no-store";
+            return Task.CompletedTask;
+        });
+
+    if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+    {
+        if (path.StartsWithSegments("/Areas/Teacher/Views", StringComparison.OrdinalIgnoreCase, out var remaining)
+            || path.StartsWithSegments("/Teacher/Views", StringComparison.OrdinalIgnoreCase, out remaining))
+        {
+            var pages = new[] { "/dashboard.html", "/classes.html", "/class-detail.html", "/schedule.html", "/lessons.html",
+                "/questions.html", "/exams.html", "/grading.html", "/results.html", "/profile.html" };
+            if (pages.Contains(remaining.Value, StringComparer.OrdinalIgnoreCase))
+            {
+                context.Response.Redirect("/Teacher" + remaining.Value!.ToLowerInvariant() + context.Request.QueryString);
+                return;
+            }
+        }
+    }
+    await next(context);
+});
+
 // Serve static files from wwwroot at root (/css/...) and with /wwwroot prefix (/wwwroot/css/...)
 app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions

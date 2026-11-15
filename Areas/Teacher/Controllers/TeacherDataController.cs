@@ -96,47 +96,20 @@ public class TeacherDataController(ApplicationDbContext db) : ControllerBase
                 data = await schedule.ToListAsync(cancellationToken);
                 break;
             case "lessons":
-                data = await (
-                    from lesson in lessons
-                    join course in courses on lesson.CourseId equals course.Id
-                    orderby course.Title, lesson.OrderIndex
-                    select new { Course = course.Title, lesson.OrderIndex, lesson.Title, lesson.ContentType, lesson.Content })
-                    .ToListAsync(cancellationToken);
+                data = Array.Empty<object>(); // Loaded by the course-scoped lessons workspace.
                 break;
             case "questions":
-                data = await db.Questions.Where(q => lessons.Any(l => l.Id == q.LessonId)
-                    || db.ExamQuestions.Any(eq => eq.QuestionId == q.Id && exams.Any(e => e.Id == eq.ExamId)))
-                    .OrderBy(q => q.Id).Select(q => new
-                    {
-                        q.QuestionText, q.QuestionType, q.DefaultPoints,
-                        Options = db.QuestionOptions.Where(o => o.QuestionId == q.Id)
-                            .OrderBy(o => o.Id).Select(o => new { o.OptionText, o.IsCorrect }).ToList(),
-                        Answers = db.QuestionAnswers.Where(a => a.QuestionId == q.Id)
-                            .OrderBy(a => a.Id).Select(a => a.AnswerText).ToList()
-                    })
-                    .ToListAsync(cancellationToken);
+                data = Array.Empty<object>(); // The essay bank loads by assigned course.
                 break;
             case "exams":
-                data = await exams.OrderBy(e => e.Title).Select(e => new
-                {
-                    e.Title, e.DurationMinutes, e.IsPublished,
-                    Course = db.Courses.Where(c => c.Id == e.CourseId).Select(c => c.Title).FirstOrDefault(),
-                    Questions = db.ExamQuestions.Count(q => q.ExamId == e.Id),
-                    Submissions = attempts.Count(a => a.ExamId == e.Id)
-                }).ToListAsync(cancellationToken);
+                data = Array.Empty<object>(); // Loaded by the owner-scoped exam workspace.
                 break;
             case "grading":
                 // The workspace loads classes first, then the selected roster and attempt.
                 data = Array.Empty<object>();
                 break;
             case "results":
-                data = await (
-                    from attempt in attempts
-                    join exam in exams on attempt.ExamId equals exam.Id
-                    join student in db.Users on attempt.UserId equals student.Id
-                    orderby attempt.SubmittedAt descending
-                    select new { exam.Title, student.FullName, attempt.AttemptNumber, attempt.TotalScore, attempt.Status })
-                    .ToListAsync(cancellationToken);
+                data = Array.Empty<object>(); // Loaded by the class-scoped gradebook API.
                 break;
             case "profile":
                 data = profile;
