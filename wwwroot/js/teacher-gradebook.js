@@ -1,6 +1,6 @@
 // Sổ điểm chỉ đọc điểm tự luận đã lưu; chỉnh sửa thực hiện tại màn chấm bài.
 const gradebookLabels = {
-  not_submitted: 'Chưa nộp', in_progress: 'Đang làm · Chưa nộp', pending_review: 'Chờ chấm',
+  not_submitted: 'Chưa nộp', in_progress: 'Chưa nộp', pending_review: 'Chờ chấm',
   graded: 'Đã chấm', passed: 'Đạt', failed: 'Chưa đạt'
 };
 function gradebookBadge(status) {
@@ -107,7 +107,7 @@ function openGradebookRoster(classId, examId) {
       exportButton.disabled = !filtered.length; detail.replaceChildren();
       list.replaceChildren(table(['Học viên', 'Email', 'Lượt nộp', 'Nộp lúc', 'Điểm tự luận', 'Trạng thái', 'Thao tác'], filtered.map(s => {
         const actions = element('div', null, 'gradebook-row-actions');
-        if (s.latest) actions.append(attemptLink(s.latest, s.latest.score == null ? 'Chấm bài' : 'Xem / sửa điểm'), gradingButton('Lịch sử (' + s.history.length + ')', () => showHistory(s)));
+        if (s.latest) actions.append(attemptLink(s.latest, s.latest.score == null ? 'Chấm bài' : 'Xem'), gradingButton('Lịch sử (' + s.history.length + ')', () => showHistory(s)));
         else actions.append(element('span', 'Chưa có bài nộp', 'teacher-muted'));
         return [s.fullName, s.email, s.latest?.attemptNumber ?? '—', gradebookTime(s.latest?.submittedAt), gradebookScore(s.latest?.score, data.maxScore), gradebookBadge(s.status), actions];
       }), data.students.length ? 'Không có học viên phù hợp với bộ lọc.' : 'Lớp chưa có học viên.'));
