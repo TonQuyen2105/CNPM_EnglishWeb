@@ -315,7 +315,7 @@
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí (VNĐ) <span class="required" style="color:red;">*</span></label>
-              <input type="number" id="ec-price" class="form-control" min="0" step="10000" required>
+              <input type="number" id="ec-price" class="form-control" min="0" max="99999999.99" step="1000" required>
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái tuyển sinh</label>
@@ -373,7 +373,7 @@
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Nội dung tóm tắt</label>
-            <textarea id="lesson-content" class="form-control" rows="3" placeholder="Ghi chú nội dung giảng dạy của bài học..."></textarea>
+            <textarea id="lesson-content" class="form-control" rows="3" maxlength="20000" placeholder="Ghi chú nội dung giảng dạy của bài học..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -617,6 +617,12 @@
           console.error('Lỗi tải chi tiết khóa học:', err);
           document.getElementById('cd-title').textContent = 'Không thể tải khóa học';
           document.getElementById('cd-subtitle').textContent = err.message;
+          document.getElementById('cd-lessons-list').innerHTML =
+            '<div class="empty-state" style="padding: 1.5rem 1rem;">' +
+            '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu khóa học</div>' +
+            `<div class="empty-state-text">${escapeHtml(err.message)}</div>` +
+            '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+            '</div>';
           showToast(err.message, 'error');
         } finally {
           if (loadController === controller) loadController = null;
@@ -687,6 +693,10 @@
         document.getElementById('btn-add-lesson').addEventListener('click', openCreateLessonModal);
 
         document.getElementById('cd-lessons-list').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) {
+            loadCourseDetail();
+            return;
+          }
           const editBtn = e.target.closest('[data-edit-lesson]');
           if (editBtn) {
             openEditLessonModal(Number(editBtn.getAttribute('data-edit-lesson')));

@@ -211,7 +211,10 @@
       <p class="page-header-subtitle" id="courses-subtitle">Đang tải danh sách khóa học từ hệ thống...</p>
     </div>
     <div class="page-header-actions">
-      <button type="button" class="btn btn-primary" id="btn-open-create-course">Tạo khóa học mới</button>
+      <button type="button" class="btn btn-primary" id="btn-open-create-course" data-modal-target="modal-create-course">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Tạo khóa học mới
+      </button>
     </div>
   </div>
 
@@ -252,8 +255,6 @@
       </div>
     </div>
   </div>
-
-  <div id="courses-alert" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.875rem;"></div>
 
   <div id="courses-grid" class="grid grid-cols-3 gap-6">
     <div class="card" style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: var(--text-muted);">
@@ -298,7 +299,7 @@
           <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí (VNĐ) <span style="color:red;">*</span></label>
-              <input type="number" id="create-price" class="form-control" min="0" step="1000" value="0" placeholder="Ví dụ: 3500000" required>
+              <input type="number" id="create-price" class="form-control" min="0" max="99999999.99" step="1000" value="0" placeholder="Ví dụ: 3500000" required>
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số bài học khởi tạo</label>
@@ -329,6 +330,105 @@
   <script src="../../../wwwroot/js/site.js"></script>
   <script>
     (function () {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
+      }
+
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
       const GRADIENTS = [
         'linear-gradient(135deg, #1E3A8A, #3B82F6)',
         'linear-gradient(135deg, #065F46, #10B981)',
@@ -346,64 +446,68 @@
 
       const gridEl = document.getElementById('courses-grid');
       const subtitleEl = document.getElementById('courses-subtitle');
-      const alertEl = document.getElementById('courses-alert');
       const searchEl = document.getElementById('filter-search');
       const subjectEl = document.getElementById('filter-subject');
       const levelEl = document.getElementById('filter-level');
       const publishedEl = document.getElementById('filter-published');
       const resetBtn = document.getElementById('btn-reset-filters');
 
-      const modalEl = document.getElementById('modal-create-course');
       const openCreateBtn = document.getElementById('btn-open-create-course');
       const createForm = document.getElementById('create-course-form');
       const createErrorEl = document.getElementById('create-course-error');
       const createSubjectEl = document.getElementById('create-subject-id');
       const saveBtn = document.getElementById('btn-save-course');
 
-      let searchTimer = null;
       let lookupsLoaded = false;
+      let hasLoadedOnce = false;
+      let loadController = null;
 
-      function escapeHtml(value) {
-        return String(value ?? '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
-      }
-
-      function formatCurrency(amount) {
-        const num = Number(amount || 0);
-        return num.toLocaleString('vi-VN') + ' ₫';
-      }
-
-      function showAlert(message, isError) {
-        alertEl.textContent = message;
-        alertEl.style.display = 'block';
-        alertEl.style.background = isError ? '#FEE2E2' : '#DCFCE7';
-        alertEl.style.color = isError ? '#991B1B' : '#166534';
-        if (!isError) {
-          setTimeout(() => { alertEl.style.display = 'none'; }, 4000);
+      function showFormError(msg) {
+        if (!createErrorEl) return;
+        if (msg) {
+          createErrorEl.textContent = msg;
+          createErrorEl.style.display = 'block';
+        } else {
+          createErrorEl.textContent = '';
+          createErrorEl.style.display = 'none';
         }
+      }
+
+      function renderLoadingState() {
+        const card = `
+          <div class="card" style="padding: 1.5rem;">
+            <div class="skeleton skeleton-rect" style="height: 100px; margin-bottom: 1rem;"></div>
+            <div class="skeleton skeleton-text sm"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>`;
+        gridEl.innerHTML = card.repeat(3);
       }
 
       function populateSubjects(subjects) {
         if (!Array.isArray(subjects)) return;
         const currentFilter = subjectEl.value;
+        const currentCreate = createSubjectEl.value;
+
         subjectEl.innerHTML = '<option value="0">Tất cả môn học</option>' +
           subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
         if (currentFilter) subjectEl.value = currentFilter;
 
         createSubjectEl.innerHTML = '<option value="">-- Chọn môn học --</option>' +
           subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
+        if (currentCreate) createSubjectEl.value = currentCreate;
+
         lookupsLoaded = true;
       }
 
       function renderCourses(items) {
         if (!Array.isArray(items) || items.length === 0) {
           gridEl.innerHTML = `
-            <div class="card" style="grid-column: 1 / -1; padding: 2.5rem; text-align: center; color: var(--text-muted);">
-              Không tìm thấy khóa học nào phù hợp với bộ lọc hiện tại.
+            <div class="card" style="grid-column: 1 / -1;">
+              <div class="empty-state" style="padding: 2.5rem 1rem;">
+                <div class="empty-state-title">Chưa có khóa học nào phù hợp</div>
+                <div class="empty-state-text" style="margin-bottom: 0;">Hãy thử thay đổi bộ lọc hoặc bấm "Tạo khóa học mới".</div>
+              </div>
             </div>`;
           return;
         }
@@ -414,8 +518,8 @@
           const statusBadge = c.isPublished
             ? '<span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>'
             : '<span class="badge badge-secondary" style="align-self: flex-start; background: rgba(255,255,255,0.2); color: #fff;">Bản nháp</span>';
-          const desc = c.description ? escapeHtml(c.description) : 'Chưa có mô tả mục tiêu cho khóa học này.';
-          const shortDesc = desc.length > 130 ? desc.slice(0, 127) + '...' : desc;
+          const rawDesc = c.description ? String(c.description) : 'Chưa có mô tả mục tiêu cho khóa học này.';
+          const shortDesc = escapeHtml(rawDesc.length > 130 ? rawDesc.slice(0, 127) + '...' : rawDesc);
 
           return `
             <div class="card card-hover" style="overflow: hidden; display: flex; flex-direction: column;">
@@ -435,14 +539,24 @@
                 </div>
               </div>
               <div class="card-footer" style="display: flex; justify-content: space-between;">
-                <a href="/Admin/course-detail.html?id=${c.id}" class="btn btn-sm btn-secondary">Chi tiết &amp; Giáo trình</a>
-                <a href="/Admin/classes.html?courseId=${c.id}" class="btn btn-sm btn-primary">Xem lớp mở</a>
+                <a href="/Admin/course-detail.html?id=${encodeURIComponent(c.id)}" class="btn btn-sm btn-secondary">Chi tiết &amp; Giáo trình</a>
+                <a href="/Admin/classes.html?courseId=${encodeURIComponent(c.id)}" class="btn btn-sm btn-primary">Xem lớp mở</a>
               </div>
             </div>`;
         }).join('');
       }
 
       async function loadCourses() {
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        if (!hasLoadedOnce) {
+          renderLoadingState();
+        } else {
+          gridEl.style.opacity = '0.55';
+        }
+
         const params = new URLSearchParams();
         const search = searchEl.value.trim();
         if (search) params.set('search', search);
@@ -452,95 +566,100 @@
         params.set('lookups', lookupsLoaded ? 'false' : 'true');
 
         try {
-          const res = await fetch('/Admin/api/Courses/List?' + params.toString(), {
-            headers: { 'Accept': 'application/json' }
-          });
-          const data = await res.json();
-          if (!res.ok || !data.success) {
-            throw new Error(data.message || 'Không thể tải danh sách khóa học.');
-          }
-          if (data.subjects) {
+          const data = await fetchJson(`/Admin/api/Courses/List?${params.toString()}`, { signal: controller.signal });
+          if (Array.isArray(data.subjects)) {
             populateSubjects(data.subjects);
           }
-          const items = data.items || [];
+          const items = Array.isArray(data.items) ? data.items : [];
           const publishedCount = items.filter(x => x.isPublished).length;
           subtitleEl.textContent = `Hiện có ${items.length} khóa học (${publishedCount} đang mở) trong hệ thống`;
           renderCourses(items);
+          hasLoadedOnce = true;
         } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải khóa học:', err);
           subtitleEl.textContent = 'Không thể tải dữ liệu khóa học';
-          gridEl.innerHTML = `<div class="card" style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: #991B1B;">${escapeHtml(err.message)}</div>`;
+          gridEl.innerHTML =
+            '<div class="card" style="grid-column: 1 / -1;">' +
+            '<div class="empty-state" style="padding: 2rem 1rem;">' +
+            '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải danh sách khóa học</div>' +
+            `<div class="empty-state-text">${escapeHtml(err.message)}</div>` +
+            '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+            '</div></div>';
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            gridEl.style.opacity = '';
+          }
         }
       }
 
-      function openCreateModal() {
+      function openCreateMode() {
         createForm.reset();
         document.getElementById('create-price').value = '0';
         document.getElementById('create-lesson-count').value = '0';
         document.getElementById('create-is-published').value = 'true';
-        createErrorEl.style.display = 'none';
-        modalEl.classList.add('open');
+        showFormError('');
+        openModal('modal-create-course');
       }
 
-      function closeCreateModal() {
-        modalEl.classList.remove('open');
-      }
-
-      openCreateBtn.addEventListener('click', openCreateModal);
-
-      createForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        createErrorEl.style.display = 'none';
-
-        const payload = {
-          subjectId: Number(createSubjectEl.value || 0),
-          title: document.getElementById('create-title').value.trim(),
-          level: document.getElementById('create-level').value,
-          price: Number(document.getElementById('create-price').value || 0),
-          lessonCount: Number(document.getElementById('create-lesson-count').value || 0),
-          isPublished: document.getElementById('create-is-published').value === 'true',
-          description: document.getElementById('create-description').value.trim()
-        };
-
-        saveBtn.disabled = true;
-        saveBtn.textContent = 'Đang lưu...';
-        try {
-          const res = await fetch('/Admin/api/Courses/Create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (!res.ok || !data.success) {
-            throw new Error(data.message || 'Không thể tạo khóa học mới.');
-          }
-          closeCreateModal();
-          showAlert(data.message || 'Đã tạo khóa học mới thành công.', false);
-          await loadCourses();
-        } catch (err) {
-          createErrorEl.textContent = err.message;
-          createErrorEl.style.display = 'block';
-        } finally {
-          saveBtn.disabled = false;
-          saveBtn.textContent = 'Lưu khóa học';
-        }
-      });
-
-      searchEl.addEventListener('input', function () {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(loadCourses, 300);
-      });
-      subjectEl.addEventListener('change', loadCourses);
-      levelEl.addEventListener('change', loadCourses);
-      publishedEl.addEventListener('change', loadCourses);
-      resetBtn.addEventListener('click', function () {
-        searchEl.value = '';
-        subjectEl.value = '0';
-        levelEl.value = 'all';
-        publishedEl.value = 'all';
+      document.addEventListener('DOMContentLoaded', () => {
         loadCourses();
-      });
 
-      loadCourses();
+        const debouncedSearch = debounce(loadCourses, 300);
+        searchEl.addEventListener('input', debouncedSearch);
+        [subjectEl, levelEl, publishedEl].forEach(el => {
+          el.addEventListener('change', () => {
+            debouncedSearch.cancel();
+            loadCourses();
+          });
+        });
+
+        resetBtn.addEventListener('click', () => {
+          debouncedSearch.cancel();
+          searchEl.value = '';
+          subjectEl.value = '0';
+          levelEl.value = 'all';
+          publishedEl.value = 'all';
+          loadCourses();
+        });
+
+        gridEl.addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) loadCourses();
+        });
+
+        openCreateBtn.addEventListener('click', openCreateMode);
+
+        createForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          showFormError('');
+
+          const payload = {
+            subjectId: Number(createSubjectEl.value || 0),
+            title: document.getElementById('create-title').value.trim(),
+            level: document.getElementById('create-level').value,
+            price: Number(document.getElementById('create-price').value || 0),
+            lessonCount: Number(document.getElementById('create-lesson-count').value || 0),
+            isPublished: document.getElementById('create-is-published').value === 'true',
+            description: document.getElementById('create-description').value.trim()
+          };
+
+          setBusy(saveBtn, true);
+          try {
+            const data = await postJson('/Admin/api/Courses/Create', payload);
+            closeModal('modal-create-course');
+            showToast(data.message || 'Đã tạo khóa học mới thành công.');
+            await loadCourses();
+          } catch (err) {
+            console.error(err);
+            showFormError(err.message);
+            showToast(err.message, 'error');
+          } finally {
+            setBusy(saveBtn, false);
+          }
+        });
+      });
     })();
   </script>
 </body>

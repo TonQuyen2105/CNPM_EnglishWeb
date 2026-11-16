@@ -376,7 +376,18 @@
       }
 
       let needLookups = true;
+      let hasLoadedOnce = false;
       let loadController = null;
+
+      function renderLoadingState() {
+        const card = `
+          <div class="card" style="padding: 1.5rem;">
+            <div class="skeleton skeleton-text sm"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>`;
+        document.getElementById('reviews-grid').innerHTML = card.repeat(2);
+      }
 
       function populateCourseFilter(courses) {
         if (!Array.isArray(courses)) return;
@@ -435,6 +446,12 @@
         const controller = new AbortController();
         loadController = controller;
 
+        if (!hasLoadedOnce) {
+          renderLoadingState();
+        } else {
+          grid.style.opacity = '0.55';
+        }
+
         try {
           const params = new URLSearchParams({
             search: (document.getElementById('reviews-search-input').value || '').trim(),
@@ -457,6 +474,7 @@
           }
 
           renderReviews(data.items);
+          hasLoadedOnce = true;
         } catch (err) {
           if (isAbortError(err)) return;
           console.error('Lỗi tải đánh giá:', err);
@@ -467,7 +485,10 @@
             '</div>';
           showToast(err.message, 'error');
         } finally {
-          if (loadController === controller) loadController = null;
+          if (loadController === controller) {
+            loadController = null;
+            grid.style.opacity = '';
+          }
         }
       }
 

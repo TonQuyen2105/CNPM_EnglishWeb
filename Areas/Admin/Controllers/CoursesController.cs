@@ -2,6 +2,7 @@ using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
@@ -10,6 +11,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     {
         private const int MaxTitleLength = 200;
         private const int MaxDescriptionLength = 4000;
+        private const int MaxLessonContentLength = 20000;
         private const decimal MaxPrice = 99_999_999.99m;
         private const int MaxInitialLessons = 100;
 
@@ -193,7 +195,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 };
 
                 _context.Courses.Add(course);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Khóa học này đã tồn tại trong hệ thống.");
+                }
 
                 if (lessonCount > 0)
                 {
@@ -357,6 +367,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPut("/Admin/api/Courses/Update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CourseUpsertDto? dto, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã khóa học không hợp lệ.");
+            }
+
             var error = NormalizeAndValidateCourse(dto, out var title, out var level, out var description, out var thumbnailUrl);
             if (error != null)
             {
@@ -399,7 +414,14 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
                 course.UpdatedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    return this.ApiBadRequest("Tên khóa học đã tồn tại trong môn học này.");
+                }
 
                 return Ok(new
                 {
@@ -422,19 +444,29 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPost("/Admin/api/Courses/{courseId}/Lessons/Create")]
         public async Task<IActionResult> CreateLesson(int courseId, [FromBody] LessonUpsertDto? dto, CancellationToken cancellationToken)
         {
+            if (courseId <= 0)
+            {
+                return this.ApiBadRequest("Mã khóa học không hợp lệ.");
+            }
+
             var error = ValidateLesson(dto, out var title, out var contentType, out var content);
             if (error != null)
             {
                 return this.ApiBadRequest(error);
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                long lockKey = 400_000_000L + courseId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
+
                 var courseExists = await _context.Courses
                     .AsNoTracking()
                     .AnyAsync(c => c.Id == courseId, cancellationToken);
                 if (!courseExists)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy khóa học.");
                 }
 
@@ -459,6 +491,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 _context.Lessons.Add(lesson);
                 await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new { success = true, message = "Thêm bài học vào đề cương thành công.", id = lesson.Id });
             }
@@ -469,6 +502,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể thêm bài học cho khóa {CourseId}.", courseId);
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể thêm bài học vào đề cương.");
             }
         }
@@ -477,6 +511,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPut("/Admin/api/Courses/Lessons/Update/{lessonId}")]
         public async Task<IActionResult> UpdateLesson(int lessonId, [FromBody] LessonUpsertDto? dto, CancellationToken cancellationToken)
         {
+            if (lessonId <= 0)
+            {
+                return this.ApiBadRequest("Mã bài học không hợp lệ.");
+            }
+
             var error = ValidateLesson(dto, out var title, out var contentType, out var content);
             if (error != null)
             {
@@ -519,6 +558,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpDelete("/Admin/api/Courses/Lessons/Delete/{lessonId}")]
         public async Task<IActionResult> DeleteLesson(int lessonId, CancellationToken cancellationToken)
         {
+            if (lessonId <= 0)
+            {
+                return this.ApiBadRequest("Mã bài học không hợp lệ.");
+            }
+
             try
             {
                 var lesson = await _context.Lessons.FirstOrDefaultAsync(l => l.Id == lessonId, cancellationToken);
@@ -634,6 +678,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             if (dto.OrderIndex.HasValue && (dto.OrderIndex.Value < 1 || dto.OrderIndex.Value > 1000))
             {
                 return "Thứ tự bài học phải từ 1 đến 1000.";
+            }
+
+            if (content != null && content.Length > MaxLessonContentLength)
+            {
+                return $"Nội dung tóm tắt bài học không được vượt quá {MaxLessonContentLength} ký tự.";
             }
 
             return null;

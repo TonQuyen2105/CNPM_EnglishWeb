@@ -222,6 +222,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (existingUser != null)
                 {
+                    long teacherLockKey = 600_000_000L + existingUser.Id;
+                    await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({teacherLockKey})", cancellationToken);
+
                     var hasTeacherProfile = await _context.Teachers
                         .AsNoTracking()
                         .AnyAsync(t => t.UserId == existingUser.Id, cancellationToken);
@@ -276,7 +279,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 };
 
                 _context.Teachers.Add(teacher);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Tài khoản này đã có hồ sơ giảng viên trong hệ thống.");
+                }
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
@@ -302,6 +313,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPut("/Admin/api/Teachers/Update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] TeacherUpdateDto? dto, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã giảng viên không hợp lệ.");
+            }
+
             if (dto == null)
             {
                 return this.ApiBadRequest("Dữ liệu cập nhật không hợp lệ.");
@@ -324,11 +340,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest($"Giới thiệu kinh nghiệm không được vượt quá {MaxBioLength} ký tự.");
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
                 if (teacher == null)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy hồ sơ giảng viên.");
                 }
 
@@ -350,6 +368,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 teacher.UpdatedAt = now;
 
                 await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
                 {
@@ -365,6 +384,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể cập nhật hồ sơ giảng viên {TeacherId}.", id);
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể cập nhật hồ sơ giảng viên.");
             }
         }
@@ -372,6 +392,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPost("/Admin/api/Teachers/Verify/{id}")]
         public async Task<IActionResult> Verify(int id, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã giảng viên không hợp lệ.");
+            }
+
             try
             {
                 var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);

@@ -210,26 +210,82 @@
       <h1 class="page-header-title">Báo cáo & Thống kê vận hành</h1>
       <p class="page-header-subtitle">Chỉ số tăng trưởng học viên, doanh thu học phí và tỷ lệ hoàn thành khóa học</p>
     </div>
-    <div class="page-header-actions">
-      <button class="btn btn-secondary">Xuất file Excel</button>
+    <div class="page-header-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+      <select id="report-quarter-filter" class="form-control" style="width: auto; min-width: 145px;">
+        <option value="0">Cả năm</option>
+        <option value="1">Quý 1 (T1 - T3)</option>
+        <option value="2">Quý 2 (T4 - T6)</option>
+        <option value="3">Quý 3 (T7 - T9)</option>
+        <option value="4">Quý 4 (T10 - T12)</option>
+      </select>
+      <select id="report-year-filter" class="form-control" style="width: auto; min-width: 110px;"></select>
+      <button type="button" class="btn btn-secondary" id="btn-refresh-reports">Làm mới</button>
+      <button type="button" class="btn btn-primary" id="btn-export-reports">Xuất file Excel</button>
     </div>
   </div>
 
-  <div class="grid grid-cols-3 gap-6" style="margin-bottom: 2rem;">
+  <div class="grid grid-cols-3 gap-6" style="margin-bottom: 1.5rem;">
     <div class="card" style="padding: 1.5rem;">
-      <div style="font-size: 0.8125rem; color: var(--text-muted);">Tổng doanh thu Quý 4</div>
-      <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary-600); margin: 0.25rem 0;">154.500.000 ₫</div>
-      <span class="text-success" style="font-size: 0.75rem;">↗ Tăng 18% so với Quý trước</span>
+      <div style="font-size: 0.8125rem; color: var(--text-muted);" id="rep-revenue-label">Tổng doanh thu ước tính</div>
+      <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary-600); margin: 0.25rem 0;" id="rep-revenue">--</div>
+      <span class="text-muted" style="font-size: 0.75rem;" id="rep-revenue-sub">Đang tải dữ liệu...</span>
     </div>
     <div class="card" style="padding: 1.5rem;">
       <div style="font-size: 0.8125rem; color: var(--text-muted);">Tỷ lệ học viên hoàn thành khóa</div>
-      <div style="font-size: 1.75rem; font-weight: 800; color: #059669; margin: 0.25rem 0;">92.5%</div>
-      <span class="text-success" style="font-size: 0.75rem;">Đạt chỉ tiêu xuất sắc</span>
+      <div style="font-size: 1.75rem; font-weight: 800; color: #059669; margin: 0.25rem 0;" id="rep-completion-rate">--</div>
+      <span class="text-muted" style="font-size: 0.75rem;" id="rep-completion-sub">Đang tải dữ liệu...</span>
     </div>
     <div class="card" style="padding: 1.5rem;">
       <div style="font-size: 0.8125rem; color: var(--text-muted);">Học viên tái đăng ký khóa mới</div>
-      <div style="font-size: 1.75rem; font-weight: 800; color: #7C3AED; margin: 0.25rem 0;">64.8%</div>
-      <span class="text-success" style="font-size: 0.75rem;">Tỷ lệ giữ chân cao</span>
+      <div style="font-size: 1.75rem; font-weight: 800; color: #7C3AED; margin: 0.25rem 0;" id="rep-retention-rate">--</div>
+      <span class="text-muted" style="font-size: 0.75rem;" id="rep-retention-sub">Đang tải dữ liệu...</span>
+    </div>
+  </div>
+
+  <!-- Biểu đồ doanh thu & ghi danh theo tháng -->
+  <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;">
+      <div>
+        <h3 class="card-title">Xu hướng doanh thu & lượt ghi danh</h3>
+        <div class="card-subtitle" id="rep-trend-subtitle">Biểu đồ theo từng tháng trong kỳ báo cáo</div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <span class="badge badge-info" id="rep-students-badge">-- học viên hoạt động</span>
+        <span class="badge badge-primary" id="rep-rating-badge">★ -- / 5.0</span>
+      </div>
+    </div>
+    <div id="rep-monthly-chart" style="height: 210px; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+      <div style="width: 100%; text-align: center; color: var(--text-muted); align-self: center;">Đang tải biểu đồ...</div>
+    </div>
+  </div>
+
+  <!-- Bảng chi tiết theo từng khóa học -->
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+      <div>
+        <h3 class="card-title" style="margin: 0;">Hiệu quả tuyển sinh & doanh thu theo khóa học</h3>
+        <div class="card-subtitle" id="rep-table-subtitle">Tổng hợp theo các lượt ghi danh hợp lệ (active / completed)</div>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Khóa học</th>
+            <th>Môn học</th>
+            <th>Số lớp</th>
+            <th>Ghi danh</th>
+            <th>Hoàn thành</th>
+            <th>Đánh giá TB</th>
+            <th class="text-right">Doanh thu ước tính</th>
+          </tr>
+        </thead>
+        <tbody id="rep-courses-tbody">
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải dữ liệu báo cáo...</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -239,5 +295,267 @@
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>
+  <script>
+    (function () {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
+      }
+
+      function formatCompactCurrency(val) {
+        const num = Number(val) || 0;
+        if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)} tỷ`;
+        if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)} tr`;
+        if (num >= 1_000) return `${Math.round(num / 1_000)} k`;
+        return String(num);
+      }
+
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function skeletonRows(cols, rows = 5) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+
+      const COLS = 7;
+      let loadController = null;
+      let hasInitializedFilters = false;
+
+      function populateYearFilter(years, selectedYear) {
+        const yearSel = document.getElementById('report-year-filter');
+        const list = Array.isArray(years) && years.length > 0 ? years : [selectedYear || new Date().getFullYear()];
+        yearSel.innerHTML = list.map(y => `<option value="${y}">Năm ${y}</option>`).join('');
+        if (selectedYear && list.includes(Number(selectedYear))) {
+          yearSel.value = String(selectedYear);
+        }
+        hasInitializedFilters = true;
+      }
+
+      function renderKpi(data) {
+        const kpi = data.kpi || {};
+        const periodText = data.selectedQuarter > 0
+          ? `Quý ${data.selectedQuarter} / ${data.selectedYear}`
+          : `Năm ${data.selectedYear}`;
+
+        document.getElementById('rep-revenue-label').textContent = `Tổng doanh thu (${periodText})`;
+        document.getElementById('rep-revenue').textContent = formatCurrency(kpi.periodRevenue);
+
+        const growthEl = document.getElementById('rep-revenue-sub');
+        if (kpi.revenueGrowthPercent !== null && kpi.revenueGrowthPercent !== undefined) {
+          const sign = kpi.revenueGrowthPercent >= 0 ? '+' : '';
+          growthEl.className = kpi.revenueGrowthPercent >= 0 ? 'text-success' : 'text-danger';
+          growthEl.textContent = `${kpi.revenueGrowthPercent >= 0 ? '↗' : '↘'} ${sign}${kpi.revenueGrowthPercent}% so với kỳ trước (${kpi.validEnrollmentCount ?? 0} lượt ghi danh)`;
+        } else {
+          growthEl.className = 'text-muted';
+          growthEl.textContent = `Từ ${kpi.validEnrollmentCount ?? 0} lượt ghi danh hợp lệ trong kỳ`;
+        }
+
+        const compEl = document.getElementById('rep-completion-sub');
+        document.getElementById('rep-completion-rate').textContent = `${kpi.completionRate ?? 0}%`;
+        compEl.className = (kpi.completionRate ?? 0) >= 50 ? 'text-success' : 'text-muted';
+        compEl.textContent = `${kpi.completedCount ?? 0} / ${kpi.validEnrollmentCount ?? 0} lượt ghi danh đã hoàn thành`;
+
+        const retEl = document.getElementById('rep-retention-sub');
+        document.getElementById('rep-retention-rate').textContent = `${kpi.retentionRate ?? 0}%`;
+        retEl.className = (kpi.retentionRate ?? 0) > 0 ? 'text-success' : 'text-muted';
+        retEl.textContent = `${kpi.returningStudents ?? 0} / ${kpi.totalEnrolledStudents ?? 0} học viên học từ 2 lớp trở lên`;
+
+        document.getElementById('rep-students-badge').textContent = `${kpi.activeStudents ?? 0} học viên • ${kpi.openClasses ?? 0} lớp mở`;
+        document.getElementById('rep-rating-badge').textContent = `★ ${kpi.overallRating ?? 0} / 5.0 (${kpi.totalReviewCount ?? 0} đánh giá)`;
+        document.getElementById('rep-trend-subtitle').textContent = `Doanh thu & lượt ghi danh từng tháng (${periodText})`;
+      }
+
+      function renderMonthlyChart(items) {
+        const box = document.getElementById('rep-monthly-chart');
+        const list = Array.isArray(items) ? items : [];
+        if (list.length === 0) {
+          box.innerHTML = '<div style="width: 100%; text-align: center; color: var(--text-muted); align-self: center;">Chưa có dữ liệu biểu đồ.</div>';
+          return;
+        }
+
+        const maxRev = Math.max(1, ...list.map(x => Number(x.revenue) || 0));
+        box.innerHTML = list.map(m => {
+          const rev = Number(m.revenue) || 0;
+          const cnt = Number(m.enrollments) || 0;
+          const barHeight = rev > 0 ? Math.max(18, Math.round((rev / maxRev) * 145)) : 4;
+          const isPeak = rev > 0 && rev === maxRev;
+          const bg = rev === 0 ? 'var(--neutral-200)' : (isPeak ? 'var(--primary-600)' : 'var(--primary-500)');
+          return `
+            <div style="flex: 1; text-align: center; min-width: 32px;" title="${escapeHtml(m.label)}: ${formatCurrency(rev)} (${cnt} lượt)">
+              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">${rev > 0 ? escapeHtml(formatCompactCurrency(rev)) : '0'}</div>
+              <div style="height: ${barHeight}px; width: 65%; max-width: 38px; background: ${bg}; border-radius: 4px 4px 0 0; margin: 0 auto; transition: height 0.3s ease;"></div>
+              <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-top: 6px; display: block;">${escapeHtml(m.label)}</span>
+              <span style="font-size: 0.68rem; color: var(--text-muted);">${cnt} lượt</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderBreakdown(items) {
+        const tbody = document.getElementById('rep-courses-tbody');
+        const list = Array.isArray(items) ? items : [];
+        if (list.length === 0) {
+          tbody.innerHTML = stateRow(COLS, 'Chưa có khóa học nào', 'Dữ liệu phân tích theo khóa học sẽ hiển thị tại đây.');
+          return;
+        }
+
+        tbody.innerHTML = list.map(c => {
+          const ratingHtml = c.averageRating !== null && c.averageRating !== undefined
+            ? `<span style="color: #D97706; font-weight: 600;">★ ${c.averageRating}</span>`
+            : '<span class="text-muted">--</span>';
+
+          return `
+            <tr>
+              <td>
+                <a href="/Admin/course-detail.html?id=${encodeURIComponent(c.courseId)}" style="font-weight: 600; color: var(--primary-600); text-decoration: none;">
+                  ${escapeHtml(c.courseTitle)}
+                </a>
+              </td>
+              <td><span class="badge badge-neutral">${escapeHtml(c.subjectName)}</span></td>
+              <td>${c.classCount ?? 0} lớp</td>
+              <td><strong>${c.enrollmentCount ?? 0}</strong> lượt</td>
+              <td>${c.completedCount ?? 0} (${c.completionRate ?? 0}%)</td>
+              <td>${ratingHtml}</td>
+              <td class="text-right"><strong>${formatCurrency(c.revenue)}</strong></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      async function loadReports() {
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        const refreshBtn = document.getElementById('btn-refresh-reports');
+        if (refreshBtn) refreshBtn.disabled = true;
+
+        document.getElementById('rep-monthly-chart').innerHTML =
+          '<div class="skeleton skeleton-rect" style="height: 100%;"></div>';
+        document.getElementById('rep-courses-tbody').innerHTML = skeletonRows(COLS, 5);
+
+        try {
+          const params = new URLSearchParams();
+          const yearVal = document.getElementById('report-year-filter').value;
+          const quarterVal = document.getElementById('report-quarter-filter').value;
+          if (hasInitializedFilters && yearVal) params.set('year', yearVal);
+          if (quarterVal) params.set('quarter', quarterVal);
+
+          const data = await fetchJson(`/Admin/api/Reports/Summary?${params.toString()}`, { signal: controller.signal });
+          populateYearFilter(data.availableYears, data.selectedYear);
+          renderKpi(data);
+          renderMonthlyChart(data.monthlyTrend);
+          renderBreakdown(data.courseBreakdown);
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải báo cáo:', err);
+          document.getElementById('rep-revenue').textContent = '--';
+          document.getElementById('rep-revenue-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('rep-completion-rate').textContent = '--';
+          document.getElementById('rep-completion-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('rep-retention-rate').textContent = '--';
+          document.getElementById('rep-retention-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('rep-monthly-chart').innerHTML = '';
+          document.getElementById('rep-courses-tbody').innerHTML = errorRowWithRetry(COLS, err.message);
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            if (refreshBtn) refreshBtn.disabled = false;
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadReports();
+
+        document.getElementById('report-year-filter').addEventListener('change', loadReports);
+        document.getElementById('report-quarter-filter').addEventListener('change', loadReports);
+        document.getElementById('btn-refresh-reports').addEventListener('click', loadReports);
+
+        document.getElementById('btn-export-reports').addEventListener('click', () => {
+          const params = new URLSearchParams();
+          const yearVal = document.getElementById('report-year-filter').value;
+          const quarterVal = document.getElementById('report-quarter-filter').value;
+          if (yearVal) params.set('year', yearVal);
+          if (quarterVal) params.set('quarter', quarterVal);
+          window.location.href = `/Admin/api/Reports/ExportCsv?${params.toString()}`;
+          showToast('Đang tải xuống tệp báo cáo CSV...', 'info');
+        });
+
+        document.getElementById('rep-courses-tbody').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) loadReports();
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -232,6 +232,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPut("/Admin/api/Users/Update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UserUpsertDto? dto, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã tài khoản không hợp lệ.");
+            }
+
             var error = NormalizeAndValidate(dto, isCreate: false, out var fullName, out var email, out var role, out var password);
             if (error != null)
             {
@@ -284,6 +289,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (role == "teacher")
                 {
+                    long teacherLockKey = 600_000_000L + user.Id;
+                    await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({teacherLockKey})", cancellationToken);
+
                     var hasTeacherProfile = await _context.Teachers
                         .AsNoTracking()
                         .AnyAsync(t => t.UserId == user.Id, cancellationToken);
@@ -333,6 +341,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPost("/Admin/api/Users/ToggleStatus/{id}")]
         public async Task<IActionResult> ToggleStatus(int id, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã tài khoản không hợp lệ.");
+            }
+
             try
             {
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);

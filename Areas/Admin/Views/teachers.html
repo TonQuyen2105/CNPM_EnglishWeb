@@ -490,7 +490,19 @@
 
       const AVATAR_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED', '#0284C7', '#E11D48'];
       let teachersCache = [];
+      let hasLoadedOnce = false;
       let loadController = null;
+
+      function renderLoadingState() {
+        const card = `
+          <div class="card" style="padding: 1.5rem;">
+            <div class="skeleton skeleton-text sm"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text sm"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>`;
+        document.getElementById('teachers-grid').innerHTML = card.repeat(3);
+      }
 
       function showBoxError(elId, msg) {
         const box = document.getElementById(elId);
@@ -605,6 +617,12 @@
         const controller = new AbortController();
         loadController = controller;
 
+        if (!hasLoadedOnce) {
+          renderLoadingState();
+        } else {
+          grid.style.opacity = '0.55';
+        }
+
         try {
           const params = new URLSearchParams({
             search: (document.getElementById('teachers-search-input').value || '').trim(),
@@ -620,6 +638,7 @@
           }
 
           renderTeachers(teachersCache);
+          hasLoadedOnce = true;
         } catch (err) {
           if (isAbortError(err)) return;
           console.error('Lỗi tải giảng viên:', err);
@@ -630,7 +649,10 @@
             '</div>';
           showToast(err.message, 'error');
         } finally {
-          if (loadController === controller) loadController = null;
+          if (loadController === controller) {
+            loadController = null;
+            grid.style.opacity = '';
+          }
         }
       }
 

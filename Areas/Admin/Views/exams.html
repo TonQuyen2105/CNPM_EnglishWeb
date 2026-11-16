@@ -475,23 +475,27 @@
         if (Array.isArray(courses)) {
           const filterSel = document.getElementById('exams-course-filter');
           const formSel = document.getElementById('exam-course-id');
-          const cur = filterSel.value;
+          const curFilter = filterSel.value;
+          const curForm = formSel.value;
           filterSel.innerHTML = '<option value="0">Tất cả khóa học</option>' +
             courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
-          if (cur) filterSel.value = cur;
+          if (curFilter && courses.some(c => String(c.id) === curFilter)) filterSel.value = curFilter;
 
           formSel.innerHTML = '<option value="">-- Đánh giá chung --</option>' +
             courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+          if (curForm && courses.some(c => String(c.id) === curForm)) formSel.value = curForm;
         }
 
         if (Array.isArray(teachers)) {
           const tSel = document.getElementById('exam-teacher-id');
+          const curTeacher = tSel.value;
           if (teachers.length === 0) {
             tSel.innerHTML = '<option value="">-- Chưa có giảng viên --</option>';
           } else {
             tSel.innerHTML = teachers
               .map(t => `<option value="${t.id}">${escapeHtml(t.fullName)}${t.isVerified ? '' : ' (Chờ duyệt)'}</option>`)
               .join('');
+            if (curTeacher && teachers.some(t => String(t.id) === curTeacher)) tSel.value = curTeacher;
           }
         }
       }
@@ -645,7 +649,11 @@
           loadExams();
         });
 
-        document.getElementById('btn-open-create-exam').addEventListener('click', openCreateMode);
+        document.getElementById('btn-open-create-exam').addEventListener('click', () => {
+          openCreateMode();
+          needLookups = true;
+          loadExams();
+        });
 
         document.getElementById('exams-tbody').addEventListener('click', (e) => {
           if (e.target.closest('[data-retry-load]')) {

@@ -3,6 +3,7 @@ using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
@@ -124,8 +125,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest(error);
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({500_000_000L})", cancellationToken);
+
                 var existing = await _context.Subjects
                     .AsNoTracking()
                     .Select(s => new { s.Id, s.Name, s.Description })
@@ -133,11 +137,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (existing.Any(s => string.Equals(s.Name.Trim(), name, StringComparison.OrdinalIgnoreCase)))
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Tên môn học đã tồn tại trong hệ thống.");
                 }
 
                 if (existing.Any(s => string.Equals(ExtractSubjectCode(s.Id, s.Description, out _), code, StringComparison.OrdinalIgnoreCase)))
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest($"Mã môn học '{code}' đã tồn tại trong hệ thống.");
                 }
 
@@ -152,7 +158,17 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 };
 
                 _context.Subjects.Add(subject);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Tên hoặc mã môn học đã tồn tại trong hệ thống.");
+                }
+
+                await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
                 {
@@ -176,6 +192,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể thêm môn học mới.");
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể thêm môn học mới.");
             }
         }
@@ -184,17 +201,26 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPut("/Admin/api/Subjects/Update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] SubjectUpsertDto? dto, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã định danh môn học không hợp lệ.");
+            }
+
             var error = NormalizeAndValidate(dto, out var name, out var code, out var description);
             if (error != null)
             {
                 return this.ApiBadRequest(error);
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({500_000_000L})", cancellationToken);
+
                 var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
                 if (subject == null)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy môn học.");
                 }
 
@@ -206,11 +232,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (others.Any(s => string.Equals(s.Name.Trim(), name, StringComparison.OrdinalIgnoreCase)))
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Tên môn học đã tồn tại trong hệ thống.");
                 }
 
                 if (others.Any(s => string.Equals(ExtractSubjectCode(s.Id, s.Description, out _), code, StringComparison.OrdinalIgnoreCase)))
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest($"Mã môn học '{code}' đã được sử dụng bởi môn học khác.");
                 }
 
@@ -222,7 +250,17 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
                 subject.UpdatedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Tên hoặc mã môn học đã tồn tại trong hệ thống.");
+                }
+
+                await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
                 {
@@ -238,6 +276,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể cập nhật môn học {SubjectId}.", id);
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể cập nhật môn học.");
             }
         }
@@ -245,6 +284,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPost("/Admin/api/Subjects/ToggleStatus/{id}")]
         public async Task<IActionResult> ToggleStatus(int id, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã định danh môn học không hợp lệ.");
+            }
+
             try
             {
                 var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);

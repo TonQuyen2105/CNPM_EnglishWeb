@@ -229,6 +229,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPut("/Admin/api/Exams/Update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ExamUpsertDto? dto, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã đề thi không hợp lệ.");
+            }
+
             var error = ValidateExam(dto, out var title, out var description);
             if (error != null)
             {
@@ -301,6 +306,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPost("/Admin/api/Exams/TogglePublish/{id}")]
         public async Task<IActionResult> TogglePublish(int id, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã đề thi không hợp lệ.");
+            }
+
             try
             {
                 var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);

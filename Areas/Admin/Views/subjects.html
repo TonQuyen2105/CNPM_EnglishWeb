@@ -387,7 +387,19 @@
       }
 
       let subjectsCache = [];
+      let hasLoadedOnce = false;
       let loadController = null;
+
+      function renderLoadingState() {
+        const card = `
+          <div class="card" style="padding: 1.5rem;">
+            <div class="skeleton skeleton-text sm"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text sm"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>`;
+        document.getElementById('subjects-grid').innerHTML = card.repeat(4);
+      }
 
       function showFormError(msg) {
         const box = document.getElementById('subject-form-error');
@@ -474,6 +486,12 @@
         const controller = new AbortController();
         loadController = controller;
 
+        if (!hasLoadedOnce) {
+          renderLoadingState();
+        } else {
+          grid.style.opacity = '0.55';
+        }
+
         try {
           const params = new URLSearchParams({
             search: (document.getElementById('subjects-search-input').value || '').trim(),
@@ -482,6 +500,7 @@
           const data = await fetchJson(`/Admin/api/Subjects/List?${params.toString()}`, { signal: controller.signal });
           subjectsCache = Array.isArray(data.items) ? data.items : [];
           renderSubjects(subjectsCache);
+          hasLoadedOnce = true;
         } catch (err) {
           if (isAbortError(err)) return;
           console.error('Lỗi tải môn học:', err);
@@ -492,7 +511,10 @@
             '</div>';
           showToast(err.message, 'error');
         } finally {
-          if (loadController === controller) loadController = null;
+          if (loadController === controller) {
+            loadController = null;
+            grid.style.opacity = '';
+          }
         }
       }
 
