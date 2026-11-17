@@ -46,6 +46,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             return View("~/Areas/Admin/Views/course-detail.html");
         }
 
+        // GET: /Admin/Courses/Objectives
+        public IActionResult Objectives()
+        {
+            return View("~/Areas/Admin/Views/course-objectives.html");
+        }
+
         [HttpGet("/Admin/api/Courses/List")]
         public async Task<IActionResult> List(
             string? search,

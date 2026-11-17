@@ -1,5 +1,4 @@
 using CNPM_EnglishLearning.Data;
-using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +7,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     [Area("Admin")]
     public class ExamsController : Controller
     {
-        private const int MaxTitleLength = 200;
-        private const int MaxDescriptionLength = 2000;
-        private const int MaxDurationMinutes = 600;
-
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ExamsController> _logger;
 
@@ -56,7 +51,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         courseTitle = course != null ? course.Title : "Đánh giá chung",
                         subjectName = subj != null ? subj.Name : "Chung",
                         createdByTeacherId = e.CreatedByTeacherId,
-                        teacherName = teacherUser != null ? teacherUser.FullName : "Quản trị viên",
+                        teacherName = teacherUser != null ? teacherUser.FullName : "Giảng viên",
                         durationMinutes = e.DurationMinutes,
                         passScore = e.PassScore,
                         maxAttempts = e.MaxAttempts,
@@ -96,8 +91,14 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 var items = await query
-                    .OrderByDescending(x => x.id)
+                    .OrderByDescending(x => x.isPublished)
+                    .ThenByDescending(x => x.id)
                     .ToListAsync(cancellationToken);
+
+                var totalExams = await _context.Exams.AsNoTracking().CountAsync(cancellationToken);
+                var publishedExams = await _context.Exams.AsNoTracking().CountAsync(e => e.IsPublished, cancellationToken);
+                var totalQuestions = await _context.ExamQuestions.AsNoTracking().CountAsync(cancellationToken);
+                var totalAttempts = await _context.UserExams.AsNoTracking().CountAsync(cancellationToken);
 
                 var courses = lookups
                     ? await (
@@ -114,21 +115,20 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     ).ToListAsync(cancellationToken)
                     : null;
 
-                var teachers = lookups
-                    ? await (
-                        from t in _context.Teachers.AsNoTracking()
-                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
-                        orderby u.FullName
-                        select new
-                        {
-                            id = t.Id,
-                            fullName = u.FullName,
-                            isVerified = t.IsVerified
-                        }
-                    ).ToListAsync(cancellationToken)
-                    : null;
-
-                return Ok(new { success = true, items, courses, teachers });
+                return Ok(new
+                {
+                    success = true,
+                    items,
+                    courses,
+                    stats = new
+                    {
+                        totalExams,
+                        publishedExams,
+                        draftExams = totalExams - publishedExams,
+                        totalQuestions,
+                        totalAttempts
+                    }
+                });
             }
             catch (OperationCanceledException)
             {
@@ -141,170 +141,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
         }
 
-        [HttpPost("/Admin/api/Exams/Create")]
-        public async Task<IActionResult> Create([FromBody] ExamUpsertDto? dto, CancellationToken cancellationToken)
-        {
-            var error = ValidateExam(dto, out var title, out var description);
-            if (error != null)
-            {
-                return this.ApiBadRequest(error);
-            }
-
-            try
-            {
-                if (dto!.CourseId.HasValue && dto.CourseId.Value > 0)
-                {
-                    var courseExists = await _context.Courses
-                        .AsNoTracking()
-                        .AnyAsync(c => c.Id == dto.CourseId.Value, cancellationToken);
-                    if (!courseExists)
-                    {
-                        return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
-                    }
-                }
-
-                var teacherId = dto.CreatedByTeacherId;
-                if (teacherId <= 0)
-                {
-                    teacherId = await _context.Teachers
-                        .AsNoTracking()
-                        .OrderByDescending(t => t.IsVerified)
-                        .ThenBy(t => t.Id)
-                        .Select(t => t.Id)
-                        .FirstOrDefaultAsync(cancellationToken);
-                }
-                else
-                {
-                    var teacherExists = await _context.Teachers
-                        .AsNoTracking()
-                        .AnyAsync(t => t.Id == teacherId, cancellationToken);
-                    if (!teacherExists)
-                    {
-                        return this.ApiBadRequest("Giảng viên phụ trách đề thi không tồn tại.");
-                    }
-                }
-
-                if (teacherId <= 0)
-                {
-                    return this.ApiBadRequest("Hệ thống chưa có hồ sơ giảng viên nào để gắn người tạo đề.");
-                }
-
-                var now = DateTime.UtcNow;
-                var exam = new Exam
-                {
-                    Title = title,
-                    CourseId = dto.CourseId.HasValue && dto.CourseId.Value > 0 ? dto.CourseId.Value : null,
-                    CreatedByTeacherId = teacherId,
-                    Description = description,
-                    DurationMinutes = dto.DurationMinutes,
-                    PassScore = dto.PassScore,
-                    MaxAttempts = dto.MaxAttempts.HasValue && dto.MaxAttempts.Value > 0 ? dto.MaxAttempts.Value : null,
-                    IsPublished = dto.IsPublished ?? false,
-                    CreatedAt = now,
-                    UpdatedAt = now
-                };
-
-                _context.Exams.Add(exam);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = exam.IsPublished ? "Đã tạo và công bố đề thi thành công." : "Đã lưu bản nháp đề thi thành công.",
-                    id = exam.Id
-                });
-            }
-            catch (OperationCanceledException)
-            {
-                return this.ApiCancelled();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Không thể tạo đề thi mới.");
-                return this.ApiServerError("Không thể tạo đề thi mới.");
-            }
-        }
-
-        [HttpPost("/Admin/api/Exams/Update/{id}")]
-        [HttpPut("/Admin/api/Exams/Update/{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] ExamUpsertDto? dto, CancellationToken cancellationToken)
-        {
-            if (id <= 0)
-            {
-                return this.ApiBadRequest("Mã đề thi không hợp lệ.");
-            }
-
-            var error = ValidateExam(dto, out var title, out var description);
-            if (error != null)
-            {
-                return this.ApiBadRequest(error);
-            }
-
-            try
-            {
-                var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
-                if (exam == null)
-                {
-                    return this.ApiNotFound("Không tìm thấy đề thi.");
-                }
-
-                if (dto!.CourseId.HasValue && dto.CourseId.Value > 0)
-                {
-                    var courseExists = await _context.Courses
-                        .AsNoTracking()
-                        .AnyAsync(c => c.Id == dto.CourseId.Value, cancellationToken);
-                    if (!courseExists)
-                    {
-                        return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
-                    }
-                }
-
-                if (dto.CreatedByTeacherId > 0)
-                {
-                    var teacherExists = await _context.Teachers
-                        .AsNoTracking()
-                        .AnyAsync(t => t.Id == dto.CreatedByTeacherId, cancellationToken);
-                    if (!teacherExists)
-                    {
-                        return this.ApiBadRequest("Giảng viên phụ trách không tồn tại.");
-                    }
-                    exam.CreatedByTeacherId = dto.CreatedByTeacherId;
-                }
-
-                exam.Title = title;
-                exam.CourseId = dto.CourseId.HasValue && dto.CourseId.Value > 0 ? dto.CourseId.Value : null;
-                exam.Description = description;
-                exam.DurationMinutes = dto.DurationMinutes;
-                exam.PassScore = dto.PassScore;
-                exam.MaxAttempts = dto.MaxAttempts.HasValue && dto.MaxAttempts.Value > 0 ? dto.MaxAttempts.Value : null;
-                if (dto.IsPublished.HasValue)
-                {
-                    exam.IsPublished = dto.IsPublished.Value;
-                }
-                exam.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync(cancellationToken);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Cập nhật đề thi thành công.",
-                    id = exam.Id
-                });
-            }
-            catch (OperationCanceledException)
-            {
-                return this.ApiCancelled();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Không thể cập nhật đề thi {ExamId}.", id);
-                return this.ApiServerError("Không thể cập nhật đề thi.");
-            }
-        }
-
-        [HttpPost("/Admin/api/Exams/TogglePublish/{id}")]
-        public async Task<IActionResult> TogglePublish(int id, CancellationToken cancellationToken)
+        [HttpGet("/Admin/api/Exams/Detail/{id}")]
+        public async Task<IActionResult> Detail(int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
@@ -313,22 +151,172 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
             try
             {
-                var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+                var exam = await (
+                    from e in _context.Exams.AsNoTracking()
+                    join c in _context.Courses.AsNoTracking() on e.CourseId equals c.Id into courseGroup
+                    from course in courseGroup.DefaultIfEmpty()
+                    join s in _context.Subjects.AsNoTracking() on course.SubjectId equals s.Id into subjGroup
+                    from subj in subjGroup.DefaultIfEmpty()
+                    join t in _context.Teachers.AsNoTracking() on e.CreatedByTeacherId equals t.Id into teacherGroup
+                    from teacher in teacherGroup.DefaultIfEmpty()
+                    join u in _context.Users.AsNoTracking() on teacher.UserId equals u.Id into userGroup
+                    from teacherUser in userGroup.DefaultIfEmpty()
+                    where e.Id == id
+                    select new
+                    {
+                        id = e.Id,
+                        title = e.Title,
+                        description = e.Description,
+                        courseId = e.CourseId,
+                        courseTitle = course != null ? course.Title : "Đánh giá chung",
+                        subjectName = subj != null ? subj.Name : "Chung",
+                        createdByTeacherId = e.CreatedByTeacherId,
+                        teacherName = teacherUser != null ? teacherUser.FullName : "Giảng viên",
+                        teacherEmail = teacherUser != null ? teacherUser.Email : null,
+                        durationMinutes = e.DurationMinutes,
+                        passScore = e.PassScore,
+                        maxAttempts = e.MaxAttempts,
+                        isPublished = e.IsPublished,
+                        createdAt = e.CreatedAt,
+                        updatedAt = e.UpdatedAt
+                    }
+                ).FirstOrDefaultAsync(cancellationToken);
+
                 if (exam == null)
                 {
-                    return this.ApiNotFound("Không tìm thấy đề thi.");
+                    return this.ApiNotFound("Không tìm thấy đề thi yêu cầu.");
                 }
 
-                exam.IsPublished = !exam.IsPublished;
-                exam.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync(cancellationToken);
+                var rawQuestions = await (
+                    from eq in _context.ExamQuestions.AsNoTracking()
+                    join q in _context.Questions.AsNoTracking() on eq.QuestionId equals q.Id
+                    where eq.ExamId == id
+                    orderby eq.OrderIndex, eq.Id
+                    select new
+                    {
+                        examQuestionId = eq.Id,
+                        questionId = q.Id,
+                        orderIndex = eq.OrderIndex,
+                        points = eq.Points,
+                        questionText = q.QuestionText,
+                        questionType = q.QuestionType,
+                        audioUrl = q.AudioUrl
+                    }
+                ).ToListAsync(cancellationToken);
+
+                var questionIds = rawQuestions.Select(x => x.questionId).Distinct().ToList();
+
+                var optionsByQuestion = questionIds.Count == 0
+                    ? new Dictionary<int, List<object>>()
+                    : (await _context.QuestionOptions
+                        .AsNoTracking()
+                        .Where(o => questionIds.Contains(o.QuestionId))
+                        .OrderBy(o => o.Id)
+                        .Select(o => new
+                        {
+                            o.QuestionId,
+                            id = o.Id,
+                            optionText = o.OptionText,
+                            isCorrect = o.IsCorrect
+                        })
+                        .ToListAsync(cancellationToken))
+                    .GroupBy(o => o.QuestionId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(o => (object)new { o.id, o.optionText, o.isCorrect }).ToList()
+                    );
+
+                var answersByQuestion = questionIds.Count == 0
+                    ? new Dictionary<int, List<object>>()
+                    : (await _context.QuestionAnswers
+                        .AsNoTracking()
+                        .Where(a => questionIds.Contains(a.QuestionId))
+                        .OrderBy(a => a.Id)
+                        .Select(a => new
+                        {
+                            a.QuestionId,
+                            id = a.Id,
+                            answerText = a.AnswerText,
+                            isCaseSensitive = a.IsCaseSensitive,
+                            referenceAudioUrl = a.ReferenceAudioUrl
+                        })
+                        .ToListAsync(cancellationToken))
+                    .GroupBy(a => a.QuestionId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(a => (object)new { a.id, a.answerText, a.isCaseSensitive, a.referenceAudioUrl }).ToList()
+                    );
+
+                var questions = rawQuestions.Select(q => new
+                {
+                    q.examQuestionId,
+                    q.questionId,
+                    q.orderIndex,
+                    q.points,
+                    q.questionText,
+                    q.questionType,
+                    q.audioUrl,
+                    options = optionsByQuestion.TryGetValue(q.questionId, out var opts) ? opts : new List<object>(),
+                    referenceAnswers = answersByQuestion.TryGetValue(q.questionId, out var refs) ? refs : new List<object>()
+                }).ToList();
+
+                var attempts = await (
+                    from ue in _context.UserExams.AsNoTracking()
+                    join u in _context.Users.AsNoTracking() on ue.UserId equals u.Id
+                    where ue.ExamId == id
+                    orderby ue.SubmittedAt ?? ue.StartedAt descending, ue.Id descending
+                    select new
+                    {
+                        userExamId = ue.Id,
+                        userId = ue.UserId,
+                        studentName = u.FullName,
+                        studentEmail = u.Email,
+                        attemptNumber = ue.AttemptNumber,
+                        startedAt = ue.StartedAt,
+                        submittedAt = ue.SubmittedAt,
+                        totalScore = ue.TotalScore,
+                        status = ue.Status
+                    }
+                ).ToListAsync(cancellationToken);
+
+                var scoredAttempts = attempts.Where(a => a.totalScore.HasValue).ToList();
+                var totalPoints = rawQuestions.Sum(q => q.points);
 
                 return Ok(new
                 {
                     success = true,
-                    message = exam.IsPublished ? $"Đã công bố đề thi \"{exam.Title}\"." : $"Đã chuyển đề thi \"{exam.Title}\" về bản nháp.",
-                    id = exam.Id,
-                    isPublished = exam.IsPublished
+                    exam = new
+                    {
+                        exam.id,
+                        exam.title,
+                        exam.description,
+                        exam.courseId,
+                        exam.courseTitle,
+                        exam.subjectName,
+                        exam.createdByTeacherId,
+                        exam.teacherName,
+                        exam.teacherEmail,
+                        exam.durationMinutes,
+                        exam.passScore,
+                        exam.maxAttempts,
+                        exam.isPublished,
+                        exam.createdAt,
+                        exam.updatedAt,
+                        questionCount = questions.Count,
+                        totalPoints,
+                        attemptCount = attempts.Count
+                    },
+                    attemptStats = new
+                    {
+                        totalAttempts = attempts.Count,
+                        passedCount = attempts.Count(a => a.status == "passed"),
+                        failedCount = attempts.Count(a => a.status == "failed"),
+                        submittedCount = attempts.Count(a => a.status == "submitted"),
+                        inProgressCount = attempts.Count(a => a.status == "in_progress"),
+                        avgScore = scoredAttempts.Count > 0 ? Math.Round(scoredAttempts.Average(a => a.totalScore!.Value), 1) : (double?)null
+                    },
+                    questions,
+                    attempts
                 });
             }
             catch (OperationCanceledException)
@@ -337,62 +325,210 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể đổi trạng thái công bố đề thi {ExamId}.", id);
-                return this.ApiServerError("Không thể đổi trạng thái công bố đề thi.");
+                _logger.LogError(ex, "Không thể tải chi tiết đề thi {ExamId}.", id);
+                return this.ApiServerError("Không thể tải chi tiết đề thi.");
             }
         }
 
-        private static string? ValidateExam(ExamUpsertDto? dto, out string title, out string? description)
+        [HttpGet("/Admin/api/Exams/AttemptDetail/{userExamId}")]
+        public async Task<IActionResult> AttemptDetail(int userExamId, CancellationToken cancellationToken)
         {
-            title = string.Empty;
-            description = null;
-
-            if (dto == null)
+            if (userExamId <= 0)
             {
-                return "Dữ liệu gửi lên không hợp lệ.";
+                return this.ApiBadRequest("Mã lượt thi không hợp lệ.");
             }
 
-            title = (dto.Title ?? string.Empty).Trim();
-            description = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim();
-
-            if (title.Length == 0 || title.Length > MaxTitleLength)
+            try
             {
-                return $"Tiêu đề bài thi không hợp lệ (1 - {MaxTitleLength} ký tự).";
-            }
+                var attempt = await (
+                    from ue in _context.UserExams.AsNoTracking()
+                    join u in _context.Users.AsNoTracking() on ue.UserId equals u.Id
+                    join e in _context.Exams.AsNoTracking() on ue.ExamId equals e.Id
+                    join c in _context.Courses.AsNoTracking() on e.CourseId equals c.Id into courseGroup
+                    from course in courseGroup.DefaultIfEmpty()
+                    where ue.Id == userExamId
+                    select new
+                    {
+                        userExamId = ue.Id,
+                        examId = e.Id,
+                        examTitle = e.Title,
+                        courseTitle = course != null ? course.Title : "Đánh giá chung",
+                        durationMinutes = e.DurationMinutes,
+                        passScore = e.PassScore,
+                        isPublished = e.IsPublished,
+                        userId = u.Id,
+                        studentName = u.FullName,
+                        studentEmail = u.Email,
+                        attemptNumber = ue.AttemptNumber,
+                        startedAt = ue.StartedAt,
+                        submittedAt = ue.SubmittedAt,
+                        totalScore = ue.TotalScore,
+                        status = ue.Status
+                    }
+                ).FirstOrDefaultAsync(cancellationToken);
 
-            if (description != null && description.Length > MaxDescriptionLength)
+                if (attempt == null)
+                {
+                    return this.ApiNotFound("Không tìm thấy bài làm của học viên.");
+                }
+
+                var rawQuestions = await (
+                    from eq in _context.ExamQuestions.AsNoTracking()
+                    join q in _context.Questions.AsNoTracking() on eq.QuestionId equals q.Id
+                    where eq.ExamId == attempt.examId
+                    orderby eq.OrderIndex, eq.Id
+                    select new
+                    {
+                        examQuestionId = eq.Id,
+                        questionId = q.Id,
+                        orderIndex = eq.OrderIndex,
+                        points = eq.Points,
+                        questionText = q.QuestionText,
+                        questionType = q.QuestionType,
+                        audioUrl = q.AudioUrl
+                    }
+                ).ToListAsync(cancellationToken);
+
+                var questionIds = rawQuestions.Select(x => x.questionId).Distinct().ToList();
+
+                var optionsByQuestion = questionIds.Count == 0
+                    ? new Dictionary<int, List<(int Id, string OptionText, bool IsCorrect)>>()
+                    : (await _context.QuestionOptions
+                        .AsNoTracking()
+                        .Where(o => questionIds.Contains(o.QuestionId))
+                        .OrderBy(o => o.Id)
+                        .ToListAsync(cancellationToken))
+                    .GroupBy(o => o.QuestionId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(o => (o.Id, o.OptionText, o.IsCorrect)).ToList()
+                    );
+
+                var refsByQuestion = questionIds.Count == 0
+                    ? new Dictionary<int, List<object>>()
+                    : (await _context.QuestionAnswers
+                        .AsNoTracking()
+                        .Where(a => questionIds.Contains(a.QuestionId))
+                        .OrderBy(a => a.Id)
+                        .ToListAsync(cancellationToken))
+                    .GroupBy(a => a.QuestionId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(a => (object)new
+                        {
+                            id = a.Id,
+                            answerText = a.AnswerText,
+                            isCaseSensitive = a.IsCaseSensitive
+                        }).ToList()
+                    );
+
+                var studentAnswersList = await _context.UserExamAnswers
+                    .AsNoTracking()
+                    .Where(a => a.UserExamId == userExamId)
+                    .ToListAsync(cancellationToken);
+
+                var studentAnswersByQuestion = studentAnswersList
+                    .GroupBy(a => a.QuestionId)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                var graderIds = studentAnswersList
+                    .Where(a => a.GradedByTeacherId.HasValue)
+                    .Select(a => a.GradedByTeacherId!.Value)
+                    .Distinct()
+                    .ToList();
+
+                var graderNames = graderIds.Count == 0
+                    ? new Dictionary<int, string>()
+                    : await (
+                        from t in _context.Teachers.AsNoTracking()
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where graderIds.Contains(t.Id)
+                        select new { t.Id, u.FullName }
+                    ).ToDictionaryAsync(x => x.Id, x => x.FullName, cancellationToken);
+
+                var items = rawQuestions.Select(q =>
+                {
+                    studentAnswersByQuestion.TryGetValue(q.questionId, out var sa);
+                    var opts = optionsByQuestion.TryGetValue(q.questionId, out var rawOpts)
+                        ? rawOpts
+                        : new List<(int Id, string OptionText, bool IsCorrect)>();
+
+                    var selectedOption = sa?.SelectedOptionId != null
+                        ? opts.FirstOrDefault(o => o.Id == sa.SelectedOptionId.Value)
+                        : default;
+
+                    string? graderName = null;
+                    if (sa?.GradedByTeacherId != null && graderNames.TryGetValue(sa.GradedByTeacherId.Value, out var gn))
+                    {
+                        graderName = gn;
+                    }
+
+                    return new
+                    {
+                        q.examQuestionId,
+                        q.questionId,
+                        q.orderIndex,
+                        q.points,
+                        q.questionText,
+                        q.questionType,
+                        q.audioUrl,
+                        isAnswered = sa != null,
+                        selectedOptionId = sa?.SelectedOptionId,
+                        selectedOptionText = selectedOption.Id != 0 ? selectedOption.OptionText : null,
+                        isSelectedCorrect = selectedOption.Id != 0 ? selectedOption.IsCorrect : (bool?)null,
+                        textAnswer = sa?.TextAnswer,
+                        scoreEarned = sa?.ScoreEarned,
+                        gradingStatus = sa?.GradingStatus,
+                        feedback = sa?.Feedback,
+                        gradedAt = sa?.GradedAt,
+                        gradedByTeacherName = graderName,
+                        options = opts.Select(o => new
+                        {
+                            id = o.Id,
+                            optionText = o.OptionText,
+                            isCorrect = o.IsCorrect,
+                            isSelected = sa?.SelectedOptionId == o.Id
+                        }).ToList(),
+                        referenceAnswers = refsByQuestion.TryGetValue(q.questionId, out var ra) ? ra : new List<object>()
+                    };
+                }).ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    attempt = new
+                    {
+                        attempt.userExamId,
+                        attempt.examId,
+                        attempt.examTitle,
+                        attempt.courseTitle,
+                        attempt.durationMinutes,
+                        attempt.passScore,
+                        attempt.isPublished,
+                        attempt.userId,
+                        attempt.studentName,
+                        attempt.studentEmail,
+                        attempt.attemptNumber,
+                        attempt.startedAt,
+                        attempt.submittedAt,
+                        attempt.totalScore,
+                        maxTotalPoints = rawQuestions.Sum(q => q.points),
+                        answeredCount = items.Count(i => i.isAnswered),
+                        questionCount = items.Count,
+                        attempt.status
+                    },
+                    answers = items
+                });
+            }
+            catch (OperationCanceledException)
             {
-                return $"Mô tả bài thi không được vượt quá {MaxDescriptionLength} ký tự.";
+                return this.ApiCancelled();
             }
-
-            if (dto.DurationMinutes < 1 || dto.DurationMinutes > MaxDurationMinutes)
+            catch (Exception ex)
             {
-                return $"Thời gian làm bài phải từ 1 đến {MaxDurationMinutes} phút.";
+                _logger.LogError(ex, "Không thể tải chi tiết bài làm {UserExamId}.", userExamId);
+                return this.ApiServerError("Không thể tải chi tiết bài làm của học viên.");
             }
-
-            if (dto.PassScore < 0 || dto.PassScore > 10000)
-            {
-                return "Điểm qua không hợp lệ (0 - 10.000).";
-            }
-
-            if (dto.MaxAttempts.HasValue && dto.MaxAttempts.Value < 1)
-            {
-                return "Số lượt thi tối đa phải >= 1 (hoặc để trống nếu không giới hạn).";
-            }
-
-            return null;
-        }
-
-        public class ExamUpsertDto
-        {
-            public string? Title { get; set; }
-            public int? CourseId { get; set; }
-            public int CreatedByTeacherId { get; set; }
-            public string? Description { get; set; }
-            public int DurationMinutes { get; set; } = 45;
-            public int PassScore { get; set; } = 50;
-            public int? MaxAttempts { get; set; }
-            public bool? IsPublished { get; set; }
         }
     }
 }
