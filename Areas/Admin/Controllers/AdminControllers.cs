@@ -35,7 +35,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     availableYears = report.AvailableYears,
                     kpi = report.Kpi,
                     monthlyTrend = report.MonthlyTrend,
-                    courseBreakdown = report.CourseBreakdown
+                    courseBreakdown = report.CourseBreakdown,
+                    subjectBreakdown = report.SubjectBreakdown,
+                    teacherBreakdown = report.TeacherBreakdown
                 });
             }
             catch (OperationCanceledException)
@@ -75,6 +77,42 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         row.completionRate.ToString("0.0", CultureInfo.InvariantCulture),
                         row.averageRating?.ToString("0.0", CultureInfo.InvariantCulture) ?? "--",
                         row.revenue.ToString("0", CultureInfo.InvariantCulture)));
+                }
+
+                sb.AppendLine();
+                sb.AppendLine("THONG KE DOANH THU THEO MON HOC");
+                sb.AppendLine("STT,Mon hoc,So khoa,So lop,Luot ghi danh,Da hoan thanh,Ty le hoan thanh (%),Ty trong doanh thu (%),Doanh thu uoc tinh (VND)");
+                for (var i = 0; i < report.SubjectBreakdown.Count; i++)
+                {
+                    var s = report.SubjectBreakdown[i];
+                    sb.AppendLine(string.Join(",",
+                        (i + 1).ToString(CultureInfo.InvariantCulture),
+                        EscapeCsv(s.subjectName),
+                        s.courseCount.ToString(CultureInfo.InvariantCulture),
+                        s.classCount.ToString(CultureInfo.InvariantCulture),
+                        s.enrollmentCount.ToString(CultureInfo.InvariantCulture),
+                        s.completedCount.ToString(CultureInfo.InvariantCulture),
+                        s.completionRate.ToString("0.0", CultureInfo.InvariantCulture),
+                        s.revenueSharePercent.ToString("0.0", CultureInfo.InvariantCulture),
+                        s.revenue.ToString("0", CultureInfo.InvariantCulture)));
+                }
+
+                sb.AppendLine();
+                sb.AppendLine("THONG KE DOANH THU PHAN BO THEO GIANG VIEN");
+                sb.AppendLine("STT,Giang vien,Trinh do,Lop chinh / Tong lop,Luot hoc vien,Da hoan thanh,Ty le hoan thanh (%),Ty trong doanh thu (%),Doanh thu phan bo (VND)");
+                for (var i = 0; i < report.TeacherBreakdown.Count; i++)
+                {
+                    var t = report.TeacherBreakdown[i];
+                    sb.AppendLine(string.Join(",",
+                        (i + 1).ToString(CultureInfo.InvariantCulture),
+                        EscapeCsv(t.teacherName),
+                        EscapeCsv(t.qualification ?? "--"),
+                        EscapeCsv($"{t.mainClassCount}/{t.assignedClassCount}"),
+                        t.enrollmentCount.ToString(CultureInfo.InvariantCulture),
+                        t.completedCount.ToString(CultureInfo.InvariantCulture),
+                        t.completionRate.ToString("0.0", CultureInfo.InvariantCulture),
+                        t.revenueSharePercent.ToString("0.0", CultureInfo.InvariantCulture),
+                        t.revenue.ToString("0", CultureInfo.InvariantCulture)));
                 }
 
                 var preamble = Encoding.UTF8.GetPreamble();
@@ -143,6 +181,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     cc.Price,
                     CourseId = c.Id,
                     CourseTitle = c.Title,
+                    SubjectId = c.SubjectId,
                     SubjectName = subj != null ? subj.Name : "Chưa phân môn"
                 }
             ).ToListAsync(cancellationToken);
@@ -230,6 +269,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     c.Id,
                     c.Title,
+                    c.SubjectId,
                     SubjectName = subj != null ? subj.Name : "Chưa phân môn",
                     ClassCount = _context.CourseClasses.Count(cc => cc.CourseId == c.Id && cc.Status != "cancelled")
                 }
@@ -267,6 +307,165 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 .ThenBy(x => x.courseTitle)
                 .ToList();
 
+            // 1. Thống kê doanh thu theo Môn học (100% khớp periodRevenue)
+            var allSubjects = await _context.Subjects
+                .AsNoTracking()
+                .Select(s => new { s.Id, s.Name, s.IsActive })
+                .ToListAsync(cancellationToken);
+
+            var coursesBySubject = allCourses.GroupBy(c => c.SubjectId).ToDictionary(g => g.Key, g => g.ToList());
+            var enrollmentsBySubject = validEnrollments.GroupBy(x => x.SubjectId).ToDictionary(g => g.Key, g => g.ToList());
+
+            var subjectBreakdown = allSubjects
+                .Select(s =>
+                {
+                    coursesBySubject.TryGetValue(s.Id, out var subjCourses);
+                    enrollmentsBySubject.TryGetValue(s.Id, out var list);
+                    var count = list?.Count ?? 0;
+                    var completed = list?.Count(x => x.Status == "completed") ?? 0;
+                    var revenue = list?.Sum(x => x.Price) ?? 0m;
+                    var rate = count > 0 ? Math.Round(completed * 100.0 / count, 1) : 0.0;
+                    var share = periodRevenue > 0 ? Math.Round((double)(revenue / periodRevenue) * 100.0, 1) : 0.0;
+
+                    return new SubjectBreakdownRow(
+                        s.Id,
+                        s.Name,
+                        s.IsActive,
+                        subjCourses?.Count ?? 0,
+                        subjCourses?.Sum(c => c.ClassCount) ?? 0,
+                        count,
+                        completed,
+                        rate,
+                        share,
+                        revenue);
+                })
+                .OrderByDescending(x => x.revenue)
+                .ThenByDescending(x => x.enrollmentCount)
+                .ThenBy(x => x.subjectName)
+                .ToList();
+
+            // 2. Thống kê doanh thu theo Giảng viên:
+            // Phân bổ doanh thu từng lớp cho GV chính (main); chia đều nếu lớp có nhiều GV chính;
+            // nếu lớp chỉ có trợ giảng thì chia cho trợ giảng; nếu lớp chưa gắn GV thì gom vào nhóm "Chưa phân công GV" để tổng doanh thu luôn khớp 100%.
+            var allTeachers = await (
+                from t in _context.Teachers.AsNoTracking()
+                join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                select new
+                {
+                    t.Id,
+                    u.FullName,
+                    t.Qualification,
+                    t.IsVerified
+                }
+            ).ToListAsync(cancellationToken);
+
+            var classTeacherLinks = await (
+                from ct in _context.ClassTeachers.AsNoTracking()
+                join cc in _context.CourseClasses.AsNoTracking() on ct.ClassId equals cc.Id
+                where cc.Status != "cancelled"
+                select new
+                {
+                    ct.ClassId,
+                    ct.TeacherId,
+                    Role = (ct.Role ?? "main").ToLower()
+                }
+            ).ToListAsync(cancellationToken);
+
+            var linksByClass = classTeacherLinks.GroupBy(x => x.ClassId).ToDictionary(g => g.Key, g => g.ToList());
+            var linksByTeacher = classTeacherLinks.GroupBy(x => x.TeacherId).ToDictionary(g => g.Key, g => g.ToList());
+
+            var revByTeacher = new Dictionary<int, decimal>();
+            var enrollByTeacher = new Dictionary<int, int>();
+            var compByTeacher = new Dictionary<int, int>();
+            decimal unassignedRevenue = 0m;
+            int unassignedEnrollments = 0;
+            int unassignedCompleted = 0;
+
+            foreach (var clsGroup in validEnrollments.GroupBy(x => x.ClassId))
+            {
+                var clsRevenue = clsGroup.Sum(x => x.Price);
+                var clsCount = clsGroup.Count();
+                var clsCompleted = clsGroup.Count(x => x.Status == "completed");
+
+                if (!linksByClass.TryGetValue(clsGroup.Key, out var assigned) || assigned.Count == 0)
+                {
+                    unassignedRevenue += clsRevenue;
+                    unassignedEnrollments += clsCount;
+                    unassignedCompleted += clsCompleted;
+                    continue;
+                }
+
+                // Học viên & hoàn thành theo tất cả giảng viên đứng lớp (distinct theo TeacherId)
+                foreach (var tid in assigned.Select(a => a.TeacherId).Distinct())
+                {
+                    enrollByTeacher[tid] = enrollByTeacher.GetValueOrDefault(tid) + clsCount;
+                    compByTeacher[tid] = compByTeacher.GetValueOrDefault(tid) + clsCompleted;
+                }
+
+                var mains = assigned.Where(a => a.Role == "main").Select(a => a.TeacherId).Distinct().ToList();
+                var recipients = mains.Count > 0
+                    ? mains
+                    : assigned.Select(a => a.TeacherId).Distinct().ToList();
+
+                var perTeacher = Math.Floor(clsRevenue / recipients.Count);
+                var remainder = clsRevenue - (perTeacher * recipients.Count);
+
+                for (var i = 0; i < recipients.Count; i++)
+                {
+                    var tid = recipients[i];
+                    var share = perTeacher + (i == 0 ? remainder : 0m);
+                    revByTeacher[tid] = revByTeacher.GetValueOrDefault(tid) + share;
+                }
+            }
+
+            var teacherBreakdown = allTeachers
+                .Select(t =>
+                {
+                    linksByTeacher.TryGetValue(t.Id, out var tLinks);
+                    var assignedClasses = tLinks?.Select(x => x.ClassId).Distinct().Count() ?? 0;
+                    var mainClasses = tLinks?.Where(x => x.Role == "main").Select(x => x.ClassId).Distinct().Count() ?? 0;
+                    var count = enrollByTeacher.GetValueOrDefault(t.Id);
+                    var completed = compByTeacher.GetValueOrDefault(t.Id);
+                    var revenue = revByTeacher.GetValueOrDefault(t.Id);
+                    var rate = count > 0 ? Math.Round(completed * 100.0 / count, 1) : 0.0;
+                    var share = periodRevenue > 0 ? Math.Round((double)(revenue / periodRevenue) * 100.0, 1) : 0.0;
+
+                    return new TeacherBreakdownRow(
+                        t.Id,
+                        t.FullName,
+                        t.Qualification,
+                        t.IsVerified,
+                        assignedClasses,
+                        mainClasses,
+                        count,
+                        completed,
+                        rate,
+                        share,
+                        revenue);
+                })
+                .OrderByDescending(x => x.revenue)
+                .ThenByDescending(x => x.enrollmentCount)
+                .ThenBy(x => x.teacherName)
+                .ToList();
+
+            if (unassignedRevenue > 0 || unassignedEnrollments > 0)
+            {
+                var unRate = unassignedEnrollments > 0 ? Math.Round(unassignedCompleted * 100.0 / unassignedEnrollments, 1) : 0.0;
+                var unShare = periodRevenue > 0 ? Math.Round((double)(unassignedRevenue / periodRevenue) * 100.0, 1) : 0.0;
+                teacherBreakdown.Add(new TeacherBreakdownRow(
+                    0,
+                    "Lớp chưa phân công giảng viên",
+                    null,
+                    false,
+                    0,
+                    0,
+                    unassignedEnrollments,
+                    unassignedCompleted,
+                    unRate,
+                    unShare,
+                    unassignedRevenue));
+            }
+
             var kpi = new
             {
                 periodRevenue,
@@ -284,7 +483,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 totalReviewCount
             };
 
-            return new ReportSummaryResult(selectedYear, selectedQuarter, availableYears, kpi, monthlyTrend, courseBreakdown);
+            return new ReportSummaryResult(selectedYear, selectedQuarter, availableYears, kpi, monthlyTrend, courseBreakdown, subjectBreakdown, teacherBreakdown);
         }
 
         private static string EscapeCsv(string? value)
@@ -308,12 +507,39 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             double? averageRating,
             decimal revenue);
 
+        private sealed record SubjectBreakdownRow(
+            int subjectId,
+            string subjectName,
+            bool isActive,
+            int courseCount,
+            int classCount,
+            int enrollmentCount,
+            int completedCount,
+            double completionRate,
+            double revenueSharePercent,
+            decimal revenue);
+
+        private sealed record TeacherBreakdownRow(
+            int teacherId,
+            string teacherName,
+            string? qualification,
+            bool isVerified,
+            int assignedClassCount,
+            int mainClassCount,
+            int enrollmentCount,
+            int completedCount,
+            double completionRate,
+            double revenueSharePercent,
+            decimal revenue);
+
         private sealed record ReportSummaryResult(
             int SelectedYear,
             int SelectedQuarter,
             List<int> AvailableYears,
             object Kpi,
             List<object> MonthlyTrend,
-            List<CourseBreakdownRow> CourseBreakdown);
+            List<CourseBreakdownRow> CourseBreakdown,
+            List<SubjectBreakdownRow> SubjectBreakdown,
+            List<TeacherBreakdownRow> TeacherBreakdown);
     }
 }

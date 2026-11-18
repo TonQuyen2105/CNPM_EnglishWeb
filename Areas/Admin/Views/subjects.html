@@ -473,7 +473,10 @@
                 <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.5rem 0 1rem 0; line-height: 1.5;">${desc}</p>
               </div>
               <div>
-                <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.75rem;">Số khóa học: <strong>${s.courseCount ?? 0} khóa</strong></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                  <span>Số khóa học: <strong>${s.courseCount ?? 0} khóa</strong></span>
+                  <a href="/Admin/courses.html?subjectId=${encodeURIComponent(s.id)}" style="color: var(--primary-600); font-weight: 600; text-decoration: none;">Xem khóa học →</a>
+                </div>
                 <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; display: flex; justify-content: space-between; gap: 6px;">
                   <button type="button" class="btn btn-sm btn-secondary" data-edit-subject="${s.id}">Chỉnh sửa</button>
                   <button type="button" class="btn btn-sm ${s.isActive ? 'btn-danger' : 'btn-primary'}" data-toggle-subject="${s.id}">${toggleLabel}</button>

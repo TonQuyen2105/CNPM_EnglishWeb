@@ -136,9 +136,49 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         }).ToList()
                     );
 
+                var teacherSchedules = await (
+                    from cs in _context.ClassSchedules.AsNoTracking()
+                    join ct in _context.ClassTeachers.AsNoTracking() on cs.ClassId equals ct.ClassId
+                    join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                    join cr in _context.Classrooms.AsNoTracking() on cs.ClassroomId equals cr.Id
+                    join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
+                    where teacherIds.Contains(ct.TeacherId) && cc.Status != "cancelled"
+                    orderby cs.DayOfWeek, ts.StartTime
+                    select new
+                    {
+                        ct.TeacherId,
+                        scheduleId = cs.Id,
+                        classId = cc.Id,
+                        classCode = cc.ClassCode,
+                        classroomName = cr.Name,
+                        dayOfWeek = cs.DayOfWeek,
+                        slotName = ts.Name,
+                        startTime = ts.StartTime,
+                        endTime = ts.EndTime
+                    }
+                ).ToListAsync(cancellationToken);
+
+                var schedulesByTeacher = teacherSchedules
+                    .GroupBy(x => x.TeacherId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(x => new
+                        {
+                            x.scheduleId,
+                            x.classId,
+                            x.classCode,
+                            x.classroomName,
+                            x.dayOfWeek,
+                            dayLabel = FormatDayFull(x.dayOfWeek),
+                            x.slotName,
+                            timeRange = $"{x.startTime:hh\\:mm} - {x.endTime:hh\\:mm}"
+                        }).ToList()
+                    );
+
                 var items = teachers.Select(t =>
                 {
                     var clsList = classesByTeacher.TryGetValue(t.id, out var list) ? list : null;
+                    var schedList = schedulesByTeacher.TryGetValue(t.id, out var sl) ? sl : null;
                     return new
                     {
                         t.id,
@@ -153,7 +193,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         t.createdAt,
                         t.updatedAt,
                         classCount = clsList?.Select(c => c.classId).Distinct().Count() ?? 0,
-                        classes = clsList ?? (object)Array.Empty<object>()
+                        scheduleCount = schedList?.Count ?? 0,
+                        classes = clsList ?? (object)Array.Empty<object>(),
+                        schedules = schedList ?? (object)Array.Empty<object>()
                     };
                 }).ToList();
 
@@ -427,6 +469,59 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiServerError("Không thể duyệt hồ sơ giảng viên.");
             }
         }
+
+        [HttpPost("/Admin/api/Teachers/ToggleVerify/{id}")]
+        public async Task<IActionResult> ToggleVerify(int id, CancellationToken cancellationToken)
+        {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã giảng viên không hợp lệ.");
+            }
+
+            try
+            {
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+                if (teacher == null)
+                {
+                    return this.ApiNotFound("Không tìm thấy hồ sơ giảng viên.");
+                }
+
+                teacher.IsVerified = !teacher.IsVerified;
+                teacher.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = teacher.IsVerified
+                        ? "Đã xác minh hồ sơ giảng viên thành công."
+                        : "Đã thu hồi xác minh hồ sơ giảng viên.",
+                    id = teacher.Id,
+                    isVerified = teacher.IsVerified
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể thay đổi trạng thái xác minh giảng viên {TeacherId}.", id);
+                return this.ApiServerError("Không thể thay đổi trạng thái xác minh giảng viên.");
+            }
+        }
+
+        private static string FormatDayFull(int day) => day switch
+        {
+            1 => "Thứ 2",
+            2 => "Thứ 3",
+            3 => "Thứ 4",
+            4 => "Thứ 5",
+            5 => "Thứ 6",
+            6 => "Thứ 7",
+            7 => "Chủ Nhật",
+            _ => $"Thứ {day}"
+        };
 
         private static bool IsValidEmail(string email)
         {

@@ -277,6 +277,12 @@
     </div>
   </div>
 
+  <!-- Thanh phân trang -->
+  <div id="reviews-pagination" style="display: none; margin-top: 1.25rem; padding: 0.875rem 1.25rem; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+    <div id="reviews-page-info" style="font-size: 0.8125rem; color: var(--text-muted);">--</div>
+    <div id="reviews-page-buttons" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+  </div>
+
       </main>
     </div>
   </div>
@@ -382,6 +388,8 @@
       let needLookups = true;
       let hasLoadedOnce = false;
       let loadController = null;
+      let currentPage = 1;
+      const PAGE_SIZE = 8;
 
       function renderLoadingState() {
         const card = `
@@ -433,15 +441,43 @@
                 </div>
                 <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin: 0;">${comment}</p>
               </div>
-              <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+              <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <a href="/Admin/course-detail.html?id=${r.courseId}" style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">
                   Khóa học: ${escapeHtml(r.courseTitle)}
                 </a>
-                ${r.subjectName ? `<span class="badge badge-neutral">${escapeHtml(r.subjectName)}</span>` : ''}
+                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                  ${r.subjectName ? `<span class="badge badge-neutral">${escapeHtml(r.subjectName)}</span>` : ''}
+                  <button type="button" class="btn btn-sm btn-danger" data-delete-review="${r.id}">Xóa vi phạm</button>
+                </div>
               </div>
             </div>
           `;
         }).join('');
+      }
+
+      function renderPagination(pag) {
+        const wrap = document.getElementById('reviews-pagination');
+        const info = document.getElementById('reviews-page-info');
+        const btns = document.getElementById('reviews-page-buttons');
+        if (!pag || pag.totalCount === 0) {
+          wrap.style.display = 'none';
+          return;
+        }
+        wrap.style.display = 'flex';
+        const start = (pag.page - 1) * pag.pageSize + 1;
+        const end = Math.min(pag.page * pag.pageSize, pag.totalCount);
+        info.textContent = `Hiển thị ${start} - ${end} / ${pag.totalCount} đánh giá (Trang ${pag.page}/${pag.totalPages})`;
+
+        let html = `<button type="button" class="btn btn-sm btn-secondary" data-page="${pag.page - 1}" ${pag.page <= 1 ? 'disabled' : ''}>← Trước</button>`;
+        for (let p = 1; p <= pag.totalPages; p++) {
+          if (p === 1 || p === pag.totalPages || Math.abs(p - pag.page) <= 1) {
+            html += `<button type="button" class="btn btn-sm ${p === pag.page ? 'btn-primary' : 'btn-secondary'}" data-page="${p}">${p}</button>`;
+          } else if (Math.abs(p - pag.page) === 2) {
+            html += '<span style="padding: 4px 6px; color: var(--text-muted);">...</span>';
+          }
+        }
+        html += `<button type="button" class="btn btn-sm btn-secondary" data-page="${pag.page + 1}" ${pag.page >= pag.totalPages ? 'disabled' : ''}>Sau →</button>`;
+        btns.innerHTML = html;
       }
 
       async function loadReviews() {
@@ -461,6 +497,8 @@
             search: (document.getElementById('reviews-search-input').value || '').trim(),
             courseId: document.getElementById('reviews-course-filter').value || '0',
             rating: document.getElementById('reviews-rating-filter').value || '0',
+            page: String(currentPage),
+            pageSize: String(PAGE_SIZE),
             lookups: String(needLookups)
           });
 
@@ -477,7 +515,12 @@
             document.getElementById('stat-low-rating').textContent = data.stats.lowRatingCount ?? 0;
           }
 
+          if (data.pagination && data.pagination.page) {
+            currentPage = data.pagination.page;
+          }
+
           renderReviews(data.items);
+          renderPagination(data.pagination);
           hasLoadedOnce = true;
         } catch (err) {
           if (isAbortError(err)) return;
@@ -499,26 +542,60 @@
       document.addEventListener('DOMContentLoaded', () => {
         loadReviews();
 
-        const debouncedSearch = debounce(loadReviews, 300);
+        const debouncedSearch = debounce(() => {
+          currentPage = 1;
+          loadReviews();
+        }, 300);
         document.getElementById('reviews-search-input').addEventListener('input', debouncedSearch);
         document.getElementById('reviews-course-filter').addEventListener('change', () => {
           debouncedSearch.cancel();
+          currentPage = 1;
           loadReviews();
         });
         document.getElementById('reviews-rating-filter').addEventListener('change', () => {
           debouncedSearch.cancel();
+          currentPage = 1;
           loadReviews();
         });
         document.getElementById('btn-reset-reviews').addEventListener('click', () => {
           debouncedSearch.cancel();
+          currentPage = 1;
           document.getElementById('reviews-search-input').value = '';
           document.getElementById('reviews-course-filter').value = '0';
           document.getElementById('reviews-rating-filter').value = '0';
           loadReviews();
         });
 
-        document.getElementById('reviews-grid').addEventListener('click', (e) => {
-          if (e.target.closest('[data-retry-load]')) loadReviews();
+        document.getElementById('reviews-pagination').addEventListener('click', (e) => {
+          const pageBtn = e.target.closest('[data-page]');
+          if (!pageBtn || pageBtn.disabled) return;
+          const p = Number(pageBtn.getAttribute('data-page'));
+          if (p >= 1 && p !== currentPage) {
+            currentPage = p;
+            loadReviews();
+          }
+        });
+
+        document.getElementById('reviews-grid').addEventListener('click', async (e) => {
+          if (e.target.closest('[data-retry-load]')) {
+            loadReviews();
+            return;
+          }
+          const delBtn = e.target.closest('[data-delete-review]');
+          if (delBtn) {
+            const id = Number(delBtn.getAttribute('data-delete-review'));
+            if (!confirm('Xác nhận xóa đánh giá vi phạm / spam này khỏi hệ thống?')) return;
+            delBtn.disabled = true;
+            try {
+              const res = await fetchJson(`/Admin/api/Reviews/Delete/${id}`, { method: 'DELETE' });
+              showToast(res.message || 'Đã xóa đánh giá thành công.');
+              await loadReviews();
+            } catch (err) {
+              console.error(err);
+              showToast(err.message, 'error');
+              delBtn.disabled = false;
+            }
+          }
         });
       });
     })();

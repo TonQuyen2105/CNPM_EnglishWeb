@@ -447,6 +447,47 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
         }
 
+        [HttpPost("/Admin/api/Courses/TogglePublish/{id}")]
+        public async Task<IActionResult> TogglePublish(int id, CancellationToken cancellationToken)
+        {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã khóa học không hợp lệ.");
+            }
+
+            try
+            {
+                var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+                if (course == null)
+                {
+                    return this.ApiNotFound("Không tìm thấy khóa học.");
+                }
+
+                course.IsPublished = !course.IsPublished;
+                course.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = course.IsPublished
+                        ? $"Đã mở xuất bản khóa học \"{course.Title}\"."
+                        : $"Đã chuyển khóa học \"{course.Title}\" về bản nháp.",
+                    id = course.Id,
+                    isPublished = course.IsPublished
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể đổi trạng thái xuất bản khóa học {CourseId}.", id);
+                return this.ApiServerError("Không thể đổi trạng thái xuất bản khóa học.");
+            }
+        }
+
         [HttpPost("/Admin/api/Courses/{courseId}/Lessons/Create")]
         public async Task<IActionResult> CreateLesson(int courseId, [FromBody] LessonUpsertDto? dto, CancellationToken cancellationToken)
         {

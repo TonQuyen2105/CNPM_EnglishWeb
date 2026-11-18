@@ -211,11 +211,14 @@
         
   <div class="page-header">
     <div>
-      <h1 class="page-header-title">Quản lý &amp; Xem đề thi</h1>
-      <p class="page-header-subtitle">Theo dõi danh sách đề thi do giảng viên biên soạn, chi tiết đề đã công bố và bài làm của học viên</p>
+      <h1 class="page-header-title">Quản lý kỳ thi &amp; đề thi</h1>
+      <p class="page-header-subtitle">Tạo, chỉnh sửa, công bố đề thi, quản lý câu hỏi và theo dõi bài làm học viên</p>
     </div>
     <div class="page-header-actions">
-      <span class="badge badge-info" style="padding: 8px 12px; font-size: 0.8125rem;">Chế độ quản lý &amp; xem (Giảng viên biên soạn đề thi)</span>
+      <button type="button" class="btn btn-primary" id="btn-open-create-exam" data-modal-target="modal-exam">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Tạo đề thi mới
+      </button>
     </div>
   </div>
 
@@ -291,7 +294,70 @@
     </div>
   </div>
 
-  <!-- Modal Xem Chi Tiết Đề Thi Được Công Bố & Học Sinh Làm Bài -->
+  <!-- Modal Tạo / Chỉnh sửa Đề Thi -->
+  <div class="modal-backdrop" id="modal-exam">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="exam-modal-title">Tạo kỳ thi / đề thi mới</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form id="exam-form">
+        <input type="hidden" id="exam-id" value="">
+        <div class="modal-body">
+          <div id="exam-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tiêu đề bài thi <span class="required" style="color:red;">*</span></label>
+            <input type="text" id="exam-title" class="form-control" placeholder="Ví dụ: Thi Thử TOEIC Full Test Tháng 11" maxlength="200" required>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học trực thuộc</label>
+              <select id="exam-course-id" class="form-control">
+                <option value="">-- Đánh giá chung --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên phụ trách <span class="required" style="color:red;">*</span></label>
+              <select id="exam-teacher-id" class="form-control" required>
+                <option value="">-- Đang tải giảng viên --</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thời lượng (Phút) <span class="required" style="color:red;">*</span></label>
+              <input type="number" id="exam-duration" class="form-control" value="45" min="1" max="600" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Điểm qua <span class="required" style="color:red;">*</span></label>
+              <input type="number" id="exam-pass-score" class="form-control" value="50" min="0" max="10000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số lượt tối đa</label>
+              <input type="number" id="exam-max-attempts" class="form-control" placeholder="Không giới hạn" min="1">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mô tả đề thi</label>
+            <textarea id="exam-description" class="form-control" rows="2" maxlength="2000" placeholder="Hướng dẫn làm bài, nội dung trọng tâm..."></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái đề thi</label>
+            <select id="exam-published" class="form-control">
+              <option value="true">Công bố ngay (Cho phép học viên làm bài)</option>
+              <option value="false">Bản nháp (Chưa công bố)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary" id="exam-submit-btn">Lưu đề thi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Xem Chi Tiết Đề Thi, Quản Lý Câu Hỏi & Học Sinh Làm Bài -->
   <div class="modal-backdrop" id="modal-exam-detail">
     <div class="modal-dialog modal-dialog-lg" style="max-width: 960px; width: 95%;">
       <div class="modal-header">
@@ -302,21 +368,81 @@
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body" style="max-height: 76vh; overflow-y: auto;">
-        <!-- Panel 1: Chi tiết đề & danh sách học sinh -->
+        <!-- Panel 1: Chi tiết đề & danh sách câu hỏi / học sinh -->
         <div id="ed-exam-view">
           <div id="ed-meta-grid" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; margin-bottom: 1rem;"></div>
           <div id="ed-description-box" style="display: none; padding: 0.75rem 1rem; background: var(--neutral-50); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;"></div>
 
-          <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-            <button type="button" class="btn btn-sm btn-primary" id="ed-tab-btn-questions">Nội dung câu hỏi (<span id="ed-tab-q-count">0</span>)</button>
-            <button type="button" class="btn btn-sm btn-secondary" id="ed-tab-btn-attempts">Học sinh làm bài (<span id="ed-tab-a-count">0</span>)</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-sm btn-primary" id="ed-tab-btn-questions">Quản lý câu hỏi (<span id="ed-tab-q-count">0</span>)</button>
+              <button type="button" class="btn btn-sm btn-secondary" id="ed-tab-btn-attempts">Học sinh làm bài (<span id="ed-tab-a-count">0</span>)</button>
+            </div>
+            <button type="button" class="btn btn-sm btn-primary" id="btn-open-add-question">+ Thêm câu hỏi</button>
           </div>
 
           <div id="ed-tab-questions"></div>
           <div id="ed-tab-attempts" style="display: none;"></div>
         </div>
 
-        <!-- Panel 2: Chi tiết bài làm của từng học sinh -->
+        <!-- Panel 2: Thêm / Sửa câu hỏi trong đề -->
+        <div id="ed-question-form-view" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-back-to-questions">← Quay lại danh sách câu hỏi</button>
+            <strong id="qf-heading" style="font-size: 0.95rem;">Thêm câu hỏi mới</strong>
+          </div>
+          <form id="exam-question-form">
+            <input type="hidden" id="qf-eq-id" value="">
+            <div id="qf-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+
+            <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Loại câu hỏi</label>
+                <select id="qf-type" class="form-control">
+                  <option value="multiple_choice">Trắc nghiệm (Multiple Choice)</option>
+                  <option value="fill_blank">Điền khuyết (Fill Blank)</option>
+                  <option value="essay">Tự luận / Viết (Essay)</option>
+                  <option value="pronunciation">Phát âm (Pronunciation)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Điểm số <span style="color:red;">*</span></label>
+                <input type="number" id="qf-points" class="form-control" min="1" max="1000" value="10" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thứ tự câu</label>
+                <input type="number" id="qf-order" class="form-control" min="1" max="1000" value="1">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Nội dung câu hỏi <span style="color:red;">*</span></label>
+              <textarea id="qf-text" class="form-control" rows="3" maxlength="4000" placeholder="Nhập câu hỏi..." required></textarea>
+            </div>
+
+            <!-- Options block cho multiple_choice -->
+            <div id="qf-options-wrap" style="margin-bottom: 1rem; padding: 1rem; background: var(--neutral-50); border: 1px solid var(--border-color); border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <strong style="font-size: 0.875rem;">Các phương án trả lời (chọn đáp án đúng)</strong>
+                <button type="button" class="btn btn-sm btn-secondary" id="btn-add-option-row">+ Thêm lựa chọn</button>
+              </div>
+              <div id="qf-options-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+
+            <!-- Reference answer block cho fill_blank / essay / pronunciation -->
+            <div id="qf-ref-wrap" style="display: none; margin-bottom: 1rem;">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Đáp án mẫu / Gợi ý chấm</label>
+              <textarea id="qf-ref-answer" class="form-control" rows="2" placeholder="Nhập đáp án chuẩn hoặc tiêu chí chấm..."></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+              <button type="button" class="btn btn-secondary" id="btn-cancel-question">Hủy</button>
+              <button type="submit" class="btn btn-primary" id="qf-submit-btn">Lưu câu hỏi</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Panel 3: Chi tiết bài làm của từng học sinh -->
         <div id="ed-attempt-view" style="display: none;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 8px; flex-wrap: wrap;">
             <button type="button" class="btn btn-sm btn-secondary" id="btn-back-to-attempts">← Quay lại danh sách học sinh</button>
@@ -396,6 +522,31 @@
         if (modal) modal.classList.add('open', 'show');
       }
 
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+
       function debounce(fn, wait = 300) {
         let timer = null;
         const debounced = (...args) => {
@@ -473,15 +624,74 @@
       let loadController = null;
       let currentExamDetail = null;
 
-      function populateCourseFilter(courses) {
-        if (!Array.isArray(courses)) return;
-        const filterSel = document.getElementById('exams-course-filter');
-        const curFilter = filterSel.value;
-        filterSel.innerHTML = '<option value="0">Tất cả khóa học</option>' +
-          courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
-        if (curFilter && courses.some(c => String(c.id) === curFilter)) {
-          filterSel.value = curFilter;
+      function showFormError(msg) {
+        const box = document.getElementById('exam-form-error');
+        if (!box) return;
+        box.textContent = msg || '';
+        box.style.display = msg ? 'block' : 'none';
+      }
+
+      function populateLookups(courses, teachers) {
+        if (Array.isArray(courses)) {
+          const filterSel = document.getElementById('exams-course-filter');
+          const formSel = document.getElementById('exam-course-id');
+          const curFilter = filterSel.value;
+          const curForm = formSel.value;
+          filterSel.innerHTML = '<option value="0">Tất cả khóa học</option>' +
+            courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+          if (curFilter && courses.some(c => String(c.id) === curFilter)) filterSel.value = curFilter;
+
+          formSel.innerHTML = '<option value="">-- Đánh giá chung --</option>' +
+            courses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+          if (curForm && courses.some(c => String(c.id) === curForm)) formSel.value = curForm;
         }
+
+        if (Array.isArray(teachers)) {
+          const tSel = document.getElementById('exam-teacher-id');
+          const curTeacher = tSel.value;
+          if (teachers.length === 0) {
+            tSel.innerHTML = '<option value="">-- Chưa có giảng viên --</option>';
+          } else {
+            tSel.innerHTML = teachers
+              .map(t => `<option value="${t.id}">${escapeHtml(t.fullName)}${t.isVerified ? '' : ' (Chờ duyệt)'}</option>`)
+              .join('');
+            if (curTeacher && teachers.some(t => String(t.id) === curTeacher)) tSel.value = curTeacher;
+          }
+        }
+      }
+
+      function openCreateMode() {
+        document.getElementById('exam-id').value = '';
+        document.getElementById('exam-title').value = '';
+        document.getElementById('exam-course-id').value = '';
+        document.getElementById('exam-duration').value = '45';
+        document.getElementById('exam-pass-score').value = '50';
+        document.getElementById('exam-max-attempts').value = '';
+        document.getElementById('exam-description').value = '';
+        document.getElementById('exam-published').value = 'true';
+        document.getElementById('exam-modal-title').textContent = 'Tạo kỳ thi / đề thi mới';
+        document.getElementById('exam-submit-btn').textContent = 'Lưu đề thi';
+        showFormError('');
+      }
+
+      function openEditMode(id) {
+        const ex = examsCache.find(x => x.id === id);
+        if (!ex) return;
+        document.getElementById('exam-id').value = ex.id;
+        document.getElementById('exam-title').value = ex.title || '';
+        document.getElementById('exam-course-id').value = ex.courseId ? String(ex.courseId) : '';
+        if (ex.createdByTeacherId) {
+          document.getElementById('exam-teacher-id').value = String(ex.createdByTeacherId);
+        }
+        document.getElementById('exam-duration').value = String(ex.durationMinutes ?? 45);
+        document.getElementById('exam-pass-score').value = String(ex.passScore ?? 50);
+        document.getElementById('exam-max-attempts').value = ex.maxAttempts ? String(ex.maxAttempts) : '';
+        document.getElementById('exam-description').value = ex.description || '';
+        document.getElementById('exam-published').value = ex.isPublished ? 'true' : 'false';
+        document.getElementById('exam-modal-title').textContent = `Cập nhật đề thi: ${ex.title}`;
+        document.getElementById('exam-submit-btn').textContent = 'Lưu thay đổi';
+        showFormError('');
+        openModal('modal-exam');
       }
 
       function renderStats(stats) {
@@ -502,11 +712,11 @@
         tbody.innerHTML = items.map(e => {
           const statusBadge = e.isPublished
             ? '<span class="badge badge-success">Đã công bố</span>'
-            : '<span class="badge badge-neutral">Chưa công bố</span>';
+            : '<span class="badge badge-neutral">Bản nháp</span>';
 
-          const actionCell = e.isPublished
-            ? `<button type="button" class="btn btn-sm btn-primary" data-view-exam="${e.id}">Xem chi tiết</button>`
-            : '<span style="font-size: 0.78rem; color: var(--text-muted);">Chưa công bố</span>';
+          const toggleBtn = e.isPublished
+            ? `<button type="button" class="btn btn-sm btn-secondary" data-toggle-exam="${e.id}">Ẩn đề</button>`
+            : `<button type="button" class="btn btn-sm btn-success" data-toggle-exam="${e.id}">Công bố</button>`;
 
           return `
             <tr>
@@ -523,7 +733,13 @@
               <td>${e.passScore} điểm</td>
               <td><strong>${e.attemptCount ?? 0}</strong> lượt</td>
               <td>${statusBadge}</td>
-              <td class="text-right">${actionCell}</td>
+              <td class="text-right">
+                <div style="display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+                  <button type="button" class="btn btn-sm btn-primary" data-view-exam="${e.id}">Chi tiết &amp; Câu hỏi</button>
+                  ${toggleBtn}
+                  <button type="button" class="btn btn-sm btn-secondary" data-edit-exam="${e.id}">Sửa</button>
+                </div>
+              </td>
             </tr>
           `;
         }).join('');
@@ -554,6 +770,7 @@
         const attempts = Array.isArray(data.attempts) ? data.attempts : [];
 
         document.getElementById('ed-exam-view').style.display = 'block';
+        document.getElementById('ed-question-form-view').style.display = 'none';
         document.getElementById('ed-attempt-view').style.display = 'none';
 
         document.getElementById('ed-modal-title').textContent = exam.title || 'Chi tiết đề thi';
@@ -613,11 +830,13 @@
 
               return `
                 <div style="padding: 0.875rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--neutral-50);">
-                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
                     <div style="font-weight: 700; font-size: 0.875rem;">Câu ${q.orderIndex || (idx + 1)}</div>
-                    <div style="display: flex; gap: 6px;">
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                       <span class="badge badge-info">${escapeHtml(questionTypeLabel(q.questionType))}</span>
                       <span class="badge badge-primary">${q.points} điểm</span>
+                      <button type="button" class="btn btn-sm btn-secondary" data-edit-question="${q.examQuestionId}">Sửa</button>
+                      <button type="button" class="btn btn-sm btn-danger" data-delete-question="${q.examQuestionId}">Xóa</button>
                     </div>
                   </div>
                   <div style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.5;">${escapeHtml(q.questionText)}</div>
@@ -677,6 +896,7 @@
         const answers = Array.isArray(data.answers) ? data.answers : [];
 
         document.getElementById('ed-exam-view').style.display = 'none';
+        document.getElementById('ed-question-form-view').style.display = 'none';
         document.getElementById('ed-attempt-view').style.display = 'block';
         document.getElementById('at-status-badge').innerHTML = attemptStatusBadge(at.status);
 
@@ -770,9 +990,73 @@
         }).join('');
       }
 
+      function addOptionRow(text = '', isCorrect = false) {
+        const list = document.getElementById('qf-options-list');
+        const idx = list.children.length + 1;
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; gap: 8px; align-items: center;';
+        row.innerHTML = `
+          <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.8125rem; white-space: nowrap; cursor: pointer;">
+            <input type="checkbox" class="qf-opt-correct" ${isCorrect ? 'checked' : ''}>
+            Đúng
+          </label>
+          <input type="text" class="form-control qf-opt-text" placeholder="Phương án ${idx}..." value="${escapeHtml(text)}">
+          <button type="button" class="btn btn-sm btn-danger qf-opt-remove" title="Xóa lựa chọn">&times;</button>
+        `;
+        row.querySelector('.qf-opt-remove').addEventListener('click', () => {
+          if (list.children.length > 2) row.remove();
+        });
+        list.appendChild(row);
+      }
+
+      function syncQuestionTypeUI() {
+        const t = document.getElementById('qf-type').value;
+        document.getElementById('qf-options-wrap').style.display = t === 'multiple_choice' ? 'block' : 'none';
+        document.getElementById('qf-ref-wrap').style.display = t === 'multiple_choice' ? 'none' : 'block';
+      }
+
+      function openQuestionForm(q) {
+        if (!currentExamDetail || !currentExamDetail.exam) return;
+        const isEdit = Boolean(q);
+        const questions = Array.isArray(currentExamDetail.questions) ? currentExamDetail.questions : [];
+        document.getElementById('qf-eq-id').value = isEdit ? String(q.examQuestionId) : '';
+        document.getElementById('qf-heading').textContent = isEdit ? `Chỉnh sửa Câu ${q.orderIndex}` : 'Thêm câu hỏi mới';
+        document.getElementById('qf-type').value = isEdit ? (q.questionType || 'multiple_choice') : 'multiple_choice';
+        document.getElementById('qf-points').value = String(isEdit ? (q.points ?? 10) : 10);
+        document.getElementById('qf-order').value = String(
+          isEdit ? (q.orderIndex ?? 1) : ((questions.length > 0 ? Math.max(...questions.map(x => x.orderIndex || 0)) : 0) + 1)
+        );
+        document.getElementById('qf-text').value = isEdit ? (q.questionText || '') : '';
+        document.getElementById('qf-ref-answer').value =
+          isEdit && Array.isArray(q.referenceAnswers) && q.referenceAnswers.length > 0
+            ? (q.referenceAnswers[0].answerText || '')
+            : '';
+
+        const optList = document.getElementById('qf-options-list');
+        optList.innerHTML = '';
+        if (isEdit && Array.isArray(q.options) && q.options.length > 0) {
+          q.options.forEach(o => addOptionRow(o.optionText, !!o.isCorrect));
+        } else {
+          addOptionRow('', true);
+          addOptionRow('', false);
+          addOptionRow('', false);
+          addOptionRow('', false);
+        }
+
+        const qfErr = document.getElementById('qf-error');
+        qfErr.style.display = 'none';
+        qfErr.textContent = '';
+
+        syncQuestionTypeUI();
+        document.getElementById('ed-exam-view').style.display = 'none';
+        document.getElementById('ed-attempt-view').style.display = 'none';
+        document.getElementById('ed-question-form-view').style.display = 'block';
+      }
+
       async function openExamDetail(examId) {
         openModal('modal-exam-detail');
         document.getElementById('ed-exam-view').style.display = 'block';
+        document.getElementById('ed-question-form-view').style.display = 'none';
         document.getElementById('ed-attempt-view').style.display = 'none';
         document.getElementById('ed-modal-title').textContent = 'Đang tải chi tiết đề thi...';
         document.getElementById('ed-modal-subtitle').textContent = '--';
@@ -791,6 +1075,7 @@
 
       async function openAttemptDetail(userExamId) {
         document.getElementById('ed-exam-view').style.display = 'none';
+        document.getElementById('ed-question-form-view').style.display = 'none';
         document.getElementById('ed-attempt-view').style.display = 'block';
         document.getElementById('at-summary-box').innerHTML = '<div style="color: var(--text-muted);">Đang tải bài làm của học viên...</div>';
         document.getElementById('at-answers-list').innerHTML = '';
@@ -827,7 +1112,7 @@
           const data = await fetchJson(`/Admin/api/Exams/List?${params.toString()}`, { signal: controller.signal });
           examsCache = Array.isArray(data.items) ? data.items : [];
           if (needLookups) {
-            populateCourseFilter(data.courses);
+            populateLookups(data.courses, data.teachers);
             needLookups = false;
           }
           renderStats(data.stats);
@@ -866,7 +1151,13 @@
           loadExams();
         });
 
-        document.getElementById('exams-tbody').addEventListener('click', (e) => {
+        document.getElementById('btn-open-create-exam').addEventListener('click', () => {
+          openCreateMode();
+          needLookups = true;
+          loadExams();
+        });
+
+        document.getElementById('exams-tbody').addEventListener('click', async (e) => {
           if (e.target.closest('[data-retry-load]')) {
             loadExams();
             return;
@@ -874,11 +1165,148 @@
           const viewBtn = e.target.closest('[data-view-exam]');
           if (viewBtn) {
             openExamDetail(Number(viewBtn.getAttribute('data-view-exam')));
+            return;
+          }
+          const toggleBtn = e.target.closest('[data-toggle-exam]');
+          if (toggleBtn) {
+            const id = Number(toggleBtn.getAttribute('data-toggle-exam'));
+            toggleBtn.disabled = true;
+            try {
+              const res = await postJson(`/Admin/api/Exams/TogglePublish/${id}`);
+              showToast(res.message || 'Đã cập nhật trạng thái đề thi.');
+              await loadExams();
+            } catch (err) {
+              console.error(err);
+              showToast(err.message, 'error');
+              toggleBtn.disabled = false;
+            }
+            return;
+          }
+          const editBtn = e.target.closest('[data-edit-exam]');
+          if (editBtn) {
+            openEditMode(Number(editBtn.getAttribute('data-edit-exam')));
+          }
+        });
+
+        document.getElementById('exam-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showFormError('');
+          const id = document.getElementById('exam-id').value;
+          const isEdit = Boolean(id);
+          const courseVal = document.getElementById('exam-course-id').value;
+          const maxAttVal = document.getElementById('exam-max-attempts').value;
+
+          const payload = {
+            title: document.getElementById('exam-title').value.trim(),
+            courseId: courseVal ? Number(courseVal) : null,
+            createdByTeacherId: Number(document.getElementById('exam-teacher-id').value) || 0,
+            durationMinutes: Number(document.getElementById('exam-duration').value) || 45,
+            passScore: Number(document.getElementById('exam-pass-score').value) || 0,
+            maxAttempts: maxAttVal ? Number(maxAttVal) : null,
+            description: document.getElementById('exam-description').value.trim(),
+            isPublished: document.getElementById('exam-published').value === 'true'
+          };
+
+          const btn = document.getElementById('exam-submit-btn');
+          setBusy(btn, true);
+          try {
+            const url = isEdit ? `/Admin/api/Exams/Update/${encodeURIComponent(id)}` : '/Admin/api/Exams/Create';
+            const data = await postJson(url, payload);
+            closeModal('modal-exam');
+            showToast(data.message || 'Lưu đề thi thành công.');
+            await loadExams();
+          } catch (err) {
+            console.error(err);
+            showFormError(err.message);
+            showToast(err.message, 'error');
+          } finally {
+            setBusy(btn, false);
           }
         });
 
         document.getElementById('ed-tab-btn-questions').addEventListener('click', () => switchDetailTab('questions'));
         document.getElementById('ed-tab-btn-attempts').addEventListener('click', () => switchDetailTab('attempts'));
+        document.getElementById('btn-open-add-question').addEventListener('click', () => openQuestionForm(null));
+        document.getElementById('qf-type').addEventListener('change', syncQuestionTypeUI);
+        document.getElementById('btn-add-option-row').addEventListener('click', () => addOptionRow('', false));
+
+        const backToQuestions = () => {
+          document.getElementById('ed-question-form-view').style.display = 'none';
+          document.getElementById('ed-attempt-view').style.display = 'none';
+          document.getElementById('ed-exam-view').style.display = 'block';
+          switchDetailTab('questions');
+        };
+        document.getElementById('btn-back-to-questions').addEventListener('click', backToQuestions);
+        document.getElementById('btn-cancel-question').addEventListener('click', backToQuestions);
+
+        document.getElementById('ed-tab-questions').addEventListener('click', async (e) => {
+          const editBtn = e.target.closest('[data-edit-question]');
+          if (editBtn && currentExamDetail) {
+            const eqId = Number(editBtn.getAttribute('data-edit-question'));
+            const q = (currentExamDetail.questions || []).find(x => x.examQuestionId === eqId);
+            if (q) openQuestionForm(q);
+            return;
+          }
+          const delBtn = e.target.closest('[data-delete-question]');
+          if (delBtn && currentExamDetail && currentExamDetail.exam) {
+            const eqId = Number(delBtn.getAttribute('data-delete-question'));
+            if (!confirm('Xóa câu hỏi này khỏi đề thi?')) return;
+            delBtn.disabled = true;
+            try {
+              const res = await postJson(`/Admin/api/Exams/${currentExamDetail.exam.id}/Questions/Delete/${eqId}`, undefined, 'DELETE');
+              showToast(res.message || 'Đã xóa câu hỏi.');
+              await openExamDetail(currentExamDetail.exam.id);
+              await loadExams();
+            } catch (err) {
+              console.error(err);
+              showToast(err.message, 'error');
+              delBtn.disabled = false;
+            }
+          }
+        });
+
+        document.getElementById('exam-question-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          if (!currentExamDetail || !currentExamDetail.exam) return;
+          const errBox = document.getElementById('qf-error');
+          errBox.style.display = 'none';
+
+          const eqId = document.getElementById('qf-eq-id').value;
+          const qType = document.getElementById('qf-type').value;
+          const options = Array.from(document.querySelectorAll('#qf-options-list > div')).map(row => ({
+            optionText: row.querySelector('.qf-opt-text').value.trim(),
+            isCorrect: row.querySelector('.qf-opt-correct').checked
+          })).filter(o => o.optionText.length > 0);
+
+          const payload = {
+            questionText: document.getElementById('qf-text').value.trim(),
+            questionType: qType,
+            points: Number(document.getElementById('qf-points').value) || 10,
+            orderIndex: Number(document.getElementById('qf-order').value) || 1,
+            referenceAnswer: document.getElementById('qf-ref-answer').value.trim(),
+            options: qType === 'multiple_choice' ? options : null
+          };
+
+          const btn = document.getElementById('qf-submit-btn');
+          setBusy(btn, true);
+          try {
+            const examId = currentExamDetail.exam.id;
+            const url = eqId
+              ? `/Admin/api/Exams/${examId}/Questions/Update/${encodeURIComponent(eqId)}`
+              : `/Admin/api/Exams/${examId}/Questions/Create`;
+            const res = await postJson(url, payload, eqId ? 'PUT' : 'POST');
+            showToast(res.message || 'Lưu câu hỏi thành công.');
+            await openExamDetail(examId);
+            await loadExams();
+          } catch (err) {
+            console.error(err);
+            errBox.textContent = err.message;
+            errBox.style.display = 'block';
+            showToast(err.message, 'error');
+          } finally {
+            setBusy(btn, false);
+          }
+        });
 
         document.getElementById('ed-tab-attempts').addEventListener('click', (e) => {
           const btn = e.target.closest('[data-view-attempt]');
@@ -890,6 +1318,7 @@
         document.getElementById('btn-back-to-attempts').addEventListener('click', () => {
           if (currentExamDetail) {
             document.getElementById('ed-exam-view').style.display = 'block';
+            document.getElementById('ed-question-form-view').style.display = 'none';
             document.getElementById('ed-attempt-view').style.display = 'none';
             switchDetailTab('attempts');
           }

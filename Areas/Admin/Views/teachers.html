@@ -371,8 +371,16 @@
           </div>
 
           <div>
-            <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Các lớp được phân công</div>
-            <div id="td-classes-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <div style="font-weight: 600; font-size: 0.875rem;">Các lớp được phân công</div>
+              <a href="/Admin/schedules.html" id="td-schedule-link" style="font-size: 0.8125rem; color: var(--primary-600); text-decoration: none; font-weight: 600;">Xem trên Thời khóa biểu →</a>
+            </div>
+            <div id="td-classes-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;"></div>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Lịch dạy cố định trong tuần</div>
+            <div id="td-schedules-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto;"></div>
           </div>
         </div>
         <div class="modal-footer" style="justify-content: space-between;">
@@ -544,8 +552,8 @@
             : '<span style="color: var(--text-muted); font-style: italic;">Chưa có mô tả kinh nghiệm giảng dạy.</span>';
 
           const verifyBtn = !t.isVerified
-            ? `<button type="button" class="btn btn-sm btn-primary" data-verify-teacher="${t.id}">Duyệt hồ sơ</button>`
-            : `<a href="/Admin/classes.html" class="btn btn-sm btn-secondary">Xem lớp</a>`;
+            ? `<button type="button" class="btn btn-sm btn-primary" data-toggle-verify="${t.id}" data-verified="false">Duyệt hồ sơ</button>`
+            : `<button type="button" class="btn btn-sm btn-danger" data-toggle-verify="${t.id}" data-verified="true">Thu hồi</button>`;
 
           return `
             <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
@@ -563,10 +571,13 @@
                 </div>
                 <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">${bioText}</p>
               </div>
-              <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.8125rem;">
-                <span>Lớp phụ trách: <strong>${t.classCount ?? 0} lớp</strong></span>
-                <div style="display: flex; gap: 6px;">
+              <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 1rem;">
+                <div style="font-size: 0.8125rem; margin-bottom: 0.625rem;">
+                  Lớp: <strong>${t.classCount ?? 0}</strong> &bull; Lịch dạy: <strong>${t.scheduleCount ?? 0} buổi/tuần</strong>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
                   <button type="button" class="btn btn-sm btn-secondary" data-view-teacher="${t.id}">Xem hồ sơ</button>
+                  <a href="/Admin/schedules.html?teacherId=${encodeURIComponent(t.id)}" class="btn btn-sm btn-secondary">Lịch dạy</a>
                   ${verifyBtn}
                 </div>
               </div>
@@ -593,7 +604,18 @@
         document.getElementById('td-verified').value = t.isVerified ? 'true' : 'false';
 
         const quickVerifyBtn = document.getElementById('td-quick-verify-btn');
-        quickVerifyBtn.style.display = t.isVerified ? 'none' : 'inline-flex';
+        quickVerifyBtn.style.display = 'inline-flex';
+        if (t.isVerified) {
+          quickVerifyBtn.className = 'btn btn-danger';
+          quickVerifyBtn.textContent = 'Thu hồi xác minh';
+          quickVerifyBtn.dataset.verified = 'true';
+        } else {
+          quickVerifyBtn.className = 'btn btn-success';
+          quickVerifyBtn.textContent = 'Duyệt hồ sơ ngay';
+          quickVerifyBtn.dataset.verified = 'false';
+        }
+
+        document.getElementById('td-schedule-link').href = `/Admin/schedules.html?teacherId=${encodeURIComponent(t.id)}`;
 
         const clsBox = document.getElementById('td-classes-list');
         const classes = Array.isArray(t.classes) ? t.classes : [];
@@ -607,6 +629,23 @@
                 <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(c.courseTitle)} (${c.role === 'assistant' ? 'Trợ giảng' : 'Giảng viên chính'})</div>
               </div>
               <a href="/Admin/class-detail.html?id=${c.classId}" class="btn btn-sm btn-secondary">Chi tiết</a>
+            </div>
+          `).join('');
+        }
+
+        const schedBox = document.getElementById('td-schedules-list');
+        const schedules = Array.isArray(t.schedules) ? t.schedules : [];
+        if (schedules.length === 0) {
+          schedBox.innerHTML = '<div style="font-size: 0.8125rem; color: var(--text-muted); padding: 0.25rem 0;">Chưa có lịch dạy cố định nào.</div>';
+        } else {
+          schedBox.innerHTML = schedules.map(s => `
+            <div style="padding: 7px 10px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+              <div>
+                <strong>${escapeHtml(s.dayLabel)} • ${escapeHtml(s.timeRange)}</strong>
+                <span style="color: var(--text-muted);"> (${escapeHtml(s.slotName)})</span>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">Lớp ${escapeHtml(s.classCode)} &bull; Phòng ${escapeHtml(s.classroomName)}</div>
+              </div>
+              <a href="/Admin/schedules.html?teacherId=${encodeURIComponent(t.id)}" class="btn btn-sm btn-secondary">Lịch tuần</a>
             </div>
           `).join('');
         }
@@ -660,11 +699,12 @@
         }
       }
 
-      async function verifyTeacher(id, btn) {
-        setBusy(btn, true, 'Đang duyệt...');
+      async function toggleVerifyTeacher(id, isCurrentlyVerified, btn) {
+        if (isCurrentlyVerified && !confirm('Thu hồi xác minh hồ sơ giảng viên này?')) return;
+        setBusy(btn, true, isCurrentlyVerified ? 'Đang thu hồi...' : 'Đang duyệt...');
         try {
-          const data = await postJson(`/Admin/api/Teachers/Verify/${id}`);
-          showToast(data.message || 'Đã duyệt hồ sơ giảng viên.');
+          const data = await postJson(`/Admin/api/Teachers/ToggleVerify/${id}`);
+          showToast(data.message || 'Đã cập nhật trạng thái xác minh giảng viên.');
           closeModal('modal-teacher-detail');
           await loadTeachers();
         } catch (err) {
@@ -707,9 +747,10 @@
             openTeacherDetail(Number(viewBtn.getAttribute('data-view-teacher')));
             return;
           }
-          const verifyBtn = e.target.closest('[data-verify-teacher]');
-          if (verifyBtn) {
-            verifyTeacher(Number(verifyBtn.getAttribute('data-verify-teacher')), verifyBtn);
+          const toggleBtn = e.target.closest('[data-toggle-verify]');
+          if (toggleBtn) {
+            const isVerified = toggleBtn.getAttribute('data-verified') === 'true';
+            toggleVerifyTeacher(Number(toggleBtn.getAttribute('data-toggle-verify')), isVerified, toggleBtn);
           }
         });
 
@@ -771,7 +812,8 @@
 
         document.getElementById('td-quick-verify-btn').addEventListener('click', function () {
           const id = Number(document.getElementById('td-id').value);
-          if (id) verifyTeacher(id, this);
+          const isCurrentlyVerified = this.dataset.verified === 'true';
+          if (id) toggleVerifyTeacher(id, isCurrentlyVerified, this);
         });
       });
     })();

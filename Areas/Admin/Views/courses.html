@@ -490,12 +490,18 @@
 
       function populateSubjects(subjects) {
         if (!Array.isArray(subjects)) return;
-        const currentFilter = subjectEl.value;
+        const urlSubjectId = new URLSearchParams(window.location.search).get('subjectId');
+        const currentFilter = subjectEl.value !== '0' ? subjectEl.value : (pendingInitialSubjectId || '0');
         const currentCreate = createSubjectEl.value;
 
         subjectEl.innerHTML = '<option value="0">Tất cả môn học</option>' +
           subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
-        if (currentFilter) subjectEl.value = currentFilter;
+        if (currentFilter && subjects.some(s => String(s.id) === String(currentFilter))) {
+          subjectEl.value = String(currentFilter);
+        } else if (urlSubjectId && !lookupsLoaded && subjects.some(s => String(s.id) === String(urlSubjectId))) {
+          subjectEl.value = String(urlSubjectId);
+        }
+        pendingInitialSubjectId = null;
 
         createSubjectEl.innerHTML = '<option value="">-- Chọn môn học --</option>' +
           subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
@@ -503,6 +509,8 @@
 
         lookupsLoaded = true;
       }
+
+      let pendingInitialSubjectId = new URLSearchParams(window.location.search).get('subjectId');
 
       function renderCourses(items) {
         if (!Array.isArray(items) || items.length === 0) {
@@ -542,9 +550,18 @@
                   <strong style="color: var(--primary-600);">${formatCurrency(c.price)}</strong>
                 </div>
               </div>
-              <div class="card-footer" style="display: flex; justify-content: space-between;">
-                <a href="/Admin/course-detail.html?id=${encodeURIComponent(c.id)}" class="btn btn-sm btn-secondary">Chi tiết &amp; Giáo trình</a>
-                <a href="/Admin/classes.html?courseId=${encodeURIComponent(c.id)}" class="btn btn-sm btn-primary">Xem lớp mở</a>
+              <div class="card-footer" style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; gap: 6px;">
+                  <a href="/Admin/course-detail.html?id=${encodeURIComponent(c.id)}" class="btn btn-sm btn-secondary">Chi tiết</a>
+                  <a href="/Admin/course-objectives.html?id=${encodeURIComponent(c.id)}" class="btn btn-sm btn-secondary">Mục tiêu</a>
+                  <a href="/Admin/classes.html?courseId=${encodeURIComponent(c.id)}&action=create" class="btn btn-sm btn-primary">Mở lớp</a>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; padding-top: 4px; border-top: 1px dashed var(--border-color);">
+                  <a href="/Admin/classes.html?courseId=${encodeURIComponent(c.id)}" style="font-size: 0.78rem; color: var(--primary-600); text-decoration: none; font-weight: 600;">Xem ${Number(c.classCount || 0)} lớp hiện có →</a>
+                  <button type="button" class="btn btn-sm ${c.isPublished ? 'btn-secondary' : 'btn-success'}" data-toggle-publish="${c.id}">
+                    ${c.isPublished ? 'Ẩn (Nháp)' : 'Xuất bản'}
+                  </button>
+                </div>
               </div>
             </div>`;
         }).join('');
@@ -563,8 +580,11 @@
 
         const params = new URLSearchParams();
         const search = searchEl.value.trim();
+        const selectedSubjectId = subjectEl.value && subjectEl.value !== '0'
+          ? subjectEl.value
+          : (!lookupsLoaded && pendingInitialSubjectId ? pendingInitialSubjectId : '0');
         if (search) params.set('search', search);
-        if (subjectEl.value && subjectEl.value !== '0') params.set('subjectId', subjectEl.value);
+        if (selectedSubjectId && selectedSubjectId !== '0') params.set('subjectId', selectedSubjectId);
         if (levelEl.value !== 'all') params.set('level', levelEl.value);
         if (publishedEl.value !== 'all') params.set('published', publishedEl.value);
         params.set('lookups', lookupsLoaded ? 'false' : 'true');
@@ -622,15 +642,36 @@
 
         resetBtn.addEventListener('click', () => {
           debouncedSearch.cancel();
+          pendingInitialSubjectId = null;
           searchEl.value = '';
           subjectEl.value = '0';
           levelEl.value = 'all';
           publishedEl.value = 'all';
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
           loadCourses();
         });
 
-        gridEl.addEventListener('click', (e) => {
-          if (e.target.closest('[data-retry-load]')) loadCourses();
+        gridEl.addEventListener('click', async (e) => {
+          if (e.target.closest('[data-retry-load]')) {
+            loadCourses();
+            return;
+          }
+          const toggleBtn = e.target.closest('[data-toggle-publish]');
+          if (toggleBtn) {
+            const id = Number(toggleBtn.getAttribute('data-toggle-publish'));
+            toggleBtn.disabled = true;
+            try {
+              const res = await postJson(`/Admin/api/Courses/TogglePublish/${id}`);
+              showToast(res.message || 'Đã cập nhật trạng thái xuất bản.');
+              await loadCourses();
+            } catch (err) {
+              console.error(err);
+              showToast(err.message, 'error');
+              toggleBtn.disabled = false;
+            }
+          }
         });
 
         openCreateBtn.addEventListener('click', openCreateMode);

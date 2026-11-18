@@ -27,11 +27,17 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             string? search,
             int? courseId,
             int? rating,
-            CancellationToken cancellationToken,
+            int page = 1,
+            int pageSize = 8,
+            CancellationToken cancellationToken = default,
             bool lookups = true)
         {
             try
             {
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 8;
+                if (pageSize > 50) pageSize = 50;
+
                 var ratingStats = await _context.CourseReviews
                     .AsNoTracking()
                     .GroupBy(r => r.Rating)
@@ -84,9 +90,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         (x.comment != null && x.comment.ToLower().Contains(term)));
                 }
 
+                var totalFiltered = await query.CountAsync(cancellationToken);
+                var totalPages = totalFiltered > 0 ? (int)Math.Ceiling(totalFiltered / (double)pageSize) : 1;
+                if (page > totalPages) page = totalPages;
+
                 var items = await query
                     .OrderByDescending(x => x.createdAt)
                     .ThenByDescending(x => x.id)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync(cancellationToken);
 
                 var courses = lookups
@@ -106,6 +118,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     success = true,
                     items,
                     courses,
+                    pagination = new
+                    {
+                        page,
+                        pageSize,
+                        totalCount = totalFiltered,
+                        totalPages
+                    },
                     stats = new
                     {
                         totalReviews,
@@ -123,6 +142,44 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             {
                 _logger.LogError(ex, "Không thể tải danh sách đánh giá khóa học.");
                 return this.ApiServerError("Không thể tải danh sách đánh giá khóa học.");
+            }
+        }
+
+        [HttpPost("/Admin/api/Reviews/Delete/{id}")]
+        [HttpDelete("/Admin/api/Reviews/Delete/{id}")]
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã đánh giá không hợp lệ.");
+            }
+
+            try
+            {
+                var review = await _context.CourseReviews.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+                if (review == null)
+                {
+                    return this.ApiNotFound("Không tìm thấy đánh giá yêu cầu.");
+                }
+
+                _context.CourseReviews.Remove(review);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã xóa đánh giá vi phạm/spam thành công.",
+                    id
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể xóa đánh giá {ReviewId}.", id);
+                return this.ApiServerError("Không thể xóa đánh giá.");
             }
         }
     }

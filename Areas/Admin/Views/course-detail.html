@@ -215,9 +215,10 @@
       <h1 class="page-header-title" style="margin-top: 4px;" id="cd-title">Đang tải thông tin khóa học...</h1>
       <p class="page-header-subtitle" id="cd-subtitle">Đang nạp dữ liệu từ hệ thống...</p>
     </div>
-    <div class="page-header-actions" style="display: flex; gap: 8px;">
+    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="/Admin/course-objectives.html" id="cd-objectives-link" class="btn btn-secondary">Mô tả &amp; Mục tiêu</a>
       <button type="button" class="btn btn-secondary" id="btn-edit-course" disabled>Chỉnh sửa</button>
-      <a href="/Admin/classes.html" class="btn btn-primary">Mở lớp cho khóa này</a>
+      <a href="/Admin/classes.html" id="cd-open-class-link" class="btn btn-primary">Mở lớp cho khóa này</a>
     </div>
   </div>
 
@@ -565,6 +566,10 @@
 
         document.getElementById('btn-edit-course').disabled = false;
         document.getElementById('btn-add-lesson').disabled = false;
+        const objLink = document.getElementById('cd-objectives-link');
+        if (objLink && courseData.id) objLink.href = `/Admin/course-objectives.html?id=${encodeURIComponent(courseData.id)}`;
+        const openClsLink = document.getElementById('cd-open-class-link');
+        if (openClsLink && courseData.id) openClsLink.href = `/Admin/classes.html?courseId=${encodeURIComponent(courseData.id)}&action=create`;
 
         document.getElementById('cd-syllabus-title').textContent = `Đề cương bài học (${lessonsCache.length} bài)`;
         const listEl = document.getElementById('cd-lessons-list');

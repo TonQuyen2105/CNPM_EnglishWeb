@@ -1,4 +1,5 @@
 using CNPM_EnglishLearning.Data;
+using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     [Area("Admin")]
     public class ExamsController : Controller
     {
+        private const int MaxTitleLength = 200;
+        private const int MaxDescriptionLength = 2000;
+        private const int MaxDurationMinutes = 600;
+        private const int MaxQuestionTextLength = 4000;
+
+        private static readonly HashSet<string> ValidQuestionTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "multiple_choice", "fill_blank", "pronunciation", "essay"
+        };
+
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ExamsController> _logger;
 
@@ -115,11 +126,26 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     ).ToListAsync(cancellationToken)
                     : null;
 
+                var teachers = lookups
+                    ? await (
+                        from t in _context.Teachers.AsNoTracking()
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        orderby u.FullName
+                        select new
+                        {
+                            id = t.Id,
+                            fullName = u.FullName,
+                            isVerified = t.IsVerified
+                        }
+                    ).ToListAsync(cancellationToken)
+                    : null;
+
                 return Ok(new
                 {
                     success = true,
                     items,
                     courses,
+                    teachers,
                     stats = new
                     {
                         totalExams,
@@ -138,6 +164,209 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             {
                 _logger.LogError(ex, "Không thể tải danh sách đề thi.");
                 return this.ApiServerError("Không thể tải danh sách đề thi.");
+            }
+        }
+
+        [HttpPost("/Admin/api/Exams/Create")]
+        public async Task<IActionResult> Create([FromBody] ExamUpsertDto? dto, CancellationToken cancellationToken)
+        {
+            var error = ValidateExam(dto, out var title, out var description);
+            if (error != null)
+            {
+                return this.ApiBadRequest(error);
+            }
+
+            try
+            {
+                if (dto!.CourseId.HasValue && dto.CourseId.Value > 0)
+                {
+                    var courseExists = await _context.Courses
+                        .AsNoTracking()
+                        .AnyAsync(c => c.Id == dto.CourseId.Value, cancellationToken);
+                    if (!courseExists)
+                    {
+                        return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
+                    }
+                }
+
+                var teacherId = dto.CreatedByTeacherId;
+                if (teacherId <= 0)
+                {
+                    teacherId = await _context.Teachers
+                        .AsNoTracking()
+                        .OrderByDescending(t => t.IsVerified)
+                        .ThenBy(t => t.Id)
+                        .Select(t => t.Id)
+                        .FirstOrDefaultAsync(cancellationToken);
+                }
+                else
+                {
+                    var teacherExists = await _context.Teachers
+                        .AsNoTracking()
+                        .AnyAsync(t => t.Id == teacherId, cancellationToken);
+                    if (!teacherExists)
+                    {
+                        return this.ApiBadRequest("Giảng viên phụ trách đề thi không tồn tại.");
+                    }
+                }
+
+                if (teacherId <= 0)
+                {
+                    return this.ApiBadRequest("Hệ thống chưa có hồ sơ giảng viên nào để gắn người tạo đề.");
+                }
+
+                var now = DateTime.UtcNow;
+                var exam = new Exam
+                {
+                    Title = title,
+                    CourseId = dto.CourseId.HasValue && dto.CourseId.Value > 0 ? dto.CourseId.Value : null,
+                    CreatedByTeacherId = teacherId,
+                    Description = description,
+                    DurationMinutes = dto.DurationMinutes,
+                    PassScore = dto.PassScore,
+                    MaxAttempts = dto.MaxAttempts.HasValue && dto.MaxAttempts.Value > 0 ? dto.MaxAttempts.Value : null,
+                    IsPublished = dto.IsPublished ?? false,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                };
+
+                _context.Exams.Add(exam);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = exam.IsPublished ? "Đã tạo và công bố đề thi thành công." : "Đã lưu bản nháp đề thi thành công.",
+                    id = exam.Id
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể tạo đề thi mới.");
+                return this.ApiServerError("Không thể tạo đề thi mới.");
+            }
+        }
+
+        [HttpPost("/Admin/api/Exams/Update/{id}")]
+        [HttpPut("/Admin/api/Exams/Update/{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] ExamUpsertDto? dto, CancellationToken cancellationToken)
+        {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã đề thi không hợp lệ.");
+            }
+
+            var error = ValidateExam(dto, out var title, out var description);
+            if (error != null)
+            {
+                return this.ApiBadRequest(error);
+            }
+
+            try
+            {
+                var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+                if (exam == null)
+                {
+                    return this.ApiNotFound("Không tìm thấy đề thi.");
+                }
+
+                if (dto!.CourseId.HasValue && dto.CourseId.Value > 0)
+                {
+                    var courseExists = await _context.Courses
+                        .AsNoTracking()
+                        .AnyAsync(c => c.Id == dto.CourseId.Value, cancellationToken);
+                    if (!courseExists)
+                    {
+                        return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
+                    }
+                }
+
+                if (dto.CreatedByTeacherId > 0)
+                {
+                    var teacherExists = await _context.Teachers
+                        .AsNoTracking()
+                        .AnyAsync(t => t.Id == dto.CreatedByTeacherId, cancellationToken);
+                    if (!teacherExists)
+                    {
+                        return this.ApiBadRequest("Giảng viên phụ trách không tồn tại.");
+                    }
+                    exam.CreatedByTeacherId = dto.CreatedByTeacherId;
+                }
+
+                exam.Title = title;
+                exam.CourseId = dto.CourseId.HasValue && dto.CourseId.Value > 0 ? dto.CourseId.Value : null;
+                exam.Description = description;
+                exam.DurationMinutes = dto.DurationMinutes;
+                exam.PassScore = dto.PassScore;
+                exam.MaxAttempts = dto.MaxAttempts.HasValue && dto.MaxAttempts.Value > 0 ? dto.MaxAttempts.Value : null;
+                if (dto.IsPublished.HasValue)
+                {
+                    exam.IsPublished = dto.IsPublished.Value;
+                }
+                exam.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật đề thi thành công.",
+                    id = exam.Id
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể cập nhật đề thi {ExamId}.", id);
+                return this.ApiServerError("Không thể cập nhật đề thi.");
+            }
+        }
+
+        [HttpPost("/Admin/api/Exams/TogglePublish/{id}")]
+        public async Task<IActionResult> TogglePublish(int id, CancellationToken cancellationToken)
+        {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã đề thi không hợp lệ.");
+            }
+
+            try
+            {
+                var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+                if (exam == null)
+                {
+                    return this.ApiNotFound("Không tìm thấy đề thi.");
+                }
+
+                exam.IsPublished = !exam.IsPublished;
+                exam.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = exam.IsPublished
+                        ? $"Đã công bố đề thi \"{exam.Title}\"."
+                        : $"Đã chuyển đề thi \"{exam.Title}\" về bản nháp.",
+                    id = exam.Id,
+                    isPublished = exam.IsPublished
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể đổi trạng thái công bố đề thi {ExamId}.", id);
+                return this.ApiServerError("Không thể đổi trạng thái công bố đề thi.");
             }
         }
 
@@ -529,6 +758,496 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 _logger.LogError(ex, "Không thể tải chi tiết bài làm {UserExamId}.", userExamId);
                 return this.ApiServerError("Không thể tải chi tiết bài làm của học viên.");
             }
+        }
+
+        [HttpPost("/Admin/api/Exams/{examId}/Questions/Create")]
+        public async Task<IActionResult> CreateQuestion(
+            int examId,
+            [FromBody] ExamQuestionUpsertDto? dto,
+            CancellationToken cancellationToken)
+        {
+            if (examId <= 0)
+            {
+                return this.ApiBadRequest("Mã đề thi không hợp lệ.");
+            }
+
+            var error = ValidateQuestionDto(dto, out var qText, out var qType, out var cleanOptions, out var refAnswer, out var audioUrl);
+            if (error != null)
+            {
+                return this.ApiBadRequest(error);
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
+                if (exam == null)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Không tìm thấy đề thi.");
+                }
+
+                var now = DateTime.UtcNow;
+                var question = new Question
+                {
+                    QuestionText = qText,
+                    QuestionType = qType,
+                    AudioUrl = audioUrl,
+                    DefaultPoints = dto!.Points,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                };
+                _context.Questions.Add(question);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                if (qType == "multiple_choice")
+                {
+                    var options = cleanOptions.Select(o => new QuestionOption
+                    {
+                        QuestionId = question.Id,
+                        OptionText = o.Text,
+                        IsCorrect = o.IsCorrect
+                    });
+                    _context.QuestionOptions.AddRange(options);
+                }
+                else if (!string.IsNullOrWhiteSpace(refAnswer))
+                {
+                    _context.QuestionAnswers.Add(new QuestionAnswer
+                    {
+                        QuestionId = question.Id,
+                        AnswerText = refAnswer,
+                        IsCaseSensitive = dto.IsCaseSensitive ?? false
+                    });
+                }
+
+                var nextOrder = dto.OrderIndex.HasValue && dto.OrderIndex.Value > 0
+                    ? dto.OrderIndex.Value
+                    : ((await _context.ExamQuestions
+                        .AsNoTracking()
+                        .Where(eq => eq.ExamId == examId)
+                        .Select(eq => (int?)eq.OrderIndex)
+                        .MaxAsync(cancellationToken)) ?? 0) + 1;
+
+                var examQuestion = new ExamQuestion
+                {
+                    ExamId = examId,
+                    QuestionId = question.Id,
+                    Points = dto.Points,
+                    OrderIndex = nextOrder
+                };
+                _context.ExamQuestions.Add(examQuestion);
+                exam.UpdatedAt = now;
+
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã thêm câu hỏi mới vào đề thi.",
+                    examQuestionId = examQuestion.Id,
+                    questionId = question.Id
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể thêm câu hỏi cho đề thi {ExamId}.", examId);
+                await transaction.RollbackAsync(CancellationToken.None);
+                return this.ApiServerError("Không thể thêm câu hỏi mới vào đề thi.");
+            }
+        }
+
+        [HttpPost("/Admin/api/Exams/{examId}/Questions/Update/{examQuestionId}")]
+        [HttpPut("/Admin/api/Exams/{examId}/Questions/Update/{examQuestionId}")]
+        public async Task<IActionResult> UpdateQuestion(
+            int examId,
+            int examQuestionId,
+            [FromBody] ExamQuestionUpsertDto? dto,
+            CancellationToken cancellationToken)
+        {
+            if (examId <= 0 || examQuestionId <= 0)
+            {
+                return this.ApiBadRequest("Mã đề thi hoặc câu hỏi không hợp lệ.");
+            }
+
+            var error = ValidateQuestionDto(dto, out var qText, out var qType, out var cleanOptions, out var refAnswer, out var audioUrl);
+            if (error != null)
+            {
+                return this.ApiBadRequest(error);
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var eq = await _context.ExamQuestions
+                    .FirstOrDefaultAsync(x => x.Id == examQuestionId && x.ExamId == examId, cancellationToken);
+                if (eq == null)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Không tìm thấy câu hỏi trong đề thi.");
+                }
+
+                var question = await _context.Questions.FirstOrDefaultAsync(q => q.Id == eq.QuestionId, cancellationToken);
+                var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
+                if (question == null || exam == null)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Không tìm thấy dữ liệu câu hỏi hoặc đề thi.");
+                }
+
+                var referencedOptionIds = await _context.UserExamAnswers
+                    .AsNoTracking()
+                    .Where(a => a.QuestionId == question.Id && a.SelectedOptionId != null)
+                    .Select(a => a.SelectedOptionId!.Value)
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                if (referencedOptionIds.Count > 0 && !string.Equals(question.QuestionType, qType, StringComparison.OrdinalIgnoreCase))
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Câu hỏi này đã có học viên chọn đáp án nên không thể đổi sang loại câu hỏi khác.");
+                }
+
+                var now = DateTime.UtcNow;
+                question.QuestionText = qText;
+                question.QuestionType = qType;
+                question.AudioUrl = audioUrl;
+                question.DefaultPoints = dto!.Points;
+                question.UpdatedAt = now;
+
+                eq.Points = dto.Points;
+                if (dto.OrderIndex.HasValue && dto.OrderIndex.Value > 0)
+                {
+                    eq.OrderIndex = dto.OrderIndex.Value;
+                }
+                exam.UpdatedAt = now;
+
+                var existingOptions = await _context.QuestionOptions
+                    .Where(o => o.QuestionId == question.Id)
+                    .OrderBy(o => o.Id)
+                    .ToListAsync(cancellationToken);
+
+                var existingRefs = await _context.QuestionAnswers
+                    .Where(a => a.QuestionId == question.Id)
+                    .ToListAsync(cancellationToken);
+
+                if (qType == "multiple_choice")
+                {
+                    if (existingRefs.Count > 0)
+                    {
+                        _context.QuestionAnswers.RemoveRange(existingRefs);
+                    }
+
+                    // Nếu đã có học viên chọn đáp án, cập nhật các option cũ theo thứ tự để giữ nguyên khóa ngoại
+                    if (referencedOptionIds.Count > 0)
+                    {
+                        for (var i = 0; i < existingOptions.Count && i < cleanOptions.Count; i++)
+                        {
+                            existingOptions[i].OptionText = cleanOptions[i].Text;
+                            existingOptions[i].IsCorrect = cleanOptions[i].IsCorrect;
+                        }
+                        if (cleanOptions.Count < existingOptions.Count)
+                        {
+                            var toRemove = existingOptions.Skip(cleanOptions.Count).ToList();
+                            if (toRemove.Any(o => referencedOptionIds.Contains(o.Id)))
+                            {
+                                await transaction.RollbackAsync(CancellationToken.None);
+                                return this.ApiBadRequest("Không thể xóa bớt lựa chọn vì đã có học viên chọn lựa chọn đó.");
+                            }
+                            _context.QuestionOptions.RemoveRange(toRemove);
+                        }
+                        else if (cleanOptions.Count > existingOptions.Count)
+                        {
+                            _context.QuestionOptions.AddRange(cleanOptions.Skip(existingOptions.Count).Select(o => new QuestionOption
+                            {
+                                QuestionId = question.Id,
+                                OptionText = o.Text,
+                                IsCorrect = o.IsCorrect
+                            }));
+                        }
+                    }
+                    else
+                    {
+                        if (existingOptions.Count > 0)
+                        {
+                            _context.QuestionOptions.RemoveRange(existingOptions);
+                        }
+                        _context.QuestionOptions.AddRange(cleanOptions.Select(o => new QuestionOption
+                        {
+                            QuestionId = question.Id,
+                            OptionText = o.Text,
+                            IsCorrect = o.IsCorrect
+                        }));
+                    }
+                }
+                else
+                {
+                    if (existingOptions.Count > 0)
+                    {
+                        _context.QuestionOptions.RemoveRange(existingOptions);
+                    }
+                    if (existingRefs.Count > 0)
+                    {
+                        _context.QuestionAnswers.RemoveRange(existingRefs);
+                    }
+                    if (!string.IsNullOrWhiteSpace(refAnswer))
+                    {
+                        _context.QuestionAnswers.Add(new QuestionAnswer
+                        {
+                            QuestionId = question.Id,
+                            AnswerText = refAnswer,
+                            IsCaseSensitive = dto.IsCaseSensitive ?? false
+                        });
+                    }
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật câu hỏi thành công.",
+                    examQuestionId = eq.Id
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể cập nhật câu hỏi {ExamQuestionId} của đề {ExamId}.", examQuestionId, examId);
+                await transaction.RollbackAsync(CancellationToken.None);
+                return this.ApiServerError("Không thể cập nhật câu hỏi.");
+            }
+        }
+
+        [HttpPost("/Admin/api/Exams/{examId}/Questions/Delete/{examQuestionId}")]
+        [HttpDelete("/Admin/api/Exams/{examId}/Questions/Delete/{examQuestionId}")]
+        public async Task<IActionResult> DeleteQuestion(int examId, int examQuestionId, CancellationToken cancellationToken)
+        {
+            if (examId <= 0 || examQuestionId <= 0)
+            {
+                return this.ApiBadRequest("Mã đề thi hoặc câu hỏi không hợp lệ.");
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var eq = await _context.ExamQuestions
+                    .FirstOrDefaultAsync(x => x.Id == examQuestionId && x.ExamId == examId, cancellationToken);
+                if (eq == null)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Không tìm thấy câu hỏi trong đề thi.");
+                }
+
+                var hasStudentAnswers = await (
+                    from a in _context.UserExamAnswers.AsNoTracking()
+                    join ue in _context.UserExams.AsNoTracking() on a.UserExamId equals ue.Id
+                    where ue.ExamId == examId && a.QuestionId == eq.QuestionId
+                    select a.Id
+                ).AnyAsync(cancellationToken);
+
+                if (hasStudentAnswers)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Không thể xóa câu hỏi đã có học viên làm bài.");
+                }
+
+                var questionId = eq.QuestionId;
+                _context.ExamQuestions.Remove(eq);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                var stillUsedElsewhere = await _context.ExamQuestions
+                    .AsNoTracking()
+                    .AnyAsync(x => x.QuestionId == questionId, cancellationToken)
+                    || await _context.UserExamAnswers
+                    .AsNoTracking()
+                    .AnyAsync(a => a.QuestionId == questionId, cancellationToken);
+
+                if (!stillUsedElsewhere)
+                {
+                    var opts = await _context.QuestionOptions.Where(o => o.QuestionId == questionId).ToListAsync(cancellationToken);
+                    var refs = await _context.QuestionAnswers.Where(a => a.QuestionId == questionId).ToListAsync(cancellationToken);
+                    var q = await _context.Questions.FirstOrDefaultAsync(x => x.Id == questionId, cancellationToken);
+
+                    if (opts.Count > 0) _context.QuestionOptions.RemoveRange(opts);
+                    if (refs.Count > 0) _context.QuestionAnswers.RemoveRange(refs);
+                    if (q != null) _context.Questions.Remove(q);
+                }
+
+                var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
+                if (exam != null)
+                {
+                    exam.UpdatedAt = DateTime.UtcNow;
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đã xóa câu hỏi khỏi đề thi."
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể xóa câu hỏi {ExamQuestionId} khỏi đề {ExamId}.", examQuestionId, examId);
+                await transaction.RollbackAsync(CancellationToken.None);
+                return this.ApiServerError("Không thể xóa câu hỏi khỏi đề thi.");
+            }
+        }
+
+        private static string? ValidateExam(ExamUpsertDto? dto, out string title, out string? description)
+        {
+            title = string.Empty;
+            description = null;
+
+            if (dto == null)
+            {
+                return "Dữ liệu gửi lên không hợp lệ.";
+            }
+
+            title = (dto.Title ?? string.Empty).Trim();
+            description = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim();
+
+            if (title.Length == 0 || title.Length > MaxTitleLength)
+            {
+                return $"Tiêu đề bài thi không hợp lệ (1 - {MaxTitleLength} ký tự).";
+            }
+
+            if (description != null && description.Length > MaxDescriptionLength)
+            {
+                return $"Mô tả bài thi không được vượt quá {MaxDescriptionLength} ký tự.";
+            }
+
+            if (dto.DurationMinutes < 1 || dto.DurationMinutes > MaxDurationMinutes)
+            {
+                return $"Thời gian làm bài phải từ 1 đến {MaxDurationMinutes} phút.";
+            }
+
+            if (dto.PassScore < 0 || dto.PassScore > 10000)
+            {
+                return "Điểm qua không hợp lệ (0 - 10.000).";
+            }
+
+            if (dto.MaxAttempts.HasValue && dto.MaxAttempts.Value < 1)
+            {
+                return "Số lượt thi tối đa phải >= 1 (hoặc để trống nếu không giới hạn).";
+            }
+
+            return null;
+        }
+
+        private static string? ValidateQuestionDto(
+            ExamQuestionUpsertDto? dto,
+            out string questionText,
+            out string questionType,
+            out List<(string Text, bool IsCorrect)> cleanOptions,
+            out string? refAnswer,
+            out string? audioUrl)
+        {
+            questionText = string.Empty;
+            questionType = "multiple_choice";
+            cleanOptions = new List<(string, bool)>();
+            refAnswer = null;
+            audioUrl = null;
+
+            if (dto == null)
+            {
+                return "Dữ liệu câu hỏi không hợp lệ.";
+            }
+
+            questionText = (dto.QuestionText ?? string.Empty).Trim();
+            questionType = (dto.QuestionType ?? "multiple_choice").Trim().ToLowerInvariant();
+            refAnswer = string.IsNullOrWhiteSpace(dto.ReferenceAnswer) ? null : dto.ReferenceAnswer.Trim();
+            audioUrl = string.IsNullOrWhiteSpace(dto.AudioUrl) ? null : dto.AudioUrl.Trim();
+
+            if (questionText.Length == 0 || questionText.Length > MaxQuestionTextLength)
+            {
+                return $"Nội dung câu hỏi không hợp lệ (1 - {MaxQuestionTextLength} ký tự).";
+            }
+
+            if (!ValidQuestionTypes.Contains(questionType))
+            {
+                return "Loại câu hỏi không hợp lệ (multiple_choice, fill_blank, pronunciation, essay).";
+            }
+
+            if (dto.Points < 1 || dto.Points > 1000)
+            {
+                return "Điểm câu hỏi phải từ 1 đến 1.000.";
+            }
+
+            if (dto.OrderIndex.HasValue && (dto.OrderIndex.Value < 1 || dto.OrderIndex.Value > 1000))
+            {
+                return "Thứ tự câu hỏi phải từ 1 đến 1.000.";
+            }
+
+            if (questionType == "multiple_choice")
+            {
+                if (dto.Options == null)
+                {
+                    return "Câu hỏi trắc nghiệm cần ít nhất 2 phương án trả lời.";
+                }
+
+                cleanOptions = dto.Options
+                    .Where(o => o != null && !string.IsNullOrWhiteSpace(o.OptionText))
+                    .Select(o => (o.OptionText!.Trim(), o.IsCorrect))
+                    .ToList();
+
+                if (cleanOptions.Count < 2)
+                {
+                    return "Câu hỏi trắc nghiệm phải có ít nhất 2 lựa chọn hợp lệ.";
+                }
+
+                if (!cleanOptions.Any(o => o.IsCorrect))
+                {
+                    return "Vui lòng chọn ít nhất 1 đáp án đúng cho câu hỏi trắc nghiệm.";
+                }
+            }
+
+            return null;
+        }
+
+        public class ExamUpsertDto
+        {
+            public string? Title { get; set; }
+            public int? CourseId { get; set; }
+            public int CreatedByTeacherId { get; set; }
+            public string? Description { get; set; }
+            public int DurationMinutes { get; set; } = 45;
+            public int PassScore { get; set; } = 50;
+            public int? MaxAttempts { get; set; }
+            public bool? IsPublished { get; set; }
+        }
+
+        public class ExamQuestionOptionDto
+        {
+            public string? OptionText { get; set; }
+            public bool IsCorrect { get; set; }
+        }
+
+        public class ExamQuestionUpsertDto
+        {
+            public string? QuestionText { get; set; }
+            public string? QuestionType { get; set; }
+            public int Points { get; set; } = 10;
+            public int? OrderIndex { get; set; }
+            public string? AudioUrl { get; set; }
+            public string? ReferenceAnswer { get; set; }
+            public bool? IsCaseSensitive { get; set; }
+            public List<ExamQuestionOptionDto>? Options { get; set; }
         }
     }
 }

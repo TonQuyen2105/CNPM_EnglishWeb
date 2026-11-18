@@ -224,6 +224,10 @@
 
   <!-- Thanh tìm kiếm & lọc -->
   <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+    <div id="classes-course-filter-banner" style="display: none; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: #EFF6FF; border: 1px solid #BFDBFE; justify-content: space-between; align-items: center; font-size: 0.8125rem;">
+      <span id="classes-course-filter-label" style="color: #1E3A8A; font-weight: 600;">Đang lọc theo khóa học</span>
+      <button type="button" class="btn btn-sm btn-secondary" id="btn-clear-course-filter">Xem tất cả lớp</button>
+    </div>
     <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
       <div class="input-with-icon" style="flex: 1; min-width: 240px; max-width: 400px;">
         <span class="input-icon">
@@ -485,6 +489,9 @@
       let dropdownsLoaded = false;
       let hasLoadedOnce = false;
       let loadController = null;
+      const initialUrlParams = new URLSearchParams(window.location.search);
+      let activeCourseFilter = initialUrlParams.get('courseId') || '';
+      let pendingAutoOpenCreate = initialUrlParams.get('action') === 'create';
 
       function renderStatusBadge(status) {
         switch ((status || '').toLowerCase()) {
@@ -524,7 +531,19 @@
           : coursesList.map(c => `<option value="${c.id}" data-price="${c.price}">${escapeHtml(c.title)} (${formatCurrency(c.price)})</option>`).join('');
 
         if (coursesList.length > 0) {
-          document.getElementById('cls-price').value = coursesList[0].price ?? 0;
+          if (activeCourseFilter && coursesList.some(c => String(c.id) === String(activeCourseFilter))) {
+            courseSelect.value = String(activeCourseFilter);
+            const matched = coursesList.find(c => String(c.id) === String(activeCourseFilter));
+            document.getElementById('cls-price').value = matched?.price ?? 0;
+            const banner = document.getElementById('classes-course-filter-banner');
+            const label = document.getElementById('classes-course-filter-label');
+            if (banner && label) {
+              label.textContent = `Đang lọc lớp thuộc khóa: ${matched?.title || ('#' + activeCourseFilter)}`;
+              banner.style.display = 'flex';
+            }
+          } else {
+            document.getElementById('cls-price').value = coursesList[0].price ?? 0;
+          }
         }
 
         const tList = Array.isArray(teachers) ? teachers : [];
@@ -535,10 +554,19 @@
           }).join('');
 
         dropdownsLoaded = true;
+
+        if (pendingAutoOpenCreate) {
+          pendingAutoOpenCreate = false;
+          showFormError('');
+          initDefaultDates();
+          const modal = document.getElementById('modal-create-class');
+          if (modal) modal.classList.add('open', 'show');
+        }
       }
 
       function hasActiveFilter() {
-        return !!document.getElementById('classes-search-input').value.trim() ||
+        return !!activeCourseFilter ||
+          !!document.getElementById('classes-search-input').value.trim() ||
           document.getElementById('classes-status-filter').value !== 'all';
       }
 
@@ -592,6 +620,7 @@
         const status = document.getElementById('classes-status-filter').value;
 
         const params = new URLSearchParams();
+        if (activeCourseFilter) params.set('courseId', activeCourseFilter);
         if (status && status !== 'all') params.set('status', status);
         if (search) params.set('search', search);
         if (dropdownsLoaded) params.set('lookups', 'false');
@@ -694,6 +723,16 @@
             debouncedLoad.cancel();
             loadClasses();
           }
+        });
+
+        document.getElementById('btn-clear-course-filter').addEventListener('click', () => {
+          activeCourseFilter = '';
+          const banner = document.getElementById('classes-course-filter-banner');
+          if (banner) banner.style.display = 'none';
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          loadClasses();
         });
 
         document.getElementById('classes-tbody').addEventListener('click', (e) => {

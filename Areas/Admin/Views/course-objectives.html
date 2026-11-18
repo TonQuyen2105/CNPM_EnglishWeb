@@ -355,7 +355,8 @@
               </div>
               <div style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 8px;">
                 <button type="button" class="btn btn-secondary" id="btn-edit-objectives-side" disabled style="width: 100%;">Chỉnh sửa mô tả &amp; thông số</button>
-                <a href="/Admin/course-detail.html" id="co-detail-link" class="btn btn-primary" style="width: 100%; text-align: center;">Mở trang chi tiết khóa học</a>
+                <a href="/Admin/course-detail.html" id="co-detail-link" class="btn btn-secondary" style="width: 100%; text-align: center;">Mở trang chi tiết khóa học</a>
+                <a href="/Admin/classes.html" id="co-open-class-link" class="btn btn-primary" style="width: 100%; text-align: center;">Mở lớp cho khóa này</a>
               </div>
             </div>
           </div>
@@ -701,6 +702,7 @@
         document.getElementById('co-updated-at').textContent = formatDate(courseData.updatedAt || courseData.createdAt);
 
         document.getElementById('co-detail-link').href = `/Admin/course-detail.html?id=${courseData.id}`;
+        document.getElementById('co-open-class-link').href = `/Admin/classes.html?courseId=${courseData.id}&action=create`;
         document.getElementById('btn-edit-objectives').disabled = false;
         document.getElementById('btn-edit-objectives-side').disabled = false;
         document.getElementById('btn-add-lesson').disabled = false;

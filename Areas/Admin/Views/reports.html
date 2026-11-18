@@ -263,15 +263,22 @@
     </div>
   </div>
 
-  <!-- Bảng chi tiết theo từng khóa học -->
+  <!-- Bảng phân tích doanh thu theo Khóa học / Môn học / Giảng viên -->
   <div class="card" style="padding: 0; overflow: hidden;">
     <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
       <div>
-        <h3 class="card-title" style="margin: 0;">Hiệu quả tuyển sinh & doanh thu theo khóa học</h3>
+        <h3 class="card-title" style="margin: 0;" id="rep-table-title">Hiệu quả tuyển sinh &amp; doanh thu theo khóa học</h3>
         <div class="card-subtitle" id="rep-table-subtitle">Tổng hợp theo các lượt ghi danh hợp lệ (active / completed)</div>
       </div>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-sm btn-primary" data-rep-tab="courses">Theo Khóa học</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-rep-tab="subjects">Theo Môn học</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-rep-tab="teachers">Theo Giảng viên</button>
+      </div>
     </div>
-    <div class="table-container">
+
+    <!-- Tab 1: Khóa học -->
+    <div id="rep-panel-courses" class="table-container">
       <table class="table">
         <thead>
           <tr>
@@ -290,6 +297,53 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Tab 2: Môn học -->
+    <div id="rep-panel-subjects" class="table-container" style="display: none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Môn học</th>
+            <th>Số khóa / Lớp</th>
+            <th>Ghi danh</th>
+            <th>Hoàn thành</th>
+            <th>Tỷ trọng doanh thu</th>
+            <th class="text-right">Doanh thu ước tính</th>
+          </tr>
+        </thead>
+        <tbody id="rep-subjects-tbody">
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab 3: Giảng viên -->
+    <div id="rep-panel-teachers" style="display: none;">
+      <div style="padding: 0.75rem 1.5rem; background: #EFF6FF; border-bottom: 1px solid #BFDBFE; font-size: 0.8rem; color: #1E3A8A;">
+        <strong>Logic phân bổ doanh thu:</strong> Doanh thu từng lớp học được ghi nhận cho giảng viên chính đứng lớp (chia đều nếu lớp có nhiều giảng viên chính; không cộng trùng với trợ giảng). Lớp chưa phân công giảng viên được tách dòng riêng để đối soát 100% với tổng doanh thu kỳ.
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Giảng viên</th>
+              <th>Lớp đứng chính / Tổng</th>
+              <th>Ghi danh</th>
+              <th>Hoàn thành</th>
+              <th>Tỷ trọng doanh thu</th>
+              <th class="text-right">Doanh thu phân bổ</th>
+            </tr>
+          </thead>
+          <tbody id="rep-teachers-tbody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -494,6 +548,92 @@
         }).join('');
       }
 
+      function renderSubjectBreakdown(items) {
+        const tbody = document.getElementById('rep-subjects-tbody');
+        const list = Array.isArray(items) ? items : [];
+        if (list.length === 0) {
+          tbody.innerHTML = stateRow(6, 'Chưa có dữ liệu môn học', 'Dữ liệu doanh thu theo môn học sẽ hiển thị tại đây.');
+          return;
+        }
+
+        tbody.innerHTML = list.map(s => {
+          const share = Math.max(0, Math.min(100, Number(s.revenueSharePercent) || 0));
+          return `
+            <tr>
+              <td>
+                <a href="/Admin/courses.html?subjectId=${encodeURIComponent(s.subjectId)}" style="font-weight: 600; color: var(--primary-600); text-decoration: none;">
+                  ${escapeHtml(s.subjectName)}
+                </a>
+                ${s.isActive ? '' : ' <span class="badge badge-neutral">Tạm ẩn</span>'}
+              </td>
+              <td>${s.courseCount ?? 0} khóa &bull; ${s.classCount ?? 0} lớp</td>
+              <td><strong>${s.enrollmentCount ?? 0}</strong> lượt</td>
+              <td>${s.completedCount ?? 0} (${s.completionRate ?? 0}%)</td>
+              <td style="min-width: 140px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; height: 8px; background: var(--neutral-200); border-radius: 99px; overflow: hidden;">
+                    <div style="width: ${share}%; height: 100%; background: var(--primary-600);"></div>
+                  </div>
+                  <span style="font-size: 0.78rem; font-weight: 600; min-width: 42px;">${share}%</span>
+                </div>
+              </td>
+              <td class="text-right"><strong>${formatCurrency(s.revenue)}</strong></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderTeacherBreakdown(items) {
+        const tbody = document.getElementById('rep-teachers-tbody');
+        const list = Array.isArray(items) ? items : [];
+        if (list.length === 0) {
+          tbody.innerHTML = stateRow(6, 'Chưa có dữ liệu giảng viên', 'Dữ liệu doanh thu phân bổ theo giảng viên sẽ hiển thị tại đây.');
+          return;
+        }
+
+        tbody.innerHTML = list.map(t => {
+          const share = Math.max(0, Math.min(100, Number(t.revenueSharePercent) || 0));
+          const isUnassigned = !t.teacherId || t.teacherId <= 0;
+          const nameCell = isUnassigned
+            ? `<span style="color: var(--text-muted); font-style: italic;">${escapeHtml(t.teacherName)}</span>`
+            : `<a href="/Admin/schedules.html?teacherId=${encodeURIComponent(t.teacherId)}" style="font-weight: 600; color: var(--primary-600); text-decoration: none;">${escapeHtml(t.teacherName)}</a>
+               <div style="font-size: 0.75rem; color: var(--text-muted);">${t.qualification ? escapeHtml(t.qualification) : 'Chưa cập nhật bằng cấp'} ${t.isVerified ? '• Đã xác minh' : ''}</div>`;
+
+          return `
+            <tr>
+              <td>${nameCell}</td>
+              <td>${isUnassigned ? '--' : `<strong>${t.mainClassCount ?? 0}</strong> / ${t.assignedClassCount ?? 0} lớp`}</td>
+              <td><strong>${t.enrollmentCount ?? 0}</strong> lượt</td>
+              <td>${t.completedCount ?? 0} (${t.completionRate ?? 0}%)</td>
+              <td style="min-width: 140px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; height: 8px; background: var(--neutral-200); border-radius: 99px; overflow: hidden;">
+                    <div style="width: ${share}%; height: 100%; background: #059669;"></div>
+                  </div>
+                  <span style="font-size: 0.78rem; font-weight: 600; min-width: 42px;">${share}%</span>
+                </div>
+              </td>
+              <td class="text-right"><strong>${formatCurrency(t.revenue)}</strong></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function switchReportTab(tab) {
+        const titles = {
+          courses: 'Hiệu quả tuyển sinh & doanh thu theo khóa học',
+          subjects: 'Thống kê doanh thu theo Môn học',
+          teachers: 'Thống kê doanh thu phân bổ theo Giảng viên'
+        };
+        document.getElementById('rep-table-title').textContent = titles[tab] || titles.courses;
+        ['courses', 'subjects', 'teachers'].forEach(key => {
+          document.getElementById(`rep-panel-${key}`).style.display = key === tab ? 'block' : 'none';
+        });
+        document.querySelectorAll('[data-rep-tab]').forEach(btn => {
+          btn.className = btn.getAttribute('data-rep-tab') === tab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
+        });
+      }
+
       async function loadReports() {
         if (loadController) loadController.abort();
         const controller = new AbortController();
@@ -505,6 +645,8 @@
         document.getElementById('rep-monthly-chart').innerHTML =
           '<div class="skeleton skeleton-rect" style="height: 100%;"></div>';
         document.getElementById('rep-courses-tbody').innerHTML = skeletonRows(COLS, 5);
+        document.getElementById('rep-subjects-tbody').innerHTML = skeletonRows(6, 4);
+        document.getElementById('rep-teachers-tbody').innerHTML = skeletonRows(6, 4);
 
         try {
           const params = new URLSearchParams();
@@ -518,6 +660,8 @@
           renderKpi(data);
           renderMonthlyChart(data.monthlyTrend);
           renderBreakdown(data.courseBreakdown);
+          renderSubjectBreakdown(data.subjectBreakdown);
+          renderTeacherBreakdown(data.teacherBreakdown);
         } catch (err) {
           if (isAbortError(err)) return;
           console.error('Lỗi tải báo cáo:', err);
@@ -529,6 +673,8 @@
           document.getElementById('rep-retention-sub').textContent = 'Không thể tải dữ liệu';
           document.getElementById('rep-monthly-chart').innerHTML = '';
           document.getElementById('rep-courses-tbody').innerHTML = errorRowWithRetry(COLS, err.message);
+          document.getElementById('rep-subjects-tbody').innerHTML = errorRowWithRetry(6, err.message);
+          document.getElementById('rep-teachers-tbody').innerHTML = errorRowWithRetry(6, err.message);
           showToast(err.message, 'error');
         } finally {
           if (loadController === controller) {
@@ -540,6 +686,10 @@
 
       document.addEventListener('DOMContentLoaded', () => {
         loadReports();
+
+        document.querySelectorAll('[data-rep-tab]').forEach(btn => {
+          btn.addEventListener('click', () => switchReportTab(btn.getAttribute('data-rep-tab')));
+        });
 
         document.getElementById('report-year-filter').addEventListener('change', loadReports);
         document.getElementById('report-quarter-filter').addEventListener('change', loadReports);
@@ -555,8 +705,10 @@
           showToast('Đang tải xuống tệp báo cáo CSV...', 'info');
         });
 
-        document.getElementById('rep-courses-tbody').addEventListener('click', (e) => {
-          if (e.target.closest('[data-retry-load]')) loadReports();
+        ['rep-courses-tbody', 'rep-subjects-tbody', 'rep-teachers-tbody'].forEach(id => {
+          document.getElementById(id).addEventListener('click', (e) => {
+            if (e.target.closest('[data-retry-load]')) loadReports();
+          });
         });
       });
     })();

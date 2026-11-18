@@ -78,11 +78,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         /// Frontend chỉ yêu cầu ở lần tải đầu tiên; các lần lọc/tìm kiếm sau gửi false.
         /// </param>
         [HttpGet("/Admin/api/Classes/List")]
-        public async Task<IActionResult> List(string? status, string? search, CancellationToken cancellationToken, bool lookups = true)
+        public async Task<IActionResult> List(string? status, string? search, int? courseId, CancellationToken cancellationToken, bool lookups = true)
         {
             try
             {
                 var query = _context.CourseClasses.AsNoTracking().AsQueryable();
+
+                if (courseId.HasValue && courseId.Value > 0)
+                {
+                    query = query.Where(c => c.CourseId == courseId.Value);
+                }
 
                 if (!string.IsNullOrWhiteSpace(status) && !status.Equals("all", StringComparison.OrdinalIgnoreCase))
                 {

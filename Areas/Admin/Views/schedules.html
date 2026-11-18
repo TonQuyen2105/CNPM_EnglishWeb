@@ -506,8 +506,21 @@
           ? '<option value="">-- Chưa có ca học --</option>'
           : slots.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.timeRange)})</option>`).join('');
 
-        if (prevFilterRoom && rooms.some(r => String(r.id) === prevFilterRoom)) filterRoom.value = prevFilterRoom;
-        if (prevFilterTeacher && teachers.some(t => String(t.id) === prevFilterTeacher)) filterTeacher.value = prevFilterTeacher;
+        const initialParams = new URLSearchParams(window.location.search);
+        const urlTeacherId = initialParams.get('teacherId') || '';
+        const urlClassroomId = initialParams.get('classroomId') || '';
+
+        if (prevFilterRoom && rooms.some(r => String(r.id) === prevFilterRoom)) {
+          filterRoom.value = prevFilterRoom;
+        } else if (urlClassroomId && rooms.some(r => String(r.id) === urlClassroomId)) {
+          filterRoom.value = urlClassroomId;
+        }
+
+        if (prevFilterTeacher && teachers.some(t => String(t.id) === prevFilterTeacher)) {
+          filterTeacher.value = prevFilterTeacher;
+        } else if (urlTeacherId && teachers.some(t => String(t.id) === urlTeacherId)) {
+          filterTeacher.value = urlTeacherId;
+        }
         if (prevSchedClass && classes.some(c => String(c.id) === prevSchedClass)) schedClass.value = prevSchedClass;
         if (prevSchedRoom && rooms.some(r => String(r.id) === prevSchedRoom)) schedRoom.value = prevSchedRoom;
         if (prevSchedSlot && slots.some(s => String(s.id) === prevSchedSlot)) schedSlot.value = prevSchedSlot;
@@ -584,8 +597,9 @@
           tbody.style.opacity = '0.55';
         }
 
-        const roomVal = document.getElementById('filter-classroom').value;
-        const teacherVal = document.getElementById('filter-teacher').value;
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomVal = document.getElementById('filter-classroom').value || (needLookups ? (urlParams.get('classroomId') || '') : '');
+        const teacherVal = document.getElementById('filter-teacher').value || (needLookups ? (urlParams.get('teacherId') || '') : '');
 
         const params = new URLSearchParams();
         if (roomVal) params.set('classroomId', roomVal);
