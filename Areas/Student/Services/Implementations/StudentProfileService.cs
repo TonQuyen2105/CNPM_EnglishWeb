@@ -37,7 +37,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 FullName = user.FullName,
                 Email = user.Email,
                 AvatarUrl = user.AvatarUrl,
-                PhoneNumber = ext.PhoneNumber,
+                PhoneNumber = user.PhoneNumber ?? ext.PhoneNumber,
                 LearningGoal = ext.LearningGoal
             };
 
@@ -78,6 +78,10 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             user.FullName = request.FullName.Trim();
             user.Email = normalizedEmail;
+            if (request.PhoneNumber != null)
+            {
+                user.PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
+            }
             if (request.AvatarUrl != null)
             {
                 user.AvatarUrl = string.IsNullOrWhiteSpace(request.AvatarUrl) ? null : request.AvatarUrl.Trim();
@@ -88,7 +92,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             var ext = StudentExtendedStore.UpdateUserProfileExtension(
                 studentId,
-                request.PhoneNumber,
+                user.PhoneNumber,
                 request.LearningGoal);
 
             var dto = new StudentProfileDto
@@ -97,7 +101,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 FullName = user.FullName,
                 Email = user.Email,
                 AvatarUrl = user.AvatarUrl,
-                PhoneNumber = ext.PhoneNumber,
+                PhoneNumber = user.PhoneNumber ?? ext.PhoneNumber,
                 LearningGoal = ext.LearningGoal
             };
 

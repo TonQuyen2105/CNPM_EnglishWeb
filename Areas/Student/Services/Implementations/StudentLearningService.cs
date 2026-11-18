@@ -174,6 +174,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             }
 
             var score = request.Score.HasValue ? Math.Clamp(request.Score.Value, 0m, 100m) : 100m;
+            var isCompleted = request.IsCompleted ?? true;
             var now = DateTime.UtcNow;
 
             var progressEntity = await Db.UserProgresses
@@ -181,9 +182,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             if (progressEntity != null)
             {
-                progressEntity.IsCompleted = true;
-                progressEntity.Score = score;
-                progressEntity.CompletedAt = now;
+                progressEntity.IsCompleted = isCompleted;
+                progressEntity.Score = isCompleted ? score : null;
+                progressEntity.CompletedAt = isCompleted ? now : null;
             }
             else
             {
@@ -193,9 +194,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     Id = nextId,
                     UserId = studentId,
                     LessonId = lessonId,
-                    Score = score,
-                    IsCompleted = true,
-                    CompletedAt = now
+                    Score = isCompleted ? score : null,
+                    IsCompleted = isCompleted,
+                    CompletedAt = isCompleted ? now : null
                 };
                 Db.UserProgresses.Add(progressEntity);
             }

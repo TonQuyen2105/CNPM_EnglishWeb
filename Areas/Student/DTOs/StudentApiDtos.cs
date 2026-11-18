@@ -11,6 +11,12 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
     public class DashboardOverviewDto
     {
+        [JsonPropertyName("student_profile")]
+        public DashboardStudentProfileDto? StudentProfile { get; set; }
+
+        [JsonPropertyName("stats")]
+        public DashboardStatsDto Stats { get; set; } = new();
+
         [JsonPropertyName("active_courses")]
         public List<DashboardActiveCourseDto> ActiveCourses { get; set; } = new();
 
@@ -21,10 +27,58 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public DashboardNextSessionDto? NextSession { get; set; }
     }
 
+    public class DashboardStudentProfileDto
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("full_name")]
+        public string FullName { get; set; } = string.Empty;
+
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
+
+        [JsonPropertyName("avatar_url")]
+        public string? AvatarUrl { get; set; }
+
+        [JsonPropertyName("streak_days")]
+        public int StreakDays { get; set; } = 5;
+    }
+
+    public class DashboardStatsDto
+    {
+        [JsonPropertyName("enrolled_classes_count")]
+        public int EnrolledClassesCount { get; set; }
+
+        [JsonPropertyName("enrolled_class_names")]
+        public string EnrolledClassNames { get; set; } = string.Empty;
+
+        [JsonPropertyName("mastered_vocabularies")]
+        public int MasteredVocabularies { get; set; }
+
+        [JsonPropertyName("average_score")]
+        public double AverageScore { get; set; } = 8.5;
+
+        [JsonPropertyName("score_rank")]
+        public string ScoreRank { get; set; } = "Giỏi";
+
+        [JsonPropertyName("total_lessons_completed")]
+        public int TotalLessonsCompleted { get; set; }
+
+        [JsonPropertyName("total_lessons")]
+        public int TotalLessons { get; set; }
+
+        [JsonPropertyName("attendance_rate")]
+        public int AttendanceRate { get; set; } = 100;
+    }
+
     public class DashboardActiveCourseDto
     {
         [JsonPropertyName("class_id")]
         public int ClassId { get; set; }
+
+        [JsonPropertyName("class_code")]
+        public string ClassCode { get; set; } = string.Empty;
 
         [JsonPropertyName("class_name")]
         public string ClassName { get; set; } = string.Empty;
@@ -34,6 +88,12 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("course_title")]
         public string CourseTitle { get; set; } = string.Empty;
+
+        [JsonPropertyName("teacher_name")]
+        public string? TeacherName { get; set; }
+
+        [JsonPropertyName("schedule_summary")]
+        public string? ScheduleSummary { get; set; }
 
         [JsonPropertyName("thumbnail_url")]
         public string? ThumbnailUrl { get; set; }
@@ -46,6 +106,12 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("total_lessons")]
         public int TotalLessons { get; set; }
+
+        [JsonPropertyName("next_lesson_id")]
+        public int? NextLessonId { get; set; }
+
+        [JsonPropertyName("next_lesson_title")]
+        public string? NextLessonTitle { get; set; }
     }
 
     public class DashboardQuickReviewDto
@@ -382,6 +448,12 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         [JsonPropertyName("teachers")]
         public List<ClassTeacherInfoDto> Teachers { get; set; } = new();
 
+        [JsonPropertyName("schedules")]
+        public List<ClassScheduleItemDto> Schedules { get; set; } = new();
+
+        [JsonPropertyName("schedule_summary")]
+        public string? ScheduleSummary { get; set; }
+
         [JsonPropertyName("progress_percentage")]
         public int ProgressPercentage { get; set; }
 
@@ -598,6 +670,9 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         [JsonPropertyName("location")]
         public string? Location { get; set; }
 
+        [JsonPropertyName("teacher_name")]
+        public string? TeacherName { get; set; }
+
         [JsonPropertyName("status")]
         public string Status { get; set; } = "scheduled";
 
@@ -694,6 +769,9 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
     {
         [JsonPropertyName("score")]
         public decimal? Score { get; set; } = 100;
+
+        [JsonPropertyName("is_completed")]
+        public bool? IsCompleted { get; set; } = true;
     }
 
     public class CompleteLessonResponseDto
@@ -1271,5 +1349,57 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("avatar_url")]
         public string? AvatarUrl { get; set; }
+    }
+
+    // ==========================================
+    // NHÓM XÁC THỰC: HỌC SINH ĐĂNG NHẬP (AUTH)
+    // ==========================================
+
+    public class StudentLoginRequestDto
+    {
+        [Required(ErrorMessage = "Email không được để trống.")]
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Mật khẩu không được để trống.")]
+        [JsonPropertyName("password")]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class StudentLoginUserDto
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
+
+        [JsonPropertyName("full_name")]
+        public string FullName { get; set; } = string.Empty;
+
+        [JsonPropertyName("role")]
+        public string Role { get; set; } = "student";
+
+        [JsonPropertyName("phone_number")]
+        public string? PhoneNumber { get; set; }
+
+        [JsonPropertyName("avatar_url")]
+        public string? AvatarUrl { get; set; }
+
+        [JsonPropertyName("is_active")]
+        public bool IsActive { get; set; }
+    }
+
+    public class StudentLoginResponseDto
+    {
+        [JsonPropertyName("user")]
+        public StudentLoginUserDto User { get; set; } = new();
+
+        [JsonPropertyName("token")]
+        public string Token { get; set; } = string.Empty;
+
+        [JsonPropertyName("redirect_url")]
+        public string RedirectUrl { get; set; } = "/Areas/Student/Views/dashboard.html";
     }
 }

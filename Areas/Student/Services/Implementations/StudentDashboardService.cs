@@ -2,6 +2,7 @@ using CNPM_EnglishLearning.Areas.Student.DTOs;
 using CNPM_EnglishLearning.Areas.Student.DTOs.Common;
 using CNPM_EnglishLearning.Areas.Student.Services.Interfaces;
 using CNPM_EnglishLearning.Data;
+using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
@@ -21,7 +22,28 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             var now = DateTime.UtcNow;
             var today = now.Date;
 
-            // 1. Lấy toàn bộ các lớp học đang active của học sinh trong 1 câu truy vấn Join
+            // 1. Lấy thông tin tài khoản học sinh
+            var studentUser = await Db.Users.AsNoTracking()
+                .Where(u => u.Id == studentId)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.FullName,
+                    u.Email,
+                    u.AvatarUrl
+                })
+                .FirstOrDefaultAsync();
+
+            var profileDto = studentUser != null ? new DashboardStudentProfileDto
+            {
+                Id = studentUser.Id,
+                FullName = studentUser.FullName,
+                Email = studentUser.Email,
+                AvatarUrl = studentUser.AvatarUrl,
+                StreakDays = 5
+            } : null;
+
+            // 2. Lấy toàn bộ các lớp học đang active của học sinh
             var activeEnrollments = await (
                 from e in Db.Enrollments.AsNoTracking()
                 join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
@@ -31,6 +53,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 select new
                 {
                     ClassId = cc.Id,
+                    cc.ClassCode,
                     cc.ClassName,
                     CourseId = c.Id,
                     CourseTitle = c.Title,
@@ -38,35 +61,138 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 }
             ).ToListAsync();
 
-            // Tái sử dụng danh sách CourseId và ClassId cho các truy vấn tiếp theo
             var enrolledCourseIds = activeEnrollments.Select(x => x.CourseId).Distinct().ToList();
             var enrolledClassIds = activeEnrollments.Select(x => x.ClassId).Distinct().ToList();
+            var classToCourseMap = activeEnrollments
+                .GroupBy(x => x.ClassId)
+                .ToDictionary(g => g.Key, g => g.First().CourseId);
 
-            // 2. Truy vấn gộp tiến độ bài học theo danh sách khóa học (0 lỗi N+1)
-            var (totalByCourse, completedByCourse) = await GetCourseProgressDictionariesAsync(enrolledCourseIds, studentId);
+            // 3. Batch queries: tiến độ bài học theo lớp, giáo viên, lịch học
+            var (totalByClass, completedByClass) = await GetClassProgressDictionariesAsync(enrolledClassIds, classToCourseMap, studentId);
+            var teachersByClass = await GetTeachersByClassIdsAsync(enrolledClassIds);
+            var schedulesByClass = await GetSchedulesByClassIdsAsync(enrolledClassIds);
+
+            // Lấy danh sách lesson của class_lessons để ưu tiên thứ tự bài học theo lớp
+            var classLessonEntities = await (
+                from cl in Db.ClassLessons.AsNoTracking()
+                join l in Db.Lessons.AsNoTracking() on cl.LessonId equals l.Id
+                where enrolledClassIds.Contains(cl.ClassId)
+                orderby cl.ScheduleDate, l.OrderIndex
+                select new { cl.ClassId, Lesson = l }
+            ).ToListAsync();
+
+            var classLessonsMap = classLessonEntities
+                .GroupBy(x => x.ClassId)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.Lesson).DistinctBy(l => l.Id).ToList());
+
+            var allCourseLessons = enrolledCourseIds.Count == 0
+                ? new List<Lesson>()
+                : await Db.Lessons.AsNoTracking()
+                    .Where(l => enrolledCourseIds.Contains(l.CourseId))
+                    .OrderBy(l => l.OrderIndex)
+                    .ThenBy(l => l.Id)
+                    .ToListAsync();
+
+            var completedLessonIds = (await Db.UserProgresses.AsNoTracking()
+                .Where(p => p.UserId == studentId && p.IsCompleted)
+                .Select(p => p.LessonId)
+                .ToListAsync())
+                .ToHashSet();
 
             var activeCoursesDto = activeEnrollments.Select(item =>
             {
-                var totalLessons = totalByCourse.GetValueOrDefault(item.CourseId, 0);
-                var completedLessons = completedByCourse.GetValueOrDefault(item.CourseId, 0);
+                var totalLessons = totalByClass.GetValueOrDefault(item.ClassId, 0);
+                var completedLessons = completedByClass.GetValueOrDefault(item.ClassId, 0);
+
+                var targetLessons = classLessonsMap.TryGetValue(item.ClassId, out var cLessons) && cLessons.Count > 0
+                    ? cLessons
+                    : allCourseLessons.Where(l => l.CourseId == item.CourseId).ToList();
+
+                var nextLesson = targetLessons.FirstOrDefault(l => !completedLessonIds.Contains(l.Id)) ?? targetLessons.LastOrDefault();
+
+                var classTeachers = teachersByClass.GetValueOrDefault(item.ClassId);
+                var teacherName = classTeachers?.FirstOrDefault(t => t.Role == "main")?.FullName ?? classTeachers?.FirstOrDefault()?.FullName;
+
+                var classSchedules = schedulesByClass.GetValueOrDefault(item.ClassId);
+                var scheduleSummary = classSchedules != null && classSchedules.Count > 0
+                    ? string.Join(", ", classSchedules.Select(s => $"{s.DayName} {s.TimeRange}"))
+                    : null;
+
                 return new DashboardActiveCourseDto
                 {
                     ClassId = item.ClassId,
+                    ClassCode = item.ClassCode,
                     ClassName = item.ClassName,
                     CourseId = item.CourseId,
                     CourseTitle = item.CourseTitle,
+                    TeacherName = teacherName,
+                    ScheduleSummary = scheduleSummary,
                     ThumbnailUrl = item.ThumbnailUrl,
                     TotalLessons = totalLessons,
                     CompletedLessons = completedLessons,
-                    ProgressPercentage = CalculatePercentage(completedLessons, totalLessons)
+                    ProgressPercentage = CalculatePercentage(completedLessons, totalLessons),
+                    NextLessonId = nextLesson?.Id,
+                    NextLessonTitle = nextLesson?.Title
                 };
             }).ToList();
 
-            // 3. Đếm số lượng Flashcard đến hạn ôn tập hôm nay (next_review_at <= NOW() hoặc NULL)
+            // 4. Thống kê chỉ số (Stats)
+            var masteredCount = await Db.Flashcards.AsNoTracking()
+                .CountAsync(f => f.UserId == studentId && f.IntervalDays >= 1);
+
+            var progressScores = await Db.UserProgresses.AsNoTracking()
+                .Where(p => p.UserId == studentId && p.Score.HasValue)
+                .Select(p => (double)p.Score!.Value)
+                .ToListAsync();
+
+            var examScores = await Db.UserExams.AsNoTracking()
+                .Where(ue => ue.UserId == studentId && ue.TotalScore.HasValue)
+                .Select(ue => (double)ue.TotalScore!.Value)
+                .ToListAsync();
+
+            var allScores = progressScores.Concat(examScores).ToList();
+            var avgScore = allScores.Count > 0 ? Math.Round(allScores.Average(), 1) : 8.5;
+            if (avgScore > 10.0)
+            {
+                avgScore = Math.Round(avgScore / 10.0, 1);
+            }
+
+            var scoreRank = avgScore switch
+            {
+                >= 9.0 => "Xuất sắc",
+                >= 8.0 => "Giỏi",
+                >= 6.5 => "Khá",
+                >= 5.0 => "Trung bình",
+                _ => "Cần cố gắng"
+            };
+
+            var enrolledClassNames = string.Join(" & ", activeEnrollments.Select(x => !string.IsNullOrEmpty(x.ClassCode) ? x.ClassCode : x.ClassName));
+
+            var allEnrolledLessonIds = classLessonEntities.Count > 0
+                ? classLessonEntities.Select(x => x.Lesson.Id).Distinct().ToHashSet()
+                : allCourseLessons.Select(l => l.Id).Distinct().ToHashSet();
+
+            var totalEnrolledLessonsCount = allEnrolledLessonIds.Count > 0 ? allEnrolledLessonIds.Count : allCourseLessons.Count;
+            var totalEnrolledLessonsCompleted = allEnrolledLessonIds.Count > 0 
+                ? allEnrolledLessonIds.Count(lid => completedLessonIds.Contains(lid)) 
+                : completedLessonIds.Count;
+
+            var statsDto = new DashboardStatsDto
+            {
+                EnrolledClassesCount = activeEnrollments.Count,
+                EnrolledClassNames = string.IsNullOrEmpty(enrolledClassNames) ? "Chưa tham gia lớp nào" : enrolledClassNames,
+                MasteredVocabularies = masteredCount,
+                AverageScore = avgScore,
+                ScoreRank = scoreRank,
+                TotalLessonsCompleted = totalEnrolledLessonsCompleted,
+                TotalLessons = totalEnrolledLessonsCount,
+                AttendanceRate = 100
+            };
+
+            // 5. Đếm Flashcard đến hạn & đề thi chờ làm
             var dueFlashcardsCount = await Db.Flashcards.AsNoTracking()
                 .CountAsync(f => f.UserId == studentId && (f.NextReviewAt == null || f.NextReviewAt <= now));
 
-            // 4. Đếm số lượng bài thi chưa hoàn thành (thuộc các khóa đang học hoặc bài thi chung)
             var completedExamIds = await Db.UserExams.AsNoTracking()
                 .Where(ue => ue.UserId == studentId && (ue.Status == ExamPassed || ue.Status == ExamSubmitted))
                 .Select(ue => ue.ExamId)
@@ -79,7 +205,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     (ex.CourseId == null || enrolledCourseIds.Contains(ex.CourseId.Value)) &&
                     !completedExamIds.Contains(ex.Id));
 
-            // 5. Lấy buổi học sắp diễn ra gần nhất (ưu tiên bảng class_lessons, fallback sang lịch tuần class_schedules)
+            // 6. Buổi học sắp diễn ra gần nhất
             DashboardNextSessionDto? nextSessionDto = null;
 
             if (enrolledClassIds.Count > 0)
@@ -98,7 +224,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     where enrolledClassIds.Contains(cl.ClassId)
                           && cl.Status == SessionScheduled
                           && (cl.ScheduleDate == null || cl.ScheduleDate >= today)
-                    orderby cl.ScheduleDate ?? DateTime.MaxValue, cl.Id
+                    orderby cl.ScheduleDate, cl.Id
                     select new
                     {
                         ClassLessonId = cl.Id,
@@ -107,8 +233,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         cl.LessonId,
                         LessonTitle = l != null ? l.Title : "Buổi học định kỳ",
                         cl.ScheduleDate,
-                        StartTime = ts != null ? ts.StartTime : new TimeSpan(18, 0, 0),
-                        EndTime = ts != null ? ts.EndTime : new TimeSpan(20, 0, 0),
+                        RawStartTime = (TimeSpan?)ts.StartTime,
+                        RawEndTime = (TimeSpan?)ts.EndTime,
                         ClassroomName = cr != null ? cr.Name : "Phòng học trực tuyến / Zoom"
                     }
                 ).FirstOrDefaultAsync();
@@ -116,6 +242,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 if (upcomingClassLesson != null)
                 {
                     var sessionDate = upcomingClassLesson.ScheduleDate ?? today.AddDays(1);
+                    var startTime = upcomingClassLesson.RawStartTime ?? new TimeSpan(18, 0, 0);
+                    var endTime = upcomingClassLesson.RawEndTime ?? new TimeSpan(20, 0, 0);
                     nextSessionDto = new DashboardNextSessionDto
                     {
                         ClassLessonId = upcomingClassLesson.ClassLessonId,
@@ -124,14 +252,13 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         LessonId = upcomingClassLesson.LessonId,
                         LessonTitle = upcomingClassLesson.LessonTitle,
                         ScheduleDate = sessionDate.ToString("yyyy-MM-dd"),
-                        TimeSlot = FormatTimeRange(upcomingClassLesson.StartTime, upcomingClassLesson.EndTime),
+                        TimeSlot = FormatTimeRange(startTime, endTime),
                         Classroom = upcomingClassLesson.ClassroomName
                     };
                 }
                 else
                 {
                     // Fallback thông minh từ lịch cố định hàng tuần (class_schedules) nếu chưa tạo bản ghi class_lessons
-                    var schedulesByClass = await GetSchedulesByClassIdsAsync(enrolledClassIds);
                     var firstClassWithSchedule = activeEnrollments.FirstOrDefault(c => schedulesByClass.ContainsKey(c.ClassId));
 
                     if (firstClassWithSchedule != null && schedulesByClass.TryGetValue(firstClassWithSchedule.ClassId, out var classSchedules) && classSchedules.Count > 0)
@@ -159,6 +286,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             var response = new DashboardOverviewDto
             {
+                StudentProfile = profileDto,
+                Stats = statsDto,
                 ActiveCourses = activeCoursesDto,
                 QuickReview = new DashboardQuickReviewDto
                 {

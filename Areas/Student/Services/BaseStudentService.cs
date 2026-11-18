@@ -119,8 +119,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
         {
             var maxId = await dbSet.AsNoTracking()
                 .Select(idSelector)
-                .DefaultIfEmpty(0)
-                .MaxAsync();
+                .OrderByDescending(x => x)
+                .FirstOrDefaultAsync();
             return maxId + 1;
         }
 
@@ -161,6 +161,65 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
         }
 
         /// <summary>
+        /// Truy vấn gộp (Batch Query) tổng số bài học và số bài học đã hoàn thành theo danh sách ClassId cho 1 học sinh.
+        /// Ưu tiên đếm theo class_lessons nếu lớp đã có cấu hình bài học cụ thể, fallback theo course nếu chưa cấu hình.
+        /// Giúp khắc phục tình trạng lớp có số bài học thực tế khác với tổng bài học trong bảng lessons của khóa học.
+        /// </summary>
+        protected async Task<(Dictionary<int, int> TotalByClass, Dictionary<int, int> CompletedByClass)> GetClassProgressDictionariesAsync(
+            IReadOnlyCollection<int> classIds,
+            IReadOnlyDictionary<int, int> classToCourseMap,
+            int studentId)
+        {
+            if (classIds.Count == 0)
+            {
+                return (new Dictionary<int, int>(), new Dictionary<int, int>());
+            }
+
+            // 1. Lấy danh sách lesson_id của từng lớp từ class_lessons
+            var classLessons = await Db.ClassLessons.AsNoTracking()
+                .Where(cl => classIds.Contains(cl.ClassId))
+                .Select(cl => new { cl.ClassId, cl.LessonId })
+                .Distinct()
+                .ToListAsync();
+
+            var lessonsByClass = classLessons
+                .GroupBy(cl => cl.ClassId)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.LessonId).ToHashSet());
+
+            // 2. Lấy danh sách lesson_id mà học sinh đã hoàn thành
+            var completedLessonIds = (await Db.UserProgresses.AsNoTracking()
+                .Where(p => p.UserId == studentId && p.IsCompleted)
+                .Select(p => p.LessonId)
+                .Distinct()
+                .ToListAsync())
+                .ToHashSet();
+
+            // 3. Chuẩn bị fallback theo course nếu lớp không có class_lessons
+            var courseIds = classToCourseMap.Values.Distinct().ToList();
+            var (totalByCourse, completedByCourse) = await GetCourseProgressDictionariesAsync(courseIds, studentId);
+
+            var totalByClass = new Dictionary<int, int>();
+            var completedByClass = new Dictionary<int, int>();
+
+            foreach (var classId in classIds)
+            {
+                if (lessonsByClass.TryGetValue(classId, out var lessonSet) && lessonSet.Count > 0)
+                {
+                    totalByClass[classId] = lessonSet.Count;
+                    completedByClass[classId] = lessonSet.Count(lid => completedLessonIds.Contains(lid));
+                }
+                else
+                {
+                    var courseId = classToCourseMap.GetValueOrDefault(classId, 0);
+                    totalByClass[classId] = totalByCourse.GetValueOrDefault(courseId, 0);
+                    completedByClass[classId] = completedByCourse.GetValueOrDefault(courseId, 0);
+                }
+            }
+
+            return (totalByClass, completedByClass);
+        }
+
+        /// <summary>
         /// Truy vấn gộp (Batch Query) danh sách lịch học cố định hàng tuần theo danh sách ClassId.
         /// Tái sử dụng giữa CourseDetail, MyClassDetail và Enrollment Conflict Check.
         /// </summary>
@@ -178,7 +237,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
                 join cr in Db.Classrooms.AsNoTracking() on cs.ClassroomId equals cr.Id into crGroup
                 from cr in crGroup.DefaultIfEmpty()
                 where classIds.Contains(cs.ClassId)
-                orderby cs.DayOfWeek, ts != null ? ts.StartTime : TimeSpan.Zero
+                orderby cs.DayOfWeek, cs.TimeSlotId
                 select new
                 {
                     cs.ClassId,
@@ -186,8 +245,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
                     cs.DayOfWeek,
                     cs.TimeSlotId,
                     TimeSlotName = ts != null ? ts.Name : "Ca học tiêu chuẩn",
-                    StartTime = ts != null ? ts.StartTime : new TimeSpan(18, 0, 0),
-                    EndTime = ts != null ? ts.EndTime : new TimeSpan(20, 0, 0),
+                    RawStartTime = (TimeSpan?)ts.StartTime,
+                    RawEndTime = (TimeSpan?)ts.EndTime,
                     cs.ClassroomId,
                     ClassroomName = cr != null ? cr.Name : "Phòng trực tuyến / Zoom",
                     Location = cr != null ? cr.Location : "Online"
@@ -205,7 +264,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
                         DayName = GetDayOfWeekName(x.DayOfWeek),
                         TimeSlotId = x.TimeSlotId,
                         TimeSlotName = x.TimeSlotName,
-                        TimeRange = FormatTimeRange(x.StartTime, x.EndTime),
+                        TimeRange = FormatTimeRange(x.RawStartTime ?? new TimeSpan(18, 0, 0), x.RawEndTime ?? new TimeSpan(20, 0, 0)),
                         ClassroomId = x.ClassroomId,
                         ClassroomName = x.ClassroomName,
                         Location = x.Location

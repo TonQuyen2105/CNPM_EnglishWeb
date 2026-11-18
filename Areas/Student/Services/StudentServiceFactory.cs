@@ -20,6 +20,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
         private IStudentExamService? _examService;
         private IStudentAnalyticsService? _analyticsService;
         private IStudentProfileService? _profileService;
+        private IStudentAuthService? _authService;
 
         public StudentServiceFactory(ApplicationDbContext db)
         {
@@ -34,5 +35,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
         public IStudentExamService Exams => _examService ??= new StudentExamService(_db);
         public IStudentAnalyticsService Analytics => _analyticsService ??= new StudentAnalyticsService(_db);
         public IStudentProfileService Profile => _profileService ??= new StudentProfileService(_db);
+        public IStudentAuthService Auth => _authService ??= new StudentAuthService(_db);
     }
 }

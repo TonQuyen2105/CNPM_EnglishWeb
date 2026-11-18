@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
+// Kích hoạt LegacyTimestampBehavior cho Npgsql để tương thích linh hoạt với cả UTC và Unspecified DateTime
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -12,6 +15,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add MVC services to the container
 builder.Services.AddControllersWithViews();
+
+// Cấu hình CORS mở cho mọi nguồn (hỗ trợ Live Server port 5500, file://, hoặc localhost:5000)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // Register HtmlViewEngine to render static .html views seamlessly alongside .cshtml
 builder.Services.Configure<MvcViewOptions>(options =>
@@ -25,6 +39,22 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IExamService, ExamService>();
 
 var app = builder.Build();
+
+app.UseCors("AllowAll");
+
+// Đảm bảo schema PostgreSQL có cột phone_number trong bảng users
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.ExecuteSqlRaw("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50);");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Database Migration Note] {ex.Message}");
+    }
+}
 
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())

@@ -28,10 +28,14 @@ namespace CNPM_EnglishLearning.Models.Entities
         [Column("avatar_url")]
         public string? AvatarUrl { get; set; }
 
+        [Column("phone_number")]
+        [MaxLength(50)]
+        public string? PhoneNumber { get; set; }
+
         [Required]
         [Column("role")]
         [MaxLength(20)]
-        public string Role { get; set; } = "student"; // admin, teacher, student
+        public string Role { get; set; } = "student";// admin, teacher, student
 
         [Column("is_active")]
         public bool IsActive { get; set; } = true;

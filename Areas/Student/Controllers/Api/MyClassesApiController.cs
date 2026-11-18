@@ -13,14 +13,16 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
         }
 
         /// <summary>
-        /// 3.1. Lấy danh sách lớp học đang tham gia.
-        /// Endpoint: GET /api/v1/student/my-classes?status=active
+        /// 3.1. Lấy danh sách lớp học của học sinh (lọc theo trạng thái: ongoing, complete; và tìm kiếm theo từ khóa).
+        /// Endpoint: GET /api/v1/student/my-classes?status=ongoing&search=giao+tiếp
         /// </summary>
         [HttpGet("my-classes")]
-        public async Task<IActionResult> GetMyClasses([FromQuery(Name = "status")] string? status = "active")
+        public async Task<IActionResult> GetMyClasses(
+            [FromQuery(Name = "status")] string? status = null,
+            [FromQuery(Name = "search")] string? search = null)
         {
             var studentId = await ResolveStudentIdAsync();
-            var result = await Services.ClassSchedule.GetMyClassesAsync(studentId, status);
+            var result = await Services.ClassSchedule.GetMyClassesAsync(studentId, status, search);
             return ToActionResult(result);
         }
 

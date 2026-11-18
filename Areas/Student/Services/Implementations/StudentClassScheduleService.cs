@@ -18,32 +18,32 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
         }
 
         /// <summary>
-        /// 3.1. Lấy danh sách lớp học đang tham gia (lọc theo status: active, completed, cancelled).
+        /// 3.1. Lấy danh sách lớp học của học sinh.
+        /// Nghiệp vụ: Chỉ chấp nhận 2 trạng thái chuẩn hóa là "ongoing" (đang học) và "complete" (đã hoàn thành).
+        /// Loại bỏ hoàn toàn các trạng thái khác (upcoming, cancelled,...).
+        /// Hỗ trợ tìm kiếm theo từ khóa (tên lớp, mã lớp, tên khóa học, giảng viên) và lọc theo trạng thái (all, ongoing, complete).
         /// </summary>
-        public async Task<ServiceResult<List<MyClassListItemDto>>> GetMyClassesAsync(int studentId, string? status)
+        public async Task<ServiceResult<List<MyClassListItemDto>>> GetMyClassesAsync(int studentId, string? status, string? search = null)
         {
-            var enrollmentQuery = Db.Enrollments.AsNoTracking().Where(e => e.UserId == studentId);
+            // 1. Lấy các lớp học sinh có ghi danh (loại bỏ trạng thái cancelled)
+            var enrollmentQuery = Db.Enrollments.AsNoTracking()
+                .Where(e => e.UserId == studentId && e.Status.ToLower() != EnrollmentCancelled);
 
-            if (!string.IsNullOrWhiteSpace(status) && !string.Equals(status, "all", StringComparison.OrdinalIgnoreCase))
-            {
-                var normalizedStatus = status.Trim().ToLower();
-                enrollmentQuery = enrollmentQuery.Where(e => e.Status.ToLower() == normalizedStatus);
-            }
-
-            var enrolledClasses = await (
+            var rawClasses = await (
                 from e in enrollmentQuery
                 join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                 join c in Db.Courses.AsNoTracking() on cc.CourseId equals c.Id
+                where cc.Status.ToLower() != "cancelled"
                 orderby e.EnrolledAt descending
                 select new
                 {
                     EnrollmentId = e.Id,
-                    EnrollmentStatus = e.Status,
+                    RawEnrollmentStatus = e.Status,
                     e.EnrolledAt,
                     ClassId = cc.Id,
                     cc.ClassCode,
                     cc.ClassName,
-                    ClassStatus = cc.Status,
+                    RawClassStatus = cc.Status,
                     cc.StartDate,
                     cc.EndDate,
                     CourseId = c.Id,
@@ -52,38 +52,109 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 }
             ).ToListAsync();
 
-            // Tái sử dụng danh sách ClassId và CourseId cho các truy vấn batch
-            var classIds = enrolledClasses.Select(x => x.ClassId).Distinct().ToList();
-            var courseIds = enrolledClasses.Select(x => x.CourseId).Distinct().ToList();
+            if (rawClasses.Count == 0)
+            {
+                return ServiceResult<List<MyClassListItemDto>>.Ok(new List<MyClassListItemDto>(), "Học sinh chưa tham gia lớp học nào.");
+            }
+
+            // 2. Chuẩn hóa chỉ giữ 2 trạng thái: "ongoing" hoặc "complete", loại bỏ tất cả các trạng thái khác (upcoming, pending, cancelled...)
+            var normalizedClasses = rawClasses.Select(item =>
+            {
+                var classStatusLower = item.RawClassStatus?.Trim().ToLowerInvariant() ?? "";
+                var enrollStatusLower = item.RawEnrollmentStatus?.Trim().ToLowerInvariant() ?? "";
+
+                string? normalizedStatus = null;
+                if (classStatusLower == "completed" || classStatusLower == "complete" ||
+                    enrollStatusLower == "completed" || enrollStatusLower == "complete")
+                {
+                    normalizedStatus = "complete";
+                }
+                else if (classStatusLower == "ongoing" || classStatusLower == "active" ||
+                         enrollStatusLower == "active" || enrollStatusLower == "ongoing")
+                {
+                    normalizedStatus = "ongoing";
+                }
+
+                return new
+                {
+                    Item = item,
+                    NormalizedStatus = normalizedStatus
+                };
+            })
+            .Where(x => x.NormalizedStatus != null) // Chỉ giữ duy nhất 2 trạng thái: ongoing và complete
+            .ToList();
+
+            // 3. Lọc theo trạng thái yêu cầu nếu có (all, ongoing, complete)
+            if (!string.IsNullOrWhiteSpace(status) && !string.Equals(status, "all", StringComparison.OrdinalIgnoreCase))
+            {
+                var targetStatus = status.Trim().ToLowerInvariant();
+                if (targetStatus == "completed") targetStatus = "complete";
+                if (targetStatus == "active") targetStatus = "ongoing";
+
+                normalizedClasses = normalizedClasses
+                    .Where(x => x.NormalizedStatus == targetStatus)
+                    .ToList();
+            }
+
+            // 4. Tái sử dụng danh sách ClassId và CourseId cho các truy vấn batch tối ưu (loại bỏ N+1 query)
+            var classIds = normalizedClasses.Select(x => x.Item.ClassId).Distinct().ToList();
+            var classToCourseMap = normalizedClasses
+                .GroupBy(x => x.Item.ClassId)
+                .ToDictionary(g => g.Key, g => g.First().Item.CourseId);
 
             var teachersByClass = await GetTeachersByClassIdsAsync(classIds);
-            var (totalByCourse, completedByCourse) = await GetCourseProgressDictionariesAsync(courseIds, studentId);
+            var schedulesByClass = await GetSchedulesByClassIdsAsync(classIds);
+            var (totalByClass, completedByClass) = await GetClassProgressDictionariesAsync(classIds, classToCourseMap, studentId);
 
-            var result = enrolledClasses.Select(item =>
+            // 5. Ánh xạ sang DTO kết quả chuẩn hóa
+            var result = normalizedClasses.Select(x =>
             {
-                var totalLessons = totalByCourse.GetValueOrDefault(item.CourseId, 0);
-                var completedLessons = completedByCourse.GetValueOrDefault(item.CourseId, 0);
+                var item = x.Item;
+                var normalizedStatus = x.NormalizedStatus!;
+                var totalLessons = totalByClass.GetValueOrDefault(item.ClassId, 0);
+                var completedLessons = completedByClass.GetValueOrDefault(item.ClassId, 0);
+                var classTeachers = teachersByClass.GetValueOrDefault(item.ClassId, new List<ClassTeacherInfoDto>());
+                var classSchedules = schedulesByClass.GetValueOrDefault(item.ClassId, new List<ClassScheduleItemDto>());
+
+                var scheduleSummary = classSchedules.Count > 0
+                    ? string.Join(", ", classSchedules.Select(s => $"{s.DayName} ({s.TimeRange})"))
+                    : null;
 
                 return new MyClassListItemDto
                 {
                     EnrollmentId = item.EnrollmentId,
-                    EnrollmentStatus = item.EnrollmentStatus,
+                    EnrollmentStatus = normalizedStatus,
                     EnrolledAt = item.EnrolledAt,
                     ClassId = item.ClassId,
                     ClassCode = item.ClassCode,
                     ClassName = item.ClassName,
-                    ClassStatus = item.ClassStatus,
+                    ClassStatus = normalizedStatus,
                     StartDate = item.StartDate,
                     EndDate = item.EndDate,
                     CourseId = item.CourseId,
                     CourseTitle = item.CourseTitle,
                     ThumbnailUrl = item.ThumbnailUrl,
-                    Teachers = teachersByClass.GetValueOrDefault(item.ClassId, new List<ClassTeacherInfoDto>()),
+                    Teachers = classTeachers,
+                    Schedules = classSchedules,
+                    ScheduleSummary = scheduleSummary,
                     TotalLessons = totalLessons,
                     CompletedLessons = completedLessons,
                     ProgressPercentage = CalculatePercentage(completedLessons, totalLessons)
                 };
             }).ToList();
+
+            // 6. Tìm kiếm theo từ khóa nếu có (search keyword)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var keyword = search.Trim().ToLowerInvariant();
+                result = result.Where(c =>
+                    c.ClassCode.ToLowerInvariant().Contains(keyword) ||
+                    c.ClassName.ToLowerInvariant().Contains(keyword) ||
+                    c.CourseTitle.ToLowerInvariant().Contains(keyword) ||
+                    c.Teachers.Any(t => t.FullName.ToLowerInvariant().Contains(keyword)) ||
+                    (c.ScheduleSummary != null && c.ScheduleSummary.ToLowerInvariant().Contains(keyword))
+                ).ToList();
+            }
 
             return ServiceResult<List<MyClassListItemDto>>.Ok(result, "Lấy danh sách lớp học của học sinh thành công.");
         }
@@ -141,9 +212,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     OrderIndex = l != null ? l.OrderIndex : cl.Id,
                     cl.ScheduleDate,
                     SessionStatus = cl.Status,
-                    HasTimeSlot = ts != null,
-                    StartTime = ts != null ? ts.StartTime : TimeSpan.Zero,
-                    EndTime = ts != null ? ts.EndTime : TimeSpan.Zero,
+                    RawStartTime = (TimeSpan?)ts.StartTime,
+                    RawEndTime = (TimeSpan?)ts.EndTime,
                     ClassroomName = cr != null ? cr.Name : null,
                     cl.Notes
                 }
@@ -166,6 +236,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 timelineDtos = rawClassLessons.Select(cl =>
                 {
                     studentProgressMap.TryGetValue(cl.LessonId, out var progress);
+                    var hasSlot = cl.RawStartTime.HasValue && cl.RawEndTime.HasValue;
                     return new ClassLessonTimelineItemDto
                     {
                         ClassLessonId = cl.ClassLessonId,
@@ -175,10 +246,10 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         OrderIndex = cl.OrderIndex,
                         ScheduleDate = cl.ScheduleDate,
                         SessionStatus = cl.SessionStatus,
-                        TimeSlot = cl.HasTimeSlot ? FormatTimeRange(cl.StartTime, cl.EndTime) : null,
+                        TimeSlot = hasSlot ? FormatTimeRange(cl.RawStartTime!.Value, cl.RawEndTime!.Value) : null,
                         Classroom = cl.ClassroomName,
                         Notes = cl.Notes,
-                        IsCompleted = (progress?.IsCompleted ?? false) || cl.SessionStatus == SessionCompleted,
+                        IsCompleted = progress?.IsCompleted ?? false,
                         StudentScore = progress?.Score
                     };
                 }).ToList();
@@ -268,8 +339,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     Content = l != null ? l.Content : null,
                     cl.ScheduleDate,
                     cl.Status,
-                    StartTime = ts != null ? ts.StartTime : new TimeSpan(18, 0, 0),
-                    EndTime = ts != null ? ts.EndTime : new TimeSpan(20, 0, 0),
+                    RawStartTime = (TimeSpan?)ts.StartTime,
+                    RawEndTime = (TimeSpan?)ts.EndTime,
                     ClassroomName = cr != null ? cr.Name : "Phòng học trực tuyến / Zoom",
                     Location = cr != null ? cr.Location : "Online",
                     TeacherName = u != null ? u.FullName : null,
@@ -282,6 +353,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 var isCompleted = await Db.UserProgresses.AsNoTracking()
                     .AnyAsync(p => p.UserId == studentId && p.LessonId == sessionData.LessonId && p.IsCompleted);
 
+                var startTime = sessionData.RawStartTime ?? new TimeSpan(18, 0, 0);
+                var endTime = sessionData.RawEndTime ?? new TimeSpan(20, 0, 0);
+
                 var dto = new ClassLessonSessionDetailDto
                 {
                     ClassLessonId = sessionData.ClassLessonId,
@@ -293,7 +367,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     Content = sessionData.Content,
                     ScheduleDate = sessionData.ScheduleDate,
                     Status = sessionData.Status,
-                    TimeSlot = FormatTimeRange(sessionData.StartTime, sessionData.EndTime),
+                    TimeSlot = FormatTimeRange(startTime, endTime),
                     Classroom = sessionData.ClassroomName,
                     Location = sessionData.Location,
                     TeacherName = sessionData.TeacherName,
@@ -372,14 +446,16 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
         {
             var today = DateTime.UtcNow.Date;
             var offsetToMonday = ((int)today.DayOfWeek + 6) % 7;
-            var resolvedStart = (startDate?.Date ?? today.AddDays(-offsetToMonday));
-            var resolvedEnd = (endDate?.Date ?? resolvedStart.AddDays(6));
+            var rawStart = (startDate?.Date ?? today.AddDays(-offsetToMonday));
+            var rawEnd = (endDate?.Date ?? rawStart.AddDays(6));
 
-            if (resolvedEnd < resolvedStart)
+            if (rawEnd < rawStart)
             {
-                (resolvedStart, resolvedEnd) = (resolvedEnd, resolvedStart);
+                (rawStart, rawEnd) = (rawEnd, rawStart);
             }
 
+            var resolvedStart = DateTime.SpecifyKind(rawStart, DateTimeKind.Utc);
+            var resolvedEnd = DateTime.SpecifyKind(rawEnd, DateTimeKind.Utc);
             var endExclusive = resolvedEnd.AddDays(1);
 
             // 1. Lấy các lớp học sinh đang theo học
@@ -387,7 +463,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 from e in Db.Enrollments.AsNoTracking()
                 join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                 join c in Db.Courses.AsNoTracking() on cc.CourseId equals c.Id
-                where e.UserId == studentId && e.Status == EnrollmentActive
+                where e.UserId == studentId && (e.Status.ToLower() == EnrollmentActive || e.Status.ToLower() == "enrolled" || e.Status.ToLower() == "ongoing")
                 select new
                 {
                     ClassId = cc.Id,
@@ -405,6 +481,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             if (enrolledClassIds.Count > 0)
             {
+                // Tối ưu truy vấn giáo viên theo danh sách lớp
+                var teachersByClass = await GetTeachersByClassIdsAsync(enrolledClassIds);
+
                 // 2. Lấy các buổi học cụ thể trong bảng class_lessons nằm trong tuần được chọn
                 var explicitSessions = await (
                     from cl in Db.ClassLessons.AsNoTracking()
@@ -418,11 +497,15 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     from ts in tsGroup.DefaultIfEmpty()
                     join cr in Db.Classrooms.AsNoTracking() on cs.ClassroomId equals cr.Id into crGroup
                     from cr in crGroup.DefaultIfEmpty()
+                    join t in Db.Teachers.AsNoTracking() on cl.TeacherId equals t.Id into tGroup
+                    from t in tGroup.DefaultIfEmpty()
+                    join u in Db.Users.AsNoTracking() on t.UserId equals u.Id into uGroup
+                    from u in uGroup.DefaultIfEmpty()
                     where enrolledClassIds.Contains(cl.ClassId)
                           && cl.ScheduleDate != null
                           && cl.ScheduleDate >= resolvedStart
                           && cl.ScheduleDate < endExclusive
-                    orderby cl.ScheduleDate, ts != null ? ts.StartTime : TimeSpan.Zero
+                    orderby cl.ScheduleDate, cl.Id
                     select new
                     {
                         ClassLessonId = cl.Id,
@@ -435,10 +518,11 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         LessonTitle = l != null ? l.Title : $"Buổi học lớp {cc.ClassName}",
                         ScheduleDate = cl.ScheduleDate!.Value,
                         DayOfWeek = cs != null ? cs.DayOfWeek : 0,
-                        StartTime = ts != null ? ts.StartTime : new TimeSpan(18, 0, 0),
-                        EndTime = ts != null ? ts.EndTime : new TimeSpan(20, 0, 0),
+                        RawStartTime = (TimeSpan?)ts.StartTime,
+                        RawEndTime = (TimeSpan?)ts.EndTime,
                         ClassroomName = cr != null ? cr.Name : "Phòng học trực tuyến / Zoom",
                         Location = cr != null ? cr.Location : "Online",
+                        TeacherName = u != null ? u.FullName : null,
                         cl.Status,
                         cl.Notes
                     }
@@ -449,6 +533,10 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     var dayOfWeek = item.DayOfWeek > 0
                         ? item.DayOfWeek
                         : ToScheduleDayOfWeek(item.ScheduleDate.DayOfWeek);
+
+                    var startTime = item.RawStartTime ?? new TimeSpan(18, 0, 0);
+                    var endTime = item.RawEndTime ?? new TimeSpan(20, 0, 0);
+                    var teacherName = item.TeacherName ?? teachersByClass.GetValueOrDefault(item.ClassId)?.FirstOrDefault()?.FullName;
 
                     sessions.Add(new StudentScheduleSessionItemDto
                     {
@@ -462,11 +550,12 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         LessonTitle = item.LessonTitle,
                         ScheduleDate = item.ScheduleDate.ToString("yyyy-MM-dd"),
                         DayOfWeek = dayOfWeek,
-                        TimeSlot = FormatTimeRange(item.StartTime, item.EndTime),
-                        StartTime = item.StartTime.ToString(@"hh\:mm"),
-                        EndTime = item.EndTime.ToString(@"hh\:mm"),
+                        TimeSlot = FormatTimeRange(startTime, endTime),
+                        StartTime = startTime.ToString(@"hh\:mm"),
+                        EndTime = endTime.ToString(@"hh\:mm"),
                         Classroom = item.ClassroomName,
                         Location = item.Location,
+                        TeacherName = teacherName,
                         Status = item.Status,
                         Notes = item.Notes
                     });
@@ -485,8 +574,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         ScheduleId = cs.Id,
                         cs.ClassId,
                         cs.DayOfWeek,
-                        StartTime = ts != null ? ts.StartTime : new TimeSpan(18, 0, 0),
-                        EndTime = ts != null ? ts.EndTime : new TimeSpan(20, 0, 0),
+                        RawStartTime = (TimeSpan?)ts.StartTime,
+                        RawEndTime = (TimeSpan?)ts.EndTime,
                         ClassroomName = cr != null ? cr.Name : "Phòng học trực tuyến / Zoom",
                         Location = cr != null ? cr.Location : "Online"
                     }
@@ -497,12 +586,12 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     .Select(s => $"{s.ClassId}:{s.ScheduleDate}")
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                var totalDays = (int)(resolvedEnd - resolvedStart).TotalDays + 1;
+                var totalDays = (int)(rawEnd - rawStart).TotalDays + 1;
                 if (totalDays <= 62) // Giới hạn sinh lịch tuần hợp lý
                 {
                     for (var dayIndex = 0; dayIndex < totalDays; dayIndex++)
                     {
-                        var currentDate = resolvedStart.AddDays(dayIndex);
+                        var currentDate = rawStart.AddDays(dayIndex);
                         var scheduleDow = ToScheduleDayOfWeek(currentDate.DayOfWeek);
 
                         foreach (var sched in recurringSchedules.Where(s => s.DayOfWeek == scheduleDow))
@@ -515,6 +604,10 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                             if (existingKeys.Contains(compositeKey)) continue;
 
                             existingKeys.Add(compositeKey);
+                            var startTime = sched.RawStartTime ?? new TimeSpan(18, 0, 0);
+                            var endTime = sched.RawEndTime ?? new TimeSpan(20, 0, 0);
+                            var teacherName = teachersByClass.GetValueOrDefault(cls.ClassId)?.FirstOrDefault()?.FullName;
+
                             sessions.Add(new StudentScheduleSessionItemDto
                             {
                                 ClassLessonId = null,
@@ -527,11 +620,12 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                                 LessonTitle = $"Buổi học định kỳ - {cls.ClassName}",
                                 ScheduleDate = dateStr,
                                 DayOfWeek = sched.DayOfWeek,
-                                TimeSlot = FormatTimeRange(sched.StartTime, sched.EndTime),
-                                StartTime = sched.StartTime.ToString(@"hh\:mm"),
-                                EndTime = sched.EndTime.ToString(@"hh\:mm"),
+                                TimeSlot = FormatTimeRange(startTime, endTime),
+                                StartTime = startTime.ToString(@"hh\:mm"),
+                                EndTime = endTime.ToString(@"hh\:mm"),
                                 Classroom = sched.ClassroomName,
                                 Location = sched.Location,
+                                TeacherName = teacherName,
                                 Status = currentDate < today ? SessionCompleted : SessionScheduled,
                                 Notes = null
                             });
@@ -547,8 +641,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             var response = new WeeklyScheduleResponseDto
             {
-                StartDate = resolvedStart.ToString("yyyy-MM-dd"),
-                EndDate = resolvedEnd.ToString("yyyy-MM-dd"),
+                StartDate = rawStart.ToString("yyyy-MM-dd"),
+                EndDate = rawEnd.ToString("yyyy-MM-dd"),
                 Sessions = sessions
             };
 

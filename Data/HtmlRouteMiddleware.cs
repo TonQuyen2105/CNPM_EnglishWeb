@@ -93,6 +93,14 @@ namespace CNPM_EnglishLearning.Data
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Chỉ phục vụ GET requests cho view HTML tĩnh, chuyển tiếp tất cả các method POST, PUT, DELETE và request /api
+            if (!HttpMethods.IsGet(context.Request.Method) || 
+                context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+            {
+                await _next(context);
+                return;
+            }
+
             var rawPath = context.Request.Path.Value ?? "";
 
             // Bỏ qua các file tĩnh tài nguyên (css, js, ảnh, font...)

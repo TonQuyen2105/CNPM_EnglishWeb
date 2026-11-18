@@ -30,7 +30,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Interfaces
     /// </summary>
     public interface IStudentClassScheduleService
     {
-        Task<ServiceResult<List<MyClassListItemDto>>> GetMyClassesAsync(int studentId, string? status);
+        Task<ServiceResult<List<MyClassListItemDto>>> GetMyClassesAsync(int studentId, string? status, string? search = null);
         Task<ServiceResult<MyClassDetailDto>> GetMyClassDetailAsync(int studentId, int classId);
         Task<ServiceResult<ClassLessonSessionDetailDto>> GetClassLessonDetailAsync(int studentId, int classId, int classLessonId);
         Task<ServiceResult<WeeklyScheduleResponseDto>> GetWeeklyScheduleAsync(int studentId, DateTime? startDate, DateTime? endDate);
@@ -86,5 +86,17 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Interfaces
     {
         Task<ServiceResult<StudentProfileDto>> GetProfileAsync(int studentId);
         Task<ServiceResult<StudentProfileDto>> UpdateProfileAsync(int studentId, UpdateStudentProfileRequestDto request);
+    }
+
+    /// <summary>
+    /// Nhóm Xác thực: Xác thực và Đăng nhập chuyên biệt cho phân hệ Học sinh.
+    /// Kiểm soát nghiêm ngặt 3 điều kiện:
+    /// 1. Đúng thông tin email và password
+    /// 2. Role của tài khoản phải là "student"
+    /// 3. Tài khoản phải ở trạng thái hoạt động (is_active = true)
+    /// </summary>
+    public interface IStudentAuthService
+    {
+        Task<ServiceResult<StudentLoginResponseDto>> LoginAsync(StudentLoginRequestDto request);
     }
 }
