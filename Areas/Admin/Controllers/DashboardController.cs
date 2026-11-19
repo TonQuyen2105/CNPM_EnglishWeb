@@ -45,28 +45,39 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var ongoingClasses = classStatusCounts.GetValueOrDefault("ongoing");
                 var upcomingClasses = classStatusCounts.GetValueOrDefault("upcoming");
 
-                // 3. KPI ghi danh: 1 truy vấn GROUP BY thay cho 2 truy vấn COUNT
-                var enrollmentStatusCounts = await _context.Enrollments.AsNoTracking()
-                    .GroupBy(e => e.Status)
-                    .Select(g => new { Status = g.Key, Count = g.Count() })
-                    .ToDictionaryAsync(x => x.Status, x => x.Count, cancellationToken);
-                var activeEnrollments = enrollmentStatusCounts.GetValueOrDefault("active");
-                var revenueEnrollmentCount = activeEnrollments + enrollmentStatusCounts.GetValueOrDefault("completed");
-
-                var estimatedRevenue = await (
+                // 3. KPI ghi danh & doanh thu ước tính: chỉ tính các ghi danh active/completed thuộc lớp chưa bị hủy (cc.Status != "cancelled")
+                var validEnrollmentStats = await (
                     from e in _context.Enrollments.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
-                    where e.Status == "active" || e.Status == "completed"
-                    select (decimal?)cc.Price
-                ).SumAsync(cancellationToken) ?? 0m;
+                    where (e.Status == "active" || e.Status == "completed") && cc.Status != "cancelled"
+                    group cc.Price by e.Status into g
+                    select new
+                    {
+                        Status = g.Key,
+                        Count = g.Count(),
+                        Revenue = g.Sum(p => (decimal?)p) ?? 0m
+                    }
+                ).ToListAsync(cancellationToken);
 
-                // 4. Ghi danh theo tháng (12 tháng của năm hiện tại, hoặc năm mới nhất có dữ liệu)
+                var activeEnrollments = validEnrollmentStats
+                    .Where(x => x.Status == "active")
+                    .Sum(x => x.Count);
+                var revenueEnrollmentCount = validEnrollmentStats.Sum(x => x.Count);
+                var estimatedRevenue = validEnrollmentStats.Sum(x => x.Revenue);
+
+                // 4. Ghi danh theo tháng (12 tháng của năm hiện tại, hoặc năm mới nhất có dữ liệu; loại ghi danh/lớp đã hủy)
+                var validEnrollmentsBase =
+                    from e in _context.Enrollments.AsNoTracking()
+                    join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                    where e.Status != "cancelled" && cc.Status != "cancelled"
+                    select e;
+
                 var targetYear = DateTime.UtcNow.Year;
-                var hasCurrentYear = await _context.Enrollments.AsNoTracking()
+                var hasCurrentYear = await validEnrollmentsBase
                     .AnyAsync(e => e.EnrolledAt.Year == targetYear, cancellationToken);
                 if (!hasCurrentYear)
                 {
-                    var latestEnrollmentDate = await _context.Enrollments.AsNoTracking()
+                    var latestEnrollmentDate = await validEnrollmentsBase
                         .OrderByDescending(e => e.EnrolledAt)
                         .Select(e => (DateTime?)e.EnrolledAt)
                         .FirstOrDefaultAsync(cancellationToken);
@@ -79,7 +90,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 // Lọc theo khoảng thời gian (sargable) thay vì EXTRACT(year) để tận dụng index trên enrolled_at
                 var yearStart = new DateTime(targetYear, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 var yearEnd = yearStart.AddYears(1);
-                var monthlyLookup = await _context.Enrollments.AsNoTracking()
+                var monthlyLookup = await validEnrollmentsBase
                     .Where(e => e.EnrolledAt >= yearStart && e.EnrolledAt < yearEnd)
                     .GroupBy(e => e.EnrolledAt.Month)
                     .Select(g => new { Month = g.Key, Count = g.Count() })
@@ -94,11 +105,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     })
                     .ToList();
 
-                // 5. Phân bổ trình độ: Enrollments -> CourseClasses -> Courses (GROUP BY trên PostgreSQL)
+                // 5. Phân bổ trình độ: Enrollments -> CourseClasses -> Courses (loại ghi danh/lớp đã hủy)
                 var rawLevels = await (
                     from e in _context.Enrollments.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                     join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id
+                    where e.Status != "cancelled" && cc.Status != "cancelled"
                     group e by c.Level into g
                     select new { Level = g.Key, Count = g.Count() }
                 ).ToListAsync(cancellationToken);
@@ -107,31 +119,43 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     ["beginner"] = 0,
                     ["intermediate"] = 0,
-                    ["advanced"] = 0
+                    ["advanced"] = 0,
+                    ["other"] = 0
                 };
 
                 foreach (var item in rawLevels)
                 {
-                    var key = (item.Level ?? "beginner").Trim().ToLowerInvariant();
-                    if (levelCounts.ContainsKey(key))
+                    var key = (item.Level ?? string.Empty).Trim().ToLowerInvariant();
+                    if (key is "beginner" or "intermediate" or "advanced")
                     {
                         levelCounts[key] += item.Count;
                     }
                     else
                     {
-                        levelCounts["beginner"] += item.Count;
+                        levelCounts["other"] += item.Count;
                     }
                 }
 
                 var totalLevelCount = levelCounts.Values.Sum();
                 double Percent(int count) => totalLevelCount > 0 ? Math.Round(count * 100.0 / totalLevelCount, 1) : 0.0;
 
-                var levelDistribution = new[]
+                var levelDistribution = new List<object>
                 {
                     new { level = "beginner", label = "Cơ bản (Beginner)", count = levelCounts["beginner"], percentage = Percent(levelCounts["beginner"]) },
                     new { level = "intermediate", label = "Trung cấp (Intermediate)", count = levelCounts["intermediate"], percentage = Percent(levelCounts["intermediate"]) },
                     new { level = "advanced", label = "Nâng cao (Advanced)", count = levelCounts["advanced"], percentage = Percent(levelCounts["advanced"]) }
                 };
+
+                if (levelCounts["other"] > 0)
+                {
+                    levelDistribution.Add(new
+                    {
+                        level = "other",
+                        label = "Trình độ khác",
+                        count = levelCounts["other"],
+                        percentage = Percent(levelCounts["other"])
+                    });
+                }
 
                 // 6. Top 10 ghi danh gần nhất (chỉ kéo đúng 10 dòng, đúng các cột cần hiển thị)
                 var recentEnrollments = await (

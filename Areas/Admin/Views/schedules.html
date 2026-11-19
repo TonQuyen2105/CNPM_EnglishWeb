@@ -209,12 +209,15 @@
       <!-- Vùng Nội Dung Chính -->
       <main class="page-container" id="app-main-content">
         
-  <div class="page-header">
+  <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
     <div>
       <h1 class="page-header-title">Thời khóa biểu trung tâm</h1>
       <p class="page-header-subtitle">Lịch phân bổ phòng học và ca giảng dạy theo tuần</p>
     </div>
-    <div class="page-header-actions">
+    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button type="button" class="btn btn-secondary" id="btn-open-manage-timeslots">
+        Quản lý ca học
+      </button>
       <button type="button" class="btn btn-primary" id="btn-open-create-schedule" data-modal-target="modal-create-schedule">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Xếp lịch học mới
@@ -226,7 +229,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
       <div>
         <strong style="font-size: 1rem;">Lưới thời khóa biểu cố định theo tuần</strong>
-        <div style="font-size: 0.8125rem; color: var(--text-muted);">Hiển thị toàn bộ lịch các lớp chưa hủy (Thứ 2 - Chủ Nhật)</div>
+        <div style="font-size: 0.8125rem; color: var(--text-muted);">Hiển thị lịch các lớp đang hoạt động (Thứ 2 - Chủ Nhật)</div>
       </div>
       <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
         <select id="filter-classroom" class="form-control" style="min-width: 190px;">
@@ -240,7 +243,7 @@
     </div>
 
     <div class="table-container">
-      <table class="table" style="text-align: center; table-layout: fixed;">
+      <table class="table" style="text-align: center; table-layout: fixed; min-width: 960px;">
         <thead>
           <tr>
             <th style="width: 130px;">Ca học</th>
@@ -314,6 +317,78 @@
           <button type="submit" class="btn btn-primary" id="sched-submit-btn">Xác nhận xếp lịch</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal Quản lý Danh mục Ca học (TimeSlots) -->
+  <div class="modal-backdrop" id="modal-manage-timeslots">
+    <div class="modal-dialog modal-dialog-lg" style="max-width: 820px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title">Quản lý danh mục ca học (TimeSlots)</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 76vh; overflow-y: auto;">
+        <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--neutral-50); margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; gap: 8px; flex-wrap: wrap;">
+            <strong id="ts-form-heading" style="font-size: 0.9rem;">Thêm ca học mới</strong>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-cancel-edit-timeslot" style="display: none;">Hủy sửa (Thêm mới)</button>
+          </div>
+          <form id="timeslot-form">
+            <input type="hidden" id="ts-id" value="">
+            <div id="timeslot-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 0.875rem;"></div>
+            <div class="grid grid-cols-4 gap-4" style="margin-bottom: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Tên ca học <span style="color:red;">*</span></label>
+                <input type="text" id="ts-name" class="form-control" placeholder="VD: Ca Tối 1" maxlength="50" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ bắt đầu <span style="color:red;">*</span></label>
+                <input type="time" id="ts-start-time" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ kết thúc <span style="color:red;">*</span></label>
+                <input type="time" id="ts-end-time" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Trạng thái</label>
+                <select id="ts-active" class="form-control">
+                  <option value="true">Đang hoạt động</option>
+                  <option value="false">Tạm ngưng</option>
+                </select>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
+              <div class="form-group" style="flex: 1; min-width: 240px;">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Mô tả / Ghi chú</label>
+                <input type="text" id="ts-description" class="form-control" placeholder="Tùy chọn (ví dụ: Khung giờ cao điểm tối)" maxlength="500">
+              </div>
+              <button type="submit" class="btn btn-primary" id="ts-submit-btn">Thêm ca học</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <table class="table" style="min-width: 600px;">
+            <thead>
+              <tr>
+                <th>Tên ca học</th>
+                <th>Khung giờ</th>
+                <th>Lịch đang xếp</th>
+                <th>Trạng thái</th>
+                <th class="text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="timeslots-tbody">
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải danh mục ca học...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+      </div>
     </div>
   </div>
 
@@ -444,9 +519,13 @@
           '</div></td></tr>';
       }
       const COLS = 8;
+      const TS_COLS = 5;
       let needLookups = true;
+      let initialUrlApplied = false;
       let hasLoadedOnce = false;
       let loadController = null;
+      let timeSlotsController = null;
+      let timeSlotsCache = [];
 
       const CARD_PALETTES = [
         { bg: '#EFF6FF', border: '#BFDBFE', title: '#1D4ED8' },
@@ -455,6 +534,50 @@
         { bg: '#F3E8FF', border: '#D8B4FE', title: '#6B21A8' },
         { bg: '#FFF1F2', border: '#FECDD3', title: '#BE123C' }
       ];
+
+      function setModalBusy(id, busy) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        if (busy) modal.dataset.busy = 'true';
+        else delete modal.dataset.busy;
+      }
+
+      function focusFirstField(modalId, preferredId) {
+        setTimeout(() => {
+          const target = (preferredId && document.getElementById(preferredId))
+            || document.querySelector(`#${modalId} input:not([type="hidden"]):not(:disabled), #${modalId} select:not(:disabled), #${modalId} textarea:not(:disabled)`);
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 30);
+      }
+
+      function bindModalKeyboardAndGuard() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          const openModals = Array.from(document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.show'));
+          const topModal = openModals[openModals.length - 1];
+          if (!topModal || topModal.dataset.busy === 'true') return;
+          topModal.classList.remove('open', 'show');
+        });
+
+        document.addEventListener('click', (e) => {
+          const isBackdrop = e.target && e.target.classList && e.target.classList.contains('modal-backdrop');
+          const dismissBtn = !isBackdrop && e.target && e.target.closest
+            ? (e.target.closest('[data-dismiss="modal"]') || e.target.closest('.modal-close'))
+            : null;
+          if (!isBackdrop && !dismissBtn) return;
+          const modal = isBackdrop
+            ? e.target
+            : (dismissBtn.closest('.modal-backdrop') || document.querySelector('.modal-backdrop.open, .modal-backdrop.show'));
+          if (modal && modal.dataset.busy === 'true') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+      }
+
+      function hasActiveFilter() {
+        return !!document.getElementById('filter-classroom').value || !!document.getElementById('filter-teacher').value;
+      }
 
       function showError(msg) {
         const box = document.getElementById('schedule-form-error');
@@ -468,6 +591,170 @@
         }
       }
 
+      function showTimeSlotError(msg) {
+        const box = document.getElementById('timeslot-form-error');
+        if (!box) return;
+        box.textContent = msg || '';
+        box.style.display = msg ? 'block' : 'none';
+      }
+
+      function resetTimeSlotForm() {
+        document.getElementById('ts-id').value = '';
+        document.getElementById('ts-name').value = '';
+        document.getElementById('ts-start-time').value = '';
+        document.getElementById('ts-end-time').value = '';
+        document.getElementById('ts-active').value = 'true';
+        document.getElementById('ts-description').value = '';
+        document.getElementById('ts-form-heading').textContent = 'Thêm ca học mới';
+        document.getElementById('ts-submit-btn').textContent = 'Thêm ca học';
+        document.getElementById('btn-cancel-edit-timeslot').style.display = 'none';
+        showTimeSlotError('');
+      }
+
+      function openEditTimeSlot(id) {
+        const slot = timeSlotsCache.find(x => x.id === id);
+        if (!slot) return;
+        document.getElementById('ts-id').value = String(slot.id);
+        document.getElementById('ts-name').value = slot.slotName || slot.name || '';
+        document.getElementById('ts-start-time').value = slot.startTime || '';
+        document.getElementById('ts-end-time').value = slot.endTime || '';
+        document.getElementById('ts-active').value = slot.isActive ? 'true' : 'false';
+        document.getElementById('ts-description').value = slot.description || '';
+        document.getElementById('ts-form-heading').textContent = `Chỉnh sửa ca học: ${slot.slotName || slot.name}`;
+        document.getElementById('ts-submit-btn').textContent = 'Lưu thay đổi';
+        document.getElementById('btn-cancel-edit-timeslot').style.display = 'inline-flex';
+        showTimeSlotError('');
+        document.getElementById('ts-name').focus();
+      }
+
+      function renderTimeSlotsTable(items) {
+        const tbody = document.getElementById('timeslots-tbody');
+        if (!Array.isArray(items) || items.length === 0) {
+          tbody.innerHTML = stateRow(TS_COLS, 'Chưa có ca học nào', 'Hãy thêm ca học mới ở biểu mẫu phía trên.');
+          return;
+        }
+
+        tbody.innerHTML = items.map(ts => {
+          const statusBadge = ts.isActive
+            ? '<span class="badge badge-success">Đang hoạt động</span>'
+            : '<span class="badge badge-warning">Tạm ngưng</span>';
+          const toggleLabel = ts.isActive ? 'Tạm ngưng' : 'Kích hoạt';
+          const toggleBtnClass = ts.isActive ? 'btn btn-sm btn-danger-soft' : 'btn btn-sm btn-primary';
+          const descHtml = ts.description
+            ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">${escapeHtml(ts.description)}</div>`
+            : '';
+
+          return `
+            <tr>
+              <td>
+                <strong>${escapeHtml(ts.slotName || ts.name)}</strong>
+                ${descHtml}
+              </td>
+              <td><span class="badge badge-primary">${escapeHtml(ts.timeRange)}</span></td>
+              <td><strong>${ts.activeScheduleCount ?? 0}</strong> buổi/tuần</td>
+              <td>${statusBadge}</td>
+              <td class="text-right">
+                <div style="display: inline-flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-sm btn-secondary" data-edit-timeslot="${ts.id}">Sửa</button>
+                  <button type="button" class="${toggleBtnClass}" data-toggle-timeslot="${ts.id}">${toggleLabel}</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      async function loadTimeSlots() {
+        if (timeSlotsController) timeSlotsController.abort();
+        const controller = new AbortController();
+        timeSlotsController = controller;
+
+        const tbody = document.getElementById('timeslots-tbody');
+        tbody.innerHTML = skeletonRows(TS_COLS, 4);
+
+        try {
+          const data = await fetchJson('/Admin/api/Schedules/TimeSlots', { signal: controller.signal });
+          timeSlotsCache = Array.isArray(data.items) ? data.items : [];
+          renderTimeSlotsTable(timeSlotsCache);
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải danh mục ca học:', err);
+          tbody.innerHTML = `<tr><td colspan="${TS_COLS}"><div class="empty-state" style="padding: 1.5rem;">` +
+            '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải danh mục ca học</div>' +
+            `<div class="empty-state-text">${escapeHtml(err.message)}</div>` +
+            '<button type="button" class="btn btn-sm btn-secondary" data-retry-timeslots>Thử lại</button>' +
+            '</div></td></tr>';
+        } finally {
+          if (timeSlotsController === controller) timeSlotsController = null;
+        }
+      }
+
+      async function toggleTimeSlotStatus(id, btn) {
+        setBusy(btn, true, 'Đang xử lý...');
+        try {
+          const data = await postJson(`/Admin/api/Schedules/TimeSlots/ToggleStatus/${encodeURIComponent(id)}`);
+          showToast(data.message || 'Đã đổi trạng thái ca học.');
+          await loadTimeSlots();
+          needLookups = true;
+          await loadWeeklySchedules();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message, 'error');
+        } finally {
+          if (btn && btn.isConnected) setBusy(btn, false);
+        }
+      }
+
+      async function submitTimeSlotForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showTimeSlotError('');
+
+        const id = document.getElementById('ts-id').value.trim();
+        const isEdit = Boolean(id);
+        const payload = {
+          slotName: document.getElementById('ts-name').value.trim(),
+          startTime: document.getElementById('ts-start-time').value,
+          endTime: document.getElementById('ts-end-time').value,
+          description: document.getElementById('ts-description').value.trim(),
+          isActive: document.getElementById('ts-active').value === 'true'
+        };
+
+        if (!payload.slotName || payload.slotName.length > 50) {
+          showTimeSlotError('Tên ca học phải từ 1 đến 50 ký tự.');
+          return;
+        }
+        if (payload.description.length > 500) {
+          showTimeSlotError('Mô tả ca học không được vượt quá 500 ký tự.');
+          return;
+        }
+        if (!payload.startTime || !payload.endTime || payload.startTime >= payload.endTime) {
+          showTimeSlotError('Giờ kết thúc phải lớn hơn giờ bắt đầu.');
+          return;
+        }
+
+        const btn = document.getElementById('ts-submit-btn');
+        setBusy(btn, true);
+        setModalBusy('modal-manage-timeslots', true);
+        try {
+          const url = isEdit
+            ? `/Admin/api/Schedules/TimeSlots/Update/${encodeURIComponent(id)}`
+            : '/Admin/api/Schedules/TimeSlots/Create';
+          const data = await postJson(url, payload, isEdit ? 'PUT' : 'POST');
+          resetTimeSlotForm();
+          showToast(data.message || 'Lưu ca học thành công.');
+          await loadTimeSlots();
+          needLookups = true;
+          await loadWeeklySchedules();
+        } catch (err) {
+          console.error(err);
+          showTimeSlotError(err.message);
+        } finally {
+          setModalBusy('modal-manage-timeslots', false);
+          setBusy(btn, false);
+        }
+      }
+
       function populateOptions(data) {
         if (!needLookups) return;
 
@@ -477,6 +764,9 @@
         const schedRoom = document.getElementById('sched-classroom-id');
         const schedSlot = document.getElementById('sched-timeslot-id');
 
+        const filterRooms = Array.isArray(data.filterClassrooms)
+          ? data.filterClassrooms
+          : (Array.isArray(data.classrooms) ? data.classrooms : []);
         const rooms = Array.isArray(data.classrooms) ? data.classrooms : [];
         const teachers = Array.isArray(data.teachers) ? data.teachers : [];
         const classes = Array.isArray(data.classes) ? data.classes : [];
@@ -489,7 +779,7 @@
         const prevSchedSlot = schedSlot.value;
 
         filterRoom.innerHTML = '<option value="">Tất cả phòng học</option>' +
-          rooms.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join('');
+          filterRooms.map(r => `<option value="${r.id}">${escapeHtml(r.label || r.name)}</option>`).join('');
 
         filterTeacher.innerHTML = '<option value="">Tất cả giảng viên</option>' +
           teachers.map(t => `<option value="${t.id}">${escapeHtml(t.fullName)}</option>`).join('');
@@ -507,12 +797,12 @@
           : slots.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.timeRange)})</option>`).join('');
 
         const initialParams = new URLSearchParams(window.location.search);
-        const urlTeacherId = initialParams.get('teacherId') || '';
-        const urlClassroomId = initialParams.get('classroomId') || '';
+        const urlTeacherId = !initialUrlApplied ? (initialParams.get('teacherId') || '') : '';
+        const urlClassroomId = !initialUrlApplied ? (initialParams.get('classroomId') || '') : '';
 
-        if (prevFilterRoom && rooms.some(r => String(r.id) === prevFilterRoom)) {
+        if (prevFilterRoom && filterRooms.some(r => String(r.id) === prevFilterRoom)) {
           filterRoom.value = prevFilterRoom;
-        } else if (urlClassroomId && rooms.some(r => String(r.id) === urlClassroomId)) {
+        } else if (urlClassroomId && filterRooms.some(r => String(r.id) === urlClassroomId)) {
           filterRoom.value = urlClassroomId;
         }
 
@@ -525,6 +815,7 @@
         if (prevSchedRoom && rooms.some(r => String(r.id) === prevSchedRoom)) schedRoom.value = prevSchedRoom;
         if (prevSchedSlot && slots.some(s => String(s.id) === prevSchedSlot)) schedSlot.value = prevSchedSlot;
 
+        initialUrlApplied = true;
         needLookups = false;
       }
 
@@ -539,7 +830,8 @@
         } catch (err) {
           console.error(err);
           showToast(err.message, 'error');
-          if (btn) btn.disabled = false;
+        } finally {
+          if (btn && btn.isConnected) btn.disabled = false;
         }
       }
 
@@ -550,9 +842,19 @@
           return;
         }
 
+        const list = Array.isArray(schedules) ? schedules : [];
+        if (list.length === 0 && hasActiveFilter()) {
+          tbody.innerHTML = `<tr><td colspan="${COLS}"><div class="empty-state" style="padding: 2.25rem 1rem;">` +
+            '<div class="empty-state-title">Không có buổi học phù hợp bộ lọc</div>' +
+            '<div class="empty-state-text">Phòng học hoặc giảng viên đang chọn hiện chưa có lịch học nào hoạt động trong tuần.</div>' +
+            '<button type="button" class="btn btn-sm btn-secondary" data-reset-schedule-filter>Đặt lại bộ lọc</button>' +
+            '</div></td></tr>';
+          return;
+        }
+
         tbody.innerHTML = timeSlots.map(slot => {
           const dayCells = [1, 2, 3, 4, 5, 6, 7].map(day => {
-            const matches = (schedules || []).filter(s => s.timeSlotId === slot.id && s.dayOfWeek === day);
+            const matches = list.filter(s => s.timeSlotId === slot.id && s.dayOfWeek === day);
             if (matches.length === 0) {
               return '<td style="color: var(--text-muted); vertical-align: middle;">—</td>';
             }
@@ -598,8 +900,8 @@
         }
 
         const urlParams = new URLSearchParams(window.location.search);
-        const roomVal = document.getElementById('filter-classroom').value || (needLookups ? (urlParams.get('classroomId') || '') : '');
-        const teacherVal = document.getElementById('filter-teacher').value || (needLookups ? (urlParams.get('teacherId') || '') : '');
+        const roomVal = document.getElementById('filter-classroom').value || (!initialUrlApplied ? (urlParams.get('classroomId') || '') : '');
+        const teacherVal = document.getElementById('filter-teacher').value || (!initialUrlApplied ? (urlParams.get('teacherId') || '') : '');
 
         const params = new URLSearchParams();
         if (roomVal) params.set('classroomId', roomVal);
@@ -608,7 +910,7 @@
 
         try {
           const data = await fetchJson(`/Admin/api/Schedules/Weekly?${params.toString()}`, { signal: controller.signal });
-          if (data.classrooms || data.teachers || data.classes) {
+          if (data.filterClassrooms || data.classrooms || data.teachers || data.classes) {
             populateOptions(data);
           }
           renderGrid(data.timeSlots, data.schedules);
@@ -653,10 +955,12 @@
 
         const submitBtn = document.getElementById('sched-submit-btn');
         setBusy(submitBtn, true);
+        setModalBusy('modal-create-schedule', true);
 
         try {
           const data = await postJson('/Admin/api/Schedules/Create', payload);
           document.querySelectorAll('input[name="sched-days"]').forEach(cb => { cb.checked = false; });
+          setModalBusy('modal-create-schedule', false);
           closeModal('modal-create-schedule');
           showToast(data.message || 'Xếp lịch học thành công.');
           await loadWeeklySchedules();
@@ -664,26 +968,37 @@
           console.error(err);
           showError(err.message);
         } finally {
+          setModalBusy('modal-create-schedule', false);
           setBusy(submitBtn, false);
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
+        bindModalKeyboardAndGuard();
         loadWeeklySchedules();
+
+        const resetScheduleFilters = () => {
+          document.getElementById('filter-classroom').value = '';
+          document.getElementById('filter-teacher').value = '';
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          loadWeeklySchedules();
+        };
 
         document.getElementById('filter-classroom').addEventListener('change', loadWeeklySchedules);
         document.getElementById('filter-teacher').addEventListener('change', loadWeeklySchedules);
-        document.getElementById('btn-reset-schedule-filter').addEventListener('click', () => {
-          document.getElementById('filter-classroom').value = '';
-          document.getElementById('filter-teacher').value = '';
-          loadWeeklySchedules();
-        });
+        document.getElementById('btn-reset-schedule-filter').addEventListener('click', resetScheduleFilters);
 
-        // Event delegation cho nút Xóa lịch và Thử lại
+        // Event delegation cho nút Xóa lịch, Đặt lại bộ lọc và Thử lại
         document.getElementById('weekly-schedule-tbody').addEventListener('click', (e) => {
           const delBtn = e.target.closest('.btn-delete-schedule');
           if (delBtn) {
             deleteSchedule(Number(delBtn.getAttribute('data-id')), delBtn);
+            return;
+          }
+          if (e.target.closest('[data-reset-schedule-filter]')) {
+            resetScheduleFilters();
             return;
           }
           if (e.target.closest('[data-retry-load]')) {
@@ -696,6 +1011,33 @@
           document.querySelectorAll('input[name="sched-days"]').forEach(cb => { cb.checked = false; });
           needLookups = true;
           loadWeeklySchedules();
+          focusFirstField('modal-create-schedule', 'sched-class-id');
+        });
+
+        document.getElementById('btn-open-manage-timeslots').addEventListener('click', () => {
+          resetTimeSlotForm();
+          openModal('modal-manage-timeslots');
+          loadTimeSlots();
+          focusFirstField('modal-manage-timeslots', 'ts-name');
+        });
+
+        document.getElementById('btn-cancel-edit-timeslot').addEventListener('click', resetTimeSlotForm);
+        document.getElementById('timeslot-form').addEventListener('submit', submitTimeSlotForm);
+
+        document.getElementById('timeslots-tbody').addEventListener('click', (e) => {
+          const editBtn = e.target.closest('[data-edit-timeslot]');
+          if (editBtn) {
+            openEditTimeSlot(Number(editBtn.getAttribute('data-edit-timeslot')));
+            return;
+          }
+          const toggleBtn = e.target.closest('[data-toggle-timeslot]');
+          if (toggleBtn) {
+            toggleTimeSlotStatus(Number(toggleBtn.getAttribute('data-toggle-timeslot')), toggleBtn);
+            return;
+          }
+          if (e.target.closest('[data-retry-timeslots]')) {
+            loadTimeSlots();
+          }
         });
 
         document.getElementById('create-schedule-form').addEventListener('submit', submitScheduleForm);

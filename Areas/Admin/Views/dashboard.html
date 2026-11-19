@@ -209,15 +209,15 @@
       <!-- Vùng Nội Dung Chính -->
       <main class="page-container" id="app-main-content">
         
-  <div class="page-header">
+  <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
     <div>
       <h1 class="page-header-title">Bảng điều khiển Quản trị</h1>
       <p class="page-header-subtitle">Tổng hợp chỉ số vận hành trung tâm và các hạng mục cần xử lý</p>
     </div>
-    <div class="page-header-actions">
+    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
       <button type="button" class="btn btn-secondary" id="btn-refresh-dashboard">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-        <span>Làm mới dữ liệu</span>
+        <span id="btn-refresh-dashboard-label">Làm mới dữ liệu</span>
       </button>
       <a href="/Admin/classes.html" class="btn btn-primary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -275,20 +275,20 @@
 
   <!-- 2 Biểu đồ thống kê -->
   <div class="grid grid-cols-12 gap-6" style="margin-bottom: 2rem;">
-    <div class="col-span-8 card" style="padding: 1.5rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <div class="col-span-8 card" style="padding: 1.5rem; min-width: 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem;">
         <div>
           <h3 class="card-title">Số lượng học viên đăng ký theo tháng</h3>
           <div class="card-subtitle">Thống kê lượt ghi danh 12 tháng trong năm</div>
         </div>
         <span class="badge badge-primary" id="chart-year-badge">Năm --</span>
       </div>
-      <div id="monthly-chart-container" style="height: 220px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+      <div id="monthly-chart-container" style="height: 224px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding: 8px 2px 24px 2px; border-bottom: 1px solid var(--border-color); overflow-x: auto; overflow-y: hidden;">
         <div style="width: 100%; text-align: center; color: var(--text-muted); align-self: center;">Đang tải biểu đồ...</div>
       </div>
     </div>
 
-    <div class="col-span-4 card" style="padding: 1.5rem;">
+    <div class="col-span-4 card" style="padding: 1.5rem; min-width: 0;">
       <div style="margin-bottom: 1.25rem;">
         <h3 class="card-title">Cấp độ đào tạo</h3>
         <div class="card-subtitle" id="level-dist-subtitle">Phân bổ lượt ghi danh theo trình độ</div>
@@ -301,12 +301,12 @@
 
   <!-- Bảng Đăng ký mới nhất -->
   <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h3 class="card-title">10 đăng ký mới nhất</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+      <h3 class="card-title" style="margin: 0;">10 đăng ký mới nhất</h3>
       <a href="/Admin/enrollments.html" class="btn btn-sm btn-secondary">Xem tất cả</a>
     </div>
     <div class="table-container">
-      <table class="table">
+      <table class="table" style="min-width: 680px;">
         <thead>
           <tr>
             <th>Học viên</th>
@@ -471,15 +471,27 @@
           '</div></td></tr>';
       }
       let loadController = null;
+      let lastDashboardData = null;
+
+      function bindModalKeyboardAndGuard() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          const openModals = Array.from(document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.show'));
+          const topModal = openModals[openModals.length - 1];
+          if (topModal && topModal.dataset.busy !== 'true') {
+            topModal.classList.remove('open', 'show');
+          }
+        });
+      }
 
       function renderEnrollmentStatus(status) {
         switch ((status || '').toLowerCase()) {
           case 'active':
             return '<span class="badge badge-success">Đang học (Active)</span>';
           case 'completed':
-            return '<span class="badge badge-primary">Đã hoàn thành</span>';
+            return '<span class="badge badge-primary">Hoàn thành (Completed)</span>';
           case 'cancelled':
-            return '<span class="badge badge-danger">Đã hủy</span>';
+            return '<span class="badge badge-danger">Đã hủy (Cancelled)</span>';
           default:
             return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
         }
@@ -487,7 +499,7 @@
 
       function renderLoadingState() {
         document.getElementById('monthly-chart-container').innerHTML =
-          '<div class="skeleton skeleton-rect" style="height: 100%;"></div>';
+          '<div class="skeleton skeleton-rect" style="width: 100%; height: 100%;"></div>';
         document.getElementById('level-distribution-container').innerHTML =
           '<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div>';
         document.getElementById('recent-enrollments-tbody').innerHTML = skeletonRows(6, 5);
@@ -504,20 +516,26 @@
       }
 
       function renderMonthlyChart(data) {
+        const container = document.getElementById('monthly-chart-container');
         document.getElementById('chart-year-badge').textContent = `Năm ${data.chartYear || new Date().getFullYear()}`;
         const monthly = Array.isArray(data.monthlyEnrollments) ? data.monthlyEnrollments : [];
+        if (monthly.length === 0) {
+          container.innerHTML = '<div style="width: 100%; text-align: center; color: var(--text-muted); align-self: center; font-size: 0.875rem;">Chưa có dữ liệu ghi danh trong năm.</div>';
+          return;
+        }
         const maxCount = Math.max(1, ...monthly.map(m => m.count || 0));
+        const chartMaxHeight = Math.max(100, Math.min(155, (container.clientHeight || 224) - 68));
 
-        document.getElementById('monthly-chart-container').innerHTML = monthly.map(m => {
-          const count = m.count || 0;
-          const barHeight = count > 0 ? Math.max(16, Math.round((count / maxCount) * 155)) : 4;
+        container.innerHTML = monthly.map(m => {
+          const count = Number(m.count) || 0;
+          const barHeight = count > 0 ? Math.max(16, Math.round((count / maxCount) * chartMaxHeight)) : 4;
           const isPeak = count > 0 && count === maxCount;
           const bgColor = count === 0 ? 'var(--neutral-200)' : (isPeak ? 'var(--primary-600)' : 'var(--primary-500)');
           const textStyle = isPeak ? 'font-weight: 700; color: var(--primary-600);' : 'color: var(--text-muted);';
           return `
-            <div style="flex: 1; text-align: center; min-width: 24px;" title="${escapeHtml(m.label)}: ${count} lượt">
+            <div style="flex: 1 0 26px; text-align: center; min-width: 26px;" title="${escapeHtml(m.label)}: ${count} lượt">
               <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">${count}</div>
-              <div style="height: ${barHeight}px; width: 70%; max-width: 32px; background: ${bgColor}; border-radius: 4px 4px 0 0; margin: 0 auto; transition: height 0.3s ease;"></div>
+              <div style="height: ${barHeight}px; width: 70%; max-width: 32px; background: ${bgColor}; border-radius: 4px 4px 0 0; margin: 0 auto; transition: height 0.25s ease;"></div>
               <span style="font-size: 0.75rem; ${textStyle} margin-top: 6px; display: block;">${escapeHtml(m.label)}</span>
             </div>
           `;
@@ -525,23 +543,32 @@
       }
 
       function renderLevelDistribution(data) {
+        const container = document.getElementById('level-distribution-container');
         const levels = Array.isArray(data.levelDistribution) ? data.levelDistribution : [];
         document.getElementById('level-dist-subtitle').textContent =
           `Phân bổ ${data.totalLevelEnrollments ?? 0} lượt ghi danh theo trình độ`;
 
-        const levelColors = { beginner: '#3B82F6', intermediate: '#F59E0B', advanced: '#EF4444' };
+        if (levels.length === 0) {
+          container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem;">Chưa có dữ liệu phân bổ trình độ.</div>';
+          return;
+        }
 
-        document.getElementById('level-distribution-container').innerHTML = levels.map(lv => `
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 4px;">
-              <span>${escapeHtml(lv.label)}</span>
-              <strong>${lv.count ?? 0} lượt (${lv.percentage ?? 0}%)</strong>
+        const levelColors = { beginner: '#3B82F6', intermediate: '#F59E0B', advanced: '#EF4444', other: '#64748B' };
+
+        container.innerHTML = levels.map(lv => {
+          const pct = Math.max(0, Math.min(100, Number(lv.percentage) || 0));
+          return `
+            <div>
+              <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 0.8125rem; margin-bottom: 4px;">
+                <span>${escapeHtml(lv.label)}</span>
+                <strong style="white-space: nowrap;">${Number(lv.count) || 0} lượt (${pct}%)</strong>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${levelColors[lv.level] || '#3B82F6'};"></div>
+              </div>
             </div>
-            <div class="progress-bar-container">
-              <div class="progress-bar-fill" style="width: ${lv.percentage ?? 0}%; background-color: ${levelColors[lv.level] || '#3B82F6'};"></div>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
       function renderRecentEnrollments(items) {
@@ -566,9 +593,9 @@
               <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(r.className)}</div>
             </td>
             <td>${escapeHtml(r.courseTitle)}</td>
-            <td><strong>${formatCurrency(r.price)}</strong></td>
-            <td>${formatDate(r.enrolledAt)}</td>
-            <td>${renderEnrollmentStatus(r.status)}</td>
+            <td style="white-space: nowrap;"><strong>${formatCurrency(r.price)}</strong></td>
+            <td style="white-space: nowrap;">${formatDate(r.enrolledAt)}</td>
+            <td style="white-space: nowrap;">${renderEnrollmentStatus(r.status)}</td>
           </tr>
         `).join('');
       }
@@ -579,17 +606,21 @@
         loadController = controller;
 
         const refreshBtn = document.getElementById('btn-refresh-dashboard');
+        const refreshLabel = document.getElementById('btn-refresh-dashboard-label');
         if (refreshBtn) refreshBtn.disabled = true;
+        if (refreshLabel) refreshLabel.textContent = 'Đang làm mới...';
         renderLoadingState();
 
         try {
           const data = await fetchJson('/Admin/api/Dashboard/Summary', { signal: controller.signal });
+          lastDashboardData = data;
           renderKpi(data.kpi || {});
           renderMonthlyChart(data);
           renderLevelDistribution(data);
           renderRecentEnrollments(data.recentEnrollments);
         } catch (err) {
           if (isAbortError(err)) return;
+          lastDashboardData = null;
           console.error('Lỗi tải Dashboard:', err);
           document.getElementById('chart-year-badge').textContent = 'Lỗi tải';
           document.getElementById('level-dist-subtitle').textContent = 'Không thể tải dữ liệu phân bổ';
@@ -601,11 +632,13 @@
           if (loadController === controller) {
             loadController = null;
             if (refreshBtn) refreshBtn.disabled = false;
+            if (refreshLabel) refreshLabel.textContent = 'Làm mới dữ liệu';
           }
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
+        bindModalKeyboardAndGuard();
         loadDashboard();
 
         const refreshBtn = document.getElementById('btn-refresh-dashboard');
@@ -616,6 +649,13 @@
         document.getElementById('recent-enrollments-tbody').addEventListener('click', (e) => {
           if (e.target.closest('[data-retry-load]')) loadDashboard();
         });
+
+        const debouncedResize = debounce(() => {
+          if (lastDashboardData) {
+            renderMonthlyChart(lastDashboardData);
+          }
+        }, 180);
+        window.addEventListener('resize', debouncedResize);
       });
     })();
   </script>

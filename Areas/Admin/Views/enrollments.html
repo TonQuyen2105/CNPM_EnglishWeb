@@ -209,12 +209,15 @@
       <!-- Vùng Nội Dung Chính -->
       <main class="page-container" id="app-main-content">
         
-  <div class="page-header">
+  <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
     <div>
       <h1 class="page-header-title">Quản lý ghi danh & học viên khóa học</h1>
       <p class="page-header-subtitle">Hồ sơ đăng ký lớp học và danh sách học viên theo từng khóa</p>
     </div>
-    <div class="page-header-actions">
+    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button type="button" class="btn btn-secondary" id="btn-export-enrollments-csv">
+        Xuất CSV
+      </button>
       <button type="button" class="btn btn-primary" id="btn-open-create-enrollment" data-modal-target="modal-create-enrollment">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Ghi danh học viên mới
@@ -224,28 +227,32 @@
 
   <!-- Thanh tìm kiếm & lọc -->
   <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-      <div class="input-with-icon" style="flex: 1; min-width: 240px; max-width: 400px;">
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+      <div class="input-with-icon" style="flex: 1; min-width: 220px; max-width: 360px;">
         <span class="input-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </span>
         <input type="text" id="enrollments-search-input" class="form-control" placeholder="Tìm học viên, email, mã lớp hoặc khóa học...">
       </div>
-      <div style="display: flex; gap: 0.75rem; align-items: center;">
-        <select id="enrollments-status-filter" class="form-control" style="min-width: 190px;">
+      <div style="display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: center;">
+        <select id="enrollments-class-filter" class="form-control" style="min-width: 200px; max-width: 250px;">
+          <option value="0">Tất cả lớp học</option>
+        </select>
+        <select id="enrollments-status-filter" class="form-control" style="min-width: 185px;">
           <option value="all">Tất cả trạng thái</option>
           <option value="active">Đang học (Active)</option>
           <option value="completed">Hoàn thành (Completed)</option>
           <option value="cancelled">Đã hủy (Cancelled)</option>
         </select>
         <button type="button" class="btn btn-sm btn-secondary" id="btn-filter-enrollments">Lọc</button>
+        <button type="button" class="btn btn-sm btn-secondary" id="btn-reset-enrollments-filter">Đặt lại</button>
       </div>
     </div>
   </div>
 
   <div class="card" style="padding: 0; overflow: hidden;">
     <div class="table-container">
-      <table class="table">
+      <table class="table" style="min-width: 920px;">
         <thead>
           <tr>
             <th>Mã ĐK</th>
@@ -265,6 +272,12 @@
         </tbody>
       </table>
     </div>
+  </div>
+
+  <!-- Thanh phân trang -->
+  <div id="enrollments-pagination" style="display: none; margin-top: 1.25rem; padding: 0.875rem 1.25rem; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+    <div id="enrollments-page-info" style="font-size: 0.8125rem; color: var(--text-muted);">--</div>
+    <div id="enrollments-page-buttons" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
   </div>
 
       </main>
@@ -450,9 +463,54 @@
           '</div></td></tr>';
       }
       const COLS = 8;
+      const PAGE_SIZE = 15;
+      let currentPage = 1;
       let needLookups = true;
       let hasLoadedOnce = false;
       let loadController = null;
+      let isExportingCsv = false;
+      const initialUrlParams = new URLSearchParams(window.location.search);
+      let pendingInitialClassId = initialUrlParams.get('classId') || '';
+
+      function setModalBusy(id, busy) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        if (busy) modal.dataset.busy = 'true';
+        else delete modal.dataset.busy;
+      }
+
+      function focusFirstField(modalId, preferredId) {
+        setTimeout(() => {
+          const target = (preferredId && document.getElementById(preferredId))
+            || document.querySelector(`#${modalId} input:not([type="hidden"]):not(:disabled), #${modalId} select:not(:disabled), #${modalId} textarea:not(:disabled)`);
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 30);
+      }
+
+      function bindModalKeyboardAndGuard() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          const openModals = Array.from(document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.show'));
+          const topModal = openModals[openModals.length - 1];
+          if (!topModal || topModal.dataset.busy === 'true') return;
+          topModal.classList.remove('open', 'show');
+        });
+
+        document.addEventListener('click', (e) => {
+          const isBackdrop = e.target && e.target.classList && e.target.classList.contains('modal-backdrop');
+          const dismissBtn = !isBackdrop && e.target && e.target.closest
+            ? (e.target.closest('[data-dismiss="modal"]') || e.target.closest('.modal-close'))
+            : null;
+          if (!isBackdrop && !dismissBtn) return;
+          const modal = isBackdrop
+            ? e.target
+            : (dismissBtn.closest('.modal-backdrop') || document.querySelector('.modal-backdrop.open, .modal-backdrop.show'));
+          if (modal && modal.dataset.busy === 'true') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+      }
 
       function renderStatusBadge(status) {
         switch ((status || '').toLowerCase()) {
@@ -482,31 +540,97 @@
       function populateDropdowns(students, classes) {
         const userSelect = document.getElementById('enr-user-id');
         const classSelect = document.getElementById('enr-class-id');
+        const classFilterSelect = document.getElementById('enrollments-class-filter');
 
         const sList = Array.isArray(students) ? students : [];
         const cList = Array.isArray(classes) ? classes : [];
+        const openClasses = cList.filter(c => {
+          const st = (c.status || '').toLowerCase();
+          return st === 'upcoming' || st === 'ongoing';
+        });
 
         const prevUser = userSelect.value;
         const prevClass = classSelect.value;
+        const prevFilterClass = classFilterSelect.value !== '0'
+          ? classFilterSelect.value
+          : (pendingInitialClassId || '0');
 
         userSelect.innerHTML = sList.length === 0
           ? '<option value="">-- Không có học viên khả dụng --</option>'
           : sList.map(s => `<option value="${s.id}">${escapeHtml(s.fullName)} (${escapeHtml(s.email)})</option>`).join('');
 
-        classSelect.innerHTML = cList.length === 0
+        classSelect.innerHTML = openClasses.length === 0
           ? '<option value="">-- Không có lớp đang mở ghi danh --</option>'
-          : cList.map(c => `<option value="${c.id}">[${escapeHtml(c.classCode)}] ${escapeHtml(c.className)} (${c.activeStudents}/${c.maxStudents} HV • ${formatCurrency(c.price)})</option>`).join('');
+          : openClasses.map(c => `<option value="${c.id}">[${escapeHtml(c.classCode)}] ${escapeHtml(c.className)} (${c.activeStudents}/${c.maxStudents} HV • ${formatCurrency(c.price)})</option>`).join('');
+
+        classFilterSelect.innerHTML = '<option value="0">Tất cả lớp học</option>' +
+          cList.map(c => {
+            const st = (c.status || '').toLowerCase();
+            const suffix = st === 'completed' ? ' (Đã kết thúc)' : (st === 'cancelled' ? ' (Đã hủy)' : '');
+            return `<option value="${c.id}">[${escapeHtml(c.classCode)}] ${escapeHtml(c.className)}${suffix}</option>`;
+          }).join('');
 
         if (prevUser && sList.some(s => String(s.id) === prevUser)) userSelect.value = prevUser;
-        if (prevClass && cList.some(c => String(c.id) === prevClass)) classSelect.value = prevClass;
+        if (prevClass && openClasses.some(c => String(c.id) === prevClass)) classSelect.value = prevClass;
+        if (prevFilterClass && cList.some(c => String(c.id) === String(prevFilterClass))) {
+          classFilterSelect.value = String(prevFilterClass);
+        }
+        pendingInitialClassId = '';
+      }
+
+      function getSelectedClassId() {
+        const val = document.getElementById('enrollments-class-filter').value;
+        if (val && val !== '0') return val;
+        if (needLookups && pendingInitialClassId && pendingInitialClassId !== '0') return pendingInitialClassId;
+        return '';
       }
 
       function hasActiveFilter() {
         return !!document.getElementById('enrollments-search-input').value.trim() ||
+          !!getSelectedClassId() ||
           document.getElementById('enrollments-status-filter').value !== 'all';
       }
 
-      async function updateStatus(id, newStatus) {
+      function renderPagination(pag) {
+        const wrap = document.getElementById('enrollments-pagination');
+        const info = document.getElementById('enrollments-page-info');
+        const btns = document.getElementById('enrollments-page-buttons');
+
+        if (!pag || !pag.totalItems || pag.totalItems === 0) {
+          wrap.style.display = 'none';
+          return;
+        }
+
+        wrap.style.display = 'flex';
+        const start = (pag.page - 1) * pag.pageSize + 1;
+        const end = Math.min(pag.page * pag.pageSize, pag.totalItems);
+        info.textContent = `Hiển thị ${start} - ${end} / ${pag.totalItems} lượt ghi danh (Trang ${pag.page}/${pag.totalPages})`;
+
+        let html = `<button type="button" class="btn btn-sm btn-secondary" data-page="${pag.page - 1}" ${pag.page <= 1 ? 'disabled' : ''}>← Trước</button>`;
+        for (let p = 1; p <= pag.totalPages; p++) {
+          if (p === 1 || p === pag.totalPages || Math.abs(p - pag.page) <= 1) {
+            html += `<button type="button" class="btn btn-sm ${p === pag.page ? 'btn-primary' : 'btn-secondary'}" data-page="${p}">${p}</button>`;
+          } else if (Math.abs(p - pag.page) === 2) {
+            html += '<span style="padding: 4px 6px; color: var(--text-muted);">...</span>';
+          }
+        }
+        html += `<button type="button" class="btn btn-sm btn-secondary" data-page="${pag.page + 1}" ${pag.page >= pag.totalPages ? 'disabled' : ''}>Sau →</button>`;
+        btns.innerHTML = html;
+      }
+
+      function buildFilterParams() {
+        const search = document.getElementById('enrollments-search-input').value.trim();
+        const status = document.getElementById('enrollments-status-filter').value;
+        const classId = getSelectedClassId();
+
+        const params = new URLSearchParams();
+        if (status && status !== 'all') params.set('status', status);
+        if (classId) params.set('classId', classId);
+        if (search) params.set('search', search);
+        return params;
+      }
+
+      async function updateStatus(id, newStatus, sel) {
         try {
           const data = await postJson(`/Admin/api/Enrollments/UpdateStatus/${id}`, { status: newStatus });
           showToast(data.message || 'Cập nhật trạng thái ghi danh thành công.');
@@ -516,21 +640,28 @@
         } finally {
           needLookups = true; // sĩ số các lớp thay đổi -> làm mới dropdown ở lần tải sau
           await loadEnrollments();
+          if (sel && sel.isConnected) sel.disabled = false;
         }
       }
 
       function renderEnrollments(items) {
         const tbody = document.getElementById('enrollments-tbody');
         if (!items || items.length === 0) {
-          tbody.innerHTML = hasActiveFilter()
-            ? stateRow(COLS, 'Không tìm thấy bản ghi ghi danh phù hợp', 'Hãy thử đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái.')
-            : stateRow(COLS, 'Chưa có dữ liệu ghi danh', 'Nhấn "Ghi danh học viên" để thêm bản ghi đầu tiên.');
+          if (hasActiveFilter()) {
+            tbody.innerHTML = `<tr><td colspan="${COLS}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+              '<div class="empty-state-title">Không tìm thấy bản ghi ghi danh phù hợp</div>' +
+              '<div class="empty-state-text">Hãy thử đổi từ khóa tìm kiếm hoặc đặt lại bộ lọc hiện tại.</div>' +
+              '<button type="button" class="btn btn-sm btn-secondary" data-reset-filters>Đặt lại bộ lọc</button>' +
+              '</div></td></tr>';
+          } else {
+            tbody.innerHTML = stateRow(COLS, 'Chưa có dữ liệu ghi danh', 'Nhấn "Ghi danh học viên mới" để thêm bản ghi đầu tiên.');
+          }
           return;
         }
 
         tbody.innerHTML = items.map(e => `
           <tr>
-            <td><strong>#ENR-${e.id}</strong></td>
+            <td style="white-space: nowrap;"><strong>#ENR-${e.id}</strong></td>
             <td>
               <strong>${escapeHtml(e.studentName)}</strong><br>
               <small class="text-muted">${escapeHtml(e.studentEmail)}</small>
@@ -542,10 +673,10 @@
               <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(e.className)}</div>
             </td>
             <td>${escapeHtml(e.courseTitle)}</td>
-            <td><strong>${formatCurrency(e.price)}</strong></td>
-            <td>${formatDate(e.enrolledAt)}</td>
-            <td>${renderStatusBadge(e.status)}</td>
-            <td class="text-right">
+            <td style="white-space: nowrap;"><strong>${formatCurrency(e.price)}</strong></td>
+            <td style="white-space: nowrap;">${formatDate(e.enrolledAt)}</td>
+            <td style="white-space: nowrap;">${renderStatusBadge(e.status)}</td>
+            <td class="text-right" style="white-space: nowrap;">
               <select class="form-control enr-status-select" data-id="${e.id}" style="width: auto; display: inline-block; padding: 4px 8px; font-size: 0.8125rem;">
                 <option value="active" ${e.status === 'active' ? 'selected' : ''}>Active</option>
                 <option value="completed" ${e.status === 'completed' ? 'selected' : ''}>Completed</option>
@@ -569,12 +700,9 @@
           tbody.style.opacity = '0.55';
         }
 
-        const search = document.getElementById('enrollments-search-input').value.trim();
-        const status = document.getElementById('enrollments-status-filter').value;
-
-        const params = new URLSearchParams();
-        if (status && status !== 'all') params.set('status', status);
-        if (search) params.set('search', search);
+        const params = buildFilterParams();
+        params.set('page', String(currentPage));
+        params.set('pageSize', String(PAGE_SIZE));
         if (!needLookups) params.set('lookups', 'false');
 
         try {
@@ -583,12 +711,17 @@
             populateDropdowns(data.students, data.classes);
             needLookups = false;
           }
+          if (data.pagination && data.pagination.page) {
+            currentPage = data.pagination.page;
+          }
           renderEnrollments(data.items);
+          renderPagination(data.pagination);
           hasLoadedOnce = true;
         } catch (err) {
           if (isAbortError(err)) return;
           console.error('Lỗi tải danh sách ghi danh:', err);
           tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+          document.getElementById('enrollments-pagination').style.display = 'none';
         } finally {
           if (loadController === controller) {
             loadController = null;
@@ -612,36 +745,69 @@
           showError('Vui lòng chọn học viên và lớp học hợp lệ.');
           return;
         }
+        if (!['active', 'completed', 'cancelled'].includes((payload.status || '').toLowerCase())) {
+          showError('Trạng thái ghi danh không hợp lệ.');
+          return;
+        }
 
         const submitBtn = document.getElementById('enr-submit-btn');
         setBusy(submitBtn, true);
+        setModalBusy('modal-create-enrollment', true);
 
         try {
           const data = await postJson('/Admin/api/Enrollments/Create', payload);
+          setModalBusy('modal-create-enrollment', false);
           closeModal('modal-create-enrollment');
           showToast(data.message || 'Ghi danh học viên thành công.');
+          currentPage = 1;
           needLookups = true;
           await loadEnrollments();
         } catch (err) {
           console.error(err);
           showError(err.message);
         } finally {
+          setModalBusy('modal-create-enrollment', false);
           setBusy(submitBtn, false);
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
+        bindModalKeyboardAndGuard();
         loadEnrollments();
 
         const searchInput = document.getElementById('enrollments-search-input');
-        const debouncedLoad = debounce(loadEnrollments, 300);
+        const debouncedLoad = debounce(() => {
+          currentPage = 1;
+          loadEnrollments();
+        }, 300);
+
+        const resetAllFilters = () => {
+          debouncedLoad.cancel();
+          pendingInitialClassId = '';
+          searchInput.value = '';
+          document.getElementById('enrollments-class-filter').value = '0';
+          document.getElementById('enrollments-status-filter').value = 'all';
+          currentPage = 1;
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          loadEnrollments();
+        };
 
         document.getElementById('btn-filter-enrollments').addEventListener('click', () => {
           debouncedLoad.cancel();
+          currentPage = 1;
+          loadEnrollments();
+        });
+        document.getElementById('btn-reset-enrollments-filter').addEventListener('click', resetAllFilters);
+        document.getElementById('enrollments-class-filter').addEventListener('change', () => {
+          debouncedLoad.cancel();
+          currentPage = 1;
           loadEnrollments();
         });
         document.getElementById('enrollments-status-filter').addEventListener('change', () => {
           debouncedLoad.cancel();
+          currentPage = 1;
           loadEnrollments();
         });
         searchInput.addEventListener('input', debouncedLoad);
@@ -649,24 +815,61 @@
           if (e.key === 'Enter') {
             e.preventDefault();
             debouncedLoad.cancel();
+            currentPage = 1;
             loadEnrollments();
           }
         });
 
-        // Event delegation cho nút Thử lại và ô đổi trạng thái (không gắn lại listener sau mỗi lần render)
+        document.getElementById('btn-export-enrollments-csv').addEventListener('click', (e) => {
+          if (isExportingCsv) return;
+          const btn = e.currentTarget;
+          isExportingCsv = true;
+          setBusy(btn, true, 'Đang xuất...');
+          const params = buildFilterParams();
+          const qs = params.toString();
+          window.location.href = qs ? `/Admin/api/Enrollments/ExportCsv?${qs}` : '/Admin/api/Enrollments/ExportCsv';
+          showToast('Đang tải xuống tệp CSV danh sách ghi danh...', 'info');
+          setTimeout(() => {
+            isExportingCsv = false;
+            setBusy(btn, false);
+          }, 1500);
+        });
+
+        document.getElementById('enrollments-pagination').addEventListener('click', (e) => {
+          const pageBtn = e.target.closest('[data-page]');
+          if (!pageBtn || pageBtn.disabled) return;
+          const p = Number(pageBtn.getAttribute('data-page'));
+          if (p >= 1 && p !== currentPage) {
+            currentPage = p;
+            loadEnrollments();
+          }
+        });
+
+        // Event delegation cho nút Thử lại, Đặt lại bộ lọc và ô đổi trạng thái (không gắn lại listener sau mỗi lần render)
         const tbody = document.getElementById('enrollments-tbody');
         tbody.addEventListener('click', (e) => {
-          if (e.target.closest('[data-retry-load]')) loadEnrollments();
+          if (e.target.closest('[data-retry-load]')) {
+            loadEnrollments();
+            return;
+          }
+          if (e.target.closest('[data-reset-filters]')) {
+            resetAllFilters();
+          }
         });
         tbody.addEventListener('change', (e) => {
           const sel = e.target.closest('.enr-status-select');
           if (!sel) return;
           sel.disabled = true;
-          updateStatus(Number(sel.getAttribute('data-id')), sel.value);
+          updateStatus(Number(sel.getAttribute('data-id')), sel.value, sel);
         });
 
         document.getElementById('btn-open-create-enrollment').addEventListener('click', () => {
+          const form = document.getElementById('create-enrollment-form');
+          if (form) form.reset();
+          const statusSel = document.getElementById('enr-status');
+          if (statusSel) statusSel.value = 'active';
           showError('');
+          focusFirstField('modal-create-enrollment', 'enr-user-id');
         });
 
         document.getElementById('create-enrollment-form').addEventListener('submit', submitEnrollmentForm);

@@ -209,7 +209,7 @@
       <!-- Vùng Nội Dung Chính -->
       <main class="page-container" id="app-main-content">
         
-  <div class="page-header">
+  <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
     <div>
       <h1 class="page-header-title">Quản lý phòng học & cơ sở vật chất</h1>
       <p class="page-header-subtitle">Trạng thái phòng học, trang thiết bị máy chiếu, micro, tai nghe</p>
@@ -223,7 +223,7 @@
   </div>
 
   <div class="grid grid-cols-3 gap-6" id="facilities-grid">
-    <div class="card" style="padding: 1.5rem; grid-column: span 3; text-align: center; color: var(--text-muted);">
+    <div class="card" style="padding: 1.5rem; grid-column: 1 / -1; text-align: center; color: var(--text-muted);">
       Đang tải danh sách phòng học từ cơ sở dữ liệu...
     </div>
   </div>
@@ -406,7 +406,48 @@
           '</div></td></tr>';
       }
       let facilitiesCache = [];
+      let hasLoadedOnce = false;
       let loadController = null;
+
+      function setModalBusy(id, busy) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        if (busy) modal.dataset.busy = 'true';
+        else delete modal.dataset.busy;
+      }
+
+      function focusFirstField(modalId, preferredId) {
+        setTimeout(() => {
+          const target = (preferredId && document.getElementById(preferredId))
+            || document.querySelector(`#${modalId} input:not([type="hidden"]):not(:disabled), #${modalId} select:not(:disabled), #${modalId} textarea:not(:disabled)`);
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 30);
+      }
+
+      function bindModalKeyboardAndGuard() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          const openModals = Array.from(document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.show'));
+          const topModal = openModals[openModals.length - 1];
+          if (!topModal || topModal.dataset.busy === 'true') return;
+          topModal.classList.remove('open', 'show');
+        });
+
+        document.addEventListener('click', (e) => {
+          const isBackdrop = e.target && e.target.classList && e.target.classList.contains('modal-backdrop');
+          const dismissBtn = !isBackdrop && e.target && e.target.closest
+            ? (e.target.closest('[data-dismiss="modal"]') || e.target.closest('.modal-close'))
+            : null;
+          if (!isBackdrop && !dismissBtn) return;
+          const modal = isBackdrop
+            ? e.target
+            : (dismissBtn.closest('.modal-backdrop') || document.querySelector('.modal-backdrop.open, .modal-backdrop.show'));
+          if (modal && modal.dataset.busy === 'true') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+      }
 
       function showError(msg) {
         const errBox = document.getElementById('facility-form-error');
@@ -421,6 +462,8 @@
       }
 
       function openCreateMode() {
+        const form = document.getElementById('facility-form');
+        if (form) form.reset();
         document.getElementById('facility-id').value = '';
         document.getElementById('facility-name').value = '';
         document.getElementById('facility-location').value = '';
@@ -430,6 +473,7 @@
         document.getElementById('facility-modal-title').textContent = 'Thêm phòng học mới';
         document.getElementById('facility-submit-btn').textContent = 'Lưu phòng học';
         showError('');
+        focusFirstField('modal-create-facility', 'facility-name');
       }
 
       function openEditMode(id) {
@@ -445,10 +489,11 @@
         document.getElementById('facility-submit-btn').textContent = 'Cập nhật';
         showError('');
         openModal('modal-create-facility');
+        focusFirstField('modal-create-facility', 'facility-name');
       }
 
       async function toggleFacilityStatus(id, btn) {
-        if (btn) btn.disabled = true;
+        setBusy(btn, true, 'Đang xử lý...');
         try {
           const data = await postJson(`/Admin/api/Facilities/ToggleStatus/${id}`);
           showToast(data.message || 'Đã đổi trạng thái phòng học.');
@@ -456,7 +501,8 @@
         } catch (err) {
           console.error(err);
           showToast(err.message, 'error');
-          if (btn) btn.disabled = false;
+        } finally {
+          if (btn && btn.isConnected) setBusy(btn, false);
         }
       }
 
@@ -475,10 +521,11 @@
         const grid = document.getElementById('facilities-grid');
         if (!items || items.length === 0) {
           grid.innerHTML = `
-            <div class="card" style="grid-column: span 3;">
-              <div class="empty-state" style="padding: 2rem 1rem;">
+            <div class="card" style="grid-column: 1 / -1;">
+              <div class="empty-state" style="padding: 2.25rem 1rem;">
                 <div class="empty-state-title">Chưa có phòng học nào</div>
-                <div class="empty-state-text" style="margin-bottom: 0;">Nhấn "Thêm phòng học" để tạo phòng học đầu tiên trong hệ thống.</div>
+                <div class="empty-state-text">Nhấn "Thêm phòng mới" để tạo phòng học đầu tiên trong hệ thống.</div>
+                <button type="button" class="btn btn-sm btn-primary" data-open-create-facility>+ Thêm phòng mới</button>
               </div>
             </div>`;
           return;
@@ -493,9 +540,9 @@
           const desc = item.description ? escapeHtml(item.description) : 'Chưa cập nhật mô tả thiết bị';
 
           return `
-            <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; min-width: 0;">
               <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
                   ${statusBadge}
                   <span class="text-muted" style="font-size: 0.75rem;">${escapeHtml(item.location || 'Chưa rõ vị trí')}</span>
                 </div>
@@ -505,11 +552,12 @@
                 </p>
               </div>
               <div>
-                <div style="font-size: 0.8125rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-bottom: 0.875rem; display: flex; justify-content: space-between; align-items: center;">
-                  <span>Sức chứa: <strong>${item.capacity} chỗ</strong></span>
-                  <span class="text-muted">Đang xếp: <strong>${item.activeScheduleCount || 0}</strong> ca/tuần</span>
+                <div style="font-size: 0.8125rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-bottom: 0.875rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <span>Sức chứa: <strong>${Number(item.capacity) || 0} chỗ</strong></span>
+                  <span class="text-muted">Đang xếp: <strong>${Number(item.activeScheduleCount) || 0}</strong> ca/tuần</span>
                 </div>
-                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+                  <a href="/Admin/schedules.html?classroomId=${encodeURIComponent(item.id)}" class="btn btn-sm btn-secondary">Xem lịch phòng</a>
                   <button type="button" class="btn btn-sm btn-secondary btn-edit-facility" data-id="${item.id}">Chỉnh sửa</button>
                   <button type="button" class="${toggleBtnClass} btn-toggle-facility" data-id="${item.id}">${toggleLabel}</button>
                 </div>
@@ -521,7 +569,7 @@
 
       function renderLoadError(message) {
         document.getElementById('facilities-grid').innerHTML = `
-          <div class="card" style="grid-column: span 3;">
+          <div class="card" style="grid-column: 1 / -1;">
             <div class="empty-state" style="padding: 2rem 1rem;">
               <div class="empty-state-title" style="color: var(--danger-text);">Không thể tải danh sách phòng học</div>
               <div class="empty-state-text">${escapeHtml(message)}</div>
@@ -535,18 +583,27 @@
         const controller = new AbortController();
         loadController = controller;
 
-        if (facilitiesCache.length === 0) renderLoadingState();
+        const grid = document.getElementById('facilities-grid');
+        if (!hasLoadedOnce) {
+          renderLoadingState();
+        } else {
+          grid.style.opacity = '0.55';
+        }
 
         try {
           const data = await fetchJson('/Admin/api/Facilities/List', { signal: controller.signal });
           facilitiesCache = Array.isArray(data.items) ? data.items : [];
           renderFacilities(facilitiesCache);
+          hasLoadedOnce = true;
         } catch (err) {
           if (isAbortError(err)) return;
           console.error('Lỗi tải phòng học:', err);
           renderLoadError(err.message);
         } finally {
-          if (loadController === controller) loadController = null;
+          if (loadController === controller) {
+            loadController = null;
+            grid.style.opacity = '';
+          }
         }
       }
 
@@ -564,21 +621,31 @@
           isActive: document.getElementById('facility-active').value === 'true'
         };
 
-        if (!payload.name) {
-          showError('Tên phòng học không được để trống.');
+        if (!payload.name || payload.name.length > 50) {
+          showError('Tên phòng học phải từ 1 đến 50 ký tự.');
           return;
         }
-        if (payload.capacity <= 0) {
-          showError('Sức chứa phải lớn hơn 0.');
+        if (payload.location.length > 100) {
+          showError('Vị trí phòng học không được vượt quá 100 ký tự.');
+          return;
+        }
+        if (payload.capacity <= 0 || payload.capacity > 1000) {
+          showError('Sức chứa phòng học phải từ 1 đến 1.000 chỗ.');
+          return;
+        }
+        if (payload.description.length > 1000) {
+          showError('Mô tả phòng học không được vượt quá 1.000 ký tự.');
           return;
         }
 
         const submitBtn = document.getElementById('facility-submit-btn');
         setBusy(submitBtn, true);
+        setModalBusy('modal-create-facility', true);
 
         try {
-          const url = id ? `/Admin/api/Facilities/Update/${id}` : '/Admin/api/Facilities/Create';
+          const url = id ? `/Admin/api/Facilities/Update/${encodeURIComponent(id)}` : '/Admin/api/Facilities/Create';
           const data = await postJson(url, payload, id ? 'PUT' : 'POST');
+          setModalBusy('modal-create-facility', false);
           closeModal('modal-create-facility');
           showToast(data.message || 'Lưu phòng học thành công.');
           await loadFacilities();
@@ -586,11 +653,13 @@
           console.error(err);
           showError(err.message);
         } finally {
+          setModalBusy('modal-create-facility', false);
           setBusy(submitBtn, false);
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
+        bindModalKeyboardAndGuard();
         loadFacilities();
 
         const openBtn = document.getElementById('btn-open-create-facility');
@@ -608,6 +677,11 @@
           const toggleBtn = e.target.closest('.btn-toggle-facility');
           if (toggleBtn) {
             toggleFacilityStatus(Number(toggleBtn.getAttribute('data-id')), toggleBtn);
+            return;
+          }
+          if (e.target.closest('[data-open-create-facility]')) {
+            openCreateMode();
+            openModal('modal-create-facility');
             return;
           }
           if (e.target.closest('[data-retry-load]')) {

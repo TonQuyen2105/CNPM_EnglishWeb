@@ -1,13 +1,20 @@
+using System.Globalization;
+using System.Text;
 using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class EnrollmentsController : Controller
     {
+        private const long ClassLockOffset = 100_000_000L;
+        private const long TimeSlotLockKey = 700_000_000L;
+        private const long StudentLockOffset = 800_000_000L;
+
         private readonly ApplicationDbContext _context;
         private readonly ILogger<EnrollmentsController> _logger;
 
@@ -28,59 +35,64 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         }
 
         /// <param name="lookups">
-        /// true: trả kèm danh sách học viên + lớp đang mở (dùng cho dropdown modal).
-        /// Frontend gửi false khi chỉ lọc/tìm kiếm để tránh tải lại dữ liệu không đổi.
+        /// true: trả kèm danh sách học viên + toàn bộ danh sách lớp (phục vụ dropdown lọc lớp & modal ghi danh).
+        /// Frontend gửi false khi chỉ lọc/chuyển trang để tránh tải lại dữ liệu không đổi.
         /// </param>
         [HttpGet("/Admin/api/Enrollments/List")]
-        public async Task<IActionResult> List(string? status, string? search, CancellationToken cancellationToken, bool lookups = true)
+        public async Task<IActionResult> List(
+            string? status,
+            int? classId,
+            string? search,
+            int page = 1,
+            int pageSize = 15,
+            CancellationToken cancellationToken = default,
+            bool lookups = true)
         {
             try
             {
-                var query =
-                    from e in _context.Enrollments.AsNoTracking()
-                    join u in _context.Users.AsNoTracking() on e.UserId equals u.Id
-                    join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
-                    join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id
-                    select new
-                    {
-                        id = e.Id,
-                        userId = u.Id,
-                        studentName = u.FullName,
-                        studentEmail = u.Email,
-                        classId = cc.Id,
-                        classCode = cc.ClassCode,
-                        className = cc.ClassName,
-                        courseTitle = c.Title,
-                        price = cc.Price,
-                        enrolledAt = e.EnrolledAt,
-                        status = e.Status
-                    };
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 15;
+                if (pageSize > 50) pageSize = 50;
 
-                if (!string.IsNullOrWhiteSpace(status) && !status.Equals("all", StringComparison.OrdinalIgnoreCase))
-                {
-                    var normalizedStatus = status.Trim().ToLowerInvariant();
-                    query = query.Where(x => x.status == normalizedStatus);
-                }
+                var query = BuildFilteredEnrollmentsQuery(status, classId, search);
 
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    var term = search.Trim().ToLower();
-                    query = query.Where(x =>
-                        x.studentName.ToLower().Contains(term) ||
-                        x.studentEmail.ToLower().Contains(term) ||
-                        x.classCode.ToLower().Contains(term) ||
-                        x.className.ToLower().Contains(term) ||
-                        x.courseTitle.ToLower().Contains(term));
-                }
+                var totalItems = await query.CountAsync(cancellationToken);
+                var totalPages = totalItems > 0 ? (int)Math.Ceiling(totalItems / (double)pageSize) : 1;
+                if (page > totalPages) page = totalPages;
 
-                var items = await query
-                    .OrderByDescending(x => x.enrolledAt)
-                    .ThenByDescending(x => x.id)
+                var rows = await query
+                    .OrderByDescending(x => x.EnrolledAt)
+                    .ThenByDescending(x => x.Id)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync(cancellationToken);
+
+                var items = rows.Select(x => new
+                {
+                    id = x.Id,
+                    userId = x.UserId,
+                    studentName = x.StudentName,
+                    studentEmail = x.StudentEmail,
+                    classId = x.ClassId,
+                    classCode = x.ClassCode,
+                    className = x.ClassName,
+                    courseTitle = x.CourseTitle,
+                    price = x.Price,
+                    enrolledAt = x.EnrolledAt,
+                    status = x.Status
+                }).ToList();
+
+                var pagination = new
+                {
+                    page,
+                    pageSize,
+                    totalItems,
+                    totalPages
+                };
 
                 if (!lookups)
                 {
-                    return Ok(new { success = true, items });
+                    return Ok(new { success = true, items, pagination });
                 }
 
                 var students = await _context.Users
@@ -95,24 +107,43 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     })
                     .ToListAsync(cancellationToken);
 
-                // Projection + đếm sĩ số bằng subquery tương quan ngay trên PostgreSQL (không kéo cả entity về RAM)
-                var classes = await _context.CourseClasses
+                // Trả đủ danh sách lớp để lọc theo lớp (modal ghi danh chỉ hiển thị lớp upcoming/ongoing)
+                var rawClasses = await _context.CourseClasses
                     .AsNoTracking()
-                    .Where(cc => cc.Status == "upcoming" || cc.Status == "ongoing")
                     .OrderBy(cc => cc.ClassCode)
                     .Select(cc => new
                     {
-                        id = cc.Id,
-                        classCode = cc.ClassCode,
-                        className = cc.ClassName,
-                        price = cc.Price,
-                        status = cc.Status,
-                        activeStudents = _context.Enrollments.Count(e => e.ClassId == cc.Id && e.Status == "active"),
-                        maxStudents = cc.MaxStudents
+                        cc.Id,
+                        cc.ClassCode,
+                        cc.ClassName,
+                        cc.Price,
+                        cc.Status,
+                        cc.MaxStudents
                     })
                     .ToListAsync(cancellationToken);
 
-                return Ok(new { success = true, items, students, classes });
+                var lookupClassIds = rawClasses.Select(cc => cc.Id).ToList();
+                var activeCounts = lookupClassIds.Count == 0
+                    ? new Dictionary<int, int>()
+                    : await _context.Enrollments
+                        .AsNoTracking()
+                        .Where(e => lookupClassIds.Contains(e.ClassId) && e.Status == "active")
+                        .GroupBy(e => e.ClassId)
+                        .Select(g => new { ClassId = g.Key, Count = g.Count() })
+                        .ToDictionaryAsync(x => x.ClassId, x => x.Count, cancellationToken);
+
+                var classes = rawClasses.Select(cc => new
+                {
+                    id = cc.Id,
+                    classCode = cc.ClassCode,
+                    className = cc.ClassName,
+                    price = cc.Price,
+                    status = cc.Status,
+                    activeStudents = activeCounts.GetValueOrDefault(cc.Id),
+                    maxStudents = cc.MaxStudents
+                }).ToList();
+
+                return Ok(new { success = true, items, pagination, students, classes });
             }
             catch (OperationCanceledException)
             {
@@ -122,6 +153,59 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             {
                 _logger.LogError(ex, "Không thể tải danh sách ghi danh.");
                 return this.ApiServerError("Không thể tải danh sách ghi danh.");
+            }
+        }
+
+        [HttpGet("/Admin/api/Enrollments/ExportCsv")]
+        public async Task<IActionResult> ExportCsv(
+            string? status,
+            int? classId,
+            string? search,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var rows = await BuildFilteredEnrollmentsQuery(status, classId, search)
+                    .OrderByDescending(x => x.EnrolledAt)
+                    .ThenByDescending(x => x.Id)
+                    .ToListAsync(cancellationToken);
+
+                var sb = new StringBuilder();
+                sb.AppendLine("STT,Học viên,Email,Mã lớp,Tên lớp,Khóa học,Ngày ghi danh,Học phí (VND),Trạng thái");
+
+                for (var i = 0; i < rows.Count; i++)
+                {
+                    var row = rows[i];
+                    var fee = string.Equals(row.Status, "cancelled", StringComparison.OrdinalIgnoreCase) ? 0m : row.Price;
+                    sb.AppendLine(string.Join(",",
+                        (i + 1).ToString(CultureInfo.InvariantCulture),
+                        AdminCoreHelpers.EscapeCsv(row.StudentName),
+                        AdminCoreHelpers.EscapeCsv(row.StudentEmail),
+                        AdminCoreHelpers.EscapeCsv(row.ClassCode),
+                        AdminCoreHelpers.EscapeCsv(row.ClassName),
+                        AdminCoreHelpers.EscapeCsv(row.CourseTitle),
+                        AdminCoreHelpers.EscapeCsv(row.EnrolledAt.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)),
+                        fee.ToString("0", CultureInfo.InvariantCulture),
+                        AdminCoreHelpers.EscapeCsv(AdminCoreHelpers.FormatEnrollmentStatusVi(row.Status))));
+                }
+
+                var preamble = Encoding.UTF8.GetPreamble();
+                var body = Encoding.UTF8.GetBytes(sb.ToString());
+                var bytes = new byte[preamble.Length + body.Length];
+                Buffer.BlockCopy(preamble, 0, bytes, 0, preamble.Length);
+                Buffer.BlockCopy(body, 0, bytes, preamble.Length, body.Length);
+
+                var dateTag = DateTime.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+                return File(bytes, "text/csv; charset=utf-8", $"danh-sach-ghi-danh-{dateTag}.csv");
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể xuất CSV danh sách ghi danh.");
+                return this.ApiServerError("Không thể xuất tệp CSV danh sách ghi danh.");
             }
         }
 
@@ -153,14 +237,20 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     return this.ApiBadRequest("Học viên không tồn tại hoặc tài khoản đang bị khóa.");
                 }
 
-                // Khóa giao dịch mức PostgreSQL (pg_advisory_xact_lock) theo ClassId để tuần tự hóa các request ghi danh đồng thời vào cùng một lớp.
-                long lockKey = 100_000_000L + dto.ClassId;
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
+                // Khóa giao dịch tăng dần: Lớp (100M) -> Ca học shared (700M khi kích hoạt) -> Học viên (800M)
+                long classLockKey = ClassLockOffset + dto.ClassId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({classLockKey})", cancellationToken);
+                if (status == "active")
+                {
+                    await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock_shared({TimeSlotLockKey})", cancellationToken);
+                }
+                long studentLockKey = StudentLockOffset + dto.UserId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({studentLockKey})", cancellationToken);
 
                 var courseClass = await _context.CourseClasses
                     .AsNoTracking()
                     .Where(c => c.Id == dto.ClassId)
-                    .Select(c => new { c.ClassCode, c.Status, c.MaxStudents })
+                    .Select(c => new { c.ClassCode, c.Status, c.MaxStudents, c.StartDate, c.EndDate })
                     .FirstOrDefaultAsync(cancellationToken);
                 if (courseClass == null || (courseClass.Status != "upcoming" && courseClass.Status != "ongoing"))
                 {
@@ -168,12 +258,79 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     return this.ApiBadRequest("Lớp học không tồn tại hoặc không còn nhận ghi danh (chỉ nhận lớp upcoming hoặc ongoing).");
                 }
 
-                var alreadyActive = await _context.Enrollments
-                    .AnyAsync(e => e.UserId == dto.UserId && e.ClassId == dto.ClassId && e.Status == "active", cancellationToken);
-                if (alreadyActive)
+                if (status == "completed" && courseClass.Status == "upcoming")
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest($"Học viên {student.FullName} đã có bản ghi ghi danh đang học (active) trong lớp {courseClass.ClassCode}.");
+                    return this.ApiBadRequest($"Không thể tạo ghi danh ở trạng thái hoàn thành (completed) cho lớp {courseClass.ClassCode} đang sắp khai giảng (upcoming).");
+                }
+
+                var existingEnrollment = await _context.Enrollments
+                    .FirstOrDefaultAsync(e => e.UserId == dto.UserId && e.ClassId == dto.ClassId, cancellationToken);
+
+                if (existingEnrollment != null)
+                {
+                    var existingStatus = (existingEnrollment.Status ?? string.Empty).Trim().ToLowerInvariant();
+                    if (existingStatus == "active")
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Học viên này đã được ghi danh vào lớp.");
+                    }
+
+                    if (existingStatus == "completed")
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Học viên đã hoàn thành lớp học này.");
+                    }
+
+                    if (existingStatus == "cancelled" && status == "active")
+                    {
+                        var activeCount = await _context.Enrollments
+                            .CountAsync(e => e.ClassId == dto.ClassId && e.Status == "active", cancellationToken);
+                        if (activeCount >= courseClass.MaxStudents)
+                        {
+                            await transaction.RollbackAsync(CancellationToken.None);
+                            return this.ApiBadRequest($"Lớp {courseClass.ClassCode} đã đạt sĩ số tối đa ({activeCount}/{courseClass.MaxStudents}).");
+                        }
+
+                        var scheduleConflict = await AdminCoreHelpers.CheckStudentScheduleConflictAsync(
+                            _context,
+                            dto.UserId,
+                            dto.ClassId,
+                            courseClass.ClassCode,
+                            courseClass.StartDate,
+                            courseClass.EndDate,
+                            cancellationToken);
+                        if (scheduleConflict != null)
+                        {
+                            await transaction.RollbackAsync(CancellationToken.None);
+                            return this.ApiBadRequest(scheduleConflict);
+                        }
+
+                        existingEnrollment.Status = "active";
+                        existingEnrollment.EnrolledAt = DateTime.UtcNow;
+
+                        try
+                        {
+                            await _context.SaveChangesAsync(cancellationToken);
+                        }
+                        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                        {
+                            await transaction.RollbackAsync(CancellationToken.None);
+                            return this.ApiBadRequest("Học viên này đã được ghi danh vào lớp.");
+                        }
+
+                        await transaction.CommitAsync(cancellationToken);
+                        return Ok(new
+                        {
+                            success = true,
+                            message = $"Đã kích hoạt lại ghi danh cho học viên {student.FullName} vào lớp {courseClass.ClassCode}.",
+                            id = existingEnrollment.Id,
+                            item = existingEnrollment
+                        });
+                    }
+
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Học viên {student.FullName} đã có hồ sơ ghi danh ở trạng thái '{existingStatus}' trong lớp {courseClass.ClassCode}; chỉ có thể tái kích hoạt sang trạng thái active.");
                 }
 
                 if (status == "active")
@@ -184,6 +341,20 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
                         return this.ApiBadRequest($"Lớp {courseClass.ClassCode} đã đạt sĩ số tối đa ({activeCount}/{courseClass.MaxStudents}).");
+                    }
+
+                    var scheduleConflict = await AdminCoreHelpers.CheckStudentScheduleConflictAsync(
+                        _context,
+                        dto.UserId,
+                        dto.ClassId,
+                        courseClass.ClassCode,
+                        courseClass.StartDate,
+                        courseClass.EndDate,
+                        cancellationToken);
+                    if (scheduleConflict != null)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest(scheduleConflict);
                     }
                 }
 
@@ -196,7 +367,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 };
 
                 _context.Enrollments.Add(enrollment);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Học viên này đã được ghi danh vào lớp.");
+                }
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new { success = true, message = "Ghi danh học viên thành công.", id = enrollment.Id, item = enrollment });
@@ -217,6 +396,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpPost("/Admin/api/Enrollments/UpdateStatus/{id}")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] EnrollmentStatusDto? dto, CancellationToken cancellationToken)
         {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã bản ghi ghi danh không hợp lệ.");
+            }
+
             if (dto == null)
             {
                 return this.ApiBadRequest("Dữ liệu cập nhật không hợp lệ.");
@@ -228,14 +412,22 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest("Trạng thái ghi danh phải là active, completed hoặc cancelled.");
             }
 
-            int? targetClassId;
+            int targetClassId;
+            int targetUserId;
             try
             {
-                targetClassId = await _context.Enrollments
+                var targetInfo = await _context.Enrollments
                     .AsNoTracking()
                     .Where(e => e.Id == id)
-                    .Select(e => (int?)e.ClassId)
+                    .Select(e => new { e.ClassId, e.UserId })
                     .FirstOrDefaultAsync(cancellationToken);
+                if (targetInfo == null)
+                {
+                    return this.ApiNotFound("Không tìm thấy bản ghi ghi danh.");
+                }
+
+                targetClassId = targetInfo.ClassId;
+                targetUserId = targetInfo.UserId;
             }
             catch (OperationCanceledException)
             {
@@ -247,17 +439,18 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiServerError("Không thể cập nhật trạng thái ghi danh.");
             }
 
-            if (targetClassId == null)
-            {
-                return this.ApiNotFound("Không tìm thấy bản ghi ghi danh.");
-            }
-
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                // Khóa giao dịch mức PostgreSQL (pg_advisory_xact_lock) theo ClassId trước khi load tracked entity để tránh đọc snapshot cũ trước khi giữ khóa.
-                var lockKey = 100_000_000L + targetClassId.Value;
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
+                // Khóa giao dịch tăng dần: Lớp (100M) -> Ca học shared (700M) -> Học viên (800M)
+                var classLockKey = ClassLockOffset + targetClassId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({classLockKey})", cancellationToken);
+                if (newStatus == "active")
+                {
+                    await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock_shared({TimeSlotLockKey})", cancellationToken);
+                    var studentLockKey = StudentLockOffset + targetUserId;
+                    await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({studentLockKey})", cancellationToken);
+                }
 
                 var enrollment = await _context.Enrollments.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
                 if (enrollment == null)
@@ -266,19 +459,26 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     return this.ApiNotFound("Không tìm thấy bản ghi ghi danh.");
                 }
 
+                var courseClass = await _context.CourseClasses
+                    .AsNoTracking()
+                    .Where(c => c.Id == enrollment.ClassId)
+                    .Select(c => new { c.ClassCode, c.Status, c.MaxStudents, c.StartDate, c.EndDate })
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (courseClass == null)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Không tìm thấy lớp học của bản ghi ghi danh.");
+                }
+
+                if (newStatus == "completed" && (courseClass.Status == "upcoming" || courseClass.Status == "cancelled"))
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    var reason = courseClass.Status == "upcoming" ? "chưa khai giảng (upcoming)" : "đã bị hủy (cancelled)";
+                    return this.ApiBadRequest($"Không thể chuyển ghi danh sang hoàn thành (completed) vì lớp {courseClass.ClassCode} {reason}.");
+                }
+
                 if (newStatus == "active" && enrollment.Status != "active")
                 {
-                    var courseClass = await _context.CourseClasses
-                        .AsNoTracking()
-                        .Where(c => c.Id == enrollment.ClassId)
-                        .Select(c => new { c.ClassCode, c.Status, c.MaxStudents })
-                        .FirstOrDefaultAsync(cancellationToken);
-                    if (courseClass == null)
-                    {
-                        await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiNotFound("Không tìm thấy lớp học của bản ghi ghi danh.");
-                    }
-
                     if (courseClass.Status != "upcoming" && courseClass.Status != "ongoing")
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
@@ -301,6 +501,20 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         await transaction.RollbackAsync(CancellationToken.None);
                         return this.ApiBadRequest($"Lớp {courseClass.ClassCode} đã đạt sĩ số tối đa ({activeCount}/{courseClass.MaxStudents}).");
                     }
+
+                    var scheduleConflict = await AdminCoreHelpers.CheckStudentScheduleConflictAsync(
+                        _context,
+                        enrollment.UserId,
+                        enrollment.ClassId,
+                        courseClass.ClassCode,
+                        courseClass.StartDate,
+                        courseClass.EndDate,
+                        cancellationToken);
+                    if (scheduleConflict != null)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest(scheduleConflict);
+                    }
                 }
 
                 enrollment.Status = newStatus;
@@ -319,6 +533,69 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể cập nhật trạng thái ghi danh.");
             }
+        }
+
+        private IQueryable<EnrollmentListRow> BuildFilteredEnrollmentsQuery(string? status, int? classId, string? search)
+        {
+            var query =
+                from e in _context.Enrollments.AsNoTracking()
+                join u in _context.Users.AsNoTracking() on e.UserId equals u.Id
+                join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id
+                select new EnrollmentListRow
+                {
+                    Id = e.Id,
+                    UserId = u.Id,
+                    StudentName = u.FullName,
+                    StudentEmail = u.Email,
+                    ClassId = cc.Id,
+                    ClassCode = cc.ClassCode,
+                    ClassName = cc.ClassName,
+                    CourseTitle = c.Title,
+                    Price = cc.Price,
+                    EnrolledAt = e.EnrolledAt,
+                    Status = e.Status
+                };
+
+            if (classId.HasValue && classId.Value > 0)
+            {
+                var targetClassId = classId.Value;
+                query = query.Where(x => x.ClassId == targetClassId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(status) && !status.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                var normalizedStatus = status.Trim().ToLowerInvariant();
+                query = query.Where(x => x.Status == normalizedStatus);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var pattern = AdminCoreHelpers.BuildContainsLikePattern(search.Trim());
+                query = query.Where(x =>
+                    EF.Functions.ILike(x.StudentName, pattern, "\\") ||
+                    EF.Functions.ILike(x.StudentEmail, pattern, "\\") ||
+                    EF.Functions.ILike(x.ClassCode, pattern, "\\") ||
+                    EF.Functions.ILike(x.ClassName, pattern, "\\") ||
+                    EF.Functions.ILike(x.CourseTitle, pattern, "\\"));
+            }
+
+            return query;
+        }
+
+        private sealed class EnrollmentListRow
+        {
+            public int Id { get; set; }
+            public int UserId { get; set; }
+            public string StudentName { get; set; } = string.Empty;
+            public string StudentEmail { get; set; } = string.Empty;
+            public int ClassId { get; set; }
+            public string ClassCode { get; set; } = string.Empty;
+            public string ClassName { get; set; } = string.Empty;
+            public string CourseTitle { get; set; } = string.Empty;
+            public decimal Price { get; set; }
+            public DateTime EnrolledAt { get; set; }
+            public string Status { get; set; } = string.Empty;
         }
 
         public class EnrollmentCreateDto
