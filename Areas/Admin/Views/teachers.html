@@ -384,7 +384,7 @@
           </div>
         </div>
         <div class="modal-footer" style="justify-content: space-between;">
-          <button type="button" class="btn btn-success" id="td-quick-verify-btn" style="display: none;">Duyệt hồ sơ ngay</button>
+          <button type="button" class="btn btn-primary" id="td-quick-verify-btn" style="display: none;">Duyệt hồ sơ ngay</button>
           <div style="display: flex; gap: 8px; margin-left: auto;">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
             <button type="submit" class="btn btn-primary" id="td-save-btn">Lưu cập nhật</button>
@@ -610,7 +610,7 @@
           quickVerifyBtn.textContent = 'Thu hồi xác minh';
           quickVerifyBtn.dataset.verified = 'true';
         } else {
-          quickVerifyBtn.className = 'btn btn-success';
+          quickVerifyBtn.className = 'btn btn-primary';
           quickVerifyBtn.textContent = 'Duyệt hồ sơ ngay';
           quickVerifyBtn.dataset.verified = 'false';
         }

@@ -558,7 +558,7 @@
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; padding-top: 4px; border-top: 1px dashed var(--border-color);">
                   <a href="/Admin/classes.html?courseId=${encodeURIComponent(c.id)}" style="font-size: 0.78rem; color: var(--primary-600); text-decoration: none; font-weight: 600;">Xem ${Number(c.classCount || 0)} lớp hiện có →</a>
-                  <button type="button" class="btn btn-sm ${c.isPublished ? 'btn-secondary' : 'btn-success'}" data-toggle-publish="${c.id}">
+                  <button type="button" class="btn btn-sm ${c.isPublished ? 'btn-secondary' : 'btn-primary'}" data-toggle-publish="${c.id}">
                     ${c.isPublished ? 'Ẩn (Nháp)' : 'Xuất bản'}
                   </button>
                 </div>

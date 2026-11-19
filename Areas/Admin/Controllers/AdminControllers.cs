@@ -172,6 +172,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 join s in _context.Subjects.AsNoTracking() on c.SubjectId equals s.Id into subjGroup
                 from subj in subjGroup.DefaultIfEmpty()
                 where e.EnrolledAt >= rangeStart && e.EnrolledAt < rangeEnd
+                      && cc.Status != "cancelled"
                 select new
                 {
                     e.UserId,
@@ -201,6 +202,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                 where e.EnrolledAt >= prevStart && e.EnrolledAt < prevEnd
                       && (e.Status == "active" || e.Status == "completed")
+                      && cc.Status != "cancelled"
                 select (decimal?)cc.Price
             ).SumAsync(cancellationToken) ?? 0m;
 

@@ -2,6 +2,7 @@ using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
@@ -780,11 +781,31 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                long examLockKey = 900_000_000L + examId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({examLockKey})", cancellationToken);
+
                 var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
                 if (exam == null)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy đề thi.");
+                }
+
+                var nextOrder = dto!.OrderIndex.HasValue && dto.OrderIndex.Value > 0
+                    ? dto.OrderIndex.Value
+                    : ((await _context.ExamQuestions
+                        .AsNoTracking()
+                        .Where(eq => eq.ExamId == examId)
+                        .Select(eq => (int?)eq.OrderIndex)
+                        .MaxAsync(cancellationToken)) ?? 0) + 1;
+
+                var duplicateOrder = await _context.ExamQuestions
+                    .AsNoTracking()
+                    .AnyAsync(eq => eq.ExamId == examId && eq.OrderIndex == nextOrder, cancellationToken);
+                if (duplicateOrder)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Thứ tự câu hỏi số {nextOrder} đã tồn tại trong đề thi này.");
                 }
 
                 var now = DateTime.UtcNow;
@@ -793,7 +814,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     QuestionText = qText,
                     QuestionType = qType,
                     AudioUrl = audioUrl,
-                    DefaultPoints = dto!.Points,
+                    DefaultPoints = dto.Points,
                     CreatedAt = now,
                     UpdatedAt = now
                 };
@@ -820,14 +841,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     });
                 }
 
-                var nextOrder = dto.OrderIndex.HasValue && dto.OrderIndex.Value > 0
-                    ? dto.OrderIndex.Value
-                    : ((await _context.ExamQuestions
-                        .AsNoTracking()
-                        .Where(eq => eq.ExamId == examId)
-                        .Select(eq => (int?)eq.OrderIndex)
-                        .MaxAsync(cancellationToken)) ?? 0) + 1;
-
                 var examQuestion = new ExamQuestion
                 {
                     ExamId = examId,
@@ -838,7 +851,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 _context.ExamQuestions.Add(examQuestion);
                 exam.UpdatedAt = now;
 
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Thứ tự câu hỏi số {nextOrder} đã tồn tại trong đề thi này.");
+                }
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
@@ -883,12 +904,28 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                long examLockKey = 900_000_000L + examId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({examLockKey})", cancellationToken);
+
                 var eq = await _context.ExamQuestions
                     .FirstOrDefaultAsync(x => x.Id == examQuestionId && x.ExamId == examId, cancellationToken);
                 if (eq == null)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy câu hỏi trong đề thi.");
+                }
+
+                var newOrder = dto!.OrderIndex.HasValue && dto.OrderIndex.Value > 0
+                    ? dto.OrderIndex.Value
+                    : eq.OrderIndex;
+
+                var duplicateOrder = await _context.ExamQuestions
+                    .AsNoTracking()
+                    .AnyAsync(x => x.ExamId == examId && x.Id != examQuestionId && x.OrderIndex == newOrder, cancellationToken);
+                if (duplicateOrder)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Thứ tự câu hỏi số {newOrder} đã tồn tại trong đề thi này.");
                 }
 
                 var question = await _context.Questions.FirstOrDefaultAsync(q => q.Id == eq.QuestionId, cancellationToken);
@@ -899,31 +936,34 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     return this.ApiNotFound("Không tìm thấy dữ liệu câu hỏi hoặc đề thi.");
                 }
 
-                var referencedOptionIds = await _context.UserExamAnswers
+                var hasAnyStudentAnswers = await _context.UserExamAnswers
                     .AsNoTracking()
-                    .Where(a => a.QuestionId == question.Id && a.SelectedOptionId != null)
-                    .Select(a => a.SelectedOptionId!.Value)
-                    .Distinct()
-                    .ToListAsync(cancellationToken);
+                    .AnyAsync(a => a.QuestionId == question.Id, cancellationToken);
 
-                if (referencedOptionIds.Count > 0 && !string.Equals(question.QuestionType, qType, StringComparison.OrdinalIgnoreCase))
+                if (hasAnyStudentAnswers && !string.Equals(question.QuestionType, qType, StringComparison.OrdinalIgnoreCase))
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Câu hỏi này đã có học viên chọn đáp án nên không thể đổi sang loại câu hỏi khác.");
+                    return this.ApiBadRequest("Câu hỏi này đã có học viên làm bài nên không thể đổi sang loại câu hỏi khác.");
                 }
+
+                var referencedOptionIds = hasAnyStudentAnswers
+                    ? await _context.UserExamAnswers
+                        .AsNoTracking()
+                        .Where(a => a.QuestionId == question.Id && a.SelectedOptionId != null)
+                        .Select(a => a.SelectedOptionId!.Value)
+                        .Distinct()
+                        .ToListAsync(cancellationToken)
+                    : new List<int>();
 
                 var now = DateTime.UtcNow;
                 question.QuestionText = qText;
                 question.QuestionType = qType;
                 question.AudioUrl = audioUrl;
-                question.DefaultPoints = dto!.Points;
+                question.DefaultPoints = dto.Points;
                 question.UpdatedAt = now;
 
                 eq.Points = dto.Points;
-                if (dto.OrderIndex.HasValue && dto.OrderIndex.Value > 0)
-                {
-                    eq.OrderIndex = dto.OrderIndex.Value;
-                }
+                eq.OrderIndex = newOrder;
                 exam.UpdatedAt = now;
 
                 var existingOptions = await _context.QuestionOptions
@@ -933,17 +973,18 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 var existingRefs = await _context.QuestionAnswers
                     .Where(a => a.QuestionId == question.Id)
+                    .OrderBy(a => a.Id)
                     .ToListAsync(cancellationToken);
 
                 if (qType == "multiple_choice")
                 {
-                    if (existingRefs.Count > 0)
+                    if (existingRefs.Count > 0 && !hasAnyStudentAnswers)
                     {
                         _context.QuestionAnswers.RemoveRange(existingRefs);
                     }
 
                     // Nếu đã có học viên chọn đáp án, cập nhật các option cũ theo thứ tự để giữ nguyên khóa ngoại
-                    if (referencedOptionIds.Count > 0)
+                    if (hasAnyStudentAnswers || referencedOptionIds.Count > 0)
                     {
                         for (var i = 0; i < existingOptions.Count && i < cleanOptions.Count; i++)
                         {
@@ -986,26 +1027,59 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
                 else
                 {
-                    if (existingOptions.Count > 0)
+                    if (existingOptions.Count > 0 && !hasAnyStudentAnswers)
                     {
                         _context.QuestionOptions.RemoveRange(existingOptions);
                     }
-                    if (existingRefs.Count > 0)
+
+                    if (hasAnyStudentAnswers)
                     {
-                        _context.QuestionAnswers.RemoveRange(existingRefs);
-                    }
-                    if (!string.IsNullOrWhiteSpace(refAnswer))
-                    {
-                        _context.QuestionAnswers.Add(new QuestionAnswer
+                        // Cập nhật tại chỗ để bảo toàn bản ghi tham chiếu khi đã có bài làm fill_blank / essay / pronunciation
+                        if (!string.IsNullOrWhiteSpace(refAnswer))
                         {
-                            QuestionId = question.Id,
-                            AnswerText = refAnswer,
-                            IsCaseSensitive = dto.IsCaseSensitive ?? false
-                        });
+                            if (existingRefs.Count > 0)
+                            {
+                                existingRefs[0].AnswerText = refAnswer;
+                                existingRefs[0].IsCaseSensitive = dto.IsCaseSensitive ?? existingRefs[0].IsCaseSensitive;
+                            }
+                            else
+                            {
+                                _context.QuestionAnswers.Add(new QuestionAnswer
+                                {
+                                    QuestionId = question.Id,
+                                    AnswerText = refAnswer,
+                                    IsCaseSensitive = dto.IsCaseSensitive ?? false
+                                });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (existingRefs.Count > 0)
+                        {
+                            _context.QuestionAnswers.RemoveRange(existingRefs);
+                        }
+                        if (!string.IsNullOrWhiteSpace(refAnswer))
+                        {
+                            _context.QuestionAnswers.Add(new QuestionAnswer
+                            {
+                                QuestionId = question.Id,
+                                AnswerText = refAnswer,
+                                IsCaseSensitive = dto.IsCaseSensitive ?? false
+                            });
+                        }
                     }
                 }
 
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Thứ tự câu hỏi số {newOrder} đã tồn tại trong đề thi này.");
+                }
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
@@ -1039,6 +1113,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                long examLockKey = 900_000_000L + examId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({examLockKey})", cancellationToken);
+
                 var eq = await _context.ExamQuestions
                     .FirstOrDefaultAsync(x => x.Id == examQuestionId && x.ExamId == examId, cancellationToken);
                 if (eq == null)

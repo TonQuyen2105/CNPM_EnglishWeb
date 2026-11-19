@@ -524,6 +524,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         .Select(l => (int?)l.OrderIndex)
                         .MaxAsync(cancellationToken)) ?? 0) + 1;
 
+                var duplicateOrder = await _context.Lessons
+                    .AsNoTracking()
+                    .AnyAsync(l => l.CourseId == courseId && l.OrderIndex == nextOrder, cancellationToken);
+                if (duplicateOrder)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Thứ tự bài học số {nextOrder} đã tồn tại trong khóa học này.");
+                }
+
                 var now = DateTime.UtcNow;
                 var lesson = new Lesson
                 {
@@ -537,7 +546,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 };
 
                 _context.Lessons.Add(lesson);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Thứ tự bài học số {nextOrder} đã tồn tại trong khóa học này.");
+                }
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new { success = true, message = "Thêm bài học vào đề cương thành công.", id = lesson.Id });
@@ -569,24 +586,48 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest(error);
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var lesson = await _context.Lessons.FirstOrDefaultAsync(l => l.Id == lessonId, cancellationToken);
                 if (lesson == null)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy bài học.");
                 }
 
-                lesson.Title = title;
-                if (dto!.OrderIndex.HasValue && dto.OrderIndex.Value > 0)
+                long lockKey = 400_000_000L + lesson.CourseId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
+
+                var newOrder = dto!.OrderIndex.HasValue && dto.OrderIndex.Value > 0
+                    ? dto.OrderIndex.Value
+                    : lesson.OrderIndex;
+
+                var duplicateOrder = await _context.Lessons
+                    .AsNoTracking()
+                    .AnyAsync(l => l.CourseId == lesson.CourseId && l.Id != lessonId && l.OrderIndex == newOrder, cancellationToken);
+                if (duplicateOrder)
                 {
-                    lesson.OrderIndex = dto.OrderIndex.Value;
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Thứ tự bài học số {newOrder} đã tồn tại trong khóa học này.");
                 }
+
+                lesson.Title = title;
+                lesson.OrderIndex = newOrder;
                 lesson.ContentType = contentType;
                 lesson.Content = content;
                 lesson.UpdatedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest($"Thứ tự bài học số {newOrder} đã tồn tại trong khóa học này.");
+                }
+                await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new { success = true, message = "Cập nhật bài học thành công.", id = lesson.Id });
             }
@@ -597,6 +638,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể cập nhật bài học {LessonId}.", lessonId);
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể cập nhật bài học.");
             }
         }
