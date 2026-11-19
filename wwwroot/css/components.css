@@ -1366,3 +1366,438 @@ select.form-control {
     transform: scale(1);
   }
 }
+
+/* ==========================================================================
+   GLOBAL SEARCH COMPONENT & SHIMMER LOADING
+   ========================================================================== */
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.search-wrapper .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94A3B8;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.search-wrapper .search-input {
+  width: 100%;
+  height: 38px;
+  padding: 0.5rem 2.25rem 0.5rem 2.4rem;
+  font-size: 0.875rem;
+  border: 1.5px solid #CBD5E1;
+  border-radius: var(--radius-md, 8px);
+  background-color: #FFFFFF;
+  color: #0F172A;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.search-wrapper .search-input:focus {
+  border-color: var(--primary-600, #2563EB);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.search-wrapper .search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94A3B8;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  display: none;
+  border-radius: 4px;
+}
+.search-wrapper .search-clear-btn:hover {
+  color: #0F172A;
+  background-color: #F1F5F9;
+}
+
+/* Skeleton Loading Shimmer */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ==========================================================================
+   UNIFIED STUDENT REUSABLE UI COMPONENTS
+   Khung UI dùng chung cho toàn bộ các trang Student Portal:
+   - Filter & Search card (.filter-search-card, .filter-btn-group, .filter-btn, .count-pill)
+   - Class card (.my-class-card, .classes-grid, .class-progress-track, .class-progress-fill)
+   - Selection toolbar (.selection-toolbar)
+   - Schedule toolbar (.schedule-toolbar)
+   - Lesson bottom navigation (.lesson-bottom-nav)
+   ========================================================================== */
+
+/* 1. Filter & Search Toolbar Card */
+.filter-search-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #F1F5F9;
+  padding: 4px;
+  border-radius: var(--radius-full, 9999px);
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 9999px);
+  border: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  user-select: none;
+}
+
+.filter-btn:hover {
+  color: #0F172A;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.filter-btn.active {
+  background-color: #FFFFFF;
+  color: var(--primary-600, #2563EB);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-full, 9999px);
+  background-color: #E2E8F0;
+  color: #475569;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.filter-btn.active .count-pill {
+  background-color: var(--primary-100, #DBEAFE);
+  color: var(--primary-700, #1D4ED8);
+}
+
+/* 2. My Class Card & Grid */
+.classes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .classes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.my-class-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all var(--transition-fast, 0.15s ease);
+  position: relative;
+}
+
+.my-class-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+  border-color: #93C5FD;
+}
+
+.my-class-card.status-complete {
+  border-left: 4px solid #10B981;
+}
+
+.class-progress-track {
+  width: 100%;
+  height: 6px;
+  background-color: #E2E8F0;
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.class-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #10B981);
+  border-radius: var(--radius-full, 9999px);
+  transition: width 0.3s ease;
+}
+
+/* 3. Selection Toolbar (Flashcards & Batch Selection) */
+.selection-toolbar {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* 4. Schedule Toolbar */
+.schedule-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-color, #E2E8F0);
+}
+
+/* 5. Lesson Bottom Navigation Bar */
+.lesson-bottom-nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+.lesson-bottom-nav .nav-prev {
+  justify-self: start;
+}
+.lesson-bottom-nav .nav-center {
+  justify-self: center;
+}
+.lesson-bottom-nav .nav-next {
+  justify-self: end;
+}
+@media (max-width: 640px) {
+  .lesson-bottom-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .lesson-bottom-nav > * {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 6. Custom Modals & Dialogs (Dùng cho Flashcards & Student Views) */
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: var(--z-modal, 1050);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.modal-dialog-custom {
+  background-color: #FFFFFF;
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 540px;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 7. Toast Pill Notification Component */
+.toast-pill {
+  pointer-events: auto;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color, #CBD5E1);
+  border-radius: var(--radius-full, 9999px);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+  padding: 10px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0F172A;
+  animation: slideInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+.toast-pill.success {
+  background-color: #F0FDF4;
+  border-color: #86EFAC;
+  color: #166534;
+}
+
+.toast-pill.warning {
+  background-color: #FFFBEB;
+  border-color: #FDE68A;
+  color: #92400E;
+}
+
+.toast-pill.danger {
+  background-color: #FEF2F2;
+  border-color: #FECACA;
+  color: #991B1B;
+}
+
+.toast-pill.info {
+  background-color: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #1E40AF;
+}
+
+/* 8. Reusable Profile Components (Dùng cho Trang Hồ Sơ Cá Nhân) */
+.profile-layout-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 960px) {
+  .profile-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.profile-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border-color, #E2E8F0);
+}
+
+.profile-info-item:last-child {
+  border-bottom: none;
+}
+
+.profile-info-label {
+  color: var(--text-muted, #64748B);
+  font-weight: 500;
+}
+
+.profile-info-val {
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.profile-mini-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background-color: #F8FAFC;
+  padding: 12px;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-color, #E2E8F0);
+  text-align: center;
+}
+
+.profile-mini-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.profile-mini-stat-val {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.profile-mini-stat-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted, #64748B);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}

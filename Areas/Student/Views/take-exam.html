@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Phòng làm bài thi - EnglishStudent</title>
   
   <!-- CSS Design System -->
@@ -11,24 +14,24 @@
   <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
   <link rel="stylesheet" href="../../../wwwroot/css/components.css">
 
-  <style>
+  <style>        /* Topbar Navigation */
     .student-navbar-wrapper {
-      position: sticky; top: 0; z-index: var(--z-sticky);
+      position: sticky; top: 0; z-index: var(--z-sticky, 1000);
       background-color: #FFFFFF; border-bottom: 1px solid var(--border-color);
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .student-nav-container {
-      max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 64px;
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      max-width: 1400px; margin: 0 auto; padding: 0 1rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
     }
     .student-nav-menu {
-      display: flex; align-items: center; gap: 0.25rem; overflow-x: auto;
+      display: flex; align-items: center; gap: 3px; flex-shrink: 0; flex-wrap: nowrap;
     }
     .student-nav-link {
-      display: flex; align-items: center; gap: 6px; padding: 8px 12px;
-      border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 4px; padding: 6px 9px;
+      border-radius: var(--radius-md); font-size: 0.8125rem; font-weight: 600;
       color: var(--text-secondary); text-decoration: none; white-space: nowrap;
-      transition: all var(--transition-fast);
+      transition: all var(--transition-fast); flex-shrink: 0;
     }
     .student-nav-link:hover {
       background-color: var(--neutral-100); color: var(--primary-600);
@@ -37,145 +40,207 @@
       background-color: var(--primary-50); color: var(--primary-600); font-weight: 700;
     }
     .student-streak-pill {
-      display: flex; align-items: center; gap: 4px; padding: 4px 10px;
+      display: flex; align-items: center; gap: 4px; padding: 4px 8px;
       background: linear-gradient(135deg, #FEF3C7, #FDE68A);
       border: 1px solid #FCD34D; border-radius: var(--radius-full);
-      font-size: 0.75rem; font-weight: 700; color: #92400E;
+      font-size: 0.75rem; font-weight: 700; color: #92400E; flex-shrink: 0;
     }
     .notification-wrapper { position: relative; }
     .notification-badge-dot {
-      position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
-      border-radius: 50%; background-color: var(--danger-main); border: 2px solid white;
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px; background-color: var(--danger-500);
+      border-radius: 50%; border: 1.5px solid #FFFFFF;
+    }
+    .user-profile-trigger:hover {
+      background-color: var(--neutral-100);
+    }
+    @media (max-width: 1220px) {
+      .student-nav-link {
+        padding: 5px 7px;
+        font-size: 0.78125rem;
+        gap: 3px;
+      }
+      .student-nav-menu {
+        gap: 2px;
+      }
+      #user-email-topbar {
+        display: none !important;
+      }
+      #user-name-topbar {
+        max-width: 95px !important;
+      }
+    }
+    @media (max-width: 1040px) {
+      .student-nav-container {
+        padding: 0 0.5rem;
+      }
+      .student-brand-title {
+        font-size: 1rem !important;
+      }
+      .student-nav-link {
+        padding: 5px 5px;
+        font-size: 0.75rem;
+        gap: 2px;
+      }
     }
   </style>
 </head>
 <body style="background-color: var(--bg-page); min-height: 100vh; display: flex; flex-direction: column;">
   <!-- Student Top Navbar -->
+    <!-- Student Top Navbar -->
+        <!-- Student Top Navbar -->
   <header class="student-navbar-wrapper">
     <div class="student-nav-container">
-      <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
         <!-- Logo -->
-        <a href="dashboard.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <a href="dashboard.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0;">
+          <div style="width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
               <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
             </svg>
           </div>
-          <span style="font-size: 1.0625rem; font-weight: 800; color: var(--primary-700); white-space: nowrap;">EnglishStudent</span>
+          <span class="student-brand-title" style="font-weight: 800; font-size: 1.125rem; color: #1E40AF; letter-spacing: -0.02em;">EnglishStudent</span>
         </a>
 
         <!-- Desktop Nav Links -->
         <nav class="student-nav-menu">
-          
-      <a href="dashboard.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Trang chủ</span>
-      </a>
-    
-      <a href="courses.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="my-classes.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Lớp của tôi</span>
-      </a>
-    
-      <a href="schedule.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Lịch học</span>
-      </a>
-    
-      <a href="flashcards.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
-        <span>Flashcards</span>
-      </a>
-    
-      <a href="exams.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Luyện thi</span>
-      </a>
-    
-      <a href="progress.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></span>
-        <span>Tiến độ</span>
-      </a>
-    
+          <a href="dashboard.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+            <span>Trang chủ</span>
+          </a>
+          <a href="courses.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="my-classes.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Lớp của tôi</span>
+          </a>
+          <a href="schedule.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="flashcards.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
+            <span>Flashcards</span>
+          </a>
+          <a href="exams.html" class="student-nav-link active">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Luyện thi</span>
+          </a>
         </nav>
       </div>
 
       <!-- Right Controls -->
-      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
         <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
           <span>🔥</span>
-          <span>5 ngày</span>
+          <span id="nav-streak-text">5 ngày</span>
         </div>
 
-        <!-- Bell -->
+        <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
-          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo" style="background: none; border: 1px solid var(--border-color); border-radius: var(--radius-md); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); position: relative;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
+            <span class="notification-badge-dot" id="notif-badge-dot" style="display: none;"></span>
           </button>
-          <div class="dropdown-menu" id="notifications-dropdown" style="width: 300px; right: 0;">
+          <div class="dropdown-menu" id="notifications-dropdown" style="width: 320px; right: 0;">
             <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.8125rem;">
               Thông báo học tập
             </div>
-            <div style="max-height: 250px; overflow-y: auto;">
-              <a href="flashcards.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
+            <div id="notif-list-container" style="max-height: 260px; overflow-y: auto;">
+              <a href="flashcards.html?mode=due" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
                 <strong style="display: block; font-size: 0.75rem; color: var(--primary-600);">🎯 Ôn tập từ vựng hôm nay</strong>
-                <small style="color: var(--text-muted);">Bạn có 25 từ vựng đến hạn ôn tập</small>
+                <small id="notif-flashcards-text" style="color: var(--text-muted);">Bạn có danh sách từ vựng cần ôn luyện</small>
               </a>
               <a href="schedule.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
-                <strong style="display: block; font-size: 0.75rem;">⏰ Buổi học lúc 18:00</strong>
-                <small style="color: var(--text-muted);">Lớp Giao Tiếp COMM-01 tại Phòng LAB-01</small>
+                <strong id="notif-session-title" style="display: block; font-size: 0.75rem;">⏰ Buổi học sắp tới</strong>
+                <small id="notif-session-text" style="color: var(--text-muted);">Kiểm tra thời khóa biểu trong tuần</small>
               </a>
             </div>
           </div>
         </div>
 
-        <!-- Student Profile -->
+        <!-- Student Profile Dropdown -->
         <div class="dropdown">
-          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white;">HA</div>
-            <div style="text-align: left; line-height: 1.2;" class="d-none d-md-block">
-              <div style="font-size: 0.8125rem; font-weight: 600;">Nguyễn Hoàng Anh</div>
-              <div style="font-size: 0.7rem; color: var(--text-muted);">student@el.com</div>
+          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 7px; cursor: pointer; padding: 4px 6px; border-radius: var(--radius-md); max-width: 200px;">
+            <div class="avatar avatar-sm" id="user-avatar-topbar" style="background-color: var(--primary-600); color: white; font-weight: 700; width: 34px; height: 34px; flex-shrink: 0;">TH</div>
+            <div style="text-align: left; line-height: 1.2; min-width: 0;" class="d-none d-md-block">
+              <div id="user-name-topbar" style="font-size: 0.8125rem; font-weight: 600; color: #0F172A; max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Trần Hoàng</div>
+              <div id="user-email-topbar" style="font-size: 0.7rem; color: var(--text-muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">student@englishlearning.example</div>
             </div>
-            <span style="color: var(--text-muted);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
+            <span style="color: var(--text-muted); flex-shrink: 0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </span>
           </div>
 
-          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 200px; right: 0;">
-            <div style="padding: 0.625rem 1rem; border-bottom: 1px solid var(--border-color);">
-              <div style="font-weight: 700; font-size: 0.875rem;">Nguyễn Hoàng Anh</div>
-              <span class="badge badge-primary" style="margin-top: 4px;">Học viên năng động</span>
+          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 220px; right: 0;">
+            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);">
+              <div style="font-weight: 700; font-size: 0.875rem;" id="user-name-dropdown">Trần Hoàng</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;" id="user-email-dropdown">student@englishlearning.example</div>
+              <span class="badge badge-primary" id="user-role-badge">Học viên chính thức</span>
             </div>
-            <a href="profile.html" class="dropdown-item">
-              <span>Hồ sơ cá nhân</span>
-            </a>
-            <a href="my-classes.html" class="dropdown-item">
-              <span>Lớp của tôi</span>
-            </a>
-            <a href="results.html" class="dropdown-item">
-              <span>Kết quả bài thi</span>
-            </a>
+            <a href="profile.html" class="dropdown-item"><span>Hồ sơ cá nhân</span></a>
+            <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
+            <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
+            <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
             <div class="dropdown-divider"></div>
-            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout">
-              <span>Đăng xuất</span>
-            </a>
+            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
         </div>
       </div>
     </div>
   </header>
+
+  <script>
+    // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
+    (function syncTopbarUser() {
+      try {
+        const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
+        let name = 'Trần Hoàng';
+        let email = 'student@englishlearning.example';
+        if (raw) {
+          const u = JSON.parse(raw);
+          if (u.full_name || u.name) name = u.full_name || u.name;
+          if (u.email) email = u.email;
+        }
+        const parts = name.trim().split(/\s+/);
+        const initials = parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        const av = document.getElementById('user-avatar-topbar');
+        const nm = document.getElementById('user-name-topbar');
+        const em = document.getElementById('user-email-topbar');
+        const dn = document.getElementById('user-name-dropdown');
+        const de = document.getElementById('user-email-dropdown');
+        if (av) av.textContent = initials;
+        if (nm) nm.textContent = name;
+        if (em) { em.textContent = email; em.title = email; }
+        if (dn) dn.textContent = name;
+        if (de) de.textContent = email;
+
+        // Đảm bảo mục "Tiến độ học tập" luôn luôn có mặt trong Dropdown
+        const menu = document.getElementById('avatar-dropdown-menu');
+        if (menu && !menu.querySelector('a[href*="progress.html"]')) {
+          const divider = menu.querySelector('.dropdown-divider');
+          const a = document.createElement('a');
+          a.href = 'progress.html';
+          a.className = 'dropdown-item';
+          a.id = 'menu-item-progress';
+          a.innerHTML = '<span>Tiến độ học tập</span>';
+          if (divider) {
+            menu.insertBefore(a, divider);
+          } else {
+            menu.appendChild(a);
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  
 
   <!-- Page Content Container -->
   <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
