@@ -95,7 +95,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             var openClassCountByCourse = courseIds.Count == 0
                 ? new Dictionary<int, int>()
                 : (await Db.CourseClasses.AsNoTracking()
-                    .Where(cc => courseIds.Contains(cc.CourseId) && (cc.Status == ClassUpcoming || cc.Status == ClassOngoing))
+                    .Where(cc => courseIds.Contains(cc.CourseId) && cc.Status != "cancelled")
                     .GroupBy(cc => cc.CourseId)
                     .Select(g => new { CourseId = g.Key, Count = g.Count() })
                     .ToListAsync())
@@ -195,9 +195,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 };
             }).ToList();
 
-            // 3. Lấy danh sách lớp mở đăng ký (status = 'upcoming' hoặc 'ongoing')
+            // 3. Lấy danh sách lớp của khóa học (bao gồm đầy đủ tất cả các lớp thuộc khóa học trong cơ sở dữ liệu)
             var openClasses = await Db.CourseClasses.AsNoTracking()
-                .Where(cc => cc.CourseId == courseId && (cc.Status == ClassUpcoming || cc.Status == ClassOngoing))
+                .Where(cc => cc.CourseId == courseId)
                 .OrderBy(cc => cc.StartDate)
                 .ToListAsync();
 
@@ -328,27 +328,31 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             }
 
             var targetClass = targetClassInfo.Class;
-            if (targetClass.Status != ClassUpcoming && targetClass.Status != ClassOngoing)
+            // Ràng buộc 1: Trạng thái lớp không được là cancelled hoặc completed
+            if (string.Equals(targetClass.Status, "cancelled", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(targetClass.Status, "completed", StringComparison.OrdinalIgnoreCase))
             {
-                return ServiceResult<EnrollmentResultDto>.BadRequest($"Lớp học '{targetClass.ClassName}' hiện không mở đăng ký (trạng thái: {targetClass.Status}).");
+                return ServiceResult<EnrollmentResultDto>.BadRequest(
+                    $"Lớp học '{targetClass.ClassName}' hiện không mở đăng ký (trạng thái: {targetClass.Status}).");
             }
 
-            // 2. Kiểm tra học sinh đã đăng ký lớp này chưa
+            // Ràng buộc 2: Kiểm tra học sinh đã đăng ký lớp này chưa
             var existingEnrollment = await Db.Enrollments
                 .FirstOrDefaultAsync(e => e.UserId == studentId && e.ClassId == request.ClassId);
 
-            if (existingEnrollment != null && existingEnrollment.Status == EnrollmentActive)
+            if (existingEnrollment != null && (existingEnrollment.Status == EnrollmentActive || existingEnrollment.Status == "active"))
             {
                 return ServiceResult<EnrollmentResultDto>.Conflict($"Bạn đã đăng ký tham gia lớp '{targetClass.ClassName}' rồi.");
             }
 
-            // 3. Kiểm tra sĩ số tối đa (max_students)
+            // Ràng buộc 3: Kiểm tra sĩ số tối đa (dựa trên số lượng enrollment active hiện tại)
             var currentActiveCount = await Db.Enrollments.AsNoTracking()
-                .CountAsync(e => e.ClassId == request.ClassId && e.Status == EnrollmentActive);
+                .CountAsync(e => e.ClassId == request.ClassId && (e.Status == EnrollmentActive || e.Status == "active"));
 
             if (currentActiveCount >= targetClass.MaxStudents)
             {
-                return ServiceResult<EnrollmentResultDto>.BadRequest($"Lớp '{targetClass.ClassName}' đã đủ sĩ số tối đa ({targetClass.MaxStudents} học viên).");
+                return ServiceResult<EnrollmentResultDto>.BadRequest(
+                    $"Lớp '{targetClass.ClassName}' đã đủ sĩ số tối đa ({currentActiveCount}/{targetClass.MaxStudents} học viên).");
             }
 
             // 4. Kiểm tra trùng lịch học (Schedule Conflict Check) với các lớp đang active của học sinh
@@ -406,52 +410,247 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 }
             }
 
-            // 5. Tạo mới hoặc kích hoạt lại bản ghi Enrollment
-            Enrollment enrollmentEntity;
-            if (existingEnrollment != null)
+            // 5. Thực hiện lưu Enrollment và Payment trong Transaction đảm bảo toàn vẹn dữ liệu
+            using var transaction = await Db.Database.BeginTransactionAsync();
+            try
             {
-                existingEnrollment.Status = EnrollmentActive;
-                existingEnrollment.EnrolledAt = DateTime.UtcNow;
-                enrollmentEntity = existingEnrollment;
-            }
-            else
-            {
-                var nextEnrollmentId = await GetNextIdAsync(Db.Enrollments, e => e.Id);
-                enrollmentEntity = new Enrollment
+                Enrollment enrollmentEntity;
+                if (existingEnrollment != null)
                 {
-                    Id = nextEnrollmentId,
+                    existingEnrollment.Status = EnrollmentActive;
+                    existingEnrollment.EnrolledAt = DateTime.UtcNow;
+                    enrollmentEntity = existingEnrollment;
+                }
+                else
+                {
+                    var nextEnrollmentId = await GetNextIdAsync(Db.Enrollments, e => e.Id);
+                    enrollmentEntity = new Enrollment
+                    {
+                        Id = nextEnrollmentId,
+                        UserId = studentId,
+                        ClassId = request.ClassId,
+                        EnrolledAt = DateTime.UtcNow,
+                        Status = EnrollmentActive
+                    };
+                    Db.Enrollments.Add(enrollmentEntity);
+                }
+
+                await Db.SaveChangesAsync();
+
+                // RÀNG BUỘC TOÀN VẸN: Kiểm tra bản ghi ghi danh (Enrollment) phải được lưu thành công trước khi ghi nhận Payment
+                if (enrollmentEntity.Id <= 0)
+                {
+                    throw new InvalidOperationException("Không thể tạo hoặc cập nhật bản ghi đăng ký lớp học.");
+                }
+
+                // 6. Lưu thông tin giao dịch thanh toán vào bảng payments (PostgreSQL)
+                var transactionCode = $"PAY-{DateTime.UtcNow:yyyyMMddHHmmss}-{studentId:D4}-{targetClass.Id:D4}";
+                var normalizedMethod = "bank_transfer";
+                if (!string.IsNullOrWhiteSpace(request.PaymentMethod))
+                {
+                    var lower = request.PaymentMethod.Trim().ToLowerInvariant();
+                    if (lower.Contains("cash") || lower.Contains("tien_mat") || lower.Contains("tiền mặt"))
+                    {
+                        normalizedMethod = "cash";
+                    }
+                }
+
+                var paymentEntity = new Payment
+                {
                     UserId = studentId,
-                    ClassId = request.ClassId,
-                    EnrolledAt = DateTime.UtcNow,
-                    Status = EnrollmentActive
+                    ClassId = targetClass.Id,
+                    EnrollmentId = enrollmentEntity.Id,
+                    TransactionCode = transactionCode,
+                    Amount = targetClass.Price,
+                    PaymentMethod = normalizedMethod,
+                    Status = "completed",
+                    PaidAt = DateTime.UtcNow,
+                    Note = request.Note ?? $"Thanh toán học phí lớp {targetClass.ClassName} ({targetClass.ClassCode})",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
-                Db.Enrollments.Add(enrollmentEntity);
+
+                Db.Payments.Add(paymentEntity);
+                await Db.SaveChangesAsync();
+
+                // RÀNG BUỘC TOÀN VẸN: Kiểm tra bản ghi ghi danh (Enrollment) phải được lưu thành công trước khi ghi nhận Payment
+                if (enrollmentEntity.Id <= 0)
+                {
+                    throw new InvalidOperationException("Không thể tạo hoặc cập nhật bản ghi đăng ký lớp học.");
+                }
+
+                await transaction.CommitAsync();
+
+                var paymentDto = new PaymentDto
+                {
+                    Id = paymentEntity.Id,
+                    UserId = studentId,
+                    ClassId = targetClass.Id,
+                    ClassCode = targetClass.ClassCode,
+                    ClassName = targetClass.ClassName,
+                    CourseId = targetClass.CourseId,
+                    CourseTitle = targetClassInfo.CourseTitle,
+                    EnrollmentId = enrollmentEntity.Id,
+                    TransactionCode = paymentEntity.TransactionCode,
+                    Amount = paymentEntity.Amount,
+                    PaymentMethod = paymentEntity.PaymentMethod,
+                    Status = paymentEntity.Status,
+                    PaidAt = paymentEntity.PaidAt,
+                    Note = paymentEntity.Note,
+                    CreatedAt = paymentEntity.CreatedAt
+                };
+
+                var resultDto = new EnrollmentResultDto
+                {
+                    EnrollmentId = enrollmentEntity.Id,
+                    UserId = studentId,
+                    ClassId = targetClass.Id,
+                    ClassCode = targetClass.ClassCode,
+                    ClassName = targetClass.ClassName,
+                    CourseTitle = targetClassInfo.CourseTitle,
+                    Status = enrollmentEntity.Status,
+                    EnrolledAt = enrollmentEntity.EnrolledAt,
+                    Payment = paymentDto
+                };
+
+                return ServiceResult<EnrollmentResultDto>.Created(resultDto, "Đăng ký tham gia lớp học thành công.");
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 2.5. Đăng ký khóa học (Tự động chọn lớp hoặc theo ClassId được chỉ định).
+        /// </summary>
+        public async Task<ServiceResult<EnrollmentResultDto>> EnrollCourseAsync(
+            int studentId,
+            int courseId,
+            CreateCourseEnrollmentRequestDto request)
+        {
+            var courseExists = await Db.Courses.AsNoTracking().AnyAsync(c => c.Id == courseId);
+            if (!courseExists)
+            {
+                return ServiceResult<EnrollmentResultDto>.NotFound($"Không tìm thấy khóa học có ID = {courseId}.");
             }
 
-            await Db.SaveChangesAsync();
-
-            // 6. Lưu thông tin giao dịch thanh toán
-            var paymentRecord = StudentExtendedStore.RecordPayment(
-                enrollmentEntity.Id,
-                studentId,
-                targetClass.Id,
-                targetClass.Price,
-                request.PaymentMethod);
-
-            var resultDto = new EnrollmentResultDto
+            // RÀNG BUỘC BẮT BUỘC: Học sinh phải chọn một lớp học cụ thể trước khi thực hiện thanh toán
+            if (!request.ClassId.HasValue || request.ClassId.Value <= 0)
             {
-                EnrollmentId = enrollmentEntity.Id,
-                UserId = studentId,
-                ClassId = targetClass.Id,
-                ClassCode = targetClass.ClassCode,
-                ClassName = targetClass.ClassName,
-                CourseTitle = targetClassInfo.CourseTitle,
-                Status = enrollmentEntity.Status,
-                EnrolledAt = enrollmentEntity.EnrolledAt,
-                Payment = paymentRecord
-            };
+                return ServiceResult<EnrollmentResultDto>.BadRequest(
+                    "Vui lòng chọn một lớp học cụ thể từ danh sách trước khi thực hiện thanh toán.");
+            }
 
-            return ServiceResult<EnrollmentResultDto>.Created(resultDto, "Đăng ký tham gia lớp học thành công.");
+            var validClass = await Db.CourseClasses.AsNoTracking()
+                .AnyAsync(cc => cc.Id == request.ClassId.Value && cc.CourseId == courseId);
+
+            if (!validClass)
+            {
+                return ServiceResult<EnrollmentResultDto>.BadRequest(
+                    $"Lớp học ID = {request.ClassId.Value} không thuộc khóa học ID = {courseId}.");
+            }
+
+            return await EnrollClassAsync(studentId, new CreateEnrollmentRequestDto
+            {
+                ClassId = request.ClassId.Value,
+                PaymentMethod = request.PaymentMethod,
+                Note = request.Note
+            });
+        }
+
+        /// <summary>
+        /// 2.6. Lấy lịch sử giao dịch thanh toán của học sinh.
+        /// </summary>
+        public async Task<ServiceResult<List<PaymentDto>>> GetStudentPaymentsAsync(
+            int studentId,
+            int page,
+            int limit,
+            string? status)
+        {
+            var (safePage, safeLimit, skip) = NormalizePagination(page, limit);
+
+            var query = Db.Payments.AsNoTracking()
+                .Where(p => p.UserId == studentId);
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                var normalizedStatus = status.Trim().ToLowerInvariant();
+                query = query.Where(p => p.Status.ToLower() == normalizedStatus);
+            }
+
+            var payments = await (
+                from p in query
+                join cc in Db.CourseClasses.AsNoTracking() on p.ClassId equals cc.Id into ccGroup
+                from cc in ccGroup.DefaultIfEmpty()
+                join c in Db.Courses.AsNoTracking() on cc.CourseId equals c.Id into cGroup
+                from c in cGroup.DefaultIfEmpty()
+                orderby p.CreatedAt descending, p.Id descending
+                select new PaymentDto
+                {
+                    Id = p.Id,
+                    UserId = p.UserId,
+                    ClassId = p.ClassId,
+                    ClassCode = cc != null ? cc.ClassCode : null,
+                    ClassName = cc != null ? cc.ClassName : null,
+                    CourseId = c != null ? c.Id : null,
+                    CourseTitle = c != null ? c.Title : null,
+                    EnrollmentId = p.EnrollmentId,
+                    TransactionCode = p.TransactionCode,
+                    Amount = p.Amount,
+                    PaymentMethod = p.PaymentMethod,
+                    Status = p.Status,
+                    PaidAt = p.PaidAt,
+                    Note = p.Note,
+                    CreatedAt = p.CreatedAt
+                }
+            )
+            .Skip(skip)
+            .Take(safeLimit)
+            .ToListAsync();
+
+            return ServiceResult<List<PaymentDto>>.Ok(payments, "Lấy lịch sử thanh toán thành công.");
+        }
+
+        /// <summary>
+        /// 2.7. Lấy chi tiết một giao dịch thanh toán.
+        /// </summary>
+        public async Task<ServiceResult<PaymentDto>> GetPaymentDetailAsync(int studentId, int paymentId)
+        {
+            var payment = await (
+                from p in Db.Payments.AsNoTracking()
+                where p.UserId == studentId && p.Id == paymentId
+                join cc in Db.CourseClasses.AsNoTracking() on p.ClassId equals cc.Id into ccGroup
+                from cc in ccGroup.DefaultIfEmpty()
+                join c in Db.Courses.AsNoTracking() on cc.CourseId equals c.Id into cGroup
+                from c in cGroup.DefaultIfEmpty()
+                select new PaymentDto
+                {
+                    Id = p.Id,
+                    UserId = p.UserId,
+                    ClassId = p.ClassId,
+                    ClassCode = cc != null ? cc.ClassCode : null,
+                    ClassName = cc != null ? cc.ClassName : null,
+                    CourseId = c != null ? c.Id : null,
+                    CourseTitle = c != null ? c.Title : null,
+                    EnrollmentId = p.EnrollmentId,
+                    TransactionCode = p.TransactionCode,
+                    Amount = p.Amount,
+                    PaymentMethod = p.PaymentMethod,
+                    Status = p.Status,
+                    PaidAt = p.PaidAt,
+                    Note = p.Note,
+                    CreatedAt = p.CreatedAt
+                }
+            ).FirstOrDefaultAsync();
+
+            if (payment == null)
+            {
+                return ServiceResult<PaymentDto>.NotFound($"Không tìm thấy giao dịch thanh toán có ID = {paymentId}.");
+            }
+
+            return ServiceResult<PaymentDto>.Ok(payment, "Lấy chi tiết giao dịch thanh toán thành công.");
         }
 
         /// <summary>

@@ -23,5 +23,17 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
             var result = await Services.Analytics.GetAnalyticsOverviewAsync(studentId);
             return ToActionResult(result);
         }
+
+        /// <summary>
+        /// 7.2. Lấy dữ liệu toàn diện tiến độ học tập của học sinh (4 kỹ năng, chỉ số tích lũy, tiến độ từng lớp và hoạt động gần đây).
+        /// Endpoint: GET /api/v1/student/progress
+        /// </summary>
+        [HttpGet("progress")]
+        public async Task<IActionResult> GetProgress()
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Analytics.GetAnalyticsOverviewAsync(studentId);
+            return ToActionResult(result);
+        }
     }
 }

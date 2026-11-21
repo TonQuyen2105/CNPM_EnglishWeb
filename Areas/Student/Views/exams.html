@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Luyện thi trực tuyến - EnglishStudent</title>
+  <title>Phòng luyện thi & Khảo thí - EnglishStudent</title>
   
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
@@ -14,7 +14,8 @@
   <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
   <link rel="stylesheet" href="../../../wwwroot/css/components.css">
 
-  <style>        /* Topbar Navigation */
+  <style>
+    /* Topbar Navigation */
     .student-navbar-wrapper {
       position: sticky; top: 0; z-index: var(--z-sticky, 1000);
       background-color: #FFFFFF; border-bottom: 1px solid var(--border-color);
@@ -87,8 +88,6 @@
 </head>
 <body style="background-color: var(--bg-page); min-height: 100vh; display: flex; flex-direction: column;">
   <!-- Student Top Navbar -->
-    <!-- Student Top Navbar -->
-        <!-- Student Top Navbar -->
   <header class="student-navbar-wrapper">
     <div class="student-nav-container">
       <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
@@ -197,7 +196,6 @@
   </header>
 
   <script>
-    // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
     (function syncTopbarUser() {
       try {
         const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
@@ -220,27 +218,9 @@
         if (em) { em.textContent = email; em.title = email; }
         if (dn) dn.textContent = name;
         if (de) de.textContent = email;
-
-        // Đảm bảo mục "Tiến độ học tập" luôn luôn có mặt trong Dropdown
-        const menu = document.getElementById('avatar-dropdown-menu');
-        if (menu && !menu.querySelector('a[href*="progress.html"]')) {
-          const divider = menu.querySelector('.dropdown-divider');
-          const a = document.createElement('a');
-          a.href = 'progress.html';
-          a.className = 'dropdown-item';
-          a.id = 'menu-item-progress';
-          a.innerHTML = '<span>Tiến độ học tập</span>';
-          if (divider) {
-            menu.insertBefore(a, divider);
-          } else {
-            menu.appendChild(a);
-          }
-        }
       } catch (e) {}
     })();
   </script>
-
-  
 
   <!-- Page Content Container -->
   <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
@@ -249,7 +229,7 @@
     <div class="page-header" style="margin-bottom: 1.25rem;">
       <div>
         <h1 class="page-header-title">Phòng luyện thi & Khảo thí</h1>
-        <p class="page-header-subtitle">Hệ thống bài thi đánh giá năng lực theo chuẩn TOEIC và IELTS định kỳ</p>
+        <p class="page-header-subtitle">Hệ thống bài thi đánh giá năng lực theo chuẩn TOEIC, IELTS và các kỳ thi định kỳ</p>
       </div>
     </div>
 
@@ -261,7 +241,7 @@
         </div>
         <div>
           <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Bài thi sẵn sàng</div>
-          <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">3 bài thi</div>
+          <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);" id="stat-available-count">...</div>
         </div>
       </div>
 
@@ -271,7 +251,7 @@
         </div>
         <div>
           <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Đã hoàn thành</div>
-          <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">2 bài thi</div>
+          <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);" id="stat-completed-count">...</div>
         </div>
       </div>
 
@@ -281,26 +261,26 @@
         </div>
         <div>
           <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Điểm trung bình</div>
-          <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">8.75 / 10</div>
+          <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);" id="stat-avg-score">...</div>
         </div>
       </div>
     </div>
 
     <!-- Filter & Search Toolbar Card (Tái sử dụng chuẩn components.css) -->
     <div class="filter-search-card">
-      <!-- Filter Buttons (Tất cả, Định kỳ, Luyện tập, Thi thử) -->
+      <!-- Filter Buttons (Tất cả, Tự luận, Định kỳ, Luyện tập) -->
       <div class="filter-btn-group" role="tablist" aria-label="Lọc đề thi theo thể loại">
         <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true">
-          Tất cả <span class="count-pill">3</span>
+          Tất cả <span class="count-pill" id="filter-count-all">0</span>
+        </button>
+        <button type="button" class="filter-btn" data-filter="essay" role="tab" aria-selected="false">
+          ✍️ Tự luận & Essay <span class="count-pill" id="filter-count-essay">0</span>
         </button>
         <button type="button" class="filter-btn" data-filter="periodic" role="tab" aria-selected="false">
-          Kiểm tra định kỳ <span class="count-pill">1</span>
+          Kiểm tra định kỳ <span class="count-pill" id="filter-count-periodic">0</span>
         </button>
         <button type="button" class="filter-btn" data-filter="practice" role="tab" aria-selected="false">
-          Luyện tập tự do <span class="count-pill">1</span>
-        </button>
-        <button type="button" class="filter-btn" data-filter="mock" role="tab" aria-selected="false">
-          Thi thử Mock Test <span class="count-pill">1</span>
+          Luyện tập & Thi thử <span class="count-pill" id="filter-count-practice">0</span>
         </button>
       </div>
 
@@ -311,7 +291,7 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="exam-search-input" class="form-control" placeholder="Tìm theo tên bài thi, mã đề, kỹ năng..." style="padding-left: 36px; height: 38px; border-radius: var(--radius-md);" aria-label="Tìm kiếm bài thi">
+          <input type="text" id="exam-search-input" class="form-control" placeholder="Tìm theo tên bài thi, môn học, kỹ năng..." style="padding-left: 36px; height: 38px; border-radius: var(--radius-md);" aria-label="Tìm kiếm bài thi">
         </div>
         <button type="button" id="btn-exam-search" class="btn btn-primary" style="height: 38px; padding: 0 16px; white-space: nowrap;">
           Tìm
@@ -327,70 +307,24 @@
       <button type="button" id="btn-reset-exam-filter" class="btn btn-secondary">Xem tất cả bài thi</button>
     </div>
 
-    <!-- Danh sách bài thi hiện có (Tái sử dụng .classes-grid) -->
+    <!-- Danh sách bài thi hiện có (Render động từ API) -->
     <div class="classes-grid" id="exams-grid">
-      <!-- Bài 1: COMM-01 -->
-      <div class="card card-hover exam-item" data-type="periodic" data-title="kiểm tra định kỳ giữa khóa comm comm-01" data-meta="nghe ngữ pháp 40 câu 45 phút" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; border-radius: var(--radius-lg);">
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <span class="badge badge-success">Sẵn sàng thi</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; background: #F1F5F9; padding: 2px 8px; border-radius: 4px;">COMM-01</span>
-          </div>
-          <h3 style="font-size: 1.0625rem; font-weight: 700; line-height: 1.4; color: #0F172A; margin: 0 0 0.5rem 0;">Kiểm tra định kỳ giữa khóa COMM</h3>
-          <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0 0 1rem 0; line-height: 1.5;">40 câu trắc nghiệm Nghe & Ngữ pháp trong 45 phút.</p>
-          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
-            <span>⏱️ <strong>45 phút</strong></span>
-            <span>•</span>
-            <span>📝 <strong>40 câu hỏi</strong></span>
-          </div>
-        </div>
-        <a href="take-exam.html" class="btn btn-primary" style="width: 100%; text-align: center;">Bắt đầu làm bài thi</a>
-      </div>
-
-      <!-- Bài 2: TOEIC Listening Part 1 & 2 -->
-      <div class="card card-hover exam-item" data-type="practice" data-title="toeic listening part 1 & 2 toeic 750+" data-meta="luyện tập tự do nghe tranh 30 câu 25 phút" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; border-radius: var(--radius-lg);">
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <span class="badge badge-primary">Luyện tập tự do</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; background: #F1F5F9; padding: 2px 8px; border-radius: 4px;">TOEIC 750+</span>
-          </div>
-          <h3 style="font-size: 1.0625rem; font-weight: 700; line-height: 1.4; color: #0F172A; margin: 0 0 0.5rem 0;">TOEIC Listening Part 1 & 2</h3>
-          <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0 0 1rem 0; line-height: 1.5;">30 câu nghe tranh và câu hỏi - đáp nhanh Part 1 và Part 2.</p>
-          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
-            <span>⏱️ <strong>25 phút</strong></span>
-            <span>•</span>
-            <span>📝 <strong>30 câu hỏi</strong></span>
-          </div>
-        </div>
-        <a href="take-exam.html" class="btn btn-secondary" style="width: 100%; text-align: center;">Luyện tập ngay</a>
-      </div>
-
-      <!-- Bài 3: IELTS Mock Test -->
-      <div class="card card-hover exam-item" data-type="mock" data-title="ielts reading & writing mock test ielts 6.5+" data-meta="thi thử học thuật reading writing 40 câu 60 phút" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; border-radius: var(--radius-lg);">
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <span class="badge badge-warning" style="background-color: #FEF3C7; color: #92400E; font-weight: 700;">Đề thi thử IELTS</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; background: #F1F5F9; padding: 2px 8px; border-radius: 4px;">IELTS 6.5+</span>
-          </div>
-          <h3 style="font-size: 1.0625rem; font-weight: 700; line-height: 1.4; color: #0F172A; margin: 0 0 0.5rem 0;">IELTS Reading & Writing Mock Test</h3>
-          <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0 0 1rem 0; line-height: 1.5;">Mô phỏng kỳ thi học thuật 40 câu trắc nghiệm & bài viết luận ngắn.</p>
-          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
-            <span>⏱️ <strong>60 phút</strong></span>
-            <span>•</span>
-            <span>📝 <strong>40 câu hỏi</strong></span>
-          </div>
-        </div>
-        <a href="take-exam.html" class="btn btn-secondary" style="width: 100%; text-align: center;">Vào phòng thi thử</a>
+      <!-- Loading Skeleton Cards -->
+      <div class="card" style="padding: 1.5rem; border-radius: var(--radius-lg);">
+        <div style="height: 20px; width: 60%; background: #E2E8F0; border-radius: 4px; margin-bottom: 12px;"></div>
+        <div style="height: 14px; width: 90%; background: #F1F5F9; border-radius: 4px; margin-bottom: 8px;"></div>
+        <div style="height: 14px; width: 40%; background: #F1F5F9; border-radius: 4px; margin-bottom: 16px;"></div>
+        <div style="height: 36px; width: 100%; background: #E2E8F0; border-radius: 6px;"></div>
       </div>
     </div>
 
     <!-- Lịch sử làm bài gần đây -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; margin-top: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; margin-top: 2rem;">
       <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0; color: #0F172A;">Lịch sử bài thi đã nộp</h2>
       <a href="results.html" style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">Xem tất cả kết quả &rarr;</a>
     </div>
 
-    <div class="card" style="padding: 0; overflow: hidden; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+    <div class="card" style="padding: 0; overflow: hidden; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 2rem;">
       <table class="table" style="margin: 0; width: 100%;">
         <thead>
           <tr style="background-color: #F8FAFC;">
@@ -402,31 +336,10 @@
             <th style="text-align: right;">Hành động</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="exam-history-tbody">
           <tr>
-            <td>
-              <strong>Kiểm tra đầu vào Placement Test</strong>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Đánh giá 4 kỹ năng xếp lớp</div>
-            </td>
-            <td>20/10/2026 14:30</td>
-            <td>41 phút 15 giây</td>
-            <td><span style="color: var(--primary-600); font-weight: 800; font-size: 1rem;">8.5 / 10</span></td>
-            <td><span class="badge badge-success">Đạt yêu cầu</span></td>
-            <td style="text-align: right;">
-              <a href="result-detail.html" class="btn btn-sm btn-ghost">Xem chi tiết</a>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <strong>Mini-test Ngữ pháp Unit 1 - 3</strong>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Lớp Giao Tiếp COMM-01</div>
-            </td>
-            <td>16/10/2026 19:45</td>
-            <td>18 phút 20 giây</td>
-            <td><span style="color: var(--primary-600); font-weight: 800; font-size: 1rem;">9.0 / 10</span></td>
-            <td><span class="badge badge-success">Xuất sắc</span></td>
-            <td style="text-align: right;">
-              <a href="result-detail.html" class="btn btn-sm btn-ghost">Xem chi tiết</a>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              Đang tải lịch sử thi...
             </td>
           </tr>
         </tbody>
@@ -439,49 +352,252 @@
     © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
   </footer>
 
-  <!-- Script Lọc & Tìm Kiếm Bài Thi Tương Tác -->
+  <!-- Script Lấy dữ liệu bài thi động từ API & Tương tác Lọc/Tìm kiếm -->
   <script>
-    (function initExamsInteractive() {
+    (function initExamsDynamic() {
+      let rawExamsList = [];
       let currentFilter = 'all';
       let currentQuery = '';
 
-      const filterButtons = document.querySelectorAll('.filter-btn');
-      const searchInput = document.getElementById('exam-search-input');
-      const btnSearch = document.getElementById('btn-exam-search');
-      const examCards = document.querySelectorAll('.exam-item');
       const gridEl = document.getElementById('exams-grid');
       const emptyEl = document.getElementById('exams-empty');
+      const searchInput = document.getElementById('exam-search-input');
+      const btnSearch = document.getElementById('btn-exam-search');
       const btnResetFilter = document.getElementById('btn-reset-exam-filter');
+      const filterButtons = document.querySelectorAll('.filter-btn');
 
-      function filterExams() {
-        const q = currentQuery.toLowerCase().trim();
-        let visibleCount = 0;
+      const statAvailable = document.getElementById('stat-available-count');
+      const statCompleted = document.getElementById('stat-completed-count');
+      const statAvg = document.getElementById('stat-avg-score');
 
-        examCards.forEach(card => {
-          const type = card.getAttribute('data-type');
-          const title = (card.getAttribute('data-title') || '').toLowerCase();
-          const meta = (card.getAttribute('data-meta') || '').toLowerCase();
+      const countAll = document.getElementById('filter-count-all');
+      const countEssay = document.getElementById('filter-count-essay');
+      const countPeriodic = document.getElementById('filter-count-periodic');
+      const countPractice = document.getElementById('filter-count-practice');
 
-          const matchesType = (currentFilter === 'all') || (type === currentFilter);
-          const matchesSearch = !q || title.includes(q) || meta.includes(q);
+      const historyTbody = document.getElementById('exam-history-tbody');
 
-          if (matchesType && matchesSearch) {
-            card.style.display = 'flex';
-            visibleCount++;
-          } else {
-            card.style.display = 'none';
-          }
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function (m) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
         });
+      }
 
-        if (visibleCount === 0) {
-          if (gridEl) gridEl.style.display = 'none';
-          if (emptyEl) emptyEl.style.display = 'block';
-        } else {
-          if (gridEl) gridEl.style.display = 'grid';
-          if (emptyEl) emptyEl.style.display = 'none';
+      function getExamCategory(exam) {
+        const title = (exam.title || '').toLowerCase();
+        const desc = (exam.description || '').toLowerCase();
+        if (title.includes('tự luận') || title.includes('essay') || desc.includes('tự luận') || desc.includes('essay')) {
+          return 'essay';
+        }
+        if (title.includes('giữa khóa') || title.includes('định kỳ') || title.includes('cuối khóa') || title.includes('đầu khóa')) {
+          return 'periodic';
+        }
+        return 'practice';
+      }
+
+      async function loadExamsData() {
+        try {
+          const token = localStorage.getItem('student_token') || 'token-student-8';
+          const [examsRes, historyRes] = await Promise.all([
+            fetch('/api/v1/student/exams', {
+              headers: { 'Authorization': 'Bearer ' + token }
+            }),
+            fetch('/api/v1/student/user-exams/history', {
+              headers: { 'Authorization': 'Bearer ' + token }
+            })
+          ]);
+
+          const examsJson = await examsRes.json();
+          const historyJson = await historyRes.json();
+
+          if (examsJson.success && Array.isArray(examsJson.data)) {
+            rawExamsList = examsJson.data;
+          }
+
+          const historyList = (historyJson.success && Array.isArray(historyJson.data)) ? historyJson.data : [];
+
+          // Cập nhật thống kê nhanh
+          const availableCount = rawExamsList.filter(e => e.can_start).length;
+          if (statAvailable) statAvailable.textContent = `${availableCount} bài thi`;
+          if (statCompleted) statCompleted.textContent = `${historyList.length} bài thi`;
+
+          if (historyList.length > 0) {
+            const scores = historyList.filter(h => h.total_score != null).map(h => parseFloat(h.total_score));
+            if (scores.length > 0) {
+              const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+              if (statAvg) statAvg.textContent = `${avg.toFixed(2)} / 10`;
+            } else {
+              if (statAvg) statAvg.textContent = 'Chờ chấm';
+            }
+          } else {
+            if (statAvg) statAvg.textContent = '0.0 / 10';
+          }
+
+          // Cập nhật số lượng tabs
+          let nAll = rawExamsList.length;
+          let nEssay = 0, nPeriodic = 0, nPractice = 0;
+          rawExamsList.forEach(e => {
+            const cat = getExamCategory(e);
+            if (cat === 'essay') nEssay++;
+            else if (cat === 'periodic') nPeriodic++;
+            else nPractice++;
+          });
+          if (countAll) countAll.textContent = nAll;
+          if (countEssay) countEssay.textContent = nEssay;
+          if (countPeriodic) countPeriodic.textContent = nPeriodic;
+          if (countPractice) countPractice.textContent = nPractice;
+
+          renderExamsGrid();
+          renderHistoryTable(historyList);
+        } catch (err) {
+          console.error('Error loading exams:', err);
+          if (gridEl) {
+            gridEl.innerHTML = `<div style="grid-column: 1/-1; padding: 2rem; text-align: center; color: var(--danger-500);">Lỗi tải danh sách bài thi. Vui lòng tải lại trang.</div>`;
+          }
         }
       }
 
+      function renderExamsGrid() {
+        if (!gridEl) return;
+        const q = currentQuery.toLowerCase().trim();
+
+        const filtered = rawExamsList.filter(e => {
+          const cat = getExamCategory(e);
+          const matchesFilter = (currentFilter === 'all') || (cat === currentFilter);
+
+          const title = (e.title || '').toLowerCase();
+          const desc = (e.description || '').toLowerCase();
+          const course = (e.course_title || '').toLowerCase();
+          const matchesSearch = !q || title.includes(q) || desc.includes(q) || course.includes(q);
+
+          return matchesFilter && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+          gridEl.style.display = 'none';
+          if (emptyEl) emptyEl.style.display = 'block';
+          return;
+        }
+
+        gridEl.style.display = 'grid';
+        if (emptyEl) emptyEl.style.display = 'none';
+
+        gridEl.innerHTML = filtered.map(e => {
+          const cat = getExamCategory(e);
+          let badgeHtml = '';
+          if (cat === 'essay') {
+            badgeHtml = `<span class="badge" style="background: #E0E7FF; color: #3730A3; font-weight: 700;">✍️ Tự luận & Essay</span>`;
+          } else if (cat === 'periodic') {
+            badgeHtml = `<span class="badge badge-success">Kiểm tra định kỳ</span>`;
+          } else {
+            badgeHtml = `<span class="badge badge-primary">Luyện tập & Thi thử</span>`;
+          }
+
+          const courseTitle = e.course_title || 'Bài thi chung';
+          const title = escapeHtml(e.title);
+          const desc = escapeHtml(e.description || 'Bài thi khảo thí và đánh giá năng lực học viên.');
+          const duration = e.duration_minutes || 45;
+          const passScore = e.pass_score || 5.0;
+
+          let attemptInfo = '';
+          if (e.max_attempts) {
+            attemptInfo = `<span>🔄 Đã làm: <strong>${e.attempt_count}/${e.max_attempts}</strong></span>`;
+          } else {
+            attemptInfo = `<span>🔄 Đã làm: <strong>${e.attempt_count}</strong> lần</span>`;
+          }
+
+          let actionBtn = '';
+          if (e.in_progress_user_exam_id) {
+            actionBtn = `<a href="take-exam.html?examId=${e.exam_id}" class="btn" style="width: 100%; text-align: center; background: #D97706; color: white;">Tiếp tục làm bài (Đang làm dở) →</a>`;
+          } else if (e.can_start) {
+            actionBtn = `<a href="take-exam.html?examId=${e.exam_id}" class="btn btn-primary" style="width: 100%; text-align: center;">Bắt đầu làm bài thi →</a>`;
+          } else {
+            actionBtn = `<button type="button" class="btn btn-secondary" disabled style="width: 100%; text-align: center; opacity: 0.6; cursor: not-allowed;">Đã hết lượt thi (${e.attempt_count}/${e.max_attempts})</button>`;
+          }
+
+          return `
+            <div class="card card-hover" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  ${badgeHtml}
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; background: #F1F5F9; padding: 2px 8px; border-radius: 4px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(courseTitle)}">
+                    ${escapeHtml(courseTitle)}
+                  </span>
+                </div>
+                <h3 style="font-size: 1.0625rem; font-weight: 700; line-height: 1.4; color: #0F172A; margin: 0 0 0.5rem 0;">
+                  ${title}
+                </h3>
+                <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0 0 1rem 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                  ${desc}
+                </p>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                  <span>⏱️ <strong>${duration} phút</strong></span>
+                  <span>•</span>
+                  <span>🎯 Điểm đạt: <strong>${passScore}/10</strong></span>
+                  <span>•</span>
+                  ${attemptInfo}
+                </div>
+              </div>
+              <div>
+                ${actionBtn}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderHistoryTable(list) {
+        if (!historyTbody) return;
+        if (!list || list.length === 0) {
+          historyTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Bạn chưa nộp bài thi nào.</td></tr>`;
+          return;
+        }
+
+        historyTbody.innerHTML = list.slice(0, 5).map(h => {
+          const dateStr = h.submitted_at
+            ? new Date(h.submitted_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+            : 'Mới nộp';
+
+          const m = Math.floor((h.duration_seconds || 0) / 60);
+          const s = (h.duration_seconds || 0) % 60;
+          const durStr = `${m} phút ${s}s`;
+
+          let scoreDisplay = '-';
+          if (h.total_score != null) {
+            scoreDisplay = `<strong style="color: var(--primary-600); font-size: 1.0625rem;">${h.total_score}</strong> / 10`;
+          } else {
+            scoreDisplay = `<span style="color: #92400E; font-weight: 700;">Chờ chấm</span>`;
+          }
+
+          let statusBadge = '';
+          if (h.status === 'submitted') {
+            statusBadge = `<span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">Đang chấm bài</span>`;
+          } else if (h.status === 'passed') {
+            statusBadge = `<span class="badge badge-success">Đạt chuẩn</span>`;
+          } else {
+            statusBadge = `<span class="badge badge-danger">Chưa đạt</span>`;
+          }
+
+          return `
+            <tr>
+              <td>
+                <strong>${escapeHtml(h.exam_title)}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Lần làm bài: #${h.attempt_number}</div>
+              </td>
+              <td>${dateStr}</td>
+              <td>${durStr}</td>
+              <td>${scoreDisplay}</td>
+              <td>${statusBadge}</td>
+              <td style="text-align: right;">
+                <a href="result-detail.html?userExamId=${h.user_exam_id}" class="btn btn-sm btn-secondary">Xem bài giải</a>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Filter events
       filterButtons.forEach(btn => {
         btn.addEventListener('click', function () {
           filterButtons.forEach(b => {
@@ -491,25 +607,25 @@
           this.classList.add('active');
           this.setAttribute('aria-selected', 'true');
           currentFilter = this.getAttribute('data-filter') || 'all';
-          filterExams();
+          renderExamsGrid();
         });
       });
 
       if (searchInput) {
         searchInput.addEventListener('input', function () {
           currentQuery = this.value;
-          filterExams();
+          renderExamsGrid();
         });
         searchInput.addEventListener('keydown', function (e) {
           if (e.key === 'Enter') {
             e.preventDefault();
-            filterExams();
+            renderExamsGrid();
           }
         });
       }
 
       if (btnSearch) {
-        btnSearch.addEventListener('click', filterExams);
+        btnSearch.addEventListener('click', renderExamsGrid);
       }
 
       if (btnResetFilter) {
@@ -521,9 +637,12 @@
             b.classList.toggle('active', b.getAttribute('data-filter') === 'all');
             b.setAttribute('aria-selected', b.getAttribute('data-filter') === 'all' ? 'true' : 'false');
           });
-          filterExams();
+          renderExamsGrid();
         });
       }
+
+      // Load initial
+      loadExamsData();
     })();
   </script>
 

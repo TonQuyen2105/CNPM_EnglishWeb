@@ -117,5 +117,68 @@ namespace CNPM_EnglishLearning.Controllers
         {
             return Redirect("/login.html");
         }
+
+        // GET: /Account/Register hoặc /register hoặc /register.html
+        [HttpGet("/Account/Register")]
+        [HttpGet("/register")]
+        [HttpGet("/register.html")]
+        public IActionResult Register()
+        {
+            return View("~/register.html");
+        }
+
+        // POST: /Account/Register (Hỗ trợ cả Form Submit truyền thống và JSON body)
+        [HttpPost("/Account/Register")]
+        [ActionName("Register")]
+        public async Task<IActionResult> RegisterPost()
+        {
+            StudentRegisterRequestDto dto = new();
+
+            if (Request.HasFormContentType)
+            {
+                dto.FullName = Request.Form["full_name"].FirstOrDefault() ?? Request.Form["FullName"].FirstOrDefault() ?? string.Empty;
+                dto.Email = Request.Form["email"].FirstOrDefault() ?? Request.Form["Email"].FirstOrDefault() ?? string.Empty;
+                dto.PhoneNumber = Request.Form["phone_number"].FirstOrDefault() ?? Request.Form["PhoneNumber"].FirstOrDefault();
+                dto.Password = Request.Form["password"].FirstOrDefault() ?? Request.Form["Password"].FirstOrDefault() ?? string.Empty;
+                dto.ConfirmPassword = Request.Form["confirm_password"].FirstOrDefault() ?? Request.Form["ConfirmPassword"].FirstOrDefault() ?? string.Empty;
+            }
+            else if (Request.ContentType?.Contains("application/json") == true)
+            {
+                try
+                {
+                    using var reader = new StreamReader(Request.Body);
+                    var body = await reader.ReadToEndAsync();
+                    if (!string.IsNullOrWhiteSpace(body))
+                    {
+                        var json = System.Text.Json.JsonSerializer.Deserialize<StudentRegisterRequestDto>(body, new System.Text.Json.JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                        if (json != null) dto = json;
+                    }
+                }
+                catch { }
+            }
+
+            var result = await _studentAuthService.RegisterAsync(dto);
+
+            if (Request.Headers["Accept"].ToString().Contains("application/json") || 
+                Request.ContentType?.Contains("application/json") == true)
+            {
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, ApiResponse<object>.Fail(result.Message));
+                }
+                return StatusCode(result.StatusCode, ApiResponse<StudentRegisterResponseDto>.Ok(result.Data!, result.Message));
+            }
+
+            if (!result.IsSuccess)
+            {
+                ViewBag.Error = result.Message;
+                return View("~/register.html");
+            }
+
+            return Redirect("/Areas/Student/Views/dashboard.html");
+        }
     }
 }

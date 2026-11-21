@@ -245,71 +245,37 @@
   <!-- Page Content Container -->
   <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
     
-  <div class="page-header">
+  <div class="page-header" style="margin-bottom: 1.5rem;">
     <div>
+      <div style="margin-bottom: 0.75rem;">
+        <a href="exams.html" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-md);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span>Quay lại phòng thi</span>
+        </a>
+      </div>
       <h1 class="page-header-title">Lịch sử bài thi & Điểm số</h1>
-      <p class="page-header-subtitle">Xem lại kết quả các bài kiểm tra bạn đã hoàn thành</p>
+      <p class="page-header-subtitle">Xem lại kết quả các bài kiểm tra và bài thi tự luận bạn đã hoàn thành</p>
     </div>
   </div>
 
-  <div class="card" style="padding: 0; overflow: hidden;">
-    <table class="table">
+  <div class="card" style="padding: 0; overflow: hidden; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+    <table class="table" style="margin: 0; width: 100%;">
       <thead>
-        <tr>
+        <tr style="background-color: #F8FAFC;">
           <th>Tên bài thi</th>
           <th>Ngày thi</th>
           <th>Thời gian làm</th>
           <th>Số câu đúng</th>
           <th>Điểm số</th>
           <th>Xếp loại</th>
-          <th class="text-right">Chi tiết</th>
+          <th style="text-align: right;">Chi tiết</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="results-history-tbody">
         <tr>
-          <td><strong>Kiểm tra đầu vào tổng quát</strong></td>
-          <td>20/09/2026</td>
-          <td>38 phút</td>
-          <td>35 / 40</td>
-          <td><strong style="color: var(--primary-600); font-size: 1.125rem;">8.8</strong></td>
-          <td><span class="badge badge-success">Đạt</span></td>
-          <td class="text-right"><a href="result-detail.html" class="btn btn-sm btn-secondary">Xem bài giải</a></td>
-        </tr>
-        <tr>
-          <td><strong>Mini-test Ngữ pháp Unit 1 - 3</strong></td>
-          <td>15/10/2026</td>
-          <td>18 phút</td>
-          <td>18 / 20</td>
-          <td><strong style="color: var(--primary-600); font-size: 1.125rem;">9.0</strong></td>
-          <td><span class="badge badge-success">Xuất sắc</span></td>
-          <td class="text-right"><a href="result-detail.html" class="btn btn-sm btn-secondary">Xem bài giải</a></td>
-        </tr>
-        <tr>
-          <td><strong>TOEIC Listening Part 1 & 2 Practice</strong></td>
-          <td>10/10/2026</td>
-          <td>24 phút</td>
-          <td>27 / 30</td>
-          <td><strong style="color: var(--primary-600); font-size: 1.125rem;">8.5</strong></td>
-          <td><span class="badge badge-info">Khá tốt</span></td>
-          <td class="text-right"><a href="result-detail.html" class="btn btn-sm btn-secondary">Xem bài giải</a></td>
-        </tr>
-        <tr>
-          <td><strong>Kiểm tra Giữa kỳ COMM-01</strong></td>
-          <td>02/10/2026</td>
-          <td>44 phút</td>
-          <td>34 / 40</td>
-          <td><strong style="color: var(--primary-600); font-size: 1.125rem;">8.5</strong></td>
-          <td><span class="badge badge-success">Đạt chuẩn</span></td>
-          <td class="text-right"><a href="result-detail.html" class="btn btn-sm btn-secondary">Xem bài giải</a></td>
-        </tr>
-        <tr>
-          <td><strong>IELTS Writing Task 1 Chấm thử</strong></td>
-          <td>25/09/2026</td>
-          <td>20 phút</td>
-          <td>1 bài luận</td>
-          <td><strong style="color: var(--primary-600); font-size: 1.125rem;">7.0</strong></td>
-          <td><span class="badge badge-warning">Tốt (Band 7.0)</span></td>
-          <td class="text-right"><a href="result-detail.html" class="btn btn-sm btn-secondary">Xem nhận xét</a></td>
+          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            Đang tải dữ liệu kết quả thi...
+          </td>
         </tr>
       </tbody>
     </table>
@@ -320,6 +286,81 @@
   <footer style="margin-top: auto; border-top: 1px solid var(--border-color); background: white; padding: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
     © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
   </footer>
+
+  <script>
+    (async function initResultsDynamic() {
+      const tbody = document.getElementById('results-history-tbody');
+      if (!tbody) return;
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function (m) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+        });
+      }
+
+      try {
+        const token = localStorage.getItem('student_token') || 'token-student-8';
+        const res = await fetch('/api/v1/student/user-exams/history', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const json = await res.json();
+
+        if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Chưa có lịch sử bài thi nào được ghi nhận. Hãy hoàn thành một bài thi tại Phòng Luyện thi.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = json.data.map(h => {
+          const dateStr = h.submitted_at
+            ? new Date(h.submitted_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+            : 'Mới nộp';
+
+          const m = Math.floor((h.duration_seconds || 0) / 60);
+          const s = (h.duration_seconds || 0) % 60;
+          const durStr = `${m} phút ${s}s`;
+
+          let correctStr = `${h.correct_answers_count} / ${h.total_questions}`;
+          if (h.total_questions === 0) correctStr = '-';
+
+          let scoreDisplay = '-';
+          if (h.total_score != null) {
+            scoreDisplay = `<strong style="color: var(--primary-600); font-size: 1.125rem;">${h.total_score}</strong> / 10`;
+          } else {
+            scoreDisplay = `<span style="color: #92400E; font-weight: 700;">Chờ chấm</span>`;
+          }
+
+          let badgeHtml = '';
+          if (h.status === 'submitted') {
+            badgeHtml = `<span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">Chờ chấm bài</span>`;
+          } else if (h.status === 'passed') {
+            badgeHtml = `<span class="badge badge-success">Đạt chuẩn</span>`;
+          } else {
+            badgeHtml = `<span class="badge badge-danger">Chưa đạt</span>`;
+          }
+
+          return `
+            <tr>
+              <td>
+                <strong>${escapeHtml(h.exam_title)}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Lần làm bài: #${h.attempt_number}</div>
+              </td>
+              <td>${dateStr}</td>
+              <td>${durStr}</td>
+              <td>${correctStr}</td>
+              <td>${scoreDisplay}</td>
+              <td>${badgeHtml}</td>
+              <td style="text-align: right;">
+                <a href="result-detail.html?userExamId=${h.user_exam_id}" class="btn btn-sm btn-secondary">Xem bài giải</a>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--danger-500); padding: 2rem;">Lỗi tải dữ liệu lịch sử thi.</td></tr>`;
+      }
+    })();
+  </script>
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>

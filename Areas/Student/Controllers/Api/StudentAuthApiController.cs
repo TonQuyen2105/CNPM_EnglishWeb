@@ -25,5 +25,18 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
             var result = await Services.Auth.LoginAsync(request);
             return ToActionResult(result);
         }
+
+        /// <summary>
+        /// Đăng ký tài khoản mới dành riêng cho Học sinh.
+        /// Mặc định: role == "student", is_active == TRUE.
+        /// Endpoint: POST /api/v1/student/auth/register
+        /// </summary>
+        [HttpPost("auth/register")]
+        [HttpPost("/api/v1/auth/register")]
+        public async Task<IActionResult> Register([FromBody] StudentRegisterRequestDto request)
+        {
+            var result = await Services.Auth.RegisterAsync(request);
+            return ToActionResult(result);
+        }
     }
 }

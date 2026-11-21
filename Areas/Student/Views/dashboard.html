@@ -455,12 +455,15 @@
             },
             active_courses: [
               {
+                class_id: 4,
                 course_id: 1,
                 course_title: 'Giao tiếp trong cuộc sống',
                 class_code: 'EL-PRACTICE-V1-01',
                 teacher_name: 'Lê Minh Anh',
                 schedule_summary: 'Chủ nhật (08:00 - 09:30), Thứ 3 (08:00 - 09:30)',
                 progress_percentage: 100,
+                completed_lessons: 6,
+                total_lessons: 6,
                 completed_lessons_count: 6,
                 total_lessons_count: 6,
                 next_lesson_title: 'Bài 1: Giới thiệu và làm quen',
@@ -663,7 +666,7 @@
                   <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                     <span style="font-size: 0.8125rem; color: var(--text-secondary);">
                       Bài tiếp theo: <strong style="color: var(--text-primary);">${nextLessonName}</strong>
-                      <span style="color: var(--text-muted); font-size: 0.75rem;">(${course.completed_lessons}/${course.total_lessons} bài)</span>
+                      <span style="color: var(--text-muted); font-size: 0.75rem;">(${course.completed_lessons ?? course.completed_lessons_count ?? 0}/${course.total_lessons ?? course.total_lessons_count ?? 0} bài)</span>
                     </span>
                     <div style="display: flex; gap: 8px;">
                       <a href="learn.html?classId=${course.class_id}" class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;">Chi tiết bài học</a>

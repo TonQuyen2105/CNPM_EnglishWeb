@@ -21,6 +21,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Interfaces
         Task<ServiceResult<CourseDetailDto>> GetCourseDetailAsync(int courseId, int? studentId);
         Task<ServiceResult<ConsultationRecord>> CreateConsultationAsync(int? studentId, CreateConsultationRequestDto request);
         Task<ServiceResult<EnrollmentResultDto>> EnrollClassAsync(int studentId, CreateEnrollmentRequestDto request);
+        Task<ServiceResult<EnrollmentResultDto>> EnrollCourseAsync(int studentId, int courseId, CreateCourseEnrollmentRequestDto request);
+        Task<ServiceResult<List<PaymentDto>>> GetStudentPaymentsAsync(int studentId, int page, int limit, string? status);
+        Task<ServiceResult<PaymentDto>> GetPaymentDetailAsync(int studentId, int paymentId);
         Task<ServiceResult<List<CourseReviewItemDto>>> GetCourseReviewsAsync(int courseId, int page, int limit);
         Task<ServiceResult<CourseReviewItemDto>> SubmitCourseReviewAsync(int studentId, int courseId, CreateCourseReviewRequestDto request);
     }
@@ -98,5 +101,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Interfaces
     public interface IStudentAuthService
     {
         Task<ServiceResult<StudentLoginResponseDto>> LoginAsync(StudentLoginRequestDto request);
+        Task<ServiceResult<StudentRegisterResponseDto>> RegisterAsync(StudentRegisterRequestDto request);
     }
 }

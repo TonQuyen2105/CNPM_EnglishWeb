@@ -61,6 +61,44 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
         }
 
         /// <summary>
+        /// 2.5. Đăng ký khóa học và thanh toán.
+        /// Endpoint: POST /api/v1/student/courses/{courseId}/enroll
+        /// </summary>
+        [HttpPost("courses/{courseId:int}/enroll")]
+        public async Task<IActionResult> EnrollCourse(
+            [FromRoute] int courseId,
+            [FromBody] CreateCourseEnrollmentRequestDto request)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.EnrollCourseAsync(studentId, courseId, request);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.6. Lấy lịch sử giao dịch thanh toán của học sinh.
+        /// Endpoint: GET /api/v1/student/payments?page=1&limit=10&status=completed
+        /// </summary>
+        [HttpGet("payments")]
+        public async Task<IActionResult> GetPayments([FromQuery] PaymentFilterQueryDto query)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.GetStudentPaymentsAsync(studentId, query.Page, query.Limit, query.Status);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.7. Lấy chi tiết một giao dịch thanh toán.
+        /// Endpoint: GET /api/v1/student/payments/{paymentId}
+        /// </summary>
+        [HttpGet("payments/{paymentId:int}")]
+        public async Task<IActionResult> GetPaymentDetail([FromRoute] int paymentId)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.GetPaymentDetailAsync(studentId, paymentId);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
         /// 4.1. Lấy mục lục bài học của một khóa học kèm trạng thái hoàn thành.
         /// Endpoint: GET /api/v1/student/courses/{courseId}/syllabus
         /// </summary>

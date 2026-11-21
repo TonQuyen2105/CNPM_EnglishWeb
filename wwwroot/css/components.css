@@ -1051,20 +1051,23 @@ select.form-control {
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: var(--space-2);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  min-width: 180px;
-  padding: var(--space-1);
-  z-index: var(--z-popover);
+  margin-top: 6px;
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.18), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+  min-width: 220px;
+  padding: 6px;
+  z-index: 1050 !important;
   display: none;
-  animation: fadeIn 0.15s ease-out forwards;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .dropdown-menu.show {
-  display: block;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .dropdown-item {
@@ -1539,11 +1542,11 @@ select.form-control {
 }
 
 .my-class-card {
-  background: #FFFFFF;
-  border: 1px solid var(--border-color, #E2E8F0);
-  border-radius: var(--radius-lg, 12px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  padding: 1.5rem;
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: var(--radius-xl, 16px) !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  padding: 1.5rem !important;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1602,6 +1605,14 @@ select.form-control {
   margin-bottom: 1.25rem;
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--border-color, #E2E8F0);
+}
+
+.schedule-nav-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
 }
 
 /* 5. Lesson Bottom Navigation Bar */

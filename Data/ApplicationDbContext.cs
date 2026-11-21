@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +38,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Flashcard> Flashcards { get; set; }
 
     public virtual DbSet<Lesson> Lessons { get; set; }
+
+    public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Question> Questions { get; set; }
 

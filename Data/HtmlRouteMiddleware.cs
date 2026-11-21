@@ -73,6 +73,14 @@ namespace CNPM_EnglishLearning.Data
                 _viewMap["/logout"] = loginFile;
             }
 
+            var registerFile = Path.Combine(_contentRoot, "register.html");
+            if (File.Exists(registerFile))
+            {
+                _viewMap["/register.html"] = registerFile;
+                _viewMap["/register"] = registerFile;
+                _viewMap["/Account/Register"] = registerFile;
+            }
+
             var styleguideFile = Path.Combine(_contentRoot, "styleguide.html");
             if (File.Exists(styleguideFile))
             {

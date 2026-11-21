@@ -370,7 +370,82 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public int ClassId { get; set; }
 
         [JsonPropertyName("payment_method")]
-        public string PaymentMethod { get; set; } = "vnpay";
+        public string PaymentMethod { get; set; } = "banking";
+
+        [JsonPropertyName("note")]
+        public string? Note { get; set; }
+    }
+
+    public class CreateCourseEnrollmentRequestDto
+    {
+        [JsonPropertyName("class_id")]
+        public int? ClassId { get; set; }
+
+        [JsonPropertyName("payment_method")]
+        public string PaymentMethod { get; set; } = "banking";
+
+        [JsonPropertyName("note")]
+        public string? Note { get; set; }
+    }
+
+    public class PaymentDto
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("user_id")]
+        public int UserId { get; set; }
+
+        [JsonPropertyName("class_id")]
+        public int ClassId { get; set; }
+
+        [JsonPropertyName("class_code")]
+        public string? ClassCode { get; set; }
+
+        [JsonPropertyName("class_name")]
+        public string? ClassName { get; set; }
+
+        [JsonPropertyName("course_id")]
+        public int? CourseId { get; set; }
+
+        [JsonPropertyName("course_title")]
+        public string? CourseTitle { get; set; }
+
+        [JsonPropertyName("enrollment_id")]
+        public int? EnrollmentId { get; set; }
+
+        [JsonPropertyName("transaction_code")]
+        public string TransactionCode { get; set; } = string.Empty;
+
+        [JsonPropertyName("amount")]
+        public decimal Amount { get; set; }
+
+        [JsonPropertyName("payment_method")]
+        public string PaymentMethod { get; set; } = "banking";
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = "completed";
+
+        [JsonPropertyName("paid_at")]
+        public DateTime? PaidAt { get; set; }
+
+        [JsonPropertyName("note")]
+        public string? Note { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public DateTime? CreatedAt { get; set; }
+    }
+
+    public class PaymentFilterQueryDto
+    {
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
+
+        [JsonPropertyName("page")]
+        public int Page { get; set; } = 1;
+
+        [JsonPropertyName("limit")]
+        public int Limit { get; set; } = 10;
     }
 
     public class EnrollmentResultDto
@@ -390,6 +465,9 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         [JsonPropertyName("class_name")]
         public string ClassName { get; set; } = string.Empty;
 
+        [JsonPropertyName("course_id")]
+        public int CourseId { get; set; }
+
         [JsonPropertyName("course_title")]
         public string CourseTitle { get; set; } = string.Empty;
 
@@ -400,7 +478,7 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public DateTime EnrolledAt { get; set; }
 
         [JsonPropertyName("payment")]
-        public EnrollmentPaymentRecord? Payment { get; set; }
+        public PaymentDto? Payment { get; set; }
     }
 
     // =========================================================================
@@ -1223,6 +1301,15 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("accumulated_stats")]
         public AccumulatedStatsDto AccumulatedStats { get; set; } = new();
+
+        [JsonPropertyName("enrolled_classes_progress")]
+        public List<ClassProgressItemDto> EnrolledClassesProgress { get; set; } = new();
+
+        [JsonPropertyName("completed_exams")]
+        public List<CompletedExamProgressItemDto> CompletedExams { get; set; } = new();
+
+        [JsonPropertyName("recent_activities")]
+        public List<StudentRecentActivityDto> RecentActivities { get; set; } = new();
     }
 
     public class SkillsProficiencyDto
@@ -1247,6 +1334,15 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("average_score")]
         public double AverageScore { get; set; }
+
+        [JsonPropertyName("score_out_of_10")]
+        public double ScoreOutOf10 { get; set; }
+
+        [JsonPropertyName("percentage")]
+        public int Percentage { get; set; }
+
+        [JsonPropertyName("level")]
+        public string Level { get; set; } = "Cơ bản";
     }
 
     public class AccumulatedStatsDto
@@ -1254,14 +1350,134 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         [JsonPropertyName("total_courses_enrolled")]
         public int TotalCoursesEnrolled { get; set; }
 
+        [JsonPropertyName("total_courses_completed")]
+        public int TotalCoursesCompleted { get; set; }
+
+        [JsonPropertyName("total_completed_exams")]
+        public int TotalCompletedExams { get; set; }
+
+        [JsonPropertyName("average_exam_score")]
+        public double AverageExamScore { get; set; }
+
+        [JsonPropertyName("total_classes_enrolled")]
+        public int TotalClassesEnrolled { get; set; }
+
         [JsonPropertyName("total_lessons_completed")]
         public int TotalLessonsCompleted { get; set; }
 
         [JsonPropertyName("total_exams_passed")]
         public int TotalExamsPassed { get; set; }
 
+        [JsonPropertyName("total_exams_taken")]
+        public int TotalExamsTaken { get; set; }
+
         [JsonPropertyName("total_flashcards_mastered")]
         public int TotalFlashcardsMastered { get; set; }
+
+        [JsonPropertyName("total_study_hours")]
+        public double TotalStudyHours { get; set; }
+
+        [JsonPropertyName("total_submitted_assignments")]
+        public int TotalSubmittedAssignments { get; set; }
+
+        [JsonPropertyName("streak_days")]
+        public int StreakDays { get; set; }
+
+        [JsonPropertyName("average_score")]
+        public double AverageScore { get; set; }
+
+        [JsonPropertyName("attendance_rate")]
+        public int AttendanceRate { get; set; }
+    }
+
+    public class CompletedExamProgressItemDto
+    {
+        [JsonPropertyName("user_exam_id")]
+        public int UserExamId { get; set; }
+
+        [JsonPropertyName("exam_id")]
+        public int ExamId { get; set; }
+
+        [JsonPropertyName("exam_title")]
+        public string ExamTitle { get; set; } = string.Empty;
+
+        [JsonPropertyName("attempt_number")]
+        public int AttemptNumber { get; set; }
+
+        [JsonPropertyName("submitted_at")]
+        public DateTime? SubmittedAt { get; set; }
+
+        [JsonPropertyName("total_score")]
+        public decimal TotalScore { get; set; }
+
+        [JsonPropertyName("pass_score")]
+        public decimal PassScore { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = "completed";
+
+        [JsonPropertyName("is_passed")]
+        public bool IsPassed { get; set; }
+    }
+
+    public class ClassProgressItemDto
+    {
+        [JsonPropertyName("class_id")]
+        public int ClassId { get; set; }
+
+        [JsonPropertyName("class_code")]
+        public string ClassCode { get; set; } = string.Empty;
+
+        [JsonPropertyName("class_name")]
+        public string ClassName { get; set; } = string.Empty;
+
+        [JsonPropertyName("course_id")]
+        public int CourseId { get; set; }
+
+        [JsonPropertyName("course_title")]
+        public string CourseTitle { get; set; } = string.Empty;
+
+        [JsonPropertyName("teacher_name")]
+        public string? TeacherName { get; set; }
+
+        [JsonPropertyName("total_lessons")]
+        public int TotalLessons { get; set; }
+
+        [JsonPropertyName("completed_lessons")]
+        public int CompletedLessons { get; set; }
+
+        [JsonPropertyName("progress_percentage")]
+        public int ProgressPercentage { get; set; }
+
+        [JsonPropertyName("average_score")]
+        public double AverageScore { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = "ongoing";
+    }
+
+    public class StudentRecentActivityDto
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("activity_type")]
+        public string ActivityType { get; set; } = "lesson";
+
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonPropertyName("timestamp")]
+        public DateTime Timestamp { get; set; }
+
+        [JsonPropertyName("time_ago")]
+        public string TimeAgo { get; set; } = string.Empty;
+
+        [JsonPropertyName("score")]
+        public double? Score { get; set; }
     }
 
     // =========================================================================
@@ -1392,6 +1608,46 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
     }
 
     public class StudentLoginResponseDto
+    {
+        [JsonPropertyName("user")]
+        public StudentLoginUserDto User { get; set; } = new();
+
+        [JsonPropertyName("token")]
+        public string Token { get; set; } = string.Empty;
+
+        [JsonPropertyName("redirect_url")]
+        public string RedirectUrl { get; set; } = "/Areas/Student/Views/dashboard.html";
+    }
+
+    public class StudentRegisterRequestDto
+    {
+        [Required(ErrorMessage = "Họ và tên không được để trống.")]
+        [StringLength(100, ErrorMessage = "Họ và tên không vượt quá 100 ký tự.")]
+        [JsonPropertyName("full_name")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email không được để trống.")]
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [StringLength(150, ErrorMessage = "Email không vượt quá 150 ký tự.")]
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
+
+        [StringLength(50, ErrorMessage = "Số điện thoại không vượt quá 50 ký tự.")]
+        [JsonPropertyName("phone_number")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Mật khẩu không được để trống.")]
+        [MinLength(6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự.")]
+        [JsonPropertyName("password")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
+        [Compare("Password", ErrorMessage = "Xác nhận mật khẩu không trùng khớp.")]
+        [JsonPropertyName("confirm_password")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+    public class StudentRegisterResponseDto
     {
         [JsonPropertyName("user")]
         public StudentLoginUserDto User { get; set; } = new();

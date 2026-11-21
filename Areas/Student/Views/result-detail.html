@@ -14,7 +14,8 @@
   <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
   <link rel="stylesheet" href="../../../wwwroot/css/components.css">
 
-  <style>        /* Topbar Navigation */
+  <style>
+    /* Topbar Navigation */
     .student-navbar-wrapper {
       position: sticky; top: 0; z-index: var(--z-sticky, 1000);
       background-color: #FFFFFF; border-bottom: 1px solid var(--border-color);
@@ -54,41 +55,50 @@
     .user-profile-trigger:hover {
       background-color: var(--neutral-100);
     }
-    @media (max-width: 1220px) {
-      .student-nav-link {
-        padding: 5px 7px;
-        font-size: 0.78125rem;
-        gap: 3px;
-      }
-      .student-nav-menu {
-        gap: 2px;
-      }
-      #user-email-topbar {
-        display: none !important;
-      }
-      #user-name-topbar {
-        max-width: 95px !important;
-      }
+
+    .review-q-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    @media (max-width: 1040px) {
-      .student-nav-container {
-        padding: 0 0.5rem;
-      }
-      .student-brand-title {
-        font-size: 1rem !important;
-      }
-      .student-nav-link {
-        padding: 5px 5px;
-        font-size: 0.75rem;
-        gap: 2px;
-      }
+    .review-q-card.correct {
+      border-left: 5px solid var(--success-main);
+    }
+    .review-q-card.incorrect {
+      border-left: 5px solid var(--danger-500);
+    }
+    .review-q-card.pending {
+      border-left: 5px solid #F59E0B;
+    }
+    .review-option-item {
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+    }
+    .review-option-item.correct-opt {
+      background: #ECFDF5;
+      border-color: #6EE7B7;
+      color: #065F46;
+      font-weight: 600;
+    }
+    .review-option-item.wrong-selected {
+      background: #FEF2F2;
+      border-color: #FCA5A5;
+      color: #991B1B;
+      font-weight: 600;
     }
   </style>
 </head>
 <body style="background-color: var(--bg-page); min-height: 100vh; display: flex; flex-direction: column;">
   <!-- Student Top Navbar -->
-    <!-- Student Top Navbar -->
-        <!-- Student Top Navbar -->
   <header class="student-navbar-wrapper">
     <div class="student-nav-container">
       <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
@@ -125,7 +135,7 @@
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
             <span>Flashcards</span>
           </a>
-          <a href="exams.html" class="student-nav-link">
+          <a href="exams.html" class="student-nav-link active">
             <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
             <span>Luyện thi</span>
           </a>
@@ -197,7 +207,6 @@
   </header>
 
   <script>
-    // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
     (function syncTopbarUser() {
       try {
         const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
@@ -220,52 +229,234 @@
         if (em) { em.textContent = email; em.title = email; }
         if (dn) dn.textContent = name;
         if (de) de.textContent = email;
-
-        // Đảm bảo mục "Tiến độ học tập" luôn luôn có mặt trong Dropdown
-        const menu = document.getElementById('avatar-dropdown-menu');
-        if (menu && !menu.querySelector('a[href*="progress.html"]')) {
-          const divider = menu.querySelector('.dropdown-divider');
-          const a = document.createElement('a');
-          a.href = 'progress.html';
-          a.className = 'dropdown-item';
-          a.id = 'menu-item-progress';
-          a.innerHTML = '<span>Tiến độ học tập</span>';
-          if (divider) {
-            menu.insertBefore(a, divider);
-          } else {
-            menu.appendChild(a);
-          }
-        }
       } catch (e) {}
     })();
   </script>
 
-  
-
   <!-- Page Content Container -->
   <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
     
-  <div class="page-header">
-    <div>
-      <a href="results.html" style="font-size: 0.8125rem; color: var(--primary-600); text-decoration: none;">← Quay lại kết quả thi</a>
-      <h1 class="page-header-title" style="margin-top: 4px;">Chi tiết bài giải: Kiểm tra đầu vào</h1>
-      <p class="page-header-subtitle">Điểm số: 8.8 / 10 • Đúng 35 / 40 câu hỏi</p>
+    <div class="page-header" style="margin-bottom: 1.5rem;">
+      <div>
+        <div style="margin-bottom: 0.75rem;">
+          <a href="results.html" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-md);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span>Quay lại kết quả thi</span>
+          </a>
+        </div>
+        <h1 class="page-header-title" style="margin-top: 6px;" id="review-exam-title">Đang tải chi tiết bài giải...</h1>
+        <p class="page-header-subtitle" id="review-exam-subtitle">Điểm số: ... • Đang đồng bộ từ hệ thống</p>
+      </div>
     </div>
-  </div>
 
-  <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-    <div style="padding: 1rem; border-left: 4px solid var(--success-main); background: #F0FDF4; border-radius: 0 8px 8px 0; margin-bottom: 1rem;">
-      <strong>Câu 1: What _______ your brother do on Sundays?</strong>
-      <div style="margin-top: 4px; font-size: 0.875rem;">Bạn đã chọn: <strong>B. does (Chính xác)</strong></div>
-      <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">Giải thích: Chủ ngữ ngôi thứ 3 số ít "your brother" đi với trợ động từ "does" ở thì Hiện tại đơn.</div>
+    <!-- Review Questions Container -->
+    <div id="review-questions-list">
+      <div class="card" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+        Đang nạp chi tiết các câu hỏi và bài giải...
+      </div>
     </div>
-  </div>
 
   </main>
 
   <footer style="margin-top: auto; border-top: 1px solid var(--border-color); background: white; padding: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
     © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
   </footer>
+
+  <!-- Script Lấy dữ liệu chi tiết bài giải từ API -->
+  <script>
+    (async function initReviewDetailDynamic() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userExamId = urlParams.get('userExamId');
+
+      const titleEl = document.getElementById('review-exam-title');
+      const subtitleEl = document.getElementById('review-exam-subtitle');
+      const containerEl = document.getElementById('review-questions-list');
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function (m) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+        });
+      }
+
+      function countWords(str) {
+        if (!str) return 0;
+        const matches = str.trim().match(/\S+/g);
+        return matches ? matches.length : 0;
+      }
+
+      try {
+        const token = localStorage.getItem('student_token') || 'token-student-8';
+        let targetId = userExamId;
+
+        // Nếu không có userExamId trên URL, tự động tìm bài nộp mới nhất của học sinh
+        if (!targetId) {
+          const histRes = await fetch('/api/v1/student/user-exams/history', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const histJson = await histRes.json();
+          if (histJson.success && Array.isArray(histJson.data) && histJson.data.length > 0) {
+            targetId = histJson.data[0].user_exam_id;
+          }
+        }
+
+        if (!targetId) {
+          if (containerEl) containerEl.innerHTML = `<div class="card" style="padding: 2rem; text-align: center;">Không tìm thấy mã kết quả bài thi hợp lệ. <a href="results.html">Xem danh sách kết quả</a></div>`;
+          return;
+        }
+
+        const res = await fetch(`/api/v1/student/user-exams/${targetId}/review`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const json = await res.json();
+
+        if (!json.success || !json.data) {
+          throw new Error(json.message || 'Không thể tải chi tiết bài thi');
+        }
+
+        const data = json.data;
+        if (titleEl) titleEl.textContent = `Chi tiết bài giải: ${data.exam_title}`;
+
+        const isPending = (data.status === 'submitted');
+        const m = Math.floor((data.duration_seconds || 0) / 60);
+        const s = (data.duration_seconds || 0) % 60;
+        const durStr = `${m} phút ${s}s`;
+
+        if (subtitleEl) {
+          if (isPending) {
+            subtitleEl.innerHTML = `<span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">Chờ chấm bài</span> • Lần thi: #${data.attempt_number} • Thời gian làm: ${durStr} • Điểm đạt yêu cầu: ${data.pass_score}/10`;
+          } else {
+            const isPassed = (data.status === 'passed');
+            const badgeClass = isPassed ? 'badge-success' : 'badge-danger';
+            const badgeText = isPassed ? 'Đạt chuẩn' : 'Chưa đạt';
+            subtitleEl.innerHTML = `Điểm số: <strong style="color: var(--primary-600); font-size: 1.125rem;">${data.total_score}</strong> / 10 • <span class="badge ${badgeClass}">${badgeText}</span> • Lần thi: #${data.attempt_number} • Thời gian: ${durStr}`;
+          }
+        }
+
+        const questions = data.questions || [];
+        if (questions.length === 0) {
+          if (containerEl) containerEl.innerHTML = `<div class="card" style="padding: 2rem; text-align: center;">Đề thi không có câu hỏi nào.</div>`;
+          return;
+        }
+
+        containerEl.innerHTML = questions.map((q, idx) => {
+          const qType = (q.question_type || 'essay').toLowerCase();
+          const orderNum = q.order_index || (idx + 1);
+
+          let cardClass = 'review-q-card pending';
+          let statusBadgeHtml = '';
+
+          if (qType === 'essay') {
+            cardClass = 'review-q-card pending';
+            if (q.score_earned != null) {
+              statusBadgeHtml = `<span class="badge badge-success">Điểm: ${q.score_earned} / ${q.max_points}</span>`;
+            } else {
+              statusBadgeHtml = `<span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">Chờ chấm (${q.max_points} điểm)</span>`;
+            }
+          } else {
+            if (q.is_correct) {
+              cardClass = 'review-q-card correct';
+              statusBadgeHtml = `<span class="badge badge-success">Đúng (+${q.score_earned || q.max_points}đ)</span>`;
+            } else {
+              cardClass = 'review-q-card incorrect';
+              statusBadgeHtml = `<span class="badge badge-danger">Sai (0 / ${q.max_points}đ)</span>`;
+            }
+          }
+
+          let bodyContent = '';
+
+          if (qType === 'essay') {
+            const textAns = q.text_answer || '';
+            const wCount = countWords(textAns);
+            bodyContent = `
+              <div style="margin-top: 1rem;">
+                <label style="font-weight: 700; font-size: 0.875rem; color: #334155; display: block; margin-bottom: 6px;">
+                  Bài luận bạn đã nộp:
+                </label>
+                <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 8px; padding: 1rem; font-size: 0.9375rem; line-height: 1.65; white-space: pre-wrap; color: #0F172A;">
+                  ${textAns ? escapeHtml(textAns) : '<em style="color: var(--text-muted);">(Bạn đã để trống câu này)</em>'}
+                </div>
+                <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 6px;">
+                  Độ dài: <strong>${wCount}</strong> từ
+                </div>
+                <div style="margin-top: 10px; background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 0.8125rem; color: #92400E;">
+                  <strong>Nhận xét từ hệ thống / Giảng viên:</strong>
+                  <p style="margin: 4px 0 0 0;">${escapeHtml(q.feedback || 'Bài làm tự luận đang trong hàng đợi chấm điểm bởi giảng viên phụ trách bộ môn. Nhận xét chi tiết về từ vựng, ngữ pháp và cấu trúc lập luận sẽ được cập nhật sớm nhất.')}</p>
+                </div>
+              </div>
+            `;
+          } else if (qType === 'multiple_choice') {
+            const options = q.options || [];
+            const letters = ['A', 'B', 'C', 'D', 'E'];
+            let optsHtml = '<div style="margin-top: 1rem;">';
+
+            options.forEach((opt, oIdx) => {
+              const letter = letters[oIdx] || (oIdx + 1);
+              let itemClass = 'review-option-item';
+              let mark = '';
+
+              if (opt.is_correct) {
+                itemClass += ' correct-opt';
+                mark = '<span class="badge badge-success" style="margin-left: auto;">Đáp án đúng</span>';
+              } else if (opt.id === q.selected_option_id) {
+                itemClass += ' wrong-selected';
+                mark = '<span class="badge badge-danger" style="margin-left: auto;">Bạn đã chọn</span>';
+              }
+
+              optsHtml += `
+                <div class="${itemClass}">
+                  <strong>${letter}.</strong>
+                  <span>${escapeHtml(opt.option_text)}</span>
+                  ${mark}
+                </div>
+              `;
+            });
+            optsHtml += '</div>';
+
+            if (q.feedback || q.correct_answer_text) {
+              optsHtml += `
+                <div style="margin-top: 8px; font-size: 0.8125rem; color: var(--text-muted); background: #F8FAFC; padding: 8px 12px; border-radius: 6px;">
+                  Giải thích: ${escapeHtml(q.feedback || ('Đáp án chính xác là: ' + q.correct_answer_text))}
+                </div>
+              `;
+            }
+            bodyContent = optsHtml;
+          } else {
+            bodyContent = `
+              <div style="margin-top: 1rem; font-size: 0.875rem;">
+                <div>Bạn đã nhập: <strong>${escapeHtml(q.text_answer || '(Trống)')}</strong></div>
+                <div style="color: var(--success-main); margin-top: 4px;">Đáp án chuẩn: <strong>${escapeHtml(q.correct_answer_text || '')}</strong></div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="${cardClass}">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                <div style="font-weight: 700; color: #0F172A; font-size: 1rem;">
+                  Câu ${orderNum}:
+                </div>
+                <div>
+                  ${statusBadgeHtml}
+                </div>
+              </div>
+
+              <div style="font-size: 1rem; font-weight: 500; line-height: 1.6; color: #1E293B; white-space: pre-line;">
+                ${escapeHtml(q.question_text)}
+              </div>
+
+              ${bodyContent}
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        if (containerEl) {
+          containerEl.innerHTML = `<div class="card" style="padding: 2rem; text-align: center; color: var(--danger-500);">Lỗi tải chi tiết bài giải: ${escapeHtml(err.message)}</div>`;
+        }
+      }
+    })();
+  </script>
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>

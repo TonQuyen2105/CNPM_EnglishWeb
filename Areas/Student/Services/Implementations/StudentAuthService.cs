@@ -129,5 +129,103 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 responseDto,
                 $"Đăng nhập thành công! Xin chào học viên {user.FullName}.");
         }
+
+        public async Task<ServiceResult<StudentRegisterResponseDto>> RegisterAsync(StudentRegisterRequestDto request)
+        {
+            if (request == null)
+            {
+                return ServiceResult<StudentRegisterResponseDto>.BadRequest("Dữ liệu đăng ký không hợp lệ.");
+            }
+
+            var fullName = request.FullName?.Trim() ?? string.Empty;
+            var email = request.Email?.Trim() ?? string.Empty;
+            var password = request.Password ?? string.Empty;
+            var confirmPassword = request.ConfirmPassword ?? string.Empty;
+            var phoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
+
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                return ServiceResult<StudentRegisterResponseDto>.BadRequest("Vui lòng nhập họ và tên của bạn.");
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return ServiceResult<StudentRegisterResponseDto>.BadRequest("Vui lòng nhập địa chỉ email.");
+            }
+
+            if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
+            {
+                return ServiceResult<StudentRegisterResponseDto>.BadRequest("Định dạng email không hợp lệ.");
+            }
+
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+            {
+                return ServiceResult<StudentRegisterResponseDto>.BadRequest("Mật khẩu phải có độ dài tối thiểu từ 6 ký tự trở lên.");
+            }
+
+            if (!string.Equals(password, confirmPassword, StringComparison.Ordinal))
+            {
+                return ServiceResult<StudentRegisterResponseDto>.BadRequest("Mật khẩu xác nhận không trùng khớp.");
+            }
+
+            // 1. Kiểm tra email đã tồn tại trong hệ thống chưa (case-insensitive)
+            var normalizedEmail = email.ToLower();
+            var existingUser = await Db.Users.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+
+            if (existingUser != null)
+            {
+                return ServiceResult<StudentRegisterResponseDto>.Conflict("Địa chỉ email này đã được sử dụng để đăng ký tài khoản trong hệ thống. Vui lòng chọn email khác hoặc đăng nhập.");
+            }
+
+            // 2. Sinh ID an toàn cho User mới
+            var nextUserId = await GetNextIdAsync(Db.Users, u => u.Id);
+
+            // 3. Khởi tạo User mới với vai trò mặc định "student", is_active = TRUE
+            var newUser = new User
+            {
+                Id = nextUserId,
+                Email = email,
+                FullName = fullName,
+                PhoneNumber = phoneNumber,
+                Role = "student",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // Mã hóa mật khẩu bảo mật chuẩn ASP.NET Core Identity PasswordHasher
+            newUser.Password = PasswordHasher.HashPassword(newUser, password);
+
+            Db.Users.Add(newUser);
+            await Db.SaveChangesAsync();
+
+            // Đồng bộ vào StudentExtendedStore
+            var ext = StudentExtendedStore.GetOrCreateUserProfileExtension(newUser.Id);
+            ext.PhoneNumber = newUser.PhoneNumber ?? string.Empty;
+            ext.LearningGoal = "Học giao tiếp và luyện thi chứng chỉ";
+
+            var userDto = new StudentLoginUserDto
+            {
+                Id = newUser.Id,
+                Email = newUser.Email,
+                FullName = newUser.FullName,
+                Role = newUser.Role,
+                PhoneNumber = newUser.PhoneNumber,
+                AvatarUrl = newUser.AvatarUrl,
+                IsActive = newUser.IsActive
+            };
+
+            var responseDto = new StudentRegisterResponseDto
+            {
+                User = userDto,
+                Token = $"student_token_{newUser.Id}_{Guid.NewGuid():N}",
+                RedirectUrl = "Areas/Student/Views/dashboard.html"
+            };
+
+            return ServiceResult<StudentRegisterResponseDto>.Created(
+                responseDto,
+                $"Đăng ký tài khoản học viên thành công! Chào mừng {newUser.FullName} gia nhập hệ thống.");
+        }
     }
 }

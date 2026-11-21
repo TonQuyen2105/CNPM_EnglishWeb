@@ -245,72 +245,228 @@
   <!-- Page Content Container -->
   <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
     
-  <div class="page-header">
-    <div>
-      <h1 class="page-header-title">Thống kê tiến độ & Năng lực</h1>
-      <p class="page-header-subtitle">Theo dõi sự tiến bộ qua các kỹ năng Nghe, Nói, Đọc, Viết</p>
+    <!-- Page Header (Đồng bộ nút Về Trang chủ đặt bên trên tiêu đề) -->
+    <div class="page-header" style="margin-bottom: 1.5rem;">
+      <div>
+        <div style="margin-bottom: 0.75rem;">
+          <a href="dashboard.html" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-md);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span>Về Trang chủ</span>
+          </a>
+        </div>
+        <h1 class="page-header-title">Thống kê tiến độ & Năng lực</h1>
+        <p class="page-header-subtitle">Theo dõi chỉ số học tập tích lũy, tiến độ các lớp học và kết quả bài thi đã hoàn thành</p>
+      </div>
     </div>
-  </div>
 
-  <div class="grid grid-cols-2 gap-6">
-    <div class="card" style="padding: 1.5rem;">
-      <h3 class="card-title" style="margin-bottom: 1rem;">Mức độ thành thạo 4 kỹ năng</h3>
-      <div style="display: flex; flex-direction: column; gap: 14px;">
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 4px;">
-            <span>Listening (Nghe hiểu)</span>
-            <strong>8.5 / 10</strong>
-          </div>
-          <div class="progress"><div class="progress-bar" style="width: 85%;"></div></div>
+    <!-- Hàng 1: 4 Chỉ số học tập tích lũy (Cập nhật chuẩn theo yêu cầu) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+      
+      <!-- Chỉ số 1: Tổng số khóa học đã tham gia -->
+      <div class="card" style="padding: 1.25rem 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+          📚
         </div>
         <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 4px;">
-            <span>Reading (Đọc hiểu)</span>
-            <strong>9.0 / 10</strong>
-          </div>
-          <div class="progress"><div class="progress-bar" style="width: 90%;"></div></div>
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2px;">Khóa học đã tham gia</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: #0F172A;" id="stat-courses-enrolled">2</div>
+        </div>
+      </div>
+
+      <!-- Chỉ số 2: Số khóa học đã hoàn thành -->
+      <div class="card" style="padding: 1.25rem 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+          🏆
         </div>
         <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 4px;">
-            <span>Speaking (Phát âm & Nói)</span>
-            <strong>8.0 / 10</strong>
-          </div>
-          <div class="progress"><div class="progress-bar" style="width: 80%;"></div></div>
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2px;">Khóa học đã hoàn thành</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: #059669;" id="stat-courses-completed">1</div>
+        </div>
+      </div>
+
+      <!-- Chỉ số 3: Số bài thi đã hoàn thành -->
+      <div class="card" style="padding: 1.25rem 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+          📝
         </div>
         <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 4px;">
-            <span>Writing (Ngữ pháp & Viết)</span>
-            <strong>7.8 / 10</strong>
-          </div>
-          <div class="progress"><div class="progress-bar" style="width: 78%;"></div></div>
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2px;">Bài thi đã hoàn thành</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: #D97706;" id="stat-completed-exams">1</div>
+        </div>
+      </div>
+
+      <!-- Chỉ số 4: Điểm trung bình từ các bài thi -->
+      <div class="card" style="padding: 1.25rem 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: #F3E8FF; color: #7C3AED; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+          ⭐
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2px;">Điểm trung bình bài thi</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: #7C3AED;" id="stat-avg-exam-score">3.0 / 10</div>
         </div>
       </div>
     </div>
 
-    <div class="card" style="padding: 1.5rem;">
-      <h3 class="card-title" style="margin-bottom: 1rem;">Chỉ số học tập tích lũy</h3>
-      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.875rem;">
-        <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
-          <span class="text-muted">Tổng số giờ học:</span>
-          <strong>48 giờ</strong>
+    <!-- Hàng 2: Tiến độ chi tiết theo từng lớp học -->
+    <div class="card" style="padding: 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+        <div>
+          <h3 class="card-title" style="margin: 0 0 4px 0; font-size: 1.125rem; font-weight: 700; color: #0F172A;">Tiến độ các lớp học đang tham gia</h3>
+          <p style="margin: 0; font-size: 0.8125rem; color: var(--text-muted);">Lộ trình và số lượng bài học đã hoàn thành theo từng lớp</p>
         </div>
-        <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
-          <span class="text-muted">Bài tập đã nộp:</span>
-          <strong>16 bài tập</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
-          <span class="text-muted">Chuỗi ngày học liên tục:</span>
-          <strong style="color: #D97706;">🔥 5 ngày</strong>
+        <a href="my-classes.html" class="btn btn-sm btn-secondary" style="text-decoration: none; font-size: 0.8125rem;">Xem tất cả lớp →</a>
+      </div>
+
+      <div id="enrolled-classes-container" style="display: flex; flex-direction: column; gap: 14px;">
+        <!-- Loading State Placeholder -->
+        <div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+          Đang tải dữ liệu tiến độ từ hệ thống...
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Hàng 3: Danh sách các bài thi đã hoàn thành (Mục thêm mới theo yêu cầu) -->
+    <div class="card" style="padding: 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+        <div>
+          <h3 class="card-title" style="margin: 0 0 4px 0; font-size: 1.125rem; font-weight: 700; color: #0F172A;">Danh sách các bài thi đã hoàn thành</h3>
+          <p style="margin: 0; font-size: 0.8125rem; color: var(--text-muted);">Kết quả bài làm, điểm số và bài giải chi tiết</p>
+        </div>
+        <a href="results.html" class="btn btn-sm btn-secondary" style="text-decoration: none; font-size: 0.8125rem;">Lịch sử thi chi tiết →</a>
+      </div>
+
+      <div id="completed-exams-container" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Loading State Placeholder -->
+        <div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+          Đang tải danh sách bài thi đã hoàn thành...
+        </div>
+      </div>
+    </div>
 
   </main>
 
   <footer style="margin-top: auto; border-top: 1px solid var(--border-color); background: white; padding: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
     © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
   </footer>
+
+  <!-- Script nạp dữ liệu trực tiếp từ Backend API -->
+  <script>
+    (async function initProgressPage() {
+      try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const headers = { 'Accept': 'application/json' };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+
+        // Gọi Backend API lấy dữ liệu tiến độ học tập toàn diện
+        const res = await fetch('/api/v1/student/progress', { headers });
+        if (!res.ok) {
+          throw new Error('Không thể tải tiến độ học tập: ' + res.status);
+        }
+        const json = await res.json();
+        if (!json.success || !json.data) return;
+
+        const data = json.data;
+        const stats = data.accumulated_stats || {};
+        const classes = data.enrolled_classes_progress || [];
+        const exams = data.completed_exams || [];
+
+        // 1. Cập nhật 4 chỉ số tích lũy cốt lõi
+        const elEnrolled = document.getElementById('stat-courses-enrolled');
+        const elCompleted = document.getElementById('stat-courses-completed');
+        const elExams = document.getElementById('stat-completed-exams');
+        const elAvgScore = document.getElementById('stat-avg-exam-score');
+
+        if (elEnrolled) elEnrolled.textContent = stats.total_courses_enrolled ?? 0;
+        if (elCompleted) elCompleted.textContent = stats.total_courses_completed ?? 0;
+        if (elExams) elExams.textContent = stats.total_completed_exams ?? 0;
+        if (elAvgScore) {
+          const score = stats.average_exam_score || 0;
+          elAvgScore.textContent = score > 0 ? (score.toFixed(1) + ' / 10') : '0.0 / 10';
+        }
+
+        // 2. Render danh sách tiến độ các lớp học đang tham gia
+        const classContainer = document.getElementById('enrolled-classes-container');
+        if (classContainer) {
+          if (classes.length === 0) {
+            classContainer.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Bạn chưa đăng ký lớp học nào.</div>';
+          } else {
+            classContainer.innerHTML = classes.map(c => `
+              <div style="padding: 1rem 1.25rem; background: var(--neutral-50); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                  <div>
+                    <span class="badge badge-primary" style="font-family: monospace; font-size: 0.75rem; margin-right: 6px;">${c.class_code || 'LỚP'}</span>
+                    <strong style="font-size: 0.9375rem; color: #0F172A;">${c.class_name}</strong>
+                    <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px;">
+                      <span>Khóa học: ${c.course_title}</span> • <span>Giảng viên: ${c.teacher_name || 'Đang phân công'}</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="badge ${c.progress_percentage >= 100 ? 'badge-success' : 'badge-neutral'}" style="font-weight: 600; font-size: 0.75rem;">
+                      ${c.progress_percentage >= 100 ? 'Đã hoàn thành' : 'Đang học'}
+                    </span>
+                    <a href="learn.html?classId=${c.class_id}" class="btn btn-sm btn-primary" style="padding: 4px 12px; font-size: 0.75rem; text-decoration: none;">Vào học</a>
+                  </div>
+                </div>
+                <div style="margin-top: 4px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: 4px;">
+                    <span>Tiến độ bài học:</span>
+                    <strong>${c.completed_lessons} / ${c.total_lessons} bài (${c.progress_percentage}%)</strong>
+                  </div>
+                  <div class="progress" style="height: 6px; background-color: #E2E8F0; border-radius: 9999px; overflow: hidden;">
+                    <div class="progress-bar" style="width: ${c.progress_percentage}%; height: 100%; background: #3B82F6; border-radius: 9999px;"></div>
+                  </div>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+
+        // 3. Render danh sách các bài thi đã hoàn thành (Mục thêm mới)
+        const examContainer = document.getElementById('completed-exams-container');
+        if (examContainer) {
+          if (exams.length === 0) {
+            examContainer.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Chưa có bài thi nào được hoàn thành. Hãy vào mục <a href="exams.html" style="color: var(--primary-600); font-weight: 600;">Luyện thi</a> để làm bài nhé!</div>';
+          } else {
+            examContainer.innerHTML = exams.map(e => {
+              let dateStr = 'Vừa xong';
+              if (e.submitted_at) {
+                const d = new Date(e.submitted_at);
+                dateStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} - ${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+              }
+              const isPass = e.is_passed || e.status === 'passed';
+              return `
+                <div style="padding: 1rem 1.25rem; background: var(--neutral-50); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: ${isPass ? '#ECFDF5' : '#FEF2F2'}; color: ${isPass ? '#059669' : '#DC2626'}; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                      ${isPass ? '✓' : '📝'}
+                    </div>
+                    <div>
+                      <strong style="font-size: 0.9375rem; color: #0F172A;">${e.exam_title}</strong>
+                      <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px;">
+                        <span>Lần thi: #${e.attempt_number || 1}</span> • <span>Nộp bài: ${dateStr}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="text-align: right;">
+                      <div style="font-size: 1rem; font-weight: 800; color: ${isPass ? '#059669' : '#DC2626'};">${e.total_score} / ${e.pass_score} điểm</div>
+                      <span class="badge ${isPass ? 'badge-success' : 'badge-danger'}" style="font-size: 0.75rem; padding: 2px 8px;">
+                        ${isPass ? 'Đạt' : 'Chưa đạt'}
+                      </span>
+                    </div>
+                    <a href="result-detail.html?userExamId=${e.user_exam_id}" class="btn btn-sm btn-secondary" style="font-size: 0.8125rem; text-decoration: none; padding: 6px 14px; white-space: nowrap; font-weight: 600;">Xem bài giải</a>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+      } catch (err) {
+        console.warn('Lỗi khi tải dữ liệu tiến độ học tập:', err);
+      }
+    })();
+  </script>
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>
