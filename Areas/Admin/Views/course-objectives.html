@@ -188,7 +188,7 @@
     <div class="app-main">
       <header class="app-topbar">
         <div class="topbar-left">
-          <button type="button" class="hamburger-btn" id="hamburger-btn" aria-label="Mở menu">
+          <button type="button" class="menu-toggle-btn" id="btn-sidebar-toggle" aria-label="Mở menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="3" y1="12" x2="21" y2="12"></line>
               <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -204,9 +204,9 @@
 
         <div class="topbar-actions">
           <div class="dropdown">
-            <button type="button" class="user-profile-trigger" data-dropdown-toggle aria-haspopup="true">
+            <button type="button" class="user-profile-trigger" id="avatar-dropdown-btn" aria-haspopup="true">
               <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white; font-weight: 700;">AD</div>
-              <div style="text-align: left; hidden-mobile: true;">
+              <div style="text-align: left;">
                 <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); line-height: 1.2;">Quản trị viên</div>
                 <div style="font-size: 0.7rem; color: var(--text-muted);">admin@english.edu.vn</div>
               </div>
@@ -214,7 +214,7 @@
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
-            <div class="dropdown-menu">
+            <div class="dropdown-menu" id="avatar-dropdown-menu">
               <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-color);">
                 <div style="font-weight: 700; font-size: 0.875rem;">Quản trị viên</div>
                 <span class="badge badge-primary" style="margin-top: 4px;">Super Admin</span>
@@ -592,7 +592,7 @@
       function parseStructuredDescription(rawDesc) {
         const text = (rawDesc || '').trim();
         if (!text) {
-          return { structured: false, ...DEFAULT_TEMPLATE, raw: '' };
+          return { structured: false, knowledge: '', audience: '', skills: '', attitude: '', raw: '' };
         }
 
         const hasStructuredMarkers =
@@ -601,10 +601,10 @@
         if (!hasStructuredMarkers) {
           return {
             structured: false,
-            knowledge: DEFAULT_TEMPLATE.knowledge,
-            audience: DEFAULT_TEMPLATE.audience,
-            skills: DEFAULT_TEMPLATE.skills,
-            attitude: DEFAULT_TEMPLATE.attitude,
+            knowledge: '',
+            audience: '',
+            skills: '',
+            attitude: '',
             raw: text
           };
         }
@@ -675,10 +675,17 @@
           : '<span class="badge badge-neutral">Bản nháp</span>';
 
         const parsed = parseStructuredDescription(courseData.description);
-        document.getElementById('co-general-desc-list').innerHTML =
-          `<li>${escapeHtml(parsed.knowledge)}</li><li>${escapeHtml(parsed.audience)}</li>`;
-        document.getElementById('co-outcome-skills').textContent = parsed.skills;
-        document.getElementById('co-outcome-attitude').textContent = parsed.attitude;
+        if (parsed.structured) {
+          document.getElementById('co-general-desc-list').innerHTML =
+            `<li>${escapeHtml(parsed.knowledge)}</li><li>${escapeHtml(parsed.audience)}</li>`;
+          document.getElementById('co-outcome-skills').textContent = parsed.skills;
+          document.getElementById('co-outcome-attitude').textContent = parsed.attitude;
+        } else {
+          document.getElementById('co-general-desc-list').innerHTML =
+            '<li style="color: var(--text-muted); font-style: italic;">Chưa tách theo mẫu chuẩn (xem mô tả nguyên bản bên dưới).</li>';
+          document.getElementById('co-outcome-skills').textContent = 'Chưa thiết lập mục tiêu kỹ năng theo mẫu chuẩn.';
+          document.getElementById('co-outcome-attitude').textContent = 'Chưa thiết lập mục tiêu thái độ theo mẫu chuẩn.';
+        }
 
         const rawWrap = document.getElementById('co-raw-note-wrap');
         const rawEl = document.getElementById('co-raw-note');
@@ -731,14 +738,28 @@
         `).join('');
       }
 
+      let loadCourseController = null;
+
       async function loadCourseById(id) {
-        if (!id) return;
-        currentCourseId = Number(id);
+        const targetId = Number(id);
+        if (!targetId) return;
+        if (loadCourseController) loadCourseController.abort();
+        const controller = new AbortController();
+        loadCourseController = controller;
         try {
-          const data = await fetchJson(`/Admin/api/Courses/Detail/${currentCourseId}`);
+          const data = await fetchJson(`/Admin/api/Courses/Detail/${targetId}`, { signal: controller.signal });
+          currentCourseId = targetId;
           renderCourseDetail(data);
+          const sel = document.getElementById('co-course-select');
+          const opt = sel && Array.from(sel.options).find(o => Number(o.value) === targetId);
+          if (opt && data.course) {
+            opt.textContent = `${data.course.title} (${data.course.subjectName})`;
+          }
         } catch (err) {
+          if (err && err.name === 'AbortError') return;
           showToast(err.message, 'error');
+        } finally {
+          if (loadCourseController === controller) loadCourseController = null;
         }
       }
 
@@ -834,12 +855,25 @@
           btn.disabled = true;
           btn.textContent = 'Đang lưu...';
           try {
-            const description = buildStructuredDescription({
-              knowledge: document.getElementById('eo-desc-knowledge').value || DEFAULT_TEMPLATE.knowledge,
-              audience: document.getElementById('eo-desc-audience').value || DEFAULT_TEMPLATE.audience,
-              skills: document.getElementById('eo-out-skills').value || DEFAULT_TEMPLATE.skills,
-              attitude: document.getElementById('eo-out-attitude').value || DEFAULT_TEMPLATE.attitude
-            });
+            const kVal = document.getElementById('eo-desc-knowledge').value.trim();
+            const aVal = document.getElementById('eo-desc-audience').value.trim();
+            const sVal = document.getElementById('eo-out-skills').value.trim();
+            const tVal = document.getElementById('eo-out-attitude').value.trim();
+            const hasAnyStructuredInput = Boolean(kVal || aVal || sVal || tVal);
+            const prevParsed = parseStructuredDescription(courseData?.description);
+
+            let description;
+            if (!prevParsed.structured && !hasAnyStructuredInput) {
+              // Giữ nguyên mô tả dạng tự do hiện có nếu admin chỉ cập nhật thông số hoặc chưa nhập mẫu chuẩn.
+              description = courseData?.description || '';
+            } else {
+              description = buildStructuredDescription({
+                knowledge: kVal || DEFAULT_TEMPLATE.knowledge,
+                audience: aVal || DEFAULT_TEMPLATE.audience,
+                skills: sVal || DEFAULT_TEMPLATE.skills,
+                attitude: tVal || DEFAULT_TEMPLATE.attitude
+              });
+            }
 
             const payload = {
               subjectId: Number(document.getElementById('eo-subject-id').value),
@@ -895,8 +929,9 @@
           const errBox = document.getElementById('lesson-form-error');
           errBox.style.display = 'none';
           const lid = document.getElementById('lesson-id').value;
+          const rawOrder = document.getElementById('lesson-order').value.trim();
           const payload = {
-            orderIndex: Number(document.getElementById('lesson-order').value) || 1,
+            orderIndex: rawOrder ? Number(rawOrder) : null,
             contentType: document.getElementById('lesson-type').value,
             title: document.getElementById('lesson-title').value.trim(),
             content: document.getElementById('lesson-content').value.trim()

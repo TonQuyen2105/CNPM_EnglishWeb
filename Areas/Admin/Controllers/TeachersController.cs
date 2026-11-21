@@ -14,6 +14,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         private const int MaxEmailLength = 150;
         private const int MaxQualificationLength = 200;
         private const int MaxBioLength = 2000;
+        private const long TeacherLockOffset = 300_000_000L;
 
         private readonly ApplicationDbContext _context;
         private readonly ILogger<TeachersController> _logger;
@@ -35,11 +36,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         {
             try
             {
-                var verifyStats = await _context.Teachers
-                    .AsNoTracking()
-                    .GroupBy(t => t.IsVerified)
-                    .Select(g => new { IsVerified = g.Key, Count = g.Count() })
-                    .ToListAsync(cancellationToken);
+                var verifyStats = await (
+                    from t in _context.Teachers.AsNoTracking()
+                    join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                    where u.Role == "teacher"
+                    group t by t.IsVerified into g
+                    select new { IsVerified = g.Key, Count = g.Count() }
+                ).ToListAsync(cancellationToken);
 
                 var totalCount = verifyStats.Sum(x => x.Count);
                 var verifiedCount = verifyStats.Where(x => x.IsVerified).Sum(x => x.Count);
@@ -48,6 +51,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var query =
                     from t in _context.Teachers.AsNoTracking()
                     join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                    where u.Role == "teacher"
                     select new
                     {
                         id = t.Id,
@@ -142,7 +146,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
                     join cr in _context.Classrooms.AsNoTracking() on cs.ClassroomId equals cr.Id
                     join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
-                    where teacherIds.Contains(ct.TeacherId) && cc.Status != "cancelled"
+                    where teacherIds.Contains(ct.TeacherId) && (cc.Status == "upcoming" || cc.Status == "ongoing")
                     orderby cs.DayOfWeek, ts.StartTime
                     select new
                     {
@@ -385,6 +389,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                await AcquireTeacherLockAsync(id, cancellationToken);
+
                 var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
                 if (teacher == null)
                 {
@@ -393,13 +399,22 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == teacher.UserId, cancellationToken);
+                if (user == null || !string.Equals(user.Role, "teacher", StringComparison.OrdinalIgnoreCase))
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Tài khoản liên kết không còn vai trò giảng viên.");
+                }
+
+                if (dto.IsVerified == true && !user.IsActive)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Không thể xác minh hồ sơ vì tài khoản giảng viên đang bị khóa.");
+                }
+
                 var now = DateTime.UtcNow;
 
-                if (user != null)
-                {
-                    user.FullName = fullName;
-                    user.UpdatedAt = now;
-                }
+                user.FullName = fullName;
+                user.UpdatedAt = now;
 
                 teacher.Qualification = qualification;
                 teacher.Bio = bio;
@@ -432,70 +447,72 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         }
 
         [HttpPost("/Admin/api/Teachers/Verify/{id}")]
-        public async Task<IActionResult> Verify(int id, CancellationToken cancellationToken)
-        {
-            if (id <= 0)
-            {
-                return this.ApiBadRequest("Mã giảng viên không hợp lệ.");
-            }
-
-            try
-            {
-                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-                if (teacher == null)
-                {
-                    return this.ApiNotFound("Không tìm thấy hồ sơ giảng viên.");
-                }
-
-                teacher.IsVerified = true;
-                teacher.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync(cancellationToken);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Đã duyệt hồ sơ giảng viên thành công.",
-                    id = teacher.Id,
-                    isVerified = true
-                });
-            }
-            catch (OperationCanceledException)
-            {
-                return this.ApiCancelled();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Không thể duyệt hồ sơ giảng viên {TeacherId}.", id);
-                return this.ApiServerError("Không thể duyệt hồ sơ giảng viên.");
-            }
-        }
+        public Task<IActionResult> Verify(int id, CancellationToken cancellationToken)
+            => SetVerificationAsync(id, targetIsVerified: true, cancellationToken);
 
         [HttpPost("/Admin/api/Teachers/ToggleVerify/{id}")]
-        public async Task<IActionResult> ToggleVerify(int id, CancellationToken cancellationToken)
+        public Task<IActionResult> ToggleVerify(int id, CancellationToken cancellationToken)
+            => SetVerificationAsync(id, targetIsVerified: null, cancellationToken);
+
+        /// <summary>
+        /// Cập nhật hoặc đảo trạng thái xác minh giảng viên dưới khóa tư vấn 300M + id để đồng bộ với ClassesController.
+        /// </summary>
+        private async Task<IActionResult> SetVerificationAsync(int id, bool? targetIsVerified, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
                 return this.ApiBadRequest("Mã giảng viên không hợp lệ.");
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                await AcquireTeacherLockAsync(id, cancellationToken);
+
                 var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
                 if (teacher == null)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy hồ sơ giảng viên.");
                 }
 
-                teacher.IsVerified = !teacher.IsVerified;
+                var nextVerified = targetIsVerified ?? !teacher.IsVerified;
+                if (nextVerified)
+                {
+                    var user = await _context.Users
+                        .AsNoTracking()
+                        .Where(u => u.Id == teacher.UserId)
+                        .Select(u => new { u.Role, u.IsActive })
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    if (user == null || !string.Equals(user.Role, "teacher", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Không thể xác minh hồ sơ vì tài khoản liên kết không còn vai trò giảng viên.");
+                    }
+
+                    if (!user.IsActive)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Không thể xác minh hồ sơ vì tài khoản giảng viên đang bị khóa.");
+                    }
+                }
+
+                teacher.IsVerified = nextVerified;
                 teacher.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                var message = targetIsVerified == true
+                    ? "Đã duyệt hồ sơ giảng viên thành công."
+                    : teacher.IsVerified
+                        ? "Đã xác minh hồ sơ giảng viên thành công."
+                        : "Đã thu hồi xác minh hồ sơ giảng viên.";
 
                 return Ok(new
                 {
                     success = true,
-                    message = teacher.IsVerified
-                        ? "Đã xác minh hồ sơ giảng viên thành công."
-                        : "Đã thu hồi xác minh hồ sơ giảng viên.",
+                    message,
                     id = teacher.Id,
                     isVerified = teacher.IsVerified
                 });
@@ -506,9 +523,20 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể thay đổi trạng thái xác minh giảng viên {TeacherId}.", id);
-                return this.ApiServerError("Không thể thay đổi trạng thái xác minh giảng viên.");
+                _logger.LogError(ex, "Không thể cập nhật trạng thái xác minh giảng viên {TeacherId}.", id);
+                await transaction.RollbackAsync(CancellationToken.None);
+                return this.ApiServerError(targetIsVerified == true
+                    ? "Không thể duyệt hồ sơ giảng viên."
+                    : "Không thể thay đổi trạng thái xác minh giảng viên.");
             }
+        }
+
+        private Task AcquireTeacherLockAsync(int teacherId, CancellationToken cancellationToken)
+        {
+            long teacherLockKey = TeacherLockOffset + teacherId;
+            return _context.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT pg_advisory_xact_lock({teacherLockKey})",
+                cancellationToken);
         }
 
         private static string FormatDayFull(int day) => day switch

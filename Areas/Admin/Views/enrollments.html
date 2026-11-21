@@ -306,13 +306,34 @@
               <option value="">-- Đang tải danh sách lớp mở --</option>
             </select>
           </div>
-          <div class="form-group" style="margin-bottom: 0.5rem;">
+          <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái ghi danh</label>
             <select id="enr-status" class="form-control">
               <option value="active">Đang học (Active)</option>
               <option value="completed">Đã hoàn thành (Completed)</option>
               <option value="cancelled">Đã hủy (Cancelled)</option>
             </select>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thanh toán học phí</label>
+              <select id="enr-payment-method" class="form-control">
+                <option value="">Chưa tạo giao dịch</option>
+                <option value="bank_transfer">Chuyển khoản (bank_transfer)</option>
+                <option value="vnpay">VNPAY (vnpay)</option>
+                <option value="momo">MoMo (momo)</option>
+                <option value="cash">Tiền mặt (cash)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái giao dịch</label>
+              <select id="enr-payment-status" class="form-control" disabled>
+                <option value="completed">Đã thanh toán (completed)</option>
+                <option value="pending">Chờ thanh toán (pending)</option>
+                <option value="failed">Thất bại (failed)</option>
+                <option value="refunded">Đã hoàn tiền (refunded)</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -525,6 +546,29 @@
         }
       }
 
+      function renderPaymentBadge(paymentStatus, paymentMethod) {
+        const methodMap = {
+          bank_transfer: 'CK',
+          vnpay: 'VNPAY',
+          momo: 'MoMo',
+          cash: 'Tiền mặt'
+        };
+        const mLabel = methodMap[(paymentMethod || '').toLowerCase()] || '';
+        const suffix = mLabel ? ` • ${mLabel}` : '';
+        switch ((paymentStatus || '').toLowerCase()) {
+          case 'completed':
+            return `<div style="margin-top: 3px;"><span class="badge badge-success" style="font-size: 0.7rem;">Đã thu${escapeHtml(suffix)}</span></div>`;
+          case 'pending':
+            return `<div style="margin-top: 3px;"><span class="badge badge-warning" style="font-size: 0.7rem;">Chờ TT${escapeHtml(suffix)}</span></div>`;
+          case 'failed':
+            return `<div style="margin-top: 3px;"><span class="badge badge-danger" style="font-size: 0.7rem;">TT thất bại${escapeHtml(suffix)}</span></div>`;
+          case 'refunded':
+            return `<div style="margin-top: 3px;"><span class="badge badge-neutral" style="font-size: 0.7rem;">Đã hoàn tiền${escapeHtml(suffix)}</span></div>`;
+          default:
+            return '';
+        }
+      }
+
       function showError(msg) {
         const box = document.getElementById('enrollment-form-error');
         if (!box) return;
@@ -673,7 +717,9 @@
               <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(e.className)}</div>
             </td>
             <td>${escapeHtml(e.courseTitle)}</td>
-            <td style="white-space: nowrap;"><strong>${formatCurrency(e.price)}</strong></td>
+            <td style="white-space: nowrap;">${(e.status === 'cancelled' || e.classStatus === 'cancelled')
+              ? `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(e.price)}</span> <small class="text-muted">(0 ₫)</small>`
+              : `<strong>${formatCurrency(e.paidAmount !== null && e.paidAmount !== undefined && e.paymentStatus === 'completed' ? e.paidAmount : e.price)}</strong>`}${renderPaymentBadge(e.paymentStatus, e.paymentMethod)}</td>
             <td style="white-space: nowrap;">${formatDate(e.enrolledAt)}</td>
             <td style="white-space: nowrap;">${renderStatusBadge(e.status)}</td>
             <td class="text-right" style="white-space: nowrap;">
@@ -735,10 +781,13 @@
         e.stopPropagation();
         showError('');
 
+        const paymentMethod = document.getElementById('enr-payment-method').value;
         const payload = {
           userId: parseInt(document.getElementById('enr-user-id').value, 10) || 0,
           classId: parseInt(document.getElementById('enr-class-id').value, 10) || 0,
-          status: document.getElementById('enr-status').value
+          status: document.getElementById('enr-status').value,
+          paymentMethod: paymentMethod || null,
+          paymentStatus: paymentMethod ? document.getElementById('enr-payment-status').value : null
         };
 
         if (payload.userId <= 0 || payload.classId <= 0) {
@@ -863,11 +912,18 @@
           updateStatus(Number(sel.getAttribute('data-id')), sel.value, sel);
         });
 
+        document.getElementById('enr-payment-method').addEventListener('change', (e) => {
+          document.getElementById('enr-payment-status').disabled = !e.target.value;
+        });
+
         document.getElementById('btn-open-create-enrollment').addEventListener('click', () => {
           const form = document.getElementById('create-enrollment-form');
           if (form) form.reset();
           const statusSel = document.getElementById('enr-status');
           if (statusSel) statusSel.value = 'active';
+          document.getElementById('enr-payment-method').value = '';
+          document.getElementById('enr-payment-status').value = 'completed';
+          document.getElementById('enr-payment-status').disabled = true;
           showError('');
           focusFirstField('modal-create-enrollment', 'enr-user-id');
         });

@@ -137,7 +137,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     ? await (
                         from t in _context.Teachers.AsNoTracking()
                         join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
-                        where t.IsVerified
+                        where t.IsVerified && u.Role == "teacher" && u.IsActive
                         orderby u.FullName
                         select new
                         {
@@ -336,12 +336,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (teacherId.HasValue)
                 {
-                    var teacherValid = await _context.Teachers.AsNoTracking()
-                        .AnyAsync(t => t.Id == teacherId.Value && t.IsVerified, cancellationToken);
+                    var teacherValid = await (
+                        from t in _context.Teachers.AsNoTracking()
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where t.Id == teacherId.Value && t.IsVerified && u.Role == "teacher" && u.IsActive
+                        select t.Id
+                    ).AnyAsync(cancellationToken);
                     if (!teacherValid)
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiBadRequest("Giảng viên được chọn không tồn tại hoặc chưa được xác minh.");
+                        return this.ApiBadRequest("Giảng viên được chọn không tồn tại, chưa được xác minh hoặc tài khoản đã bị khóa/đổi vai trò.");
                     }
                 }
 
@@ -565,13 +569,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         from t in _context.Teachers.AsNoTracking()
                         join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
                         where t.Id == requestedMainTeacherId.Value
-                        select new { t.Id, t.IsVerified, u.FullName }
+                        select new { t.Id, t.IsVerified, u.Role, u.IsActive, u.FullName }
                     ).FirstOrDefaultAsync(cancellationToken);
 
-                    if (teacherInfo == null || (mainTeacherChanged && !teacherInfo.IsVerified))
+                    if (teacherInfo == null || (mainTeacherChanged && (!teacherInfo.IsVerified || teacherInfo.Role != "teacher" || !teacherInfo.IsActive)))
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiBadRequest("Giảng viên chính được chọn không tồn tại hoặc chưa được xác minh.");
+                        return this.ApiBadRequest("Giảng viên chính được chọn không tồn tại, chưa được xác minh hoặc tài khoản đã bị khóa/đổi vai trò.");
                     }
                 }
 
@@ -632,6 +636,21 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     await AcquireSharedAdvisoryLockAsync(TimeSlotLockKey, cancellationToken);
                 }
 
+                if (mainTeacherChanged && requestedMainTeacherId.HasValue)
+                {
+                    var mainTeacherStillValid = await (
+                        from t in _context.Teachers.AsNoTracking()
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where t.Id == requestedMainTeacherId.Value && t.IsVerified && u.Role == "teacher" && u.IsActive
+                        select t.Id
+                    ).AnyAsync(cancellationToken);
+                    if (!mainTeacherStillValid)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Giảng viên chính được chọn không còn hợp lệ (chưa xác minh hoặc tài khoản bị khóa/đổi vai trò).");
+                    }
+                }
+
                 if (needRoomActiveAndCapacityCheck && classSchedules.Count > 0)
                 {
                     var roomConstraintErr = await CheckRoomsActiveAndCapacityAsync(dto.MaxStudents, classSchedules, cancellationToken);
@@ -644,6 +663,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (needRoomConflictCheck && classSchedules.Count > 0)
                 {
+                    var timeSlotErr = await CheckTimeSlotsActiveAsync(classSchedules, cancellationToken);
+                    if (timeSlotErr != null)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest(timeSlotErr);
+                    }
+
                     var roomConflict = await CheckRoomScheduleConflictsAsync(id, newStartDate, newEndDate, classSchedules, cancellationToken);
                     if (roomConflict != null)
                     {
@@ -837,6 +863,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             return this.ApiBadRequest(roomConstraintErr);
                         }
 
+                        var timeSlotErr = await CheckTimeSlotsActiveAsync(classSchedules, cancellationToken);
+                        if (timeSlotErr != null)
+                        {
+                            await transaction.RollbackAsync(CancellationToken.None);
+                            return this.ApiBadRequest(timeSlotErr);
+                        }
+
                         var roomConflict = await CheckRoomScheduleConflictsAsync(
                             id,
                             courseClass.StartDate,
@@ -870,6 +903,17 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 courseClass.Status = newStatus;
                 courseClass.UpdatedAt = DateTime.UtcNow;
+                if (newStatus == "cancelled")
+                {
+                    var pendingClassPayments = await _context.Payments
+                        .Where(p => p.ClassId == id && p.Status == "pending")
+                        .ToListAsync(cancellationToken);
+                    foreach (var pendingPay in pendingClassPayments)
+                    {
+                        pendingPay.Status = "failed";
+                        pendingPay.UpdatedAt = courseClass.UpdatedAt;
+                    }
+                }
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
@@ -929,12 +973,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     from t in _context.Teachers.AsNoTracking()
                     join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
                     where t.Id == dto.TeacherId
-                    select new { t.Id, t.IsVerified, u.FullName }
+                    select new { t.Id, t.IsVerified, u.Role, u.IsActive, u.FullName }
                 ).FirstOrDefaultAsync(cancellationToken);
-                if (teacher == null || !teacher.IsVerified)
+                if (teacher == null || !teacher.IsVerified || teacher.Role != "teacher" || !teacher.IsActive)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Giảng viên không tồn tại hoặc chưa được xác minh.");
+                    return this.ApiBadRequest("Giảng viên không tồn tại, chưa được xác minh hoặc tài khoản đã bị khóa/đổi vai trò.");
                 }
 
                 var existingAssignments = await _context.ClassTeachers
@@ -1325,7 +1369,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     ? await (
                         from t in _context.Teachers.AsNoTracking()
                         join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
-                        where t.IsVerified
+                        where t.IsVerified && u.Role == "teacher" && u.IsActive
                         orderby u.FullName
                         select new
                         {
@@ -1530,6 +1574,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (newStatus == "active" && enrollment.Status != "active")
                 {
+                    var studentValid = await _context.Users
+                        .AsNoTracking()
+                        .AnyAsync(u => u.Id == enrollment.UserId && u.Role == "student" && u.IsActive, cancellationToken);
+                    if (!studentValid)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Không thể kích hoạt lại ghi danh vì tài khoản học viên đã bị khóa hoặc đã đổi vai trò.");
+                    }
+
                     if (!IsActiveClassStatus(courseClass.Status))
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
@@ -1569,6 +1622,18 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 enrollment.Status = newStatus;
+                if (newStatus == "cancelled")
+                {
+                    var pendingPayments = await _context.Payments
+                        .Where(p => p.EnrollmentId == enrollment.Id && p.Status == "pending")
+                        .ToListAsync(cancellationToken);
+                    var payNow = DateTime.UtcNow;
+                    foreach (var pendingPay in pendingPayments)
+                    {
+                        pendingPay.Status = "failed";
+                        pendingPay.UpdatedAt = payNow;
+                    }
+                }
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
@@ -1612,10 +1677,32 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     cs.ClassroomId,
                     r.Name,
                     cs.DayOfWeek,
+                    cs.TimeSlotId,
                     ts.Name,
                     ts.StartTime,
                     ts.EndTime)
             ).ToListAsync(cancellationToken);
+        }
+
+        private async Task<string?> CheckTimeSlotsActiveAsync(
+            List<ClassScheduleWindow> classSchedules,
+            CancellationToken cancellationToken)
+        {
+            if (classSchedules.Count == 0)
+            {
+                return null;
+            }
+
+            var slotIds = classSchedules.Select(s => s.TimeSlotId).Distinct().ToList();
+            var inactiveSlot = await _context.TimeSlots
+                .AsNoTracking()
+                .Where(ts => slotIds.Contains(ts.Id) && !ts.IsActive)
+                .Select(ts => new { ts.Name })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return inactiveSlot != null
+                ? $"Không thể kích hoạt/cập nhật lớp vì ca học {inactiveSlot.Name} (đang được xếp lịch cho lớp) đang tạm ngưng sử dụng."
+                : null;
         }
 
         private async Task<string?> CheckRoomsActiveAndCapacityAsync(
@@ -1855,6 +1942,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             int ClassroomId,
             string ClassroomName,
             int DayOfWeek,
+            int TimeSlotId,
             string TimeSlotName,
             TimeSpan StartTime,
             TimeSpan EndTime);

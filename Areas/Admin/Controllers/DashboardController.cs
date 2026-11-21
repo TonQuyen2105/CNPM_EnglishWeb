@@ -62,14 +62,30 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var activeEnrollments = validEnrollmentStats
                     .Where(x => x.Status == "active")
                     .Sum(x => x.Count);
-                var revenueEnrollmentCount = validEnrollmentStats.Sum(x => x.Count);
-                var estimatedRevenue = validEnrollmentStats.Sum(x => x.Revenue);
+                var hasPayments = await _context.Payments.AsNoTracking().AnyAsync(cancellationToken);
+                int revenueEnrollmentCount;
+                decimal estimatedRevenue;
+                if (hasPayments)
+                {
+                    var completedPayments = await _context.Payments.AsNoTracking()
+                        .Where(p => p.Status == "completed")
+                        .GroupBy(_ => 1)
+                        .Select(g => new { Count = g.Count(), Amount = g.Sum(p => (decimal?)p.Amount) ?? 0m })
+                        .FirstOrDefaultAsync(cancellationToken);
+                    revenueEnrollmentCount = completedPayments?.Count ?? 0;
+                    estimatedRevenue = completedPayments?.Amount ?? 0m;
+                }
+                else
+                {
+                    revenueEnrollmentCount = validEnrollmentStats.Sum(x => x.Count);
+                    estimatedRevenue = validEnrollmentStats.Sum(x => x.Revenue);
+                }
 
                 // 4. Ghi danh theo tháng (12 tháng của năm hiện tại, hoặc năm mới nhất có dữ liệu; loại ghi danh/lớp đã hủy)
                 var validEnrollmentsBase =
                     from e in _context.Enrollments.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
-                    where e.Status != "cancelled" && cc.Status != "cancelled"
+                    where (e.Status == "active" || e.Status == "completed") && cc.Status != "cancelled"
                     select e;
 
                 var targetYear = DateTime.UtcNow.Year;
@@ -110,7 +126,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     from e in _context.Enrollments.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                     join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id
-                    where e.Status != "cancelled" && cc.Status != "cancelled"
+                    where (e.Status == "active" || e.Status == "completed") && cc.Status != "cancelled"
                     group e by c.Level into g
                     select new { Level = g.Key, Count = g.Count() }
                 ).ToListAsync(cancellationToken);
@@ -158,7 +174,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 // 6. Top 10 ghi danh gần nhất (chỉ kéo đúng 10 dòng, đúng các cột cần hiển thị)
-                var recentEnrollments = await (
+                var rawRecentEnrollments = await (
                     from e in _context.Enrollments.AsNoTracking()
                     join u in _context.Users.AsNoTracking() on e.UserId equals u.Id
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
@@ -167,6 +183,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     select new
                     {
                         id = e.Id,
+                        userId = u.Id,
                         studentName = u.FullName,
                         studentEmail = u.Email,
                         classId = cc.Id,
@@ -174,10 +191,56 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         className = cc.ClassName,
                         courseTitle = c.Title,
                         price = cc.Price,
+                        classStatus = cc.Status,
                         enrolledAt = e.EnrolledAt,
                         status = e.Status
                     }
                 ).Take(10).ToListAsync(cancellationToken);
+
+                var recentIds = rawRecentEnrollments.Select(r => r.id).ToList();
+                var recentUserIds = rawRecentEnrollments.Select(r => r.userId).Distinct().ToList();
+                var recentClassIds = rawRecentEnrollments.Select(r => r.classId).Distinct().ToList();
+                var recentPayments = recentIds.Count == 0
+                    ? []
+                    : await _context.Payments.AsNoTracking()
+                        .Where(p => (p.EnrollmentId != null && recentIds.Contains(p.EnrollmentId.Value))
+                                    || (recentUserIds.Contains(p.UserId) && recentClassIds.Contains(p.ClassId)))
+                        .OrderByDescending(p => p.Id)
+                        .Select(p => new { p.EnrollmentId, p.UserId, p.ClassId, p.Status, p.Amount, p.PaymentMethod })
+                        .ToListAsync(cancellationToken);
+
+                var paymentByEnrollment = recentPayments
+                    .Where(p => p.EnrollmentId.HasValue)
+                    .GroupBy(p => p.EnrollmentId!.Value)
+                    .ToDictionary(g => g.Key, g => g.First());
+                var paymentByPair = recentPayments
+                    .GroupBy(p => (p.UserId, p.ClassId))
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                var recentEnrollments = rawRecentEnrollments.Select(r =>
+                {
+                    if (!paymentByEnrollment.TryGetValue(r.id, out var pay))
+                    {
+                        paymentByPair.TryGetValue((r.userId, r.classId), out pay);
+                    }
+                    return new
+                    {
+                        r.id,
+                        r.studentName,
+                        r.studentEmail,
+                        r.classId,
+                        r.classCode,
+                        r.className,
+                        r.courseTitle,
+                        r.price,
+                        r.classStatus,
+                        r.enrolledAt,
+                        r.status,
+                        paymentStatus = pay?.Status,
+                        paymentAmount = pay?.Amount,
+                        paymentMethod = pay?.PaymentMethod
+                    };
+                }).ToList();
 
                 return Ok(new
                 {
@@ -190,7 +253,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         upcomingClasses,
                         activeEnrollments,
                         estimatedRevenue,
-                        revenueEnrollmentCount
+                        revenueEnrollmentCount,
+                        revenueSource = hasPayments ? "payments" : "enrollments_estimate"
                     },
                     chartYear = targetYear,
                     monthlyEnrollments,

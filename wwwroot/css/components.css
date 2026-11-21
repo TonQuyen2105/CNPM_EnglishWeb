@@ -596,6 +596,20 @@ select.form-control {
 }
 .badge-neutral .badge-dot { background-color: var(--neutral-500); }
 
+.badge-info {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+.badge-info .badge-dot { background-color: #2563EB; }
+
+.badge-secondary {
+  background-color: var(--neutral-100);
+  color: var(--neutral-600);
+  border: 1px solid var(--border-color);
+}
+.badge-secondary .badge-dot { background-color: var(--neutral-500); }
+
 /* ==========================================================================
    AVATARS
    ========================================================================== */
@@ -708,6 +722,10 @@ select.form-control {
   transform: translateY(15px) scale(0.98);
   transition: transform var(--transition-normal);
   overflow: hidden;
+}
+
+.modal-dialog-lg {
+  max-width: 780px;
 }
 
 .modal-backdrop.open .modal-dialog,

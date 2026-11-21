@@ -622,6 +622,8 @@
       let hasLoadedOnce = false;
       let examsCache = [];
       let loadController = null;
+      let detailController = null;
+      let attemptController = null;
       let currentExamDetail = null;
 
       function showFormError(msg) {
@@ -664,11 +666,13 @@
         document.getElementById('exam-id').value = '';
         document.getElementById('exam-title').value = '';
         document.getElementById('exam-course-id').value = '';
+        const tSel = document.getElementById('exam-teacher-id');
+        if (tSel && tSel.options.length > 0) tSel.selectedIndex = 0;
         document.getElementById('exam-duration').value = '45';
         document.getElementById('exam-pass-score').value = '50';
         document.getElementById('exam-max-attempts').value = '';
         document.getElementById('exam-description').value = '';
-        document.getElementById('exam-published').value = 'true';
+        document.getElementById('exam-published').value = 'false';
         document.getElementById('exam-modal-title').textContent = 'Tạo kỳ thi / đề thi mới';
         document.getElementById('exam-submit-btn').textContent = 'Lưu đề thi';
         showFormError('');
@@ -917,7 +921,7 @@
             </div>
             <div>
               <div style="color: var(--text-muted); font-size: 0.75rem;">Điểm đạt được</div>
-              <strong style="font-size: 1.05rem; color: var(--primary-600);">${at.totalScore ?? 0} / ${at.maxTotalPoints ?? 0} đ</strong>
+              <strong style="font-size: 1.05rem; color: var(--primary-600);">${at.totalScore !== null && at.totalScore !== undefined ? `${at.totalScore} / ${at.maxTotalPoints ?? 0} đ` : `-- / ${at.maxTotalPoints ?? 0} đ`}</strong>
               <div style="font-size: 0.75rem; color: var(--text-muted);">Điểm qua: ${at.passScore ?? 0} đ</div>
             </div>
           </div>
@@ -949,7 +953,7 @@
               }).join('') + '</div>'
             : '';
 
-          const textAnsHtml = (!item.options || item.options.length === 0)
+          const textAnsHtml = item.questionType !== 'multiple_choice'
             ? `<div style="margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: #FFFFFF; border: 1px solid var(--border-color); font-size: 0.8125rem;">
                 <strong>Bài trả lời của học viên:</strong>
                 <div style="margin-top: 4px; color: var(--text-primary);">${item.textAnswer ? escapeHtml(item.textAnswer) : '<em style="color: var(--text-muted);">Chưa trả lời</em>'}</div>
@@ -977,7 +981,7 @@
                   ${item.isAnswered ? gradingStatusLabel(item.gradingStatus) : '<span class="badge badge-neutral">Bỏ trống</span>'}
                 </div>
                 <strong style="color: var(--primary-600); font-size: 0.875rem;">
-                  Điểm: ${item.scoreEarned !== null && item.scoreEarned !== undefined ? item.scoreEarned : 0} / ${item.points} đ
+                  Điểm: ${item.scoreEarned !== null && item.scoreEarned !== undefined ? item.scoreEarned : '--'} / ${item.points} đ
                 </strong>
               </div>
               <div style="font-size: 0.875rem; color: var(--text-primary); line-height: 1.5;">${escapeHtml(item.questionText)}</div>
@@ -990,11 +994,12 @@
         }).join('');
       }
 
-      function addOptionRow(text = '', isCorrect = false) {
+      function addOptionRow(text = '', isCorrect = false, id = null) {
         const list = document.getElementById('qf-options-list');
         const idx = list.children.length + 1;
         const row = document.createElement('div');
         row.style.cssText = 'display: flex; gap: 8px; align-items: center;';
+        if (id) row.dataset.optionId = String(id);
         row.innerHTML = `
           <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.8125rem; white-space: nowrap; cursor: pointer;">
             <input type="checkbox" class="qf-opt-correct" ${isCorrect ? 'checked' : ''}>
@@ -1035,7 +1040,7 @@
         const optList = document.getElementById('qf-options-list');
         optList.innerHTML = '';
         if (isEdit && Array.isArray(q.options) && q.options.length > 0) {
-          q.options.forEach(o => addOptionRow(o.optionText, !!o.isCorrect));
+          q.options.forEach(o => addOptionRow(o.optionText, !!o.isCorrect, o.id));
         } else {
           addOptionRow('', true);
           addOptionRow('', false);
@@ -1054,6 +1059,10 @@
       }
 
       async function openExamDetail(examId) {
+        if (detailController) detailController.abort();
+        const controller = new AbortController();
+        detailController = controller;
+
         openModal('modal-exam-detail');
         document.getElementById('ed-exam-view').style.display = 'block';
         document.getElementById('ed-question-form-view').style.display = 'none';
@@ -1065,15 +1074,22 @@
         document.getElementById('ed-tab-attempts').innerHTML = '';
 
         try {
-          const data = await fetchJson(`/Admin/api/Exams/Detail/${examId}`);
+          const data = await fetchJson(`/Admin/api/Exams/Detail/${examId}`, { signal: controller.signal });
           renderExamDetail(data);
         } catch (err) {
+          if (isAbortError(err)) return;
           showToast(err.message, 'error');
           document.getElementById('ed-tab-questions').innerHTML = `<div style="padding: 1.5rem; text-align: center; color: var(--danger-text);">${escapeHtml(err.message)}</div>`;
+        } finally {
+          if (detailController === controller) detailController = null;
         }
       }
 
       async function openAttemptDetail(userExamId) {
+        if (attemptController) attemptController.abort();
+        const controller = new AbortController();
+        attemptController = controller;
+
         document.getElementById('ed-exam-view').style.display = 'none';
         document.getElementById('ed-question-form-view').style.display = 'none';
         document.getElementById('ed-attempt-view').style.display = 'block';
@@ -1081,11 +1097,14 @@
         document.getElementById('at-answers-list').innerHTML = '';
 
         try {
-          const data = await fetchJson(`/Admin/api/Exams/AttemptDetail/${userExamId}`);
+          const data = await fetchJson(`/Admin/api/Exams/AttemptDetail/${userExamId}`, { signal: controller.signal });
           renderAttemptDetail(data);
         } catch (err) {
+          if (isAbortError(err)) return;
           showToast(err.message, 'error');
           document.getElementById('at-summary-box').innerHTML = `<div style="color: var(--danger-text);">${escapeHtml(err.message)}</div>`;
+        } finally {
+          if (attemptController === controller) attemptController = null;
         }
       }
 
@@ -1196,12 +1215,15 @@
           const courseVal = document.getElementById('exam-course-id').value;
           const maxAttVal = document.getElementById('exam-max-attempts').value;
 
+          const durationRaw = document.getElementById('exam-duration').value.trim();
+          const passRaw = document.getElementById('exam-pass-score').value.trim();
+
           const payload = {
             title: document.getElementById('exam-title').value.trim(),
             courseId: courseVal ? Number(courseVal) : null,
             createdByTeacherId: Number(document.getElementById('exam-teacher-id').value) || 0,
-            durationMinutes: Number(document.getElementById('exam-duration').value) || 45,
-            passScore: Number(document.getElementById('exam-pass-score').value) || 0,
+            durationMinutes: durationRaw ? Number(durationRaw) : 0,
+            passScore: passRaw ? Number(passRaw) : 0,
             maxAttempts: maxAttVal ? Number(maxAttVal) : null,
             description: document.getElementById('exam-description').value.trim(),
             isPublished: document.getElementById('exam-published').value === 'true'
@@ -1274,15 +1296,18 @@
           const eqId = document.getElementById('qf-eq-id').value;
           const qType = document.getElementById('qf-type').value;
           const options = Array.from(document.querySelectorAll('#qf-options-list > div')).map(row => ({
+            id: row.dataset.optionId ? Number(row.dataset.optionId) : null,
             optionText: row.querySelector('.qf-opt-text').value.trim(),
             isCorrect: row.querySelector('.qf-opt-correct').checked
           })).filter(o => o.optionText.length > 0);
 
+          const rawOrder = document.getElementById('qf-order').value.trim();
+          const rawPoints = document.getElementById('qf-points').value.trim();
           const payload = {
             questionText: document.getElementById('qf-text').value.trim(),
             questionType: qType,
-            points: Number(document.getElementById('qf-points').value) || 10,
-            orderIndex: Number(document.getElementById('qf-order').value) || 1,
+            points: rawPoints ? Number(rawPoints) : 0,
+            orderIndex: rawOrder ? Number(rawOrder) : null,
             referenceAnswer: document.getElementById('qf-ref-answer').value.trim(),
             options: qType === 'multiple_choice' ? options : null
           };

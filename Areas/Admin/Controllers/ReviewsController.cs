@@ -163,7 +163,14 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 _context.CourseReviews.Remove(review);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    return this.ApiNotFound("Đánh giá này đã được xóa trước đó.");
+                }
 
                 return Ok(new
                 {

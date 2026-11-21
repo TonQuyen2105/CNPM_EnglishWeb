@@ -23,6 +23,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             "active", "completed", "cancelled"
         };
 
+        private static readonly HashSet<string> ValidPaymentMethods = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "bank_transfer", "vnpay", "momo", "cash"
+        };
+
+        private static readonly HashSet<string> ValidPaymentStatuses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "pending", "completed", "failed", "refunded"
+        };
+
         public EnrollmentsController(ApplicationDbContext context, ILogger<EnrollmentsController> logger)
         {
             _context = context;
@@ -67,19 +77,30 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     .Take(pageSize)
                     .ToListAsync(cancellationToken);
 
-                var items = rows.Select(x => new
+                var paymentLookup = await LoadLatestPaymentsAsync(rows, cancellationToken);
+
+                var items = rows.Select(x =>
                 {
-                    id = x.Id,
-                    userId = x.UserId,
-                    studentName = x.StudentName,
-                    studentEmail = x.StudentEmail,
-                    classId = x.ClassId,
-                    classCode = x.ClassCode,
-                    className = x.ClassName,
-                    courseTitle = x.CourseTitle,
-                    price = x.Price,
-                    enrolledAt = x.EnrolledAt,
-                    status = x.Status
+                    var pay = ResolvePaymentForRow(paymentLookup, x);
+                    return new
+                    {
+                        id = x.Id,
+                        userId = x.UserId,
+                        studentName = x.StudentName,
+                        studentEmail = x.StudentEmail,
+                        classId = x.ClassId,
+                        classCode = x.ClassCode,
+                        className = x.ClassName,
+                        courseTitle = x.CourseTitle,
+                        price = x.Price,
+                        classStatus = x.ClassStatus,
+                        enrolledAt = x.EnrolledAt,
+                        status = x.Status,
+                        paymentStatus = pay?.Status,
+                        paymentMethod = pay?.PaymentMethod,
+                        paidAmount = pay?.Amount,
+                        transactionCode = pay?.TransactionCode
+                    };
                 }).ToList();
 
                 var pagination = new
@@ -170,13 +191,20 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     .ThenByDescending(x => x.Id)
                     .ToListAsync(cancellationToken);
 
+                var paymentLookup = await LoadLatestPaymentsAsync(rows, cancellationToken);
+
                 var sb = new StringBuilder();
-                sb.AppendLine("STT,Học viên,Email,Mã lớp,Tên lớp,Khóa học,Ngày ghi danh,Học phí (VND),Trạng thái");
+                sb.AppendLine("STT,Học viên,Email,Mã lớp,Tên lớp,Khóa học,Ngày ghi danh,Học phí (VND),Trạng thái,Thanh toán,Phương thức,Mã giao dịch");
 
                 for (var i = 0; i < rows.Count; i++)
                 {
                     var row = rows[i];
-                    var fee = string.Equals(row.Status, "cancelled", StringComparison.OrdinalIgnoreCase) ? 0m : row.Price;
+                    var pay = ResolvePaymentForRow(paymentLookup, row);
+                    var isCancelled = string.Equals(row.Status, "cancelled", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(row.ClassStatus, "cancelled", StringComparison.OrdinalIgnoreCase);
+                    var fee = pay != null
+                        ? (string.Equals(pay.Status, "completed", StringComparison.OrdinalIgnoreCase) ? pay.Amount : 0m)
+                        : (isCancelled ? 0m : row.Price);
                     sb.AppendLine(string.Join(",",
                         (i + 1).ToString(CultureInfo.InvariantCulture),
                         AdminCoreHelpers.EscapeCsv(row.StudentName),
@@ -186,7 +214,10 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         AdminCoreHelpers.EscapeCsv(row.CourseTitle),
                         AdminCoreHelpers.EscapeCsv(row.EnrolledAt.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)),
                         fee.ToString("0", CultureInfo.InvariantCulture),
-                        AdminCoreHelpers.EscapeCsv(AdminCoreHelpers.FormatEnrollmentStatusVi(row.Status))));
+                        AdminCoreHelpers.EscapeCsv(AdminCoreHelpers.FormatEnrollmentStatusVi(row.Status)),
+                        AdminCoreHelpers.EscapeCsv(FormatPaymentStatusVi(pay?.Status)),
+                        AdminCoreHelpers.EscapeCsv(FormatPaymentMethodVi(pay?.PaymentMethod)),
+                        AdminCoreHelpers.EscapeCsv(pay?.TransactionCode ?? string.Empty)));
                 }
 
                 var preamble = Encoding.UTF8.GetPreamble();
@@ -223,6 +254,24 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest("Trạng thái ghi danh không hợp lệ (chỉ chấp nhận active, completed, cancelled).");
             }
 
+            string? paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? null : dto.PaymentMethod.Trim().ToLowerInvariant();
+            string paymentStatus = string.IsNullOrWhiteSpace(dto.PaymentStatus) ? "completed" : dto.PaymentStatus.Trim().ToLowerInvariant();
+            if (paymentMethod != null)
+            {
+                if (!ValidPaymentMethods.Contains(paymentMethod))
+                {
+                    return this.ApiBadRequest("Phương thức thanh toán không hợp lệ (bank_transfer, vnpay, momo, cash).");
+                }
+                if (!ValidPaymentStatuses.Contains(paymentStatus))
+                {
+                    return this.ApiBadRequest("Trạng thái thanh toán không hợp lệ (pending, completed, failed, refunded).");
+                }
+                if (dto.PaidAmount.HasValue && dto.PaidAmount.Value < 0)
+                {
+                    return this.ApiBadRequest("Số tiền thanh toán không được nhỏ hơn 0.");
+                }
+            }
+
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
@@ -250,7 +299,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var courseClass = await _context.CourseClasses
                     .AsNoTracking()
                     .Where(c => c.Id == dto.ClassId)
-                    .Select(c => new { c.ClassCode, c.Status, c.MaxStudents, c.StartDate, c.EndDate })
+                    .Select(c => new { c.ClassCode, c.Status, c.MaxStudents, c.StartDate, c.EndDate, c.Price })
                     .FirstOrDefaultAsync(cancellationToken);
                 if (courseClass == null || (courseClass.Status != "upcoming" && courseClass.Status != "ongoing"))
                 {
@@ -319,6 +368,26 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             return this.ApiBadRequest("Học viên này đã được ghi danh vào lớp.");
                         }
 
+                        if (paymentMethod != null)
+                        {
+                            var payNow = DateTime.UtcNow;
+                            _context.Payments.Add(new Payment
+                            {
+                                UserId = dto.UserId,
+                                ClassId = dto.ClassId,
+                                EnrollmentId = existingEnrollment.Id,
+                                TransactionCode = GenerateTransactionCode(existingEnrollment.Id, payNow),
+                                Amount = dto.PaidAmount ?? courseClass.Price,
+                                PaymentMethod = paymentMethod,
+                                Status = paymentStatus,
+                                PaidAt = paymentStatus == "completed" ? payNow : null,
+                                Note = string.IsNullOrWhiteSpace(dto.PaymentNote) ? null : dto.PaymentNote.Trim(),
+                                CreatedAt = payNow,
+                                UpdatedAt = payNow
+                            });
+                            await _context.SaveChangesAsync(cancellationToken);
+                        }
+
                         await transaction.CommitAsync(cancellationToken);
                         return Ok(new
                         {
@@ -376,6 +445,27 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Học viên này đã được ghi danh vào lớp.");
                 }
+
+                if (paymentMethod != null)
+                {
+                    var payNow = DateTime.UtcNow;
+                    _context.Payments.Add(new Payment
+                    {
+                        UserId = dto.UserId,
+                        ClassId = dto.ClassId,
+                        EnrollmentId = enrollment.Id,
+                        TransactionCode = GenerateTransactionCode(enrollment.Id, payNow),
+                        Amount = dto.PaidAmount ?? courseClass.Price,
+                        PaymentMethod = paymentMethod,
+                        Status = paymentStatus,
+                        PaidAt = paymentStatus == "completed" ? payNow : null,
+                        Note = string.IsNullOrWhiteSpace(dto.PaymentNote) ? null : dto.PaymentNote.Trim(),
+                        CreatedAt = payNow,
+                        UpdatedAt = payNow
+                    });
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new { success = true, message = "Ghi danh học viên thành công.", id = enrollment.Id, item = enrollment });
@@ -479,6 +569,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (newStatus == "active" && enrollment.Status != "active")
                 {
+                    var studentValid = await _context.Users
+                        .AsNoTracking()
+                        .AnyAsync(u => u.Id == enrollment.UserId && u.Role == "student" && u.IsActive, cancellationToken);
+                    if (!studentValid)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Không thể kích hoạt lại ghi danh vì tài khoản học viên đã bị khóa hoặc đã đổi vai trò.");
+                    }
+
                     if (courseClass.Status != "upcoming" && courseClass.Status != "ongoing")
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
@@ -518,6 +617,18 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 enrollment.Status = newStatus;
+                if (newStatus == "cancelled")
+                {
+                    var pendingPayments = await _context.Payments
+                        .Where(p => p.EnrollmentId == enrollment.Id && p.Status == "pending")
+                        .ToListAsync(cancellationToken);
+                    var payNow = DateTime.UtcNow;
+                    foreach (var pendingPay in pendingPayments)
+                    {
+                        pendingPay.Status = "failed";
+                        pendingPay.UpdatedAt = payNow;
+                    }
+                }
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
@@ -534,6 +645,196 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiServerError("Không thể cập nhật trạng thái ghi danh.");
             }
         }
+
+        [HttpPost("/Admin/api/Enrollments/{id}/Payment")]
+        public async Task<IActionResult> RecordPayment(int id, [FromBody] EnrollmentPaymentDto? dto, CancellationToken cancellationToken)
+        {
+            if (id <= 0 || dto == null)
+            {
+                return this.ApiBadRequest("Dữ liệu thanh toán không hợp lệ.");
+            }
+
+            var paymentMethod = (dto.PaymentMethod ?? string.Empty).Trim().ToLowerInvariant();
+            if (!ValidPaymentMethods.Contains(paymentMethod))
+            {
+                return this.ApiBadRequest("Phương thức thanh toán không hợp lệ (bank_transfer, vnpay, momo, cash).");
+            }
+
+            var paymentStatus = string.IsNullOrWhiteSpace(dto.Status) ? "completed" : dto.Status.Trim().ToLowerInvariant();
+            if (!ValidPaymentStatuses.Contains(paymentStatus))
+            {
+                return this.ApiBadRequest("Trạng thái thanh toán không hợp lệ (pending, completed, failed, refunded).");
+            }
+
+            if (dto.Amount.HasValue && dto.Amount.Value < 0)
+            {
+                return this.ApiBadRequest("Số tiền thanh toán không được nhỏ hơn 0.");
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var enrollment = await _context.Enrollments.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+                if (enrollment == null)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Không tìm thấy hồ sơ ghi danh.");
+                }
+
+                long classLockKey = ClassLockOffset + enrollment.ClassId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({classLockKey})", cancellationToken);
+                long studentLockKey = StudentLockOffset + enrollment.UserId;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({studentLockKey})", cancellationToken);
+
+                var classPrice = await _context.CourseClasses
+                    .AsNoTracking()
+                    .Where(cc => cc.Id == enrollment.ClassId)
+                    .Select(cc => cc.Price)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                var now = DateTime.UtcNow;
+                var amount = dto.Amount ?? classPrice;
+                var existingPayment = await _context.Payments
+                    .Where(p => p.EnrollmentId == enrollment.Id || (p.UserId == enrollment.UserId && p.ClassId == enrollment.ClassId))
+                    .OrderByDescending(p => p.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (existingPayment != null)
+                {
+                    existingPayment.EnrollmentId ??= enrollment.Id;
+                    existingPayment.PaymentMethod = paymentMethod;
+                    existingPayment.Status = paymentStatus;
+                    existingPayment.Amount = amount;
+                    existingPayment.PaidAt = paymentStatus == "completed" ? (existingPayment.PaidAt ?? now) : null;
+                    if (dto.Note != null)
+                    {
+                        existingPayment.Note = string.IsNullOrWhiteSpace(dto.Note) ? null : dto.Note.Trim();
+                    }
+                    existingPayment.UpdatedAt = now;
+                }
+                else
+                {
+                    existingPayment = new Payment
+                    {
+                        UserId = enrollment.UserId,
+                        ClassId = enrollment.ClassId,
+                        EnrollmentId = enrollment.Id,
+                        TransactionCode = GenerateTransactionCode(enrollment.Id, now),
+                        Amount = amount,
+                        PaymentMethod = paymentMethod,
+                        Status = paymentStatus,
+                        PaidAt = paymentStatus == "completed" ? now : null,
+                        Note = string.IsNullOrWhiteSpace(dto.Note) ? null : dto.Note.Trim(),
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    };
+                    _context.Payments.Add(existingPayment);
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật thông tin thanh toán thành công.",
+                    payment = new
+                    {
+                        id = existingPayment.Id,
+                        transactionCode = existingPayment.TransactionCode,
+                        amount = existingPayment.Amount,
+                        paymentMethod = existingPayment.PaymentMethod,
+                        status = existingPayment.Status,
+                        paidAt = existingPayment.PaidAt
+                    }
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể cập nhật thanh toán cho ghi danh {EnrollmentId}.", id);
+                await transaction.RollbackAsync(CancellationToken.None);
+                return this.ApiServerError("Không thể cập nhật thông tin thanh toán.");
+            }
+        }
+
+        private async Task<PaymentLookup> LoadLatestPaymentsAsync(List<EnrollmentListRow> rows, CancellationToken cancellationToken)
+        {
+            if (rows.Count == 0)
+            {
+                return new PaymentLookup(new Dictionary<int, PaymentSummaryRow>(), new Dictionary<(int UserId, int ClassId), PaymentSummaryRow>());
+            }
+
+            var enrollmentIds = rows.Select(r => r.Id).Distinct().ToList();
+            var userIds = rows.Select(r => r.UserId).Distinct().ToList();
+            var classIds = rows.Select(r => r.ClassId).Distinct().ToList();
+
+            var rawPayments = await _context.Payments
+                .AsNoTracking()
+                .Where(p => (p.EnrollmentId != null && enrollmentIds.Contains(p.EnrollmentId.Value))
+                            || (userIds.Contains(p.UserId) && classIds.Contains(p.ClassId)))
+                .OrderByDescending(p => p.Id)
+                .Select(p => new PaymentSummaryRow(p.EnrollmentId, p.UserId, p.ClassId, p.Status, p.PaymentMethod, p.Amount, p.TransactionCode))
+                .ToListAsync(cancellationToken);
+
+            var byEnrollment = rawPayments
+                .Where(p => p.EnrollmentId.HasValue)
+                .GroupBy(p => p.EnrollmentId!.Value)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            var byPair = rawPayments
+                .GroupBy(p => (p.UserId, p.ClassId))
+                .ToDictionary(g => g.Key, g => g.First());
+
+            return new PaymentLookup(byEnrollment, byPair);
+        }
+
+        private static PaymentSummaryRow? ResolvePaymentForRow(PaymentLookup lookup, EnrollmentListRow row)
+        {
+            if (lookup.ByEnrollment.TryGetValue(row.Id, out var pay))
+            {
+                return pay;
+            }
+            lookup.ByPair.TryGetValue((row.UserId, row.ClassId), out pay);
+            return pay;
+        }
+
+        private static string GenerateTransactionCode(int enrollmentId, DateTime utcNow)
+            => $"PAY-{utcNow:yyyyMMddHHmmss}-{enrollmentId}-{Guid.NewGuid().ToString("N")[..4].ToUpperInvariant()}";
+
+        private static string FormatPaymentStatusVi(string? status) => (status ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "completed" => "Đã thanh toán",
+            "pending" => "Chờ thanh toán",
+            "failed" => "Thất bại",
+            "refunded" => "Đã hoàn tiền",
+            _ => "Chưa có giao dịch"
+        };
+
+        private static string FormatPaymentMethodVi(string? method) => (method ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "bank_transfer" => "Chuyển khoản",
+            "vnpay" => "VNPAY",
+            "momo" => "MoMo",
+            "cash" => "Tiền mặt",
+            _ => "--"
+        };
+
+        private sealed record PaymentSummaryRow(
+            int? EnrollmentId,
+            int UserId,
+            int ClassId,
+            string Status,
+            string PaymentMethod,
+            decimal Amount,
+            string TransactionCode);
+
+        private sealed record PaymentLookup(
+            Dictionary<int, PaymentSummaryRow> ByEnrollment,
+            Dictionary<(int UserId, int ClassId), PaymentSummaryRow> ByPair);
 
         private IQueryable<EnrollmentListRow> BuildFilteredEnrollmentsQuery(string? status, int? classId, string? search)
         {
@@ -553,6 +854,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     ClassName = cc.ClassName,
                     CourseTitle = c.Title,
                     Price = cc.Price,
+                    ClassStatus = cc.Status,
                     EnrolledAt = e.EnrolledAt,
                     Status = e.Status
                 };
@@ -594,6 +896,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             public string ClassName { get; set; } = string.Empty;
             public string CourseTitle { get; set; } = string.Empty;
             public decimal Price { get; set; }
+            public string ClassStatus { get; set; } = string.Empty;
             public DateTime EnrolledAt { get; set; }
             public string Status { get; set; } = string.Empty;
         }
@@ -603,6 +906,18 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             public int UserId { get; set; }
             public int ClassId { get; set; }
             public string? Status { get; set; }
+            public string? PaymentMethod { get; set; }
+            public string? PaymentStatus { get; set; }
+            public decimal? PaidAmount { get; set; }
+            public string? PaymentNote { get; set; }
+        }
+
+        public class EnrollmentPaymentDto
+        {
+            public string PaymentMethod { get; set; } = "bank_transfer";
+            public string? Status { get; set; }
+            public decimal? Amount { get; set; }
+            public string? Note { get; set; }
         }
 
         public class EnrollmentStatusDto

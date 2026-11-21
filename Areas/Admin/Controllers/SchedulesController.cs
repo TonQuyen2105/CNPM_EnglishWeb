@@ -206,7 +206,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var teachers = await (
                     from t in _context.Teachers.AsNoTracking()
                     join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
-                    where t.IsVerified
+                    where t.IsVerified && u.Role == "teacher" && u.IsActive
                     orderby u.FullName
                     select new
                     {

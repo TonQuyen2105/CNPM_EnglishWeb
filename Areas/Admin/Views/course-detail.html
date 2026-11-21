@@ -754,8 +754,9 @@
 
           const lessonId = document.getElementById('lesson-id').value;
           const isEdit = Boolean(lessonId);
+          const rawOrder = document.getElementById('lesson-order').value.trim();
           const payload = {
-            orderIndex: Number(document.getElementById('lesson-order').value) || 1,
+            orderIndex: rawOrder ? Number(rawOrder) : null,
             contentType: document.getElementById('lesson-type').value,
             title: document.getElementById('lesson-title').value.trim(),
             content: document.getElementById('lesson-content').value.trim()

@@ -168,6 +168,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({400_000_000L})", cancellationToken);
+
                 var subjectExists = await _context.Subjects
                     .AsNoTracking()
                     .AnyAsync(s => s.Id == dto.SubjectId, cancellationToken);
@@ -210,6 +212,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Khóa học này đã tồn tại trong hệ thống.");
                 }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Môn học được chọn không tồn tại.");
+                }
 
                 if (lessonCount > 0)
                 {
@@ -227,7 +234,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         .ToList();
 
                     _context.Lessons.AddRange(initialLessons);
-                    await _context.SaveChangesAsync(cancellationToken);
+                    try
+                    {
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+                    catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Thứ tự bài học khởi tạo bị trùng lặp.");
+                    }
                 }
 
                 await transaction.CommitAsync(cancellationToken);
@@ -312,12 +327,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 var totalClassCount = await _context.CourseClasses
                     .AsNoTracking()
-                    .CountAsync(cc => cc.CourseId == id, cancellationToken);
+                    .CountAsync(cc => cc.CourseId == id && cc.Status != "cancelled", cancellationToken);
 
                 var activeStudentCount = await (
                     from e in _context.Enrollments.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
-                    where cc.CourseId == id && e.Status == "active"
+                    where cc.CourseId == id && e.Status == "active" && cc.Status != "cancelled"
                     select e.UserId
                 ).Distinct().CountAsync(cancellationToken);
 
@@ -384,11 +399,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest(error);
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({400_000_000L})", cancellationToken);
+
                 var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
                 if (course == null)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy khóa học.");
                 }
 
@@ -397,6 +416,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     .AnyAsync(s => s.Id == dto!.SubjectId, cancellationToken);
                 if (!subjectExists)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Môn học được chọn không tồn tại.");
                 }
 
@@ -405,13 +425,17 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     .AnyAsync(c => c.Id != id && c.SubjectId == dto!.SubjectId && c.Title.ToLower() == title.ToLower(), cancellationToken);
                 if (duplicateTitle)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Môn học này đã có khóa học khác trùng tên.");
                 }
 
                 course.SubjectId = dto!.SubjectId;
                 course.Title = title;
                 course.Description = description;
-                course.ThumbnailUrl = thumbnailUrl;
+                if (dto.ThumbnailUrl != null)
+                {
+                    course.ThumbnailUrl = thumbnailUrl;
+                }
                 course.Level = level;
                 course.Price = dto.Price;
                 if (dto.IsPublished.HasValue)
@@ -426,8 +450,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
                 catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Tên khóa học đã tồn tại trong môn học này.");
                 }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Môn học được chọn không tồn tại.");
+                }
+
+                await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
                 {
@@ -443,6 +475,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể cập nhật khóa học {CourseId}.", id);
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể cập nhật khóa học.");
             }
         }
@@ -524,6 +557,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         .Select(l => (int?)l.OrderIndex)
                         .MaxAsync(cancellationToken)) ?? 0) + 1;
 
+                if (nextOrder > 1000)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Thứ tự bài học phải từ 1 đến 1000.");
+                }
+
                 var duplicateOrder = await _context.Lessons
                     .AsNoTracking()
                     .AnyAsync(l => l.CourseId == courseId && l.OrderIndex == nextOrder, cancellationToken);
@@ -589,15 +628,26 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                var targetCourseId = await _context.Lessons
+                    .AsNoTracking()
+                    .Where(l => l.Id == lessonId)
+                    .Select(l => (int?)l.CourseId)
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (!targetCourseId.HasValue)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Không tìm thấy bài học.");
+                }
+
+                long lockKey = 400_000_000L + targetCourseId.Value;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
+
                 var lesson = await _context.Lessons.FirstOrDefaultAsync(l => l.Id == lessonId, cancellationToken);
                 if (lesson == null)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy bài học.");
                 }
-
-                long lockKey = 400_000_000L + lesson.CourseId;
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
 
                 var newOrder = dto!.OrderIndex.HasValue && dto.OrderIndex.Value > 0
                     ? dto.OrderIndex.Value
@@ -652,11 +702,27 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest("Mã bài học không hợp lệ.");
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                var targetCourseId = await _context.Lessons
+                    .AsNoTracking()
+                    .Where(l => l.Id == lessonId)
+                    .Select(l => (int?)l.CourseId)
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (!targetCourseId.HasValue)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Không tìm thấy bài học.");
+                }
+
+                long lockKey = 400_000_000L + targetCourseId.Value;
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
+
                 var lesson = await _context.Lessons.FirstOrDefaultAsync(l => l.Id == lessonId, cancellationToken);
                 if (lesson == null)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy bài học.");
                 }
 
@@ -666,12 +732,27 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (inUse)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Không thể xóa bài học đã gắn lịch dạy, câu hỏi hoặc tiến độ học viên.");
                 }
 
                 _context.Lessons.Remove(lesson);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiNotFound("Bài học này đã được xóa trước đó.");
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Không thể xóa bài học vì đang có dữ liệu lịch dạy, câu hỏi hoặc tiến độ học viên tham chiếu.");
+                }
 
+                await transaction.CommitAsync(cancellationToken);
                 return Ok(new { success = true, message = "Đã xóa bài học khỏi đề cương." });
             }
             catch (OperationCanceledException)
@@ -681,6 +762,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể xóa bài học {LessonId}.", lessonId);
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể xóa bài học.");
             }
         }

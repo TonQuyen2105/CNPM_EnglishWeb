@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,6 +39,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Lesson> Lessons { get; set; }
 
+    public virtual DbSet<Payment> Payments { get; set; }
+
     public virtual DbSet<Question> Questions { get; set; }
 
     public virtual DbSet<QuestionAnswer> QuestionAnswers { get; set; }
@@ -74,6 +76,18 @@ public partial class ApplicationDbContext : DbContext
 
     public decimal CalculateEstimatedRevenue()
     {
-        return CourseClasses.Sum(c => c.Price);
+        if (Payments.AsNoTracking().Any())
+        {
+            return Payments.AsNoTracking()
+                .Where(p => p.Status == "completed")
+                .Sum(p => (decimal?)p.Amount) ?? 0m;
+        }
+
+        return (
+            from e in Enrollments.AsNoTracking()
+            join cc in CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+            where (e.Status == "active" || e.Status == "completed") && cc.Status != "cancelled"
+            select (decimal?)cc.Price
+        ).Sum() ?? 0m;
     }
 }

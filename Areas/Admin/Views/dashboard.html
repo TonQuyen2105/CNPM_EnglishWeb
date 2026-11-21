@@ -512,7 +512,9 @@
         document.getElementById('kpi-upcoming-classes-sub').textContent = `${kpi.upcomingClasses ?? 0} lớp sắp khai giảng`;
         document.getElementById('kpi-active-enrollments').textContent = kpi.activeEnrollments ?? 0;
         document.getElementById('kpi-estimated-revenue').textContent = formatCurrency(kpi.estimatedRevenue);
-        document.getElementById('kpi-revenue-sub').textContent = `↗ Từ ${kpi.revenueEnrollmentCount ?? 0} lượt ghi danh hợp lệ`;
+        document.getElementById('kpi-revenue-sub').textContent = kpi.revenueSource === 'payments'
+          ? `↗ Từ ${kpi.revenueEnrollmentCount ?? 0} giao dịch đã thanh toán`
+          : `↗ Từ ${kpi.revenueEnrollmentCount ?? 0} lượt ghi danh hợp lệ`;
       }
 
       function renderMonthlyChart(data) {
@@ -593,7 +595,9 @@
               <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(r.className)}</div>
             </td>
             <td>${escapeHtml(r.courseTitle)}</td>
-            <td style="white-space: nowrap;"><strong>${formatCurrency(r.price)}</strong></td>
+            <td style="white-space: nowrap;">${(r.status === 'cancelled' || r.classStatus === 'cancelled')
+              ? `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(r.price)}</span> <small class="text-muted">(0 ₫)</small>`
+              : `<strong>${formatCurrency(r.price)}</strong>`}</td>
             <td style="white-space: nowrap;">${formatDate(r.enrolledAt)}</td>
             <td style="white-space: nowrap;">${renderEnrollmentStatus(r.status)}</td>
           </tr>
@@ -622,10 +626,17 @@
           if (isAbortError(err)) return;
           lastDashboardData = null;
           console.error('Lỗi tải Dashboard:', err);
+          document.getElementById('kpi-total-students').textContent = '--';
+          document.getElementById('kpi-active-students-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('kpi-ongoing-classes').textContent = '--';
+          document.getElementById('kpi-upcoming-classes-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('kpi-active-enrollments').textContent = '--';
+          document.getElementById('kpi-estimated-revenue').textContent = '--';
+          document.getElementById('kpi-revenue-sub').textContent = 'Không thể tải dữ liệu';
           document.getElementById('chart-year-badge').textContent = 'Lỗi tải';
           document.getElementById('level-dist-subtitle').textContent = 'Không thể tải dữ liệu phân bổ';
-          document.getElementById('monthly-chart-container').innerHTML = '';
-          document.getElementById('level-distribution-container').innerHTML = '';
+          document.getElementById('monthly-chart-container').innerHTML = '<div style="width: 100%; text-align: center; color: var(--danger-text); align-self: center; font-size: 0.875rem;">Không thể tải biểu đồ.</div>';
+          document.getElementById('level-distribution-container').innerHTML = '<div style="color: var(--danger-text); font-size: 0.875rem;">Không thể tải phân bổ trình độ.</div>';
           document.getElementById('recent-enrollments-tbody').innerHTML = errorRowWithRetry(6, err.message);
           showToast(err.message, 'error');
         } finally {

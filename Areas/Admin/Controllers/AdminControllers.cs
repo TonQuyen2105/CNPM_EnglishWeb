@@ -69,8 +69,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     var row = report.CourseBreakdown[i];
                     sb.AppendLine(string.Join(",",
                         (i + 1).ToString(CultureInfo.InvariantCulture),
-                        EscapeCsv(row.courseTitle),
-                        EscapeCsv(row.subjectName),
+                        AdminCoreHelpers.EscapeCsv(row.courseTitle),
+                        AdminCoreHelpers.EscapeCsv(row.subjectName),
                         row.classCount.ToString(CultureInfo.InvariantCulture),
                         row.enrollmentCount.ToString(CultureInfo.InvariantCulture),
                         row.completedCount.ToString(CultureInfo.InvariantCulture),
@@ -87,7 +87,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     var s = report.SubjectBreakdown[i];
                     sb.AppendLine(string.Join(",",
                         (i + 1).ToString(CultureInfo.InvariantCulture),
-                        EscapeCsv(s.subjectName),
+                        AdminCoreHelpers.EscapeCsv(s.subjectName),
                         s.courseCount.ToString(CultureInfo.InvariantCulture),
                         s.classCount.ToString(CultureInfo.InvariantCulture),
                         s.enrollmentCount.ToString(CultureInfo.InvariantCulture),
@@ -105,9 +105,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     var t = report.TeacherBreakdown[i];
                     sb.AppendLine(string.Join(",",
                         (i + 1).ToString(CultureInfo.InvariantCulture),
-                        EscapeCsv(t.teacherName),
-                        EscapeCsv(t.qualification ?? "--"),
-                        EscapeCsv($"{t.mainClassCount}/{t.assignedClassCount}"),
+                        AdminCoreHelpers.EscapeCsv(t.teacherName),
+                        AdminCoreHelpers.EscapeCsv(t.qualification ?? "--"),
+                        AdminCoreHelpers.EscapeCsv($"{t.mainClassCount}/{t.assignedClassCount}"),
                         t.enrollmentCount.ToString(CultureInfo.InvariantCulture),
                         t.completedCount.ToString(CultureInfo.InvariantCulture),
                         t.completionRate.ToString("0.0", CultureInfo.InvariantCulture),
@@ -137,11 +137,24 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         private async Task<ReportSummaryResult> BuildReportDataAsync(int? year, int? quarter, CancellationToken cancellationToken)
         {
             var currentUtcYear = DateTime.UtcNow.Year;
-            var enrollmentYears = await _context.Enrollments
-                .AsNoTracking()
-                .Select(e => e.EnrolledAt.Year)
-                .Distinct()
-                .ToListAsync(cancellationToken);
+            var hasPayments = await _context.Payments.AsNoTracking().AnyAsync(cancellationToken);
+            var enrollmentYears = await (
+                from e in _context.Enrollments.AsNoTracking()
+                join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                where (e.Status == "active" || e.Status == "completed") && cc.Status != "cancelled"
+                select e.EnrolledAt.Year
+            ).Distinct().ToListAsync(cancellationToken);
+
+            if (hasPayments)
+            {
+                var paymentYears = await _context.Payments
+                    .AsNoTracking()
+                    .Where(p => p.Status == "completed" && (p.PaidAt != null || p.CreatedAt != null))
+                    .Select(p => (p.PaidAt ?? p.CreatedAt)!.Value.Year)
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+                enrollmentYears = enrollmentYears.Concat(paymentYears).Distinct().ToList();
+            }
 
             var availableYears = enrollmentYears
                 .Append(currentUtcYear)
@@ -191,32 +204,62 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 .Where(x => x.Status == "active" || x.Status == "completed")
                 .ToList();
 
-            var periodRevenue = validEnrollments.Sum(x => x.Price);
+            var periodPayments = hasPayments
+                ? await (
+                    from p in _context.Payments.AsNoTracking()
+                    join cc in _context.CourseClasses.AsNoTracking() on p.ClassId equals cc.Id
+                    join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id
+                    where p.Status == "completed"
+                          && (p.PaidAt ?? p.CreatedAt ?? DateTime.MinValue) >= rangeStart
+                          && (p.PaidAt ?? p.CreatedAt ?? DateTime.MinValue) < rangeEnd
+                    select new
+                    {
+                        p.Amount,
+                        Timestamp = p.PaidAt ?? p.CreatedAt ?? DateTime.UtcNow,
+                        ClassId = cc.Id,
+                        CourseId = c.Id,
+                        c.SubjectId
+                    }
+                ).ToListAsync(cancellationToken)
+                : [];
+
+            var periodRevenue = hasPayments
+                ? periodPayments.Sum(x => x.Amount)
+                : validEnrollments.Sum(x => x.Price);
             var completedCount = validEnrollments.Count(x => x.Status == "completed");
             var completionRate = validEnrollments.Count > 0
                 ? Math.Round(completedCount * 100.0 / validEnrollments.Count, 1)
                 : 0.0;
 
-            var previousRevenue = await (
-                from e in _context.Enrollments.AsNoTracking()
-                join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
-                where e.EnrolledAt >= prevStart && e.EnrolledAt < prevEnd
-                      && (e.Status == "active" || e.Status == "completed")
-                      && cc.Status != "cancelled"
-                select (decimal?)cc.Price
-            ).SumAsync(cancellationToken) ?? 0m;
+            var previousRevenue = hasPayments
+                ? await _context.Payments.AsNoTracking()
+                    .Where(p => p.Status == "completed"
+                                && (p.PaidAt ?? p.CreatedAt ?? DateTime.MinValue) >= prevStart
+                                && (p.PaidAt ?? p.CreatedAt ?? DateTime.MinValue) < prevEnd)
+                    .SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0m
+                : await (
+                    from e in _context.Enrollments.AsNoTracking()
+                    join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                    where e.EnrolledAt >= prevStart && e.EnrolledAt < prevEnd
+                          && (e.Status == "active" || e.Status == "completed")
+                          && cc.Status != "cancelled"
+                    select (decimal?)cc.Price
+                ).SumAsync(cancellationToken) ?? 0m;
 
             double? revenueGrowthPercent = previousRevenue > 0
                 ? Math.Round((double)((periodRevenue - previousRevenue) / previousRevenue) * 100.0, 1)
                 : null;
 
-            // Tỷ lệ học viên tái đăng ký (>= 2 lượt ghi danh hợp lệ từ trước đến cuối kỳ đang xem)
-            var studentClassCounts = await _context.Enrollments
-                .AsNoTracking()
-                .Where(e => e.EnrolledAt < rangeEnd && (e.Status == "active" || e.Status == "completed"))
-                .GroupBy(e => e.UserId)
-                .Select(g => new { UserId = g.Key, Count = g.Count() })
-                .ToListAsync(cancellationToken);
+            // Tỷ lệ học viên tái đăng ký (>= 2 lớp khác nhau hợp lệ từ trước đến cuối kỳ đang xem, loại lớp đã hủy)
+            var studentClassCounts = await (
+                from e in _context.Enrollments.AsNoTracking()
+                join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                where e.EnrolledAt < rangeEnd
+                      && (e.Status == "active" || e.Status == "completed")
+                      && cc.Status != "cancelled"
+                group e by e.UserId into g
+                select new { UserId = g.Key, Count = g.Select(x => x.ClassId).Distinct().Count() }
+            ).ToListAsync(cancellationToken);
 
             var totalEnrolledStudents = studentClassCounts.Count;
             var returningStudents = studentClassCounts.Count(x => x.Count >= 2);
@@ -252,13 +295,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 .Select(m =>
                 {
                     var monthRows = validEnrollments.Where(x => x.EnrolledAt.Month == m).ToList();
+                    var monthRevenue = hasPayments
+                        ? periodPayments.Where(x => x.Timestamp.Month == m).Sum(x => x.Amount)
+                        : monthRows.Sum(x => x.Price);
                     return new
                     {
                         month = m,
                         label = $"T{m}",
                         enrollments = monthRows.Count,
                         completed = monthRows.Count(x => x.Status == "completed"),
-                        revenue = monthRows.Sum(x => x.Price)
+                        revenue = monthRevenue
                     };
                 })
                 .ToList<object>();
@@ -280,6 +326,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             var enrollmentsByCourse = validEnrollments
                 .GroupBy(x => x.CourseId)
                 .ToDictionary(g => g.Key, g => g.ToList());
+            var revenueByCourse = hasPayments
+                ? periodPayments.GroupBy(x => x.CourseId).ToDictionary(g => g.Key, g => g.Sum(p => p.Amount))
+                : new Dictionary<int, decimal>();
 
             var courseBreakdown = allCourses
                 .Select(c =>
@@ -287,7 +336,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     enrollmentsByCourse.TryGetValue(c.Id, out var list);
                     var count = list?.Count ?? 0;
                     var completed = list?.Count(x => x.Status == "completed") ?? 0;
-                    var revenue = list?.Sum(x => x.Price) ?? 0m;
+                    var revenue = hasPayments
+                        ? revenueByCourse.GetValueOrDefault(c.Id)
+                        : (list?.Sum(x => x.Price) ?? 0m);
                     var rate = count > 0 ? Math.Round(completed * 100.0 / count, 1) : 0.0;
                     double? avgRating = reviewStats.TryGetValue(c.Id, out var rInfo)
                         ? Math.Round(rInfo.Avg, 1)
@@ -317,6 +368,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
             var coursesBySubject = allCourses.GroupBy(c => c.SubjectId).ToDictionary(g => g.Key, g => g.ToList());
             var enrollmentsBySubject = validEnrollments.GroupBy(x => x.SubjectId).ToDictionary(g => g.Key, g => g.ToList());
+            var revenueBySubject = hasPayments
+                ? periodPayments.GroupBy(x => x.SubjectId).ToDictionary(g => g.Key, g => g.Sum(p => p.Amount))
+                : new Dictionary<int, decimal>();
 
             var subjectBreakdown = allSubjects
                 .Select(s =>
@@ -325,7 +379,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     enrollmentsBySubject.TryGetValue(s.Id, out var list);
                     var count = list?.Count ?? 0;
                     var completed = list?.Count(x => x.Status == "completed") ?? 0;
-                    var revenue = list?.Sum(x => x.Price) ?? 0m;
+                    var revenue = hasPayments
+                        ? revenueBySubject.GetValueOrDefault(s.Id)
+                        : (list?.Sum(x => x.Price) ?? 0m);
                     var rate = count > 0 ? Math.Round(completed * 100.0 / count, 1) : 0.0;
                     var share = periodRevenue > 0 ? Math.Round((double)(revenue / periodRevenue) * 100.0, 1) : 0.0;
 
@@ -383,13 +439,25 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             int unassignedEnrollments = 0;
             int unassignedCompleted = 0;
 
-            foreach (var clsGroup in validEnrollments.GroupBy(x => x.ClassId))
-            {
-                var clsRevenue = clsGroup.Sum(x => x.Price);
-                var clsCount = clsGroup.Count();
-                var clsCompleted = clsGroup.Count(x => x.Status == "completed");
+            var enrollmentsByClass = validEnrollments.GroupBy(x => x.ClassId).ToDictionary(g => g.Key, g => g.ToList());
+            var paymentRevByClass = hasPayments
+                ? periodPayments.GroupBy(x => x.ClassId).ToDictionary(g => g.Key, g => g.Sum(p => p.Amount))
+                : new Dictionary<int, decimal>();
+            var allClassIdsInPeriod = enrollmentsByClass.Keys
+                .Concat(paymentRevByClass.Keys)
+                .Distinct()
+                .ToList();
 
-                if (!linksByClass.TryGetValue(clsGroup.Key, out var assigned) || assigned.Count == 0)
+            foreach (var classId in allClassIdsInPeriod)
+            {
+                enrollmentsByClass.TryGetValue(classId, out var clsList);
+                var clsRevenue = hasPayments
+                    ? paymentRevByClass.GetValueOrDefault(classId)
+                    : (clsList?.Sum(x => x.Price) ?? 0m);
+                var clsCount = clsList?.Count ?? 0;
+                var clsCompleted = clsList?.Count(x => x.Status == "completed") ?? 0;
+
+                if (!linksByClass.TryGetValue(classId, out var assigned) || assigned.Count == 0)
                 {
                     unassignedRevenue += clsRevenue;
                     unassignedEnrollments += clsCount;
@@ -482,20 +550,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 activeStudents,
                 openClasses,
                 overallRating,
-                totalReviewCount
+                totalReviewCount,
+                revenueSource = hasPayments ? "payments" : "enrollments_estimate"
             };
 
             return new ReportSummaryResult(selectedYear, selectedQuarter, availableYears, kpi, monthlyTrend, courseBreakdown, subjectBreakdown, teacherBreakdown);
-        }
-
-        private static string EscapeCsv(string? value)
-        {
-            var raw = value ?? string.Empty;
-            if (raw.Length > 0 && (raw[0] is '=' or '+' or '-' or '@' or '\t' or '\r'))
-            {
-                raw = "'" + raw;
-            }
-            return $"\"{raw.Replace("\"", "\"\"")}\"";
         }
 
         private sealed record CourseBreakdownRow(

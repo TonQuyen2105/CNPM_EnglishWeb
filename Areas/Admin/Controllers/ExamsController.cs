@@ -131,6 +131,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     ? await (
                         from t in _context.Teachers.AsNoTracking()
                         join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where u.Role == "teacher" && u.IsActive
                         orderby u.FullName
                         select new
                         {
@@ -193,27 +194,31 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var teacherId = dto.CreatedByTeacherId;
                 if (teacherId <= 0)
                 {
-                    teacherId = await _context.Teachers
-                        .AsNoTracking()
-                        .OrderByDescending(t => t.IsVerified)
-                        .ThenBy(t => t.Id)
-                        .Select(t => t.Id)
-                        .FirstOrDefaultAsync(cancellationToken);
+                    teacherId = await (
+                        from t in _context.Teachers.AsNoTracking()
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where u.Role == "teacher" && u.IsActive
+                        orderby t.IsVerified descending, t.Id
+                        select t.Id
+                    ).FirstOrDefaultAsync(cancellationToken);
                 }
                 else
                 {
-                    var teacherExists = await _context.Teachers
-                        .AsNoTracking()
-                        .AnyAsync(t => t.Id == teacherId, cancellationToken);
+                    var teacherExists = await (
+                        from t in _context.Teachers.AsNoTracking()
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where t.Id == teacherId && u.Role == "teacher" && u.IsActive
+                        select t.Id
+                    ).AnyAsync(cancellationToken);
                     if (!teacherExists)
                     {
-                        return this.ApiBadRequest("Giảng viên phụ trách đề thi không tồn tại.");
+                        return this.ApiBadRequest("Giảng viên phụ trách đề thi không tồn tại hoặc tài khoản đang bị khóa/đổi vai trò.");
                     }
                 }
 
                 if (teacherId <= 0)
                 {
-                    return this.ApiBadRequest("Hệ thống chưa có hồ sơ giảng viên nào để gắn người tạo đề.");
+                    return this.ApiBadRequest("Hệ thống chưa có hồ sơ giảng viên hoạt động nào để gắn người tạo đề.");
                 }
 
                 var now = DateTime.UtcNow;
@@ -232,7 +237,14 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 };
 
                 _context.Exams.Add(exam);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
+                {
+                    return this.ApiBadRequest("Khóa học hoặc giảng viên phụ trách không còn tồn tại.");
+                }
 
                 return Ok(new
                 {
@@ -288,12 +300,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (dto.CreatedByTeacherId > 0)
                 {
-                    var teacherExists = await _context.Teachers
-                        .AsNoTracking()
-                        .AnyAsync(t => t.Id == dto.CreatedByTeacherId, cancellationToken);
+                    var teacherExists = await (
+                        from t in _context.Teachers.AsNoTracking()
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where t.Id == dto.CreatedByTeacherId && u.Role == "teacher" && u.IsActive
+                        select t.Id
+                    ).AnyAsync(cancellationToken);
                     if (!teacherExists)
                     {
-                        return this.ApiBadRequest("Giảng viên phụ trách không tồn tại.");
+                        return this.ApiBadRequest("Giảng viên phụ trách không tồn tại hoặc tài khoản đang bị khóa/đổi vai trò.");
                     }
                     exam.CreatedByTeacherId = dto.CreatedByTeacherId;
                 }
@@ -310,7 +325,14 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
                 exam.UpdatedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
+                {
+                    return this.ApiBadRequest("Khóa học hoặc giảng viên phụ trách không còn tồn tại.");
+                }
 
                 return Ok(new
                 {
@@ -799,6 +821,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         .Select(eq => (int?)eq.OrderIndex)
                         .MaxAsync(cancellationToken)) ?? 0) + 1;
 
+                if (nextOrder > 1000)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Thứ tự câu hỏi phải từ 1 đến 1.000.");
+                }
+
                 var duplicateOrder = await _context.ExamQuestions
                     .AsNoTracking()
                     .AnyAsync(eq => eq.ExamId == examId && eq.OrderIndex == nextOrder, cancellationToken);
@@ -958,7 +986,10 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var now = DateTime.UtcNow;
                 question.QuestionText = qText;
                 question.QuestionType = qType;
-                question.AudioUrl = audioUrl;
+                if (dto.AudioUrl != null)
+                {
+                    question.AudioUrl = audioUrl;
+                }
                 question.DefaultPoints = dto.Points;
                 question.UpdatedAt = now;
 
@@ -983,32 +1014,71 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         _context.QuestionAnswers.RemoveRange(existingRefs);
                     }
 
-                    // Nếu đã có học viên chọn đáp án, cập nhật các option cũ theo thứ tự để giữ nguyên khóa ngoại
+                    // Khi đã có bài làm học viên, khớp phương án theo Id (nếu client gửi kèm) để không làm lệch SelectedOptionId
                     if (hasAnyStudentAnswers || referencedOptionIds.Count > 0)
                     {
-                        for (var i = 0; i < existingOptions.Count && i < cleanOptions.Count; i++)
+                        var hasClientIds = cleanOptions.Any(o => o.Id.HasValue && o.Id.Value > 0);
+                        if (hasClientIds)
                         {
-                            existingOptions[i].OptionText = cleanOptions[i].Text;
-                            existingOptions[i].IsCorrect = cleanOptions[i].IsCorrect;
-                        }
-                        if (cleanOptions.Count < existingOptions.Count)
-                        {
-                            var toRemove = existingOptions.Skip(cleanOptions.Count).ToList();
+                            var optionById = existingOptions.ToDictionary(o => o.Id);
+                            var keptOptionIds = new HashSet<int>();
+
+                            foreach (var optDto in cleanOptions)
+                            {
+                                if (optDto.Id.HasValue && optionById.TryGetValue(optDto.Id.Value, out var matched))
+                                {
+                                    matched.OptionText = optDto.Text;
+                                    matched.IsCorrect = optDto.IsCorrect;
+                                    keptOptionIds.Add(matched.Id);
+                                }
+                                else
+                                {
+                                    _context.QuestionOptions.Add(new QuestionOption
+                                    {
+                                        QuestionId = question.Id,
+                                        OptionText = optDto.Text,
+                                        IsCorrect = optDto.IsCorrect
+                                    });
+                                }
+                            }
+
+                            var toRemove = existingOptions.Where(o => !keptOptionIds.Contains(o.Id)).ToList();
                             if (toRemove.Any(o => referencedOptionIds.Contains(o.Id)))
                             {
                                 await transaction.RollbackAsync(CancellationToken.None);
-                                return this.ApiBadRequest("Không thể xóa bớt lựa chọn vì đã có học viên chọn lựa chọn đó.");
+                                return this.ApiBadRequest("Không thể xóa lựa chọn vì đã có học viên chọn phương án đó.");
                             }
-                            _context.QuestionOptions.RemoveRange(toRemove);
-                        }
-                        else if (cleanOptions.Count > existingOptions.Count)
-                        {
-                            _context.QuestionOptions.AddRange(cleanOptions.Skip(existingOptions.Count).Select(o => new QuestionOption
+                            if (toRemove.Count > 0)
                             {
-                                QuestionId = question.Id,
-                                OptionText = o.Text,
-                                IsCorrect = o.IsCorrect
-                            }));
+                                _context.QuestionOptions.RemoveRange(toRemove);
+                            }
+                        }
+                        else
+                        {
+                            for (var i = 0; i < existingOptions.Count && i < cleanOptions.Count; i++)
+                            {
+                                existingOptions[i].OptionText = cleanOptions[i].Text;
+                                existingOptions[i].IsCorrect = cleanOptions[i].IsCorrect;
+                            }
+                            if (cleanOptions.Count < existingOptions.Count)
+                            {
+                                var toRemove = existingOptions.Skip(cleanOptions.Count).ToList();
+                                if (toRemove.Any(o => referencedOptionIds.Contains(o.Id)))
+                                {
+                                    await transaction.RollbackAsync(CancellationToken.None);
+                                    return this.ApiBadRequest("Không thể xóa bớt lựa chọn vì đã có học viên chọn lựa chọn đó.");
+                                }
+                                _context.QuestionOptions.RemoveRange(toRemove);
+                            }
+                            else if (cleanOptions.Count > existingOptions.Count)
+                            {
+                                _context.QuestionOptions.AddRange(cleanOptions.Skip(existingOptions.Count).Select(o => new QuestionOption
+                                {
+                                    QuestionId = question.Id,
+                                    OptionText = o.Text,
+                                    IsCorrect = o.IsCorrect
+                                }));
+                            }
                         }
                     }
                     else
@@ -1055,17 +1125,20 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     }
                     else
                     {
+                        var preservedCaseSensitive = existingRefs.Count > 0 && existingRefs[0].IsCaseSensitive;
+                        var preservedRefAudio = existingRefs.FirstOrDefault()?.ReferenceAudioUrl;
                         if (existingRefs.Count > 0)
                         {
                             _context.QuestionAnswers.RemoveRange(existingRefs);
                         }
-                        if (!string.IsNullOrWhiteSpace(refAnswer))
+                        if (!string.IsNullOrWhiteSpace(refAnswer) || !string.IsNullOrWhiteSpace(preservedRefAudio))
                         {
                             _context.QuestionAnswers.Add(new QuestionAnswer
                             {
                                 QuestionId = question.Id,
                                 AnswerText = refAnswer,
-                                IsCaseSensitive = dto.IsCaseSensitive ?? false
+                                ReferenceAudioUrl = preservedRefAudio,
+                                IsCaseSensitive = dto.IsCaseSensitive ?? preservedCaseSensitive
                             });
                         }
                     }
@@ -1079,6 +1152,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest($"Thứ tự câu hỏi số {newOrder} đã tồn tại trong đề thi này.");
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Không thể xóa lựa chọn vì đã có học viên chọn phương án đó.");
                 }
                 await transaction.CommitAsync(cancellationToken);
 
@@ -1165,7 +1243,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     exam.UpdatedAt = DateTime.UtcNow;
                 }
 
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return this.ApiBadRequest("Không thể xóa câu hỏi vì đang có bài làm của học viên tham chiếu.");
+                }
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
@@ -1231,13 +1317,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             ExamQuestionUpsertDto? dto,
             out string questionText,
             out string questionType,
-            out List<(string Text, bool IsCorrect)> cleanOptions,
+            out List<(int? Id, string Text, bool IsCorrect)> cleanOptions,
             out string? refAnswer,
             out string? audioUrl)
         {
             questionText = string.Empty;
             questionType = "multiple_choice";
-            cleanOptions = new List<(string, bool)>();
+            cleanOptions = new List<(int?, string, bool)>();
             refAnswer = null;
             audioUrl = null;
 
@@ -1280,7 +1366,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 cleanOptions = dto.Options
                     .Where(o => o != null && !string.IsNullOrWhiteSpace(o.OptionText))
-                    .Select(o => (o.OptionText!.Trim(), o.IsCorrect))
+                    .Select(o => (o.Id, o.OptionText!.Trim(), o.IsCorrect))
                     .ToList();
 
                 if (cleanOptions.Count < 2)
@@ -1311,6 +1397,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
         public class ExamQuestionOptionDto
         {
+            public int? Id { get; set; }
             public string? OptionText { get; set; }
             public bool IsCorrect { get; set; }
         }

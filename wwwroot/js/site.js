@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 3. Xử lý Đăng xuất (Tương thích cả file:// và chạy qua Server)
-  const logoutBtns = document.querySelectorAll('#btn-topbar-logout, #sidebar-logout-btn, #btn-student-logout, .btn-logout, a[href*="logout"]');
+  const logoutBtns = document.querySelectorAll('#btn-topbar-logout, #sidebar-logout-btn, #btn-student-logout, .btn-logout, .sidebar-footer a.text-danger, a[href*="logout"]');
   logoutBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();

@@ -15,6 +15,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         private const int MaxEmailLength = 150;
         private const int MinPasswordLength = 6;
         private const int MaxPasswordLength = 255;
+        private const long TeacherLockOffset = 300_000_000L;
+        private const long UserTeacherProfileLockOffset = 600_000_000L;
 
         private static readonly HashSet<string> ValidRoles = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -246,6 +248,20 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                // Khóa trước theo thứ tự tăng dần (300M + teacherId -> 600M + userId) trước khi sửa Users để tránh deadlock 40P01 với TeachersController.
+                var existingTeacherId = await _context.Teachers
+                    .AsNoTracking()
+                    .Where(t => t.UserId == id)
+                    .Select(t => (int?)t.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (existingTeacherId.HasValue)
+                {
+                    await AcquireAdvisoryLockAsync(TeacherLockOffset + existingTeacherId.Value, cancellationToken);
+                }
+
+                await AcquireAdvisoryLockAsync(UserTeacherProfileLockOffset + id, cancellationToken);
+
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
                 if (user == null)
                 {
@@ -264,9 +280,68 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 var now = DateTime.UtcNow;
+
+                Models.Entities.Teacher? teacherProfileToUnverify = null;
+                if (string.Equals(user.Role, "teacher", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(role, "teacher", StringComparison.OrdinalIgnoreCase))
+                {
+                    var teacherProfile = await _context.Teachers
+                        .FirstOrDefaultAsync(t => t.UserId == user.Id, cancellationToken);
+
+                    if (teacherProfile != null)
+                    {
+                        var hasAssignedClasses = await _context.ClassTeachers
+                            .AsNoTracking()
+                            .AnyAsync(ct => ct.TeacherId == teacherProfile.Id, cancellationToken);
+                        var hasCreatedExams = await _context.Exams
+                            .AsNoTracking()
+                            .AnyAsync(e => e.CreatedByTeacherId == teacherProfile.Id, cancellationToken);
+
+                        if (hasAssignedClasses || hasCreatedExams)
+                        {
+                            await transaction.RollbackAsync(CancellationToken.None);
+                            var blockers = new List<string>(2);
+                            if (hasAssignedClasses)
+                            {
+                                blockers.Add("đang được phân công đứng lớp (ClassTeachers)");
+                            }
+                            if (hasCreatedExams)
+                            {
+                                blockers.Add("đã tạo đề thi (Exams)");
+                            }
+                            return this.ApiBadRequest(
+                                $"Không thể đổi vai trò từ giảng viên sang '{role}' vì giảng viên này {string.Join(" và ", blockers)}.");
+                        }
+
+                        if (teacherProfile.IsVerified)
+                        {
+                            teacherProfileToUnverify = teacherProfile;
+                        }
+                    }
+                }
+                else if (string.Equals(user.Role, "student", StringComparison.OrdinalIgnoreCase) &&
+                         !string.Equals(role, "student", StringComparison.OrdinalIgnoreCase))
+                {
+                    var hasActiveEnrollments = await _context.Enrollments
+                        .AsNoTracking()
+                        .AnyAsync(e => e.UserId == user.Id && e.Status == "active", cancellationToken);
+                    if (hasActiveEnrollments)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest(
+                            $"Không thể đổi vai trò từ học viên sang '{role}' vì học viên này đang có ghi danh hoạt động (active) trong lớp học.");
+                    }
+                }
+
                 user.FullName = fullName;
                 user.Email = email;
                 user.Role = role;
+                if (teacherProfileToUnverify != null)
+                {
+                    // Thu hồi trạng thái xác minh để tránh tài khoản không còn vai trò teacher xuất hiện trong danh sách phân công lớp.
+                    teacherProfileToUnverify.IsVerified = false;
+                    teacherProfileToUnverify.UpdatedAt = now;
+                }
                 if (dto!.IsActive.HasValue)
                 {
                     user.IsActive = dto.IsActive.Value;
@@ -289,9 +364,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (role == "teacher")
                 {
-                    long teacherLockKey = 600_000_000L + user.Id;
-                    await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({teacherLockKey})", cancellationToken);
-
                     var hasTeacherProfile = await _context.Teachers
                         .AsNoTracking()
                         .AnyAsync(t => t.UserId == user.Id, cancellationToken);
@@ -346,17 +418,33 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest("Mã tài khoản không hợp lệ.");
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                var existingTeacherId = await _context.Teachers
+                    .AsNoTracking()
+                    .Where(t => t.UserId == id)
+                    .Select(t => (int?)t.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (existingTeacherId.HasValue)
+                {
+                    await AcquireAdvisoryLockAsync(TeacherLockOffset + existingTeacherId.Value, cancellationToken);
+                }
+
+                await AcquireAdvisoryLockAsync(UserTeacherProfileLockOffset + id, cancellationToken);
+
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
                 if (user == null)
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiNotFound("Không tìm thấy tài khoản người dùng.");
                 }
 
                 user.IsActive = !user.IsActive;
                 user.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new
                 {
@@ -373,8 +461,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể thay đổi trạng thái tài khoản {UserId}.", id);
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể thay đổi trạng thái tài khoản.");
             }
+        }
+
+        private Task AcquireAdvisoryLockAsync(long lockKey, CancellationToken cancellationToken)
+        {
+            return _context.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT pg_advisory_xact_lock({lockKey})",
+                cancellationToken);
         }
 
         private static string? NormalizeAndValidate(
