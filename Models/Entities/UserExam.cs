@@ -20,13 +20,13 @@ namespace CNPM_EnglishLearning.Models.Entities
         public int AttemptNumber { get; set; } = 1;
 
         [Column("started_at")]
-        public DateTime? StartedAt { get; set; } = DateTime.UtcNow;
+        public DateTime StartedAt { get; set; } = DateTime.UtcNow;
 
         [Column("submitted_at")]
         public DateTime? SubmittedAt { get; set; }
 
         [Column("total_score")]
-        public int? TotalScore { get; set; }
+        public decimal? TotalScore { get; set; }
 
         [Column("status")]
         [MaxLength(20)]

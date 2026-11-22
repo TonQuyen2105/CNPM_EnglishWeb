@@ -25,7 +25,7 @@ namespace CNPM_EnglishLearning.Models.Entities
         public string QuestionType { get; set; } = "multiple_choice"; // multiple_choice, fill_blank, pronunciation, essay
 
         [Column("default_points")]
-        public int DefaultPoints { get; set; } = 1;
+        public decimal DefaultPoints { get; set; } = 1.0m;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

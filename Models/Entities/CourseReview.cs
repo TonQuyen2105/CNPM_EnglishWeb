@@ -17,7 +17,7 @@ namespace CNPM_EnglishLearning.Models.Entities
         public int CourseId { get; set; }
 
         [Column("rating")]
-        public short Rating { get; set; } = 5; // 1 - 5
+        public int Rating { get; set; } = 5; // 1 - 5
 
         [Column("comment")]
         public string? Comment { get; set; }

@@ -278,7 +278,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     CreatedByTeacherId = representativeTeacherId,
                     Description = note,
                     DurationMinutes = 45,
-                    PassScore = 50,
+                    PassScore = 5.0m,
                     MaxAttempts = null,
                     IsPublished = dto.IsPublished ?? false,
                     CreatedAt = openAtDb,
@@ -742,9 +742,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         submittedCount = attempts.Count(a => a.status == "submitted"),
                         inProgressCount = attempts.Count(a => a.status == "in_progress"),
                         passRate = finishedCount > 0 ? Math.Round(attempts.Count(a => a.status == "passed") * 100.0 / finishedCount, 1) : (double?)null,
-                        avgScore = scoredAttempts.Count > 0 ? Math.Round(scoredAttempts.Average(a => a.totalScore!.Value), 1) : (double?)null,
-                        highestScore = scoredAttempts.Count > 0 ? scoredAttempts.Max(a => a.totalScore!.Value) : (int?)null,
-                        lowestScore = scoredAttempts.Count > 0 ? scoredAttempts.Min(a => a.totalScore!.Value) : (int?)null
+                        avgScore = scoredAttempts.Count > 0 ? Math.Round(scoredAttempts.Average(a => a.totalScore!.Value), 1) : (decimal?)null,
+                        highestScore = scoredAttempts.Count > 0 ? scoredAttempts.Max(a => a.totalScore!.Value) : (decimal?)null,
+                        lowestScore = scoredAttempts.Count > 0 ? scoredAttempts.Min(a => a.totalScore!.Value) : (decimal?)null
                     },
                     relatedCourseExams,
                     questions,

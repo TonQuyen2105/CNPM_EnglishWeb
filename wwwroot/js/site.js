@@ -3,9 +3,15 @@
  * Hỗ trợ mở/đóng Sidebar mobile, Dropdown thông báo/avatar, Modal, Tabs, Đồng bộ Profile
  */
 
-// Đồng bộ thông tin học sinh ngay lập tức khi file JS được nạp (chống giật layout)
+// Đồng bộ thông tin học sinh ngay lập tức khi file JS được nạp (chỉ chạy trên cổng Học sinh, tránh ghi đè dropdown Admin/Teacher)
 function syncStudentUserSession() {
   try {
+    const pathname = (window.location && window.location.pathname) ? window.location.pathname.toLowerCase() : '';
+    const isStudentPage = /(^|\/)(areas\/)?student(\/|$)/i.test(pathname)
+      || !!document.querySelector('.student-navbar-wrapper')
+      || !!document.getElementById('user-avatar-topbar');
+    if (!isStudentPage) return;
+
     const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user') || localStorage.getItem('user');
     let name = 'Trần Hoàng';
     let email = 'student@englishlearning.example';
@@ -160,10 +166,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Xử lý Đăng xuất (Tương thích cả file:// và chạy qua Server)
   const logoutBtns = document.querySelectorAll('#btn-topbar-logout, #sidebar-logout-btn, #btn-student-logout, .btn-logout, .sidebar-footer a.text-danger, a[href*="logout"]');
   logoutBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       e.preventDefault();
+      if (window.location.protocol !== 'file:') {
+        try {
+          const response = await fetch('/Account/TeacherSession', { method: 'DELETE' });
+          if (!response.ok) throw new Error('Logout failed');
+        } catch (_) {
+          alert('Chưa đăng xuất được. Vui lòng thử lại.');
+          return;
+        }
+      }
       try {
         localStorage.removeItem('session_user');
+        localStorage.removeItem('student_user');
       } catch (_) {}
 
       if (window.location.protocol === 'file:') {

@@ -15,6 +15,8 @@ public partial class ApplicationDbContext : DbContext
     {
     }
 
+    public virtual DbSet<GradeChange> GradeChanges { get; set; }
+
     public virtual DbSet<ClassLesson> ClassLessons { get; set; }
 
     public virtual DbSet<ClassSchedule> ClassSchedules { get; set; }

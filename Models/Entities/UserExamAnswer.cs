@@ -23,7 +23,7 @@ namespace CNPM_EnglishLearning.Models.Entities
         public string? TextAnswer { get; set; }
 
         [Column("score_earned")]
-        public int? ScoreEarned { get; set; }
+        public decimal? ScoreEarned { get; set; }
 
         [Column("grading_status")]
         [MaxLength(20)]

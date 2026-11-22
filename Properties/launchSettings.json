@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "CNPM_EnglishLearning": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
