@@ -78,7 +78,7 @@ function openGradebookRoster(classId, examId) {
     data.exams.forEach(exam => { const option = element('option', exam.title); option.value = exam.id; select.append(option); });
     select.value = data.examId; select.addEventListener('change', () => openGradebookRoster(classId, Number(select.value)));
     examLabel.append(select); teacherContent.append(examLabel);
-    teacherContent.append(element('p', 'Tổng điểm: ' + data.maxScore + ' · Tự động: ' + data.automaticMaxScore + ' · Tự luận: ' + data.essayMaxScore + ' · Điểm đạt: ' + data.passScore + '. Chỉ có tổng điểm khi chấm đủ tất cả câu.', 'teacher-muted'));
+    teacherContent.append(element('p', 'Tổng điểm: ' + data.maxScore + ' · Tự động: ' + data.automaticMaxScore + ' · Tự luận: ' + data.essayMaxScore + ' · Đạt từ ' + data.passScore + ' điểm trở lên' + '. Chỉ có tổng điểm khi chấm đủ tất cả câu.', 'teacher-muted'));
     const graded = data.students.filter(s => s.latest?.score != null);
     const stats = element('div', null, 'grid grid-cols-4 gap-6 gradebook-stats');
     const metrics = [['Học viên', data.students.length], ['Đã nộp', data.students.filter(s => s.latest).length],

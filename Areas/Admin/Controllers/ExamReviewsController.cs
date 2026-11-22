@@ -1,4 +1,5 @@
 using CNPM_EnglishLearning.Data;
+using CNPM_EnglishLearning.Areas.Teacher.ViewModels;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,11 +49,13 @@ public sealed class ExamReviewsController(ApplicationDbContext db, IAntiforgery 
         if (!ModelState.IsValid || decision?.Approve == null || decision.ExpectedUpdatedAt == null) return BadRequest();
         var approve = decision.Approve.Value;
         var changed = await db.Exams.Where(e => e.Id == id && e.ReviewStatus == "pending"
-                && !e.IsPublished && e.UpdatedAt == decision.ExpectedUpdatedAt)
+                && !e.IsPublished && e.UpdatedAt == decision.ExpectedUpdatedAt
+                && (!approve || db.ExamQuestions.Where(q => q.ExamId == e.Id).Sum(q => q.Points) == TeacherExamInput.RequiredTotal))
             .ExecuteUpdateAsync(set => set.SetProperty(e => e.IsPublished, approve)
+                .SetProperty(e => e.PassScore, e => approve ? TeacherExamInput.PassingScore : e.PassScore)
                 .SetProperty(e => e.ReviewStatus, approve ? null : "rejected")
                 .SetProperty(e => e.UpdatedAt, DateTime.UtcNow), ct);
-        if (changed == 0) return Conflict(new { message = "Đề đã thay đổi hoặc đã được xử lý. Hãy tải lại danh sách." });
+        if (changed == 0) return Conflict(new { message = "Hãy tải lại đề. Chỉ có thể duyệt đề đang chờ có tổng điểm bằng 10." });
         return Ok(new { message = approve ? "Đã duyệt và công bố đề." : "Đã từ chối đề." });
     }
 }

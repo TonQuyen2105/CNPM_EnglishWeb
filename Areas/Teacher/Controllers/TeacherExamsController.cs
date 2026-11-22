@@ -87,7 +87,7 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
     private async Task<IActionResult> Save(int? id, TeacherExamInput input, CancellationToken ct)
     {
         if (!ModelState.IsValid || string.IsNullOrWhiteSpace(input.Title) || input.Questions == null)
-            return BadRequest(new { message = "Kiểm tra tên đề, thời gian, điểm đạt, số lượt làm và điểm từng câu. Câu hỏi không được trùng." });
+            return BadRequest(new { message = "Tổng điểm của đề có câu hỏi phải bằng 10. Kiểm tra tên đề, thời gian, số lượt làm và điểm từng câu. Câu hỏi không được trùng." });
         if (!await AssignedCourses().AnyAsync(c => c.Id == input.CourseId, ct)) return NotFound();
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         Exam? exam = null;
@@ -121,7 +121,7 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
             var teacherId = await db.Teachers.Where(t => t.UserId == userId).Select(t => t.Id).SingleAsync(ct);
             exam = new Exam { CourseId = input.CourseId, CreatedByTeacherId = teacherId, IsPublished = false,
                 Title = input.Title.Trim(), Description = input.Description?.Trim(), DurationMinutes = input.DurationMinutes,
-                PassScore = input.PassScore, MaxAttempts = input.MaxAttempts };
+                PassScore = TeacherExamInput.PassingScore, MaxAttempts = input.MaxAttempts };
             db.Exams.Add(exam);
             await db.SaveChangesAsync(ct);
         }
@@ -130,7 +130,7 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         await db.SaveChangesAsync(ct); // Release old order/uniqueness entries before rebuilding.
         exam.ReviewStatus = null;
         exam.Title = input.Title.Trim(); exam.Description = input.Description?.Trim();
-        exam.DurationMinutes = input.DurationMinutes; exam.PassScore = input.PassScore; exam.MaxAttempts = input.MaxAttempts;
+        exam.DurationMinutes = input.DurationMinutes; exam.PassScore = TeacherExamInput.PassingScore; exam.MaxAttempts = input.MaxAttempts;
         exam.UpdatedAt = DateTime.UtcNow;
         for (var i = 0; i < input.Questions.Count; i++)
             db.ExamQuestions.Add(new ExamQuestion { ExamId = exam.Id, QuestionId = input.Questions[i].QuestionId, Points = input.Questions[i].Points, OrderIndex = i + 1 });
@@ -154,10 +154,10 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         var questions = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
             where eq.ExamId == id select new { q.Id, q.QuestionType, q.LessonId, eq.Points }).ToListAsync(ct);
         var validInput = new TeacherExamInput { CourseId = exam.CourseId ?? 0, Title = exam.Title, Description = exam.Description,
-            DurationMinutes = exam.DurationMinutes, PassScore = exam.PassScore, MaxAttempts = exam.MaxAttempts,
+            DurationMinutes = exam.DurationMinutes, MaxAttempts = exam.MaxAttempts,
             Questions = questions.Select(q => new TeacherExamQuestionInput(q.Id, q.Points, null)).ToList() };
         if (!validInput.CanPublish() || questions.Any(q => q.QuestionType != "essay" && q.QuestionType != "multiple_choice" && q.QuestionType != "fill_blank"))
-            return BadRequest(new { message = "Đề cần ít nhất một câu thuộc loại hỗ trợ, cấu hình hợp lệ và điểm đạt không vượt tổng điểm." });
+            return BadRequest(new { message = "Đề cần ít nhất một câu thuộc loại hỗ trợ, cấu hình hợp lệ và tổng điểm đúng bằng 10." });
         foreach (var q in questions)
             if (!await db.Lessons.AnyAsync(l => l.Id == q.LessonId && l.CourseId == exam.CourseId, ct))
                 return BadRequest(new { message = "Có câu hỏi không thuộc khóa học của đề." });
@@ -171,6 +171,7 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
             }
             catch (GradingValidationException ex) { return BadRequest(new { message = ex.Message }); }
         }
+        exam.PassScore = TeacherExamInput.PassingScore;
         exam.ReviewStatus = "pending"; exam.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
         return Ok(new { exam.Id, message = "Đã gửi đề thi cho quản trị viên duyệt." });
@@ -192,7 +193,7 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         var title = "Bản sao · " + original.Title;
         var copy = new Exam { CourseId = original.CourseId, CreatedByTeacherId = original.CreatedByTeacherId,
             Title = title.Length > 200 ? title[..200] : title, Description = original.Description, DurationMinutes = original.DurationMinutes,
-            PassScore = original.PassScore, MaxAttempts = original.MaxAttempts, IsPublished = false, UpdatedAt = DateTime.UtcNow };
+            PassScore = TeacherExamInput.PassingScore, MaxAttempts = original.MaxAttempts, IsPublished = false, UpdatedAt = DateTime.UtcNow };
         db.Exams.Add(copy); await db.SaveChangesAsync(ct);
         foreach (var link in links) db.ExamQuestions.Add(new ExamQuestion { ExamId = copy.Id, QuestionId = link.QuestionId, Points = link.Points, OrderIndex = link.OrderIndex });
         await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);

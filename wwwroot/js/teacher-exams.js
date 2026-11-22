@@ -63,7 +63,7 @@ function openExamList(success) {
               await openExamList(result.message);
             } catch (err) { window.alert(err.message); send.disabled = false; }
           }, true);
-          send.disabled = !e.questions || e.passScore > e.totalPoints;
+          send.disabled = e.totalPoints !== 10;
           actions.append(send);
         }
         const names = [e.title, data.courses.find(c => c.id === e.courseId)?.title || '—'].map(text => {
@@ -199,9 +199,9 @@ function openExamDetail(id, success) {
     if (editable) {
       const total = Math.round(data.questions.reduce((sum, q) => sum + q.points, 0) * 100) / 100;
       const publish = gradingButton('Gửi đi', () => mutate('submit', 'Gửi đề cho quản trị viên duyệt?'), true);
-      publish.disabled = !data.questions.length || exam.passScore > total;
+      publish.disabled = total !== 10;
       actions.append(publish);
-      if (publish.disabled) teacherContent.append(element('p', 'Chưa thể gửi duyệt: cần có câu hỏi và điểm đạt không vượt tổng điểm.', 'exam-note'));
+      if (publish.disabled) teacherContent.append(element('p', 'Chưa thể gửi duyệt: tổng điểm các câu hỏi phải bằng 10.', 'exam-note'));
     }
     if (!exam.isPublished && exam.reviewStatus !== 'pending' && !data.hasAttempts) actions.append(gradingButton('Xóa bản nháp', () => mutate('delete', 'Xóa vĩnh viễn bản nháp này? Câu hỏi trong ngân hàng được giữ nguyên.')));
     teacherContent.append(error, actions);
@@ -225,7 +225,7 @@ function showExamEditor(course, bank, existing = null) {
   const title = field('Tên đề *', element('input', null, 'teacher-search'), true); title.maxLength = 200; title.value = exam?.title || '';
   const description = field('Hướng dẫn làm bài', element('textarea', null, 'teacher-search')); description.rows = 4; description.maxLength = 20000; description.value = exam?.description || '';
   const duration = field('Thời gian làm bài (phút) *', element('input', null, 'teacher-search'), true); duration.type = 'number'; duration.min = '1'; duration.max = '1440'; duration.step = '1'; duration.value = exam?.durationMinutes ?? 45;
-  const pass = field('Điểm đạt *', element('input', null, 'teacher-search'), true); pass.type = 'number'; pass.min = '0.01'; pass.max = '100000'; pass.step = '0.01'; pass.value = exam?.passScore ?? 5;
+  metadata.append(element('p', 'Điểm đạt từ 5/10 trở lên.', 'teacher-muted'));
   const attempts = field('Số lượt làm tối đa (để trống nếu không giới hạn)', element('input', null, 'teacher-search')); attempts.type = 'number'; attempts.min = '1'; attempts.max = '100'; attempts.step = '1'; attempts.value = exam ? exam.maxAttempts ?? '' : 1;
   form.append(metadata);
   const bankPanel = panel('Chọn câu hỏi từ ngân hàng');
@@ -242,11 +242,16 @@ function showExamEditor(course, bank, existing = null) {
   const save = element('button', 'Lưu bản nháp', 'btn btn-primary'); save.type = 'submit';
   const protect = event => { if (dirty || saving) { event.preventDefault(); event.returnValue = ''; } }; window.addEventListener('beforeunload', protect);
   const cancel = gradingButton('Hủy', () => { if (saving || (dirty && !window.confirm('Bỏ các thay đổi chưa lưu?'))) return; window.removeEventListener('beforeunload', protect); if (exam) openExamDetail(exam.id); else openExamList(); });
-  function values() { return { title: title.value, description: description.value, durationMinutes: Number(duration.value), passScore: Number(pass.value), maxAttempts: attempts.value === '' ? null : Number(attempts.value) }; }
+  function values() { return { title: title.value, description: description.value, durationMinutes: Number(duration.value), passScore: 5, maxAttempts: attempts.value === '' ? null : Number(attempts.value) }; }
   const previewButton = gradingButton('Xem trước', () => { if (!form.reportValidity()) return; preview.replaceChildren(renderExamPreview(values(), selected)); preview.hidden = false; preview.tabIndex = -1; preview.focus(); });
   actions.append(save, previewButton, cancel); form.append(error, actions, preview);
   function changed() { dirty = true; preview.hidden = true; }
-  function updateSummary() { const total = Math.round(selected.reduce((sum, q) => sum + Number(q.points || 0), 0) * 100) / 100; summary.textContent = selected.length + ' / 100 câu · Tổng ' + total + ' điểm' + (Number(pass.value) > total ? ' · Điểm đạt đang vượt tổng điểm, chưa thể công bố.' : ''); }
+  function updateSummary() {
+    const total = Math.round(selected.reduce((sum, q) => sum + Number(q.points || 0), 0) * 100) / 100;
+    summary.textContent = selected.length + ' / 100 câu · Tổng ' + total + ' / 10 điểm';
+    save.disabled = selected.length > 0 && total !== 10;
+    if (save.disabled) summary.textContent += ' · Điều chỉnh điểm các câu để lưu đề.';
+  }
   function drawBank() {
     candidates.replaceChildren();
     const rows = bank.questions.filter(q => (type.value === 'all' || q.questionType === type.value) && (lesson.value === 'all' || String(q.lessonId) === lesson.value) && examNormalize(q.questionText).includes(examNormalize(search.value.trim())));
@@ -294,7 +299,7 @@ function showExamEditor(course, bank, existing = null) {
     if (!selected.length) chosen.append(element('p', 'Chưa chọn câu hỏi.', 'teacher-empty'));
     updateSummary();
   }
-  search.addEventListener('input', drawBank); lesson.addEventListener('change', drawBank); type.addEventListener('change', drawBank); pass.addEventListener('input', updateSummary);
+  search.addEventListener('input', drawBank); lesson.addEventListener('change', drawBank); type.addEventListener('change', drawBank);
   form.addEventListener('input', changed);
   form.addEventListener('submit', async event => {
     event.preventDefault(); if (saving || !form.reportValidity()) return;

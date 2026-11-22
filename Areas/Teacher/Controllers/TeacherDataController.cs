@@ -70,7 +70,7 @@ public class TeacherDataController(ApplicationDbContext db) : ControllerBase
             case "classes":
                 data = await classes.OrderBy(c => c.ClassCode).Select(c => new
                 {
-                    c.Id, c.ClassCode, c.ClassName, c.Status, c.MaxStudents,
+                    c.Id, c.ClassCode, c.ClassName, c.Status, c.MaxStudents, SubjectName = c.Course!.Subject!.Name,
                     Students = db.Enrollments.Count(e => e.ClassId == c.Id && e.Status == "active")
                 }).ToListAsync(cancellationToken);
                 break;

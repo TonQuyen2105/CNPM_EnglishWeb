@@ -121,8 +121,8 @@ function renderTablePage(page, data, profile) {
       break;
     }
     case 'classes':
-      teacherContent.append(table(['Mã lớp', 'Tên lớp', 'Sĩ số', 'Trạng thái'], data.map(item => [
-        item.classCode, link(item.className, '/Teacher/class-detail.html?id=' + item.id),
+      teacherContent.append(table(['Mã lớp', 'Tên lớp', 'Môn học', 'Sĩ số', 'Trạng thái'], data.map(item => [
+        item.classCode, link(item.className, '/Teacher/class-detail.html?id=' + item.id), item.subjectName || 'Chưa gán môn',
         item.students + ' / ' + item.maxStudents, statusLabel(item.status)
       ]), 'Chưa được phân công lớp.'));
       break;
@@ -355,7 +355,7 @@ function render(page, data, profile) {
       const fill = element('span');
       fill.style.width = Math.min(100, item.maxStudents > 0 ? item.students / item.maxStudents * 100 : 0) + '%';
       progress.append(fill);
-      card.append(top, title, detail, progress, action);
+      card.append(top, title, element('p', 'Môn học: ' + (item.subjectName || 'Chưa gán môn'), 'teacher-muted'), detail, progress, action);
       grid.append(card);
     }
     teacherContent.append(data.length ? grid : element('p', 'Chưa được phân công lớp.', 'card teacher-empty'));
