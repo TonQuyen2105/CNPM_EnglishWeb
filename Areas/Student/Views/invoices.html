@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -402,6 +402,7 @@
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <button type="button" class="filter-tab-btn active" data-status="all" id="tab-all">Tất cả hóa đơn (<span id="count-all">0</span>)</button>
         <button type="button" class="filter-tab-btn" data-status="completed" id="tab-completed">Đã thanh toán (<span id="count-completed">0</span>)</button>
+        <button type="button" class="filter-tab-btn" data-status="refunded" id="tab-refunded">Đã hoàn tiền (<span id="count-refunded">0</span>)</button>
       </div>
 
       <div style="display: flex; gap: 8px; align-items: center; min-width: 280px; flex: 1; max-width: 420px;">
@@ -482,7 +483,7 @@
             <div style="font-size: 0.75rem; color: var(--text-muted);">Hotline: 1900 6868 • Email: support@englishlearning.example</div>
           </div>
           <div style="text-align: right;">
-            <span class="badge badge-success" style="font-size: 0.8125rem; padding: 4px 10px; font-weight: 700;">✓ ĐÃ THANH TOÁN</span>
+            <span class="badge badge-success" id="modal-status-badge" style="font-size: 0.8125rem; padding: 4px 10px; font-weight: 700;">✓ ĐÃ THANH TOÁN</span>
           </div>
         </div>
 
@@ -587,9 +588,11 @@
 
       const countAll = document.getElementById('count-all');
       const countCompleted = document.getElementById('count-completed');
+      const countRefunded = document.getElementById('count-refunded');
 
       const tabAll = document.getElementById('tab-all');
       const tabCompleted = document.getElementById('tab-completed');
+      const tabRefunded = document.getElementById('tab-refunded');
 
       // Modal elements
       const modal = document.getElementById('invoice-modal');
@@ -652,10 +655,51 @@
         }
       }
 
+      function getPaymentStatusMeta(status) {
+        switch ((status || '').toLowerCase()) {
+          case 'completed':
+            return {
+              tableHtml: `<span class="badge badge-success" style="font-weight: 700;">✓ Đã thanh toán</span>`,
+              modalClass: 'badge badge-success',
+              modalText: '✓ ĐÃ THANH TOÁN',
+              amountColor: '#059669'
+            };
+          case 'refunded':
+            return {
+              tableHtml: `<span class="badge badge-neutral" style="font-weight: 700;">Đã hoàn tiền</span>`,
+              modalClass: 'badge badge-neutral',
+              modalText: 'ĐÃ HOÀN TIỀN',
+              amountColor: '#64748B'
+            };
+          case 'failed':
+            return {
+              tableHtml: `<span class="badge badge-danger" style="font-weight: 700;">Thanh toán thất bại</span>`,
+              modalClass: 'badge badge-danger',
+              modalText: 'THANH TOÁN THẤT BẠI',
+              amountColor: '#DC2626'
+            };
+          case 'cancelled':
+            return {
+              tableHtml: `<span class="badge badge-danger" style="font-weight: 700;">Đã hủy</span>`,
+              modalClass: 'badge badge-danger',
+              modalText: 'ĐÃ HỦY',
+              amountColor: '#DC2626'
+            };
+          default:
+            return {
+              tableHtml: `<span class="badge badge-warning" style="font-weight: 700;">Chờ thanh toán</span>`,
+              modalClass: 'badge badge-warning',
+              modalText: 'CHỜ THANH TOÁN',
+              amountColor: '#D97706'
+            };
+        }
+      }
+
       function updateStats() {
         const completedList = rawPayments.filter(p => (p.status || '').toLowerCase() === 'completed');
+        const refundedList = rawPayments.filter(p => (p.status || '').toLowerCase() === 'refunded');
         const totalAmount = completedList.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-        const uniqueClasses = new Set(rawPayments.map(p => p.class_id).filter(Boolean));
+        const uniqueClasses = new Set(completedList.map(p => p.class_id).filter(Boolean));
 
         if (statTotalAmount) statTotalAmount.textContent = formatMoney(totalAmount);
         if (statCompletedCount) statCompletedCount.textContent = `${completedList.length} hóa đơn`;
@@ -663,6 +707,7 @@
 
         if (countAll) countAll.textContent = rawPayments.length;
         if (countCompleted) countCompleted.textContent = completedList.length;
+        if (countRefunded) countRefunded.textContent = refundedList.length;
       }
 
       function renderInvoicesTable() {
@@ -701,10 +746,8 @@
 
         tbody.innerHTML = filtered.map(p => {
           const methodInfo = getPaymentMethodDisplay(p.payment_method);
-          const isDone = (p.status || '').toLowerCase() === 'completed';
-          const statusBadge = isDone
-            ? `<span class="badge badge-success" style="font-weight: 700;">✓ Đã thanh toán</span>`
-            : `<span class="badge badge-warning" style="font-weight: 700;">Đang xử lý</span>`;
+          const statusMeta = getPaymentStatusMeta(p.status);
+          const statusBadge = statusMeta.tableHtml;
 
           const courseTitle = p.course_title || 'Khóa học';
           const className = p.class_name || 'Lớp học';
@@ -730,7 +773,7 @@
                 </div>
               </td>
               <td style="padding: 1rem;">
-                <strong style="color: #059669; font-size: 1rem; font-weight: 800;">
+                <strong style="color: ${statusMeta.amountColor}; font-size: 1rem; font-weight: 800;">
                   ${formatMoney(p.amount)}
                 </strong>
               </td>
@@ -794,8 +837,16 @@
         document.getElementById('modal-note').textContent = p.note || `Thanh toán học phí lớp ${p.class_name || ''}`;
 
         const priceStr = formatMoney(p.amount);
+        const statusMeta = getPaymentStatusMeta(p.status);
+        const modalBadge = document.getElementById('modal-status-badge');
+        if (modalBadge) {
+          modalBadge.className = statusMeta.modalClass;
+          modalBadge.textContent = statusMeta.modalText;
+        }
         document.getElementById('modal-item-price').textContent = priceStr;
-        document.getElementById('modal-total-amount').textContent = priceStr;
+        const modalTotalEl = document.getElementById('modal-total-amount');
+        modalTotalEl.textContent = priceStr;
+        modalTotalEl.style.color = statusMeta.amountColor;
 
         modal.classList.add('show');
       }
@@ -818,20 +869,27 @@
       }
 
       // Filter tabs event
+      function setActiveFilterTab(status, activeBtn) {
+        [tabAll, tabCompleted, tabRefunded].forEach(btn => {
+          if (btn) btn.classList.remove('active');
+        });
+        if (activeBtn) activeBtn.classList.add('active');
+        currentFilter = status;
+        renderInvoicesTable();
+      }
       if (tabAll) {
         tabAll.addEventListener('click', function () {
-          tabAll.classList.add('active');
-          if (tabCompleted) tabCompleted.classList.remove('active');
-          currentFilter = 'all';
-          renderInvoicesTable();
+          setActiveFilterTab('all', tabAll);
         });
       }
       if (tabCompleted) {
         tabCompleted.addEventListener('click', function () {
-          tabCompleted.classList.add('active');
-          if (tabAll) tabAll.classList.remove('active');
-          currentFilter = 'completed';
-          renderInvoicesTable();
+          setActiveFilterTab('completed', tabCompleted);
+        });
+      }
+      if (tabRefunded) {
+        tabRefunded.addEventListener('click', function () {
+          setActiveFilterTab('refunded', tabRefunded);
         });
       }
 

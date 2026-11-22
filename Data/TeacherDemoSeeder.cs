@@ -53,7 +53,7 @@ internal static class TeacherDemoSeeder
         var schedule = new ClassSchedule
         {
             ClassId = courseClass.Id, ClassroomId = room.Id, TimeSlotId = slot.Id,
-            DayOfWeek = (int)today.DayOfWeek + 1
+            DayOfWeek = today.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)today.DayOfWeek
         };
         db.AddRange(
             new ClassTeacher { ClassId = courseClass.Id, TeacherId = teacher.Id },

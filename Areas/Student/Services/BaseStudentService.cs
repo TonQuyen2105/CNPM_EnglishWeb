@@ -93,7 +93,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
         }
 
         /// <summary>
-        /// Quy đổi DateTime.DayOfWeek của .NET sang giá trị day_of_week trong bảng class_schedules (Thứ 2 = 2 ... Thứ 7 = 7, CN = 1 hoặc 7).
+        /// Quy đổi DateTime.DayOfWeek của .NET sang giá trị day_of_week chuẩn DB/Frontend (Thứ 2 = 2 ... Thứ 7 = 7, CN = 1).
         /// </summary>
         protected static int ToScheduleDayOfWeek(DayOfWeek dayOfWeek)
         {
@@ -108,6 +108,22 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
                 DayOfWeek.Sunday => 1,
                 _ => 1
             };
+        }
+
+        /// <summary>
+        /// Quy đổi DateTime.DayOfWeek của .NET sang chuẩn ISO (Thứ 2 = 1 ... Thứ 7 = 6, CN = 7) khớp giá trị EF Core đọc từ ClassSchedule.DayOfWeek.
+        /// </summary>
+        protected static int ToIsoDayOfWeek(DayOfWeek dayOfWeek)
+        {
+            return dayOfWeek == DayOfWeek.Sunday ? 7 : (int)dayOfWeek;
+        }
+
+        /// <summary>
+        /// Chuyển giá trị ISO (1=Thứ 2..6=Thứ 7, 7=CN) từ EF Core ClassSchedule.DayOfWeek sang chuẩn DB/Frontend (2=Thứ 2..7=Thứ 7, 1=CN).
+        /// </summary>
+        protected static int IsoToScheduleDayOfWeek(int isoDayOfWeek)
+        {
+            return isoDayOfWeek == 7 ? 1 : (isoDayOfWeek >= 1 && isoDayOfWeek <= 6 ? isoDayOfWeek + 1 : isoDayOfWeek);
         }
 
         /// <summary>
@@ -333,17 +349,21 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
                 .GroupBy(x => x.ClassId)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Select(x => new ClassScheduleItemDto
+                    g => g.Select(x =>
                     {
-                        ScheduleId = x.Id,
-                        DayOfWeek = x.DayOfWeek,
-                        DayName = GetDayOfWeekName(x.DayOfWeek),
-                        TimeSlotId = x.TimeSlotId,
-                        TimeSlotName = x.TimeSlotName,
-                        TimeRange = FormatTimeRange(x.RawStartTime ?? new TimeSpan(18, 0, 0), x.RawEndTime ?? new TimeSpan(20, 0, 0)),
-                        ClassroomId = x.ClassroomId,
-                        ClassroomName = x.ClassroomName,
-                        Location = x.Location
+                        var scheduleDay = IsoToScheduleDayOfWeek(x.DayOfWeek);
+                        return new ClassScheduleItemDto
+                        {
+                            ScheduleId = x.Id,
+                            DayOfWeek = scheduleDay,
+                            DayName = GetDayOfWeekName(scheduleDay),
+                            TimeSlotId = x.TimeSlotId,
+                            TimeSlotName = x.TimeSlotName,
+                            TimeRange = FormatTimeRange(x.RawStartTime ?? new TimeSpan(18, 0, 0), x.RawEndTime ?? new TimeSpan(20, 0, 0)),
+                            ClassroomId = x.ClassroomId,
+                            ClassroomName = x.ClassroomName,
+                            Location = x.Location
+                        };
                     }).ToList()
                 );
         }

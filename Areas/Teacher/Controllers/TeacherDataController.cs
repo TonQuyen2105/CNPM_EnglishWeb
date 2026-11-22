@@ -11,6 +11,14 @@ namespace CNPM_EnglishLearning.Areas.Teacher.Controllers;
 [Route("api/teacher")]
 public class TeacherDataController(ApplicationDbContext db) : ControllerBase
 {
+    // EF Core đọc ClassSchedule.DayOfWeek theo chuẩn ISO (1=Thứ 2..6=Thứ 7, 7=CN).
+    // Frontend Teacher (wwwroot/js/teacher.js) dùng chuẩn DB/JS (1=CN, 2=Thứ 2..7=Thứ 7).
+    private static int ToIsoDayOfWeek(DayOfWeek dayOfWeek) =>
+        dayOfWeek == DayOfWeek.Sunday ? 7 : (int)dayOfWeek;
+
+    private static int IsoToFrontendDayOfWeek(int isoDayOfWeek) =>
+        isoDayOfWeek == 7 ? 1 : (isoDayOfWeek >= 1 && isoDayOfWeek <= 6 ? isoDayOfWeek + 1 : isoDayOfWeek);
+
     [HttpGet("{page}")]
     public async Task<IActionResult> Get(string page, int? id, CancellationToken cancellationToken)
     {
@@ -54,8 +62,10 @@ public class TeacherDataController(ApplicationDbContext db) : ControllerBase
         {
             case "dashboard":
                 var today = DateTime.UtcNow.AddHours(7).Date;
-                var day = (int)today.DayOfWeek + 1;
+                var day = ToIsoDayOfWeek(today.DayOfWeek);
                 var date = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+                var todayScheduleRows = await schedule.Where(s => s.DayOfWeek == day && s.Status != "cancelled"
+                    && s.StartDate <= date && s.EndDate >= date).ToListAsync(cancellationToken);
                 data = new
                 {
                     ActiveClasses = await classes.CountAsync(c => c.Status == "ongoing", cancellationToken),
@@ -63,8 +73,13 @@ public class TeacherDataController(ApplicationDbContext db) : ControllerBase
                         && classes.Any(c => c.Id == e.ClassId)).Select(e => e.UserId).Distinct().CountAsync(cancellationToken),
                     Pending = await db.UserExamAnswers.CountAsync(a => (a.GradingStatus == "pending_review" || a.ScoreEarned == null)
                         && attempts.Any(t => t.Id == a.UserExamId), cancellationToken),
-                    Today = await schedule.Where(s => s.DayOfWeek == day && s.Status != "cancelled"
-                        && s.StartDate <= date && s.EndDate >= date).ToListAsync(cancellationToken)
+                    Today = todayScheduleRows.Select(s => new
+                    {
+                        s.ClassCode, s.ClassName,
+                        DayOfWeek = IsoToFrontendDayOfWeek(s.DayOfWeek),
+                        s.Room, s.StartTime, s.EndTime,
+                        s.StartDate, s.EndDate, s.Status
+                    }).ToList()
                 };
                 break;
             case "classes":
@@ -93,7 +108,14 @@ public class TeacherDataController(ApplicationDbContext db) : ControllerBase
                 };
                 break;
             case "schedule":
-                data = await schedule.ToListAsync(cancellationToken);
+                var scheduleRows = await schedule.ToListAsync(cancellationToken);
+                data = scheduleRows.Select(s => new
+                {
+                    s.ClassCode, s.ClassName,
+                    DayOfWeek = IsoToFrontendDayOfWeek(s.DayOfWeek),
+                    s.Room, s.StartTime, s.EndTime,
+                    s.StartDate, s.EndDate, s.Status
+                }).ToList();
                 break;
             case "lessons":
                 data = Array.Empty<object>(); // Loaded by the class-scoped lessons workspace.

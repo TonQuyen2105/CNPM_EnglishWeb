@@ -415,7 +415,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
                     if (conflict != null)
                     {
-                        var dayName = GetDayOfWeekName(targetSlot.DayOfWeek);
+                        var dayName = GetDayOfWeekName(IsoToScheduleDayOfWeek(targetSlot.DayOfWeek));
                         var timeRange = FormatTimeRange(targetSlot.StartTime, targetSlot.EndTime);
                         return ServiceResult<EnrollmentResultDto>.Conflict(
                             $"Trùng lịch học vào {dayName} ({timeRange}) với lớp '{conflict.ClassName}' mà bạn đang theo học.");
@@ -446,6 +446,13 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         Status = EnrollmentActive
                     };
                     Db.Enrollments.Add(enrollmentEntity);
+                }
+
+                // Tự động chuyển lớp từ "upcoming" sang "ongoing" khi có học viên đăng ký active
+                var trackedClass = await Db.CourseClasses.FirstOrDefaultAsync(cc => cc.Id == targetClass.Id);
+                if (trackedClass != null && string.Equals(trackedClass.Status, ClassUpcoming, StringComparison.OrdinalIgnoreCase))
+                {
+                    trackedClass.Status = ClassOngoing;
                 }
 
                 await Db.SaveChangesAsync();
@@ -703,7 +710,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
                             if (conflict != null)
                             {
-                                var dayName = GetDayOfWeekName(s1.DayOfWeek);
+                                var dayName = GetDayOfWeekName(IsoToScheduleDayOfWeek(s1.DayOfWeek));
                                 var timeRange = FormatTimeRange(s1.StartTime, s1.EndTime);
                                 return ServiceResult<BatchEnrollmentResultDto>.Conflict(
                                     $"Trùng lịch học giữa các lớp được chọn: Lớp '{c1.ClassName}' và lớp '{c2.ClassName}' đều có lịch học vào {dayName} ({timeRange}). Vui lòng chọn lớp khác.");
@@ -750,7 +757,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
                     if (conflict != null)
                     {
-                        var dayName = GetDayOfWeekName(slot.DayOfWeek);
+                        var dayName = GetDayOfWeekName(IsoToScheduleDayOfWeek(slot.DayOfWeek));
                         var timeRange = FormatTimeRange(slot.StartTime, slot.EndTime);
                         return ServiceResult<BatchEnrollmentResultDto>.Conflict(
                             $"Trùng lịch học vào {dayName} ({timeRange}) giữa lớp '{c.ClassName}' và lớp '{conflict.ClassName}' mà bạn đang theo học.");
@@ -780,6 +787,10 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     .ToListAsync();
                 var existingMap = existingRecords.ToDictionary(e => e.ClassId, e => e);
 
+                var trackedClassesMap = await Db.CourseClasses
+                    .Where(cc => distinctClassIds.Contains(cc.Id))
+                    .ToDictionaryAsync(cc => cc.Id, cc => cc);
+
                 foreach (var info in targetClassesInfo)
                 {
                     var c = info.Class;
@@ -804,6 +815,13 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                             Status = EnrollmentActive
                         };
                         Db.Enrollments.Add(enrollmentEntity);
+                    }
+
+                    // Tự động chuyển lớp từ "upcoming" sang "ongoing" khi có học viên đăng ký active
+                    if (trackedClassesMap.TryGetValue(c.Id, out var trackedClass) &&
+                        string.Equals(trackedClass.Status, ClassUpcoming, StringComparison.OrdinalIgnoreCase))
+                    {
+                        trackedClass.Status = ClassOngoing;
                     }
 
                     await Db.SaveChangesAsync();

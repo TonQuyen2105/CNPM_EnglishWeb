@@ -80,12 +80,12 @@ namespace CNPM_EnglishLearning.Data
                 new ClassTeacher { Id = 3, ClassId = 3, TeacherId = 2, Role = "main", AssignedAt = pastMonth }
             });
 
-            // 9. class_schedules
+            // 9. class_schedules (ISO: 1=Thứ 2, 3=Thứ 4, 5=Thứ 6 -> EF Core HasConversion lưu DB 2, 4, 6)
             context.ClassSchedules.AddRange(new List<ClassSchedule>
             {
-                new ClassSchedule { Id = 1, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 2, CreatedAt = pastMonth },
-                new ClassSchedule { Id = 2, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 4, CreatedAt = pastMonth },
-                new ClassSchedule { Id = 3, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 6, CreatedAt = pastMonth }
+                new ClassSchedule { Id = 1, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 1, CreatedAt = pastMonth },
+                new ClassSchedule { Id = 2, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 3, CreatedAt = pastMonth },
+                new ClassSchedule { Id = 3, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 5, CreatedAt = pastMonth }
             });
 
             // 10. enrollments

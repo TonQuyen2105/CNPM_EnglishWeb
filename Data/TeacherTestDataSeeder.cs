@@ -102,7 +102,8 @@ internal static class TeacherTestDataSeeder
                     db.Enrollments.Add(new Enrollment { ClassId = courseClass.Id, UserId = student.Id, EnrolledAt = start.AddDays(-2), Status = status == "completed" ? "completed" : status == "cancelled" ? "cancelled" : "active" });
                 for (var d = 0; d < 2; d++)
                 {
-                    var day = (int)today.AddDays(d * 3).DayOfWeek + 1;
+                    var targetDow = today.AddDays(d * 3).DayOfWeek;
+                    var day = targetDow == DayOfWeek.Sunday ? 7 : (int)targetDow;
                     // Avoid overlapping the teacher's existing assignments.
                     var occupied = await (from sc in db.ClassSchedules
                         join ct in db.ClassTeachers on sc.ClassId equals ct.ClassId
@@ -119,7 +120,8 @@ internal static class TeacherTestDataSeeder
                     var schedule = new ClassSchedule { ClassId = courseClass.Id, ClassroomId = room.Id, TimeSlotId = slots[index].Id, DayOfWeek = day };
                     db.ClassSchedules.Add(schedule);
                     await db.SaveChangesAsync();
-                    var lessonDate = start.AddDays((day - 1 - (int)start.DayOfWeek + 7) % 7);
+                    var startIso = start.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)start.DayOfWeek;
+                    var lessonDate = start.AddDays((day - startIso + 7) % 7);
                     for (var n = 0; n < 3; n++)
                         db.ClassLessons.Add(new ClassLesson { ClassId = courseClass.Id, LessonId = lessons[d + n * 2].Id, TeacherId = teacher.Id, ScheduleId = schedule.Id, ScheduleDate = lessonDate.AddDays(7 * n), Status = status == "cancelled" ? "cancelled" : lessonDate.AddDays(7 * n) < today ? "completed" : "scheduled" });
                 }

@@ -540,7 +540,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 foreach (var item in explicitSessions)
                 {
                     var dayOfWeek = item.DayOfWeek > 0
-                        ? item.DayOfWeek
+                        ? IsoToScheduleDayOfWeek(item.DayOfWeek)
                         : ToScheduleDayOfWeek(item.ScheduleDate.DayOfWeek);
 
                     var startTime = item.RawStartTime ?? new TimeSpan(18, 0, 0);
@@ -601,9 +601,10 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     for (var dayIndex = 0; dayIndex < totalDays; dayIndex++)
                     {
                         var currentDate = rawStart.AddDays(dayIndex);
-                        var scheduleDow = ToScheduleDayOfWeek(currentDate.DayOfWeek);
+                        var currentIsoDow = ToIsoDayOfWeek(currentDate.DayOfWeek);
+                        var currentScheduleDow = IsoToScheduleDayOfWeek(currentIsoDow);
 
-                        foreach (var sched in recurringSchedules.Where(s => s.DayOfWeek == scheduleDow))
+                        foreach (var sched in recurringSchedules.Where(s => s.DayOfWeek == currentIsoDow))
                         {
                             if (!classMap.TryGetValue(sched.ClassId, out var cls)) continue;
                             if (currentDate < cls.StartDate.Date || currentDate > cls.EndDate.Date) continue;
@@ -628,7 +629,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                                 LessonId = null,
                                 LessonTitle = $"Buổi học định kỳ - {cls.ClassName}",
                                 ScheduleDate = dateStr,
-                                DayOfWeek = sched.DayOfWeek,
+                                DayOfWeek = currentScheduleDow,
                                 TimeSlot = FormatTimeRange(startTime, endTime),
                                 StartTime = startTime.ToString(@"hh\:mm"),
                                 EndTime = endTime.ToString(@"hh\:mm"),
