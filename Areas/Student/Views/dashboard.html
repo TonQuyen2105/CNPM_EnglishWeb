@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -134,10 +134,6 @@
 
       <!-- Right Controls -->
       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span id="nav-streak-text">5 ngày</span>
-        </div>
 
         <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
@@ -188,6 +184,7 @@
             <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
             <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
             <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
             <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
@@ -448,38 +445,18 @@
           renderDashboard({
             student_profile: user,
             stats: {
-              active_classes_count: 2,
-              vocabulary_mastered_count: 19,
-              average_score: 8.8,
-              lessons_progress_percentage: 100
+              enrolled_classes_count: 0,
+              enrolled_class_names: 'Chưa tham gia lớp nào',
+              mastered_vocabularies: 0,
+              average_score: null,
+              score_rank: 'Chưa có',
+              total_lessons_completed: 0,
+              total_lessons: 0,
+              attendance_rate: 100
             },
-            active_courses: [
-              {
-                class_id: 4,
-                course_id: 1,
-                course_title: 'Giao tiếp trong cuộc sống',
-                class_code: 'EL-PRACTICE-V1-01',
-                teacher_name: 'Lê Minh Anh',
-                schedule_summary: 'Chủ nhật (08:00 - 09:30), Thứ 3 (08:00 - 09:30)',
-                progress_percentage: 100,
-                completed_lessons: 6,
-                total_lessons: 6,
-                completed_lessons_count: 6,
-                total_lessons_count: 6,
-                next_lesson_title: 'Bài 1: Giới thiệu và làm quen',
-                next_lesson_id: 1
-              }
-            ],
-            quick_review: { due_flashcards_count: 5, pending_exams_count: 2 },
-            next_session: {
-              session_title: 'Giới thiệu và làm quen',
-              course_title: 'Giao tiếp trong cuộc sống',
-              class_name: 'Nhóm 1',
-              session_date: '2026-11-22',
-              time_range: '08:00 - 09:30',
-              room: 'Phòng B301',
-              next_lesson_id: 1
-            }
+            active_courses: [],
+            quick_review: { due_flashcards_count: 0, pending_exams_count: 0 },
+            next_session: null
           });
         }
       }
@@ -575,8 +552,8 @@
 
         const statScore = document.getElementById('stat-avg-score');
         const statScoreSub = document.getElementById('stat-score-sub');
-        if (statScore) statScore.textContent = (stats.average_score != null) ? stats.average_score.toFixed(1) : '8.5';
-        if (statScoreSub) statScoreSub.textContent = `Xếp loại: ${stats.score_rank || 'Khá'}`;
+        if (statScore) statScore.textContent = (stats.average_score != null) ? stats.average_score.toFixed(1) : '--';
+        if (statScoreSub) statScoreSub.textContent = (stats.average_score != null) ? `Xếp loại: ${stats.score_rank || 'Khá'}` : 'Chưa có điểm';
 
         const statProgress = document.getElementById('stat-progress-rate');
         const statProgressSub = document.getElementById('stat-progress-sub');

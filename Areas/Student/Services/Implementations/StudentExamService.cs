@@ -29,7 +29,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 select cc.CourseId
             ).Distinct().ToListAsync();
 
-            var examsQuery = Db.Exams.AsNoTracking().Where(ex => ex.IsPublished);
+            var examsQuery = Db.Exams.AsNoTracking().Where(ex => ex.IsPublished || (ex.CourseId.HasValue && enrolledCourseIds.Contains(ex.CourseId.Value)));
 
             if (courseId.HasValue && courseId.Value > 0)
             {
@@ -62,6 +62,24 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             ).ToListAsync();
 
             var examIds = exams.Select(x => x.Exam.Id).ToList();
+
+            // Truy vấn các lớp mà học sinh đã ghi danh để kiểm tra trạng thái lớp (complete/cancel)
+            var studentEnrolledClasses = await (
+                from e in Db.Enrollments.AsNoTracking()
+                join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                where e.UserId == studentId
+                select new
+                {
+                    cc.Id,
+                    cc.CourseId,
+                    cc.ClassName,
+                    cc.Status
+                }
+            ).ToListAsync();
+
+            var classesByCourse = studentEnrolledClasses
+                .GroupBy(x => x.CourseId)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             // Truy vấn gộp lịch sử làm bài của học sinh cho danh sách bài thi
             var userAttempts = examIds.Count == 0
@@ -99,7 +117,32 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     .Max();
 
                 var hasScore = completedAttempts.Any(a => a.TotalScore.HasValue);
+
+                // Kiểm tra trạng thái lớp học gắn với khóa học của bài thi
+                var courseClasses = ex.CourseId.HasValue
+                    ? classesByCourse.GetValueOrDefault(ex.CourseId.Value, new())
+                    : new();
+
+                var isClassClosed = false;
+                string? classStatus = null;
+                if (courseClasses.Count > 0)
+                {
+                    var hasOpenClass = courseClasses.Any(c =>
+                        !string.Equals(c.Status, "completed", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(c.Status, "complete", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(c.Status, "cancelled", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(c.Status, "canceled", StringComparison.OrdinalIgnoreCase));
+
+                    isClassClosed = !hasOpenClass;
+                    classStatus = courseClasses.FirstOrDefault()?.Status;
+                }
+
                 var canStart = activeAttempt != null || !ex.MaxAttempts.HasValue || attemptCount < ex.MaxAttempts.Value;
+                if (isClassClosed)
+                {
+                    // Lớp đã complete hoặc cancel: Không được vào thi mới (nếu chưa thi hoặc thi rồi đều canStart = false)
+                    canStart = false;
+                }
 
                 return new ExamListItemDto
                 {
@@ -115,7 +158,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     RemainingAttempts = remainingAttempts,
                     BestScore = hasScore ? bestScore : null,
                     InProgressUserExamId = activeAttempt?.Id,
-                    CanStart = canStart
+                    CanStart = canStart,
+                    IsClassClosed = isClassClosed,
+                    ClassStatus = classStatus
                 };
             }).ToList();
 
@@ -127,8 +172,15 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
         /// </summary>
         public async Task<ServiceResult<ExamSessionStartDto>> StartExamSessionAsync(int studentId, int examId)
         {
+            var enrolledCourseIds = await (
+                from e in Db.Enrollments.AsNoTracking()
+                join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                where e.UserId == studentId && e.Status != EnrollmentCancelled
+                select cc.CourseId
+            ).Distinct().ToListAsync();
+
             var exam = await Db.Exams.AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Id == examId && e.IsPublished);
+                .FirstOrDefaultAsync(e => e.Id == examId && (e.IsPublished || (e.CourseId.HasValue && enrolledCourseIds.Contains(e.CourseId.Value))));
 
             if (exam == null)
             {
@@ -165,6 +217,32 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             if (activeSession == null)
             {
+                // Ràng buộc: Nếu bài thi thuộc khóa học mà học viên có lớp đã complete hoặc cancel thì không được vào thi
+                if (exam.CourseId.HasValue)
+                {
+                    var enrolledClasses = await (
+                        from e in Db.Enrollments.AsNoTracking()
+                        join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                        where e.UserId == studentId && cc.CourseId == exam.CourseId.Value
+                        select cc
+                    ).ToListAsync();
+
+                    if (enrolledClasses.Count > 0)
+                    {
+                        var hasOpenClass = enrolledClasses.Any(c =>
+                            !string.Equals(c.Status, "completed", StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(c.Status, "complete", StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(c.Status, "cancelled", StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(c.Status, "canceled", StringComparison.OrdinalIgnoreCase));
+
+                        if (!hasOpenClass)
+                        {
+                            return ServiceResult<ExamSessionStartDto>.BadRequest(
+                                "Lớp học của bài thi này đã kết thúc hoặc bị hủy, bạn không thể tham gia làm bài thi.");
+                        }
+                    }
+                }
+
                 var finishedAttemptCount = existingUserExams.Count(ue => ue.Status != ExamInProgress);
                 if (exam.MaxAttempts.HasValue && finishedAttemptCount >= exam.MaxAttempts.Value)
                 {

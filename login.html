@@ -733,8 +733,8 @@
           btnSubmit.disabled = false;
         }
 
-        // Chấp nhận mật khẩu chính xác hoặc mật khẩu mặc định 123456
-        const isPasswordValid = user && (user.password === password || password === '123456');
+        // Chấp nhận đúng mật khẩu của tài khoản
+        const isPasswordValid = user && (user.password === password);
 
         if (!user || !isPasswordValid) {
           if (groupPassword) groupPassword.classList.add('has-error');

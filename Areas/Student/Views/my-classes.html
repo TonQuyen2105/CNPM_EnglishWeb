@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -272,10 +272,6 @@
 
       <!-- Right Controls -->
       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span id="nav-streak-text">5 ngày</span>
-        </div>
 
         <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
@@ -326,6 +322,7 @@
             <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
             <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
             <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
             <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
@@ -394,7 +391,7 @@
     <!-- Filter & Search Card (Chỉ 2 trạng thái: ongoing & complete, kèm ô tìm kiếm tối ưu) -->
     <div class="filter-search-card">
       
-      <!-- Filter Buttons (Tất cả, Đang học - ongoing, Đã hoàn thành - complete) -->
+      <!-- Filter Buttons (Tất cả, Đang học - ongoing, Đã hoàn thành - complete, Đã hủy - cancelled) -->
       <div class="filter-btn-group" role="tablist" aria-label="Lọc lớp học theo trạng thái">
         <button type="button" class="filter-btn active" data-status="all" id="tab-status-all">
           <span>Tất cả</span>
@@ -407,6 +404,10 @@
         <button type="button" class="filter-btn" data-status="complete" id="tab-status-complete">
           <span>✅ Đã hoàn thành</span>
           <span class="count-pill" id="badge-count-complete">0</span>
+        </button>
+        <button type="button" class="filter-btn" data-status="cancelled" id="tab-status-cancelled">
+          <span>⛔ Đã hủy</span>
+          <span class="count-pill" id="badge-count-cancelled">0</span>
         </button>
       </div>
 
@@ -649,10 +650,13 @@
           const totalAll = currentList.length;
           const totalOngoing = currentList.filter(c => c.class_status === 'ongoing').length;
           const totalComplete = currentList.filter(c => c.class_status === 'complete').length;
+          const totalCancelled = currentList.filter(c => c.class_status === 'cancelled' || c.class_status === 'canceled').length;
 
           document.getElementById('badge-count-all').textContent = totalAll;
           document.getElementById('badge-count-ongoing').textContent = totalOngoing;
           document.getElementById('badge-count-complete').textContent = totalComplete;
+          const cancelledBadge = document.getElementById('badge-count-cancelled');
+          if (cancelledBadge) cancelledBadge.textContent = totalCancelled;
         } else {
           if (currentStatus === 'all') {
             document.getElementById('badge-count-all').textContent = currentList.length;
@@ -660,6 +664,9 @@
             document.getElementById('badge-count-ongoing').textContent = currentList.length;
           } else if (currentStatus === 'complete') {
             document.getElementById('badge-count-complete').textContent = currentList.length;
+          } else if (currentStatus === 'cancelled') {
+            const cancelledBadge = document.getElementById('badge-count-cancelled');
+            if (cancelledBadge) cancelledBadge.textContent = currentList.length;
           }
         }
       }
@@ -688,6 +695,9 @@
             } else if (currentStatus === 'complete') {
               if (emptyTitle) emptyTitle.textContent = 'Chưa có lớp học nào đã hoàn thành';
               if (emptySub) emptySub.textContent = 'Các lớp học bạn đã hoàn thành toàn bộ chương trình sẽ được lưu trữ và hiển thị tại đây.';
+            } else if (currentStatus === 'cancelled') {
+              if (emptyTitle) emptyTitle.textContent = 'Không có lớp học nào đã hủy';
+              if (emptySub) emptySub.textContent = 'Bạn không có lớp học nào ở trạng thái đã hủy.';
             } else {
               if (emptyTitle) emptyTitle.textContent = 'Bạn chưa tham gia lớp học nào';
               if (emptySub) emptySub.textContent = 'Đăng ký ngay khóa học yêu thích để bắt đầu hành trình nâng cao trình độ tiếng Anh.';
@@ -700,8 +710,9 @@
         if (emptyEl) emptyEl.style.display = 'none';
 
         classes.forEach(cls => {
-          const isOngoing = (cls.class_status === 'ongoing');
+          const isCancelled = (cls.class_status === 'cancelled' || cls.class_status === 'canceled');
           const isComplete = (cls.class_status === 'complete');
+          const isOngoing = !isCancelled && !isComplete;
           
           let teacherText = 'Đang cập nhật';
           if (cls.teachers && cls.teachers.length > 0) {
@@ -717,26 +728,41 @@
           const completedLessons = cls.completed_lessons || 0;
           const totalLessons = cls.total_lessons || 0;
 
-          const statusBadgeHtml = isOngoing 
-            ? `<span class="badge badge-success" style="display: flex; align-items: center; gap: 4px; font-weight: 700;">🟢 Đang học</span>`
-            : `<span class="badge badge-neutral" style="display: flex; align-items: center; gap: 4px; font-weight: 700;">✅ Đã hoàn thành</span>`;
+          let statusBadgeHtml = '';
+          if (isCancelled) {
+            statusBadgeHtml = `<span class="badge" style="display: flex; align-items: center; gap: 4px; font-weight: 700; background: #FEE2E2; color: #991B1B;">⛔ Đã hủy</span>`;
+          } else if (isComplete) {
+            statusBadgeHtml = `<span class="badge badge-neutral" style="display: flex; align-items: center; gap: 4px; font-weight: 700;">✅ Đã hoàn thành</span>`;
+          } else {
+            statusBadgeHtml = `<span class="badge badge-success" style="display: flex; align-items: center; gap: 4px; font-weight: 700;">🟢 Đang học</span>`;
+          }
 
-          const actionButtonsHtml = isOngoing 
-            ? `
+          let actionButtonsHtml = '';
+          if (isCancelled) {
+            actionButtonsHtml = `
               <div style="display: flex; gap: 8px; margin-top: 1.25rem;">
-                <a href="learn.html?classId=${cls.class_id}" class="btn btn-sm btn-primary" style="font-weight: 600;">Vào lớp học</a>
-                <a href="schedule.html" class="btn btn-sm btn-secondary" style="font-weight: 600;">Xem lịch học</a>
+                <a href="learn.html?classId=${cls.class_id}" class="btn btn-sm btn-secondary" style="font-weight: 600;">Xem bài học</a>
+                <a href="results.html" class="btn btn-sm btn-ghost" style="font-weight: 600;">Xem kết quả thi</a>
               </div>
-            `
-            : `
+            `;
+          } else if (isComplete) {
+            actionButtonsHtml = `
               <div style="display: flex; gap: 8px; margin-top: 1.25rem;">
                 <a href="learn.html?classId=${cls.class_id}" class="btn btn-sm btn-secondary" style="font-weight: 600;">Xem lại bài học</a>
                 <a href="results.html" class="btn btn-sm btn-ghost" style="font-weight: 600;">Xem kết quả thi</a>
               </div>
             `;
+          } else {
+            actionButtonsHtml = `
+              <div style="display: flex; gap: 8px; margin-top: 1.25rem;">
+                <a href="learn.html?classId=${cls.class_id}" class="btn btn-sm btn-primary" style="font-weight: 600;">Vào lớp học</a>
+                <a href="schedule.html" class="btn btn-sm btn-secondary" style="font-weight: 600;">Xem lịch học</a>
+              </div>
+            `;
+          }
 
           const card = document.createElement('div');
-          card.className = `my-class-card ${isComplete ? 'status-complete' : ''}`;
+          card.className = `my-class-card ${isComplete ? 'status-complete' : ''} ${isCancelled ? 'status-cancelled' : ''}`;
           card.innerHTML = `
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">

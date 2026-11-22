@@ -151,20 +151,25 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 .ToListAsync();
 
             var allScores = progressScores.Concat(examScores).ToList();
-            var avgScore = allScores.Count > 0 ? Math.Round(allScores.Average(), 1) : 8.5;
-            if (avgScore > 10.0)
+            double? avgScore = null;
+            string scoreRank = "Chưa có";
+            if (allScores.Count > 0)
             {
-                avgScore = Math.Round(avgScore / 10.0, 1);
+                var calc = Math.Round(allScores.Average(), 1);
+                if (calc > 10.0)
+                {
+                    calc = Math.Round(calc / 10.0, 1);
+                }
+                avgScore = calc;
+                scoreRank = calc switch
+                {
+                    >= 9.0 => "Xuất sắc",
+                    >= 8.0 => "Giỏi",
+                    >= 6.5 => "Khá",
+                    >= 5.0 => "Trung bình",
+                    _ => "Cần cố gắng"
+                };
             }
-
-            var scoreRank = avgScore switch
-            {
-                >= 9.0 => "Xuất sắc",
-                >= 8.0 => "Giỏi",
-                >= 6.5 => "Khá",
-                >= 5.0 => "Trung bình",
-                _ => "Cần cố gắng"
-            };
 
             var enrolledClassNames = string.Join(" & ", activeEnrollments.Select(x => !string.IsNullOrEmpty(x.ClassCode) ? x.ClassCode : x.ClassName));
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -213,10 +213,6 @@
 
       <!-- Right Controls -->
       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span id="nav-streak-text">5 ngày</span>
-        </div>
 
         <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
@@ -267,6 +263,7 @@
             <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
             <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
             <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
             <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
@@ -493,6 +490,30 @@
     </div>
   </div>
 
+  <!-- Modal Xác Nhận Rời Phòng Thi (Tự Động Nộp Bài) -->
+  <div id="leave-exam-confirm-modal" class="modal-overlay-custom" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div class="card" style="max-width: 480px; width: 100%; padding: 2rem; border-radius: var(--radius-xl); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); border: 1.5px solid #F59E0B; background: white;">
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: #FEF3C7; color: #D97706; display: inline-flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 1rem;">
+          ⚠️
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: #0F172A; margin-bottom: 0.5rem;">Cảnh báo: Bạn đang làm bài thi!</h3>
+        <p style="font-size: 0.875rem; color: #475569; margin: 0; line-height: 1.6;">
+          Hệ thống không cho phép tự ý chuyển trang trong quá trình thi. Nếu bạn rời khỏi trang, hệ thống sẽ <strong>tự động nộp bài thi hiện tại</strong> của bạn ngay lập tức.
+        </p>
+      </div>
+
+      <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 0.875rem 1rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #92400E;">
+        💡 Bạn có chắc chắn muốn nộp bài thi và rời khỏi phòng thi không?
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-leave-exam" style="flex: 1; font-weight: 600;">Tiếp tục làm bài</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-leave-exam" style="flex: 1; font-weight: 700; background: #D97706; border-color: #D97706;">Xác nhận nộp & Rời đi</button>
+      </div>
+    </div>
+  </div>
+
   <footer style="margin-top: auto; border-top: 1px solid var(--border-color); background: white; padding: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
     © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
   </footer>
@@ -541,6 +562,13 @@
       const btnCancelSubmit = document.getElementById('btn-cancel-submit');
       const btnConfirmSubmit = document.getElementById('btn-confirm-submit');
       const resultModal = document.getElementById('submit-result-modal');
+
+      // Ràng buộc phòng thi & Điều hướng khi rời trang
+      let isExamSubmitted = false;
+      let pendingLeaveUrl = null;
+      const leaveModal = document.getElementById('leave-exam-confirm-modal');
+      const btnCancelLeave = document.getElementById('btn-cancel-leave-exam');
+      const btnConfirmLeave = document.getElementById('btn-confirm-leave-exam');
 
       function escapeHtml(str) {
         if (!str) return '';
@@ -594,6 +622,13 @@
         renderCurrentQuestion();
         renderPalette();
         updateProgressCounters();
+
+        // Thiết lập bộ bảo vệ chống điều hướng trái phép khi đang thi
+        setupNavigationGuards();
+
+        if (urlParams.get('testLeaveModal') === '1') {
+          setTimeout(() => { if (leaveModal) leaveModal.style.display = 'flex'; }, 800);
+        }
       }
 
       function startCountdown(totalSeconds) {
@@ -966,9 +1001,80 @@
         });
       }
 
-      async function submitExam(isAutoExpired = false) {
+      // Bộ bảo vệ điều hướng: Chặn rời trang khi đang thi và yêu cầu xác nhận nộp bài
+      let guardsInitialized = false;
+      function setupNavigationGuards() {
+        if (guardsInitialized) return;
+        guardsInitialized = true;
+
+        // 1. Chặn click vào mọi liên kết ngoài khi đang thi
+        document.addEventListener('click', function (e) {
+          if (isExamSubmitted || !examSession) return;
+
+          const anchor = e.target.closest('a');
+          if (!anchor) return;
+
+          // Bỏ qua nếu link nằm trong modal kết quả sau khi nộp
+          if (anchor.closest('#submit-result-modal')) return;
+
+          const href = anchor.getAttribute('href');
+          if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+          try {
+            const targetUrl = new URL(anchor.href, window.location.href);
+            if (targetUrl.href !== window.location.href) {
+              e.preventDefault();
+              e.stopPropagation();
+              pendingLeaveUrl = targetUrl.href;
+              if (leaveModal) leaveModal.style.display = 'flex';
+            }
+          } catch (err) {}
+        }, true);
+
+        // 2. Nút tiếp tục làm bài (Hủy rời phòng thi)
+        if (btnCancelLeave) {
+          btnCancelLeave.addEventListener('click', function () {
+            pendingLeaveUrl = null;
+            if (leaveModal) leaveModal.style.display = 'none';
+          });
+        }
+
+        // 3. Nút xác nhận nộp & rời phòng thi
+        if (btnConfirmLeave) {
+          btnConfirmLeave.addEventListener('click', async function () {
+            if (btnConfirmLeave) {
+              btnConfirmLeave.disabled = true;
+              btnConfirmLeave.textContent = 'Đang nộp bài...';
+            }
+            flushCurrentAnswer();
+            await submitExam(false, pendingLeaveUrl || 'exams.html');
+          });
+        }
+
+        // 4. Bắt phím quay lại / lịch sử trình duyệt (popstate)
+        window.history.pushState({ inExam: true }, '');
+        window.addEventListener('popstate', function () {
+          if (!isExamSubmitted && examSession) {
+            window.history.pushState({ inExam: true }, '');
+            pendingLeaveUrl = 'exams.html';
+            if (leaveModal) leaveModal.style.display = 'flex';
+          }
+        });
+
+        // 5. Cảnh báo beforeunload khi reload hoặc đóng tab
+        window.addEventListener('beforeunload', function (e) {
+          if (!isExamSubmitted && examSession) {
+            e.preventDefault();
+            e.returnValue = 'Bạn đang trong quá trình làm bài thi. Rời khỏi trang sẽ làm nộp bài thi của bạn!';
+            return e.returnValue;
+          }
+        });
+      }
+
+      async function submitExam(isAutoExpired = false, redirectUrl = null) {
         if (!examSession) return;
         if (confirmModal) confirmModal.style.display = 'none';
+        if (leaveModal) leaveModal.style.display = 'none';
 
         if (btnConfirmSubmit) {
           btnConfirmSubmit.disabled = true;
@@ -991,13 +1097,24 @@
             throw new Error(json.message || 'Không thể nộp bài thi');
           }
 
+          isExamSubmitted = true;
           const result = json.data;
+
+          if (redirectUrl) {
+            window.location.href = redirectUrl;
+            return;
+          }
+
           showResultModal(result);
         } catch (err) {
           alert('Có lỗi khi nộp bài: ' + (err.message || 'Vui lòng thử lại.'));
           if (btnConfirmSubmit) {
             btnConfirmSubmit.disabled = false;
             btnConfirmSubmit.textContent = 'Xác nhận nộp bài';
+          }
+          if (btnConfirmLeave) {
+            btnConfirmLeave.disabled = false;
+            btnConfirmLeave.textContent = 'Xác nhận nộp & Rời đi';
           }
         }
       }

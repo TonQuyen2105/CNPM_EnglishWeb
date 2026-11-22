@@ -143,6 +143,28 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             // Phân giải và lọc trường Text, Key tài liệu PDF & Video từ cột content (hỗ trợ định dạng JSON/EL_LESSON_MEDIA_V1 của Supabase Storage)
             var (parsedText, mediaPdfUrl, mediaPdfName, mediaVideoUrl, mediaVideoName) = ParseLessonContent(lesson.Content);
 
+            // Kiểm tra trạng thái lớp học của bài học này mà học viên tham gia
+            var enrolledClasses = await (
+                from e in Db.Enrollments.AsNoTracking()
+                join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                where e.UserId == studentId && cc.CourseId == lesson.CourseId
+                select cc
+            ).ToListAsync();
+
+            var isClassClosed = false;
+            string? classStatus = null;
+            if (enrolledClasses.Count > 0)
+            {
+                var hasOpenClass = enrolledClasses.Any(c =>
+                    !string.Equals(c.Status, "completed", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(c.Status, "complete", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(c.Status, "cancelled", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(c.Status, "canceled", StringComparison.OrdinalIgnoreCase));
+
+                isClassClosed = !hasOpenClass;
+                classStatus = enrolledClasses.FirstOrDefault()?.Status;
+            }
+
             var detailDto = new LessonDetailDto
             {
                 Id = lesson.Id,
@@ -160,6 +182,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 IsCompleted = progress?.IsCompleted ?? false,
                 Score = progress?.Score,
                 CompletedAt = progress?.CompletedAt,
+                IsClassClosed = isClassClosed,
+                ClassStatus = classStatus,
                 Attachments = StudentExtendedStore.GetLessonAttachments(lesson.Id, lesson.Title, lesson.ContentType),
                 PracticeQuestions = practiceQuestionDtos
             };
@@ -175,10 +199,33 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             int lessonId,
             CompleteLessonRequestDto request)
         {
-            var lessonExists = await Db.Lessons.AsNoTracking().AnyAsync(l => l.Id == lessonId);
-            if (!lessonExists)
+            var lesson = await Db.Lessons.AsNoTracking().FirstOrDefaultAsync(l => l.Id == lessonId);
+            if (lesson == null)
             {
                 return ServiceResult<CompleteLessonResponseDto>.NotFound($"Không tìm thấy bài học có ID = {lessonId}.");
+            }
+
+            // Kiểm tra ràng buộc: Nếu tất cả các lớp của học viên cho bài học này ở trạng thái complete hoặc cancel thì chặn hoàn thành
+            var enrolledClasses = await (
+                from e in Db.Enrollments.AsNoTracking()
+                join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                where e.UserId == studentId && cc.CourseId == lesson.CourseId
+                select cc
+            ).ToListAsync();
+
+            if (enrolledClasses.Count > 0)
+            {
+                var hasOpenClass = enrolledClasses.Any(c =>
+                    !string.Equals(c.Status, "completed", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(c.Status, "complete", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(c.Status, "cancelled", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(c.Status, "canceled", StringComparison.OrdinalIgnoreCase));
+
+                if (!hasOpenClass)
+                {
+                    return ServiceResult<CompleteLessonResponseDto>.BadRequest(
+                        "Lớp học của bài học này đã kết thúc hoặc bị hủy, không thể đánh dấu hoàn thành bài học.");
+                }
             }
 
             var score = request.Score.HasValue ? Math.Clamp(request.Score.Value, 0m, 100m) : 100m;

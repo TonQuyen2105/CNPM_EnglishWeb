@@ -75,6 +75,18 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
         }
 
         /// <summary>
+        /// 2.5b. Đăng ký nhiều khóa học / lớp học cùng lúc (Kiểm tra không trùng lịch).
+        /// Endpoint: POST /api/v1/student/enrollments/batch
+        /// </summary>
+        [HttpPost("enrollments/batch")]
+        public async Task<IActionResult> EnrollBatchClasses([FromBody] BatchEnrollmentRequestDto request)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.EnrollBatchClassesAsync(studentId, request);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
         /// 2.6. Lấy lịch sử giao dịch thanh toán của học sinh.
         /// Endpoint: GET /api/v1/student/payments?page=1&limit=10&status=completed
         /// </summary>

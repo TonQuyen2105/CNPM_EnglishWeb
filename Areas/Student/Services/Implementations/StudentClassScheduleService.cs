@@ -25,15 +25,14 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
         /// </summary>
         public async Task<ServiceResult<List<MyClassListItemDto>>> GetMyClassesAsync(int studentId, string? status, string? search = null)
         {
-            // 1. Lấy các lớp học sinh có ghi danh (loại bỏ trạng thái cancelled)
+            // 1. Lấy các lớp học sinh có ghi danh
             var enrollmentQuery = Db.Enrollments.AsNoTracking()
-                .Where(e => e.UserId == studentId && e.Status.ToLower() != EnrollmentCancelled);
+                .Where(e => e.UserId == studentId);
 
             var rawClasses = await (
                 from e in enrollmentQuery
                 join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                 join c in Db.Courses.AsNoTracking() on cc.CourseId equals c.Id
-                where cc.Status.ToLower() != "cancelled"
                 orderby e.EnrolledAt descending
                 select new
                 {
@@ -57,19 +56,24 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 return ServiceResult<List<MyClassListItemDto>>.Ok(new List<MyClassListItemDto>(), "Học sinh chưa tham gia lớp học nào.");
             }
 
-            // 2. Chuẩn hóa chỉ giữ 2 trạng thái: "ongoing" hoặc "complete", loại bỏ tất cả các trạng thái khác (upcoming, pending, cancelled...)
+            // 2. Chuẩn hóa trạng thái: "ongoing", "complete", hoặc "cancelled"
             var normalizedClasses = rawClasses.Select(item =>
             {
                 var classStatusLower = item.RawClassStatus?.Trim().ToLowerInvariant() ?? "";
                 var enrollStatusLower = item.RawEnrollmentStatus?.Trim().ToLowerInvariant() ?? "";
 
                 string? normalizedStatus = null;
-                if (classStatusLower == "completed" || classStatusLower == "complete" ||
-                    enrollStatusLower == "completed" || enrollStatusLower == "complete")
+                if (classStatusLower == "cancelled" || classStatusLower == "canceled" ||
+                    enrollStatusLower == "cancelled" || enrollStatusLower == "canceled")
+                {
+                    normalizedStatus = "cancelled";
+                }
+                else if (classStatusLower == "completed" || classStatusLower == "complete" ||
+                         enrollStatusLower == "completed" || enrollStatusLower == "complete")
                 {
                     normalizedStatus = "complete";
                 }
-                else if (classStatusLower == "ongoing" || classStatusLower == "active" ||
+                else if (classStatusLower == "ongoing" || classStatusLower == "active" || classStatusLower == "upcoming" ||
                          enrollStatusLower == "active" || enrollStatusLower == "ongoing")
                 {
                     normalizedStatus = "ongoing";
@@ -81,15 +85,16 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     NormalizedStatus = normalizedStatus
                 };
             })
-            .Where(x => x.NormalizedStatus != null) // Chỉ giữ duy nhất 2 trạng thái: ongoing và complete
+            .Where(x => x.NormalizedStatus != null)
             .ToList();
 
-            // 3. Lọc theo trạng thái yêu cầu nếu có (all, ongoing, complete)
+            // 3. Lọc theo trạng thái yêu cầu nếu có (all, ongoing, complete, cancelled)
             if (!string.IsNullOrWhiteSpace(status) && !string.Equals(status, "all", StringComparison.OrdinalIgnoreCase))
             {
                 var targetStatus = status.Trim().ToLowerInvariant();
                 if (targetStatus == "completed") targetStatus = "complete";
                 if (targetStatus == "active") targetStatus = "ongoing";
+                if (targetStatus == "canceled") targetStatus = "cancelled";
 
                 normalizedClasses = normalizedClasses
                     .Where(x => x.NormalizedStatus == targetStatus)
@@ -458,12 +463,16 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             var resolvedEnd = DateTime.SpecifyKind(rawEnd, DateTimeKind.Utc);
             var endExclusive = resolvedEnd.AddDays(1);
 
-            // 1. Lấy các lớp học sinh đang theo học
+            // 1. Lấy các lớp học sinh đang theo học (loại trừ các lớp completed / complete hoặc cancelled / canceled)
             var activeClasses = await (
                 from e in Db.Enrollments.AsNoTracking()
                 join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                 join c in Db.Courses.AsNoTracking() on cc.CourseId equals c.Id
-                where e.UserId == studentId && (e.Status.ToLower() == EnrollmentActive || e.Status.ToLower() == "enrolled" || e.Status.ToLower() == "ongoing")
+                where e.UserId == studentId 
+                      && (e.Status.ToLower() == EnrollmentActive || e.Status.ToLower() == "enrolled" || e.Status.ToLower() == "ongoing")
+                      && cc.Status.ToLower() != "completed" && cc.Status.ToLower() != "complete"
+                      && cc.Status.ToLower() != "cancelled" && cc.Status.ToLower() != "canceled"
+                      && e.Status.ToLower() != "completed" && e.Status.ToLower() != "cancelled"
                 select new
                 {
                     ClassId = cc.Id,

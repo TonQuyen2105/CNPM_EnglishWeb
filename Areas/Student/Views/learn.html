@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -345,10 +345,6 @@
 
       <!-- Right Controls -->
       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span id="nav-streak-text">5 ngày</span>
-        </div>
 
         <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
@@ -399,6 +395,7 @@
             <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
             <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
             <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
             <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
@@ -1153,10 +1150,36 @@
         updateNavButtons();
       }
 
+      // Kiểm tra xem lớp học hiện tại có ở trạng thái kết thúc (complete) hoặc đã hủy (cancel) không
+      function isCurrentClassClosed() {
+        if (currentLessonDetail && currentLessonDetail.is_class_closed) return true;
+        if (currentClassData) {
+          const st = (currentClassData.class_status || '').toLowerCase();
+          if (st === 'completed' || st === 'complete' || st === 'cancelled' || st === 'canceled') return true;
+        }
+        return false;
+      }
+
       // Cập nhật trạng thái nút hoàn thành
       function updateCompleteButton(isCompleted, score) {
         const actionWrapper = document.getElementById('lesson-action-wrapper');
         if (!actionWrapper) return;
+
+        // Nếu lớp học ở trạng thái complete/cancel: không thể hoàn thành được các bài học nhưng vẫn vào xem được
+        if (isCurrentClassClosed()) {
+          const closedStatus = (currentClassData?.class_status || currentLessonDetail?.class_status || '').toLowerCase();
+          const isCancel = closedStatus.includes('cancel');
+          actionWrapper.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge" style="padding: 8px 14px; font-size: 0.8125rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; background: #F1F5F9; color: #64748B; border: 1px solid #CBD5E1;">
+                <span>🔒</span>
+                <span>Lớp học đã ${isCancel ? 'hủy' : 'kết thúc'} (Chỉ xem nội dung)</span>
+              </span>
+              ${isCompleted ? `<span class="badge badge-success" style="padding: 6px 10px; font-size: 0.75rem; font-weight: 700;">Đã hoàn thành trước đó</span>` : ''}
+            </div>
+          `;
+          return;
+        }
 
         if (isCompleted) {
           actionWrapper.innerHTML = `
@@ -1192,6 +1215,11 @@
       async function markComplete(score = 100, isCompleted = true) {
         if (!currentLessonId) return;
 
+        if (isCurrentClassClosed()) {
+          showToast('Lớp học này đã kết thúc hoặc bị hủy, không thể đánh dấu hoàn thành bài học.', 'info');
+          return;
+        }
+
         try {
           const userId = studentUser.id || 8;
           const bodyPayload = isCompleted 
@@ -1225,7 +1253,8 @@
             updateCompleteButton(isCompleted, isCompleted ? (score || 100) : null);
             renderSidebarLessons(currentLessonsList, currentLessonId);
           } else {
-            showToast('Không thể cập nhật tiến độ bài học lúc này.', 'info');
+            const errData = await res.json().catch(() => null);
+            showToast(errData?.message || 'Không thể cập nhật tiến độ bài học lúc này.', 'info');
           }
         } catch (err) {
           console.error('Lỗi đánh dấu hoàn thành bài học:', err);

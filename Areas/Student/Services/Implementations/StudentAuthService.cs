@@ -30,19 +30,13 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 return false;
             }
 
-            // 1. So khớp trực tiếp plaintext (ví dụ password = "123456")
+            // 1. So khớp trực tiếp plaintext (ví dụ password trong DB lưu dạng chuỗi chưa mã hóa)
             if (string.Equals(user.Password, inputPassword, StringComparison.Ordinal))
             {
                 return true;
             }
 
-            // 2. Mật khẩu chuẩn mặc định hệ thống cho tài khoản seed/demo là "123456"
-            if (inputPassword == "123456")
-            {
-                return true;
-            }
-
-            // 3. Kiểm tra bằng PasswordHasher của ASP.NET Core Identity nếu người dùng đổi mật khẩu hoặc dùng hash
+            // 2. Kiểm tra bằng PasswordHasher của ASP.NET Core Identity nếu mật khẩu được hash
             try
             {
                 var result = PasswordHasher.VerifyHashedPassword(user, user.Password, inputPassword);

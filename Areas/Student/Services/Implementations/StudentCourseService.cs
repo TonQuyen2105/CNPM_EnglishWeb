@@ -61,8 +61,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     c.Title,
                     c.Description,
                     c.ThumbnailUrl,
-                    c.Level,
-                    c.Price
+                    c.Level
                 }
             ).Skip(skip).Take(limit).ToListAsync();
 
@@ -92,18 +91,29 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     .ToListAsync())
                     .ToDictionary(x => x.CourseId, x => x.Count);
 
-            var openClassCountByCourse = courseIds.Count == 0
-                ? new Dictionary<int, int>()
+            // Tính toán số lớp mở và tổng giá các lớp thuộc từng khóa học (không lấy giá từ bảng courses)
+            var classStatsByCourse = courseIds.Count == 0
+                ? new Dictionary<int, (int OpenCount, int TotalCount, decimal TotalPrice)>()
                 : (await Db.CourseClasses.AsNoTracking()
-                    .Where(cc => courseIds.Contains(cc.CourseId) && cc.Status != "cancelled")
+                    .Where(cc => courseIds.Contains(cc.CourseId))
                     .GroupBy(cc => cc.CourseId)
-                    .Select(g => new { CourseId = g.Key, Count = g.Count() })
+                    .Select(g => new
+                    {
+                        CourseId = g.Key,
+                        OpenCount = g.Count(x => x.Status != "cancelled" && x.Status != "completed"),
+                        TotalCount = g.Count(),
+                        TotalPrice = g.Where(x => x.Status != "cancelled").Sum(x => x.Price)
+                    })
                     .ToListAsync())
-                    .ToDictionary(x => x.CourseId, x => x.Count);
+                    .ToDictionary(x => x.CourseId, x => (OpenCount: x.OpenCount, TotalCount: x.TotalCount, TotalPrice: x.TotalPrice));
 
             var resultList = pagedCourses.Select(c =>
             {
                 var reviewStat = reviewStatsByCourse.GetValueOrDefault(c.Id, (AvgRating: 5.0, Count: 0));
+                var classStat = classStatsByCourse.GetValueOrDefault(c.Id, (OpenCount: 0, TotalCount: 0, TotalPrice: 0m));
+                // Nếu trong danh sách không có lớp nào (TotalCount == 0) thì không hiện tổng giá (Price = null)
+                decimal? calculatedPrice = classStat.TotalCount > 0 ? classStat.TotalPrice : null;
+
                 return new CourseListItemDto
                 {
                     Id = c.Id,
@@ -113,11 +123,11 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     Description = c.Description,
                     ThumbnailUrl = c.ThumbnailUrl,
                     Level = c.Level,
-                    Price = c.Price,
+                    Price = calculatedPrice,
                     AverageRating = reviewStat.Count > 0 ? reviewStat.AvgRating : 5.0,
                     ReviewsCount = reviewStat.Count,
                     TotalLessons = lessonCountByCourse.GetValueOrDefault(c.Id, 0),
-                    OpenClassesCount = openClassCountByCourse.GetValueOrDefault(c.Id, 0)
+                    OpenClassesCount = classStat.OpenCount
                 };
             }).ToList();
 
@@ -143,8 +153,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     c.Title,
                     c.Description,
                     c.ThumbnailUrl,
-                    c.Level,
-                    c.Price
+                    c.Level
                 }
             ).FirstOrDefaultAsync();
 
@@ -246,6 +255,10 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 };
             }).ToList();
 
+            // Tính tổng giá từ các lớp thuộc khóa học, nếu không có lớp nào thì Price = null
+            var activeClasses = openClasses.Where(cc => cc.Status != "cancelled").ToList();
+            decimal? detailPrice = openClasses.Count > 0 ? activeClasses.Sum(cc => cc.Price) : null;
+
             var detailDto = new CourseDetailDto
             {
                 Id = courseData.Id,
@@ -255,7 +268,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 Description = courseData.Description,
                 ThumbnailUrl = courseData.ThumbnailUrl,
                 Level = courseData.Level,
-                Price = courseData.Price,
+                Price = detailPrice,
                 AverageRating = reviewSummary != null ? Math.Round(reviewSummary.AvgRating, 1) : 5.0,
                 ReviewsCount = reviewSummary?.Count ?? 0,
                 Syllabus = syllabusDtos,
@@ -523,9 +536,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
         }
 
         /// <summary>
-        /// 2.5. Đăng ký khóa học (Tự động chọn lớp hoặc theo ClassId được chỉ định).
+        /// 2.5. Đăng ký các lớp học của khóa học (Hỗ trợ chọn 1 hoặc nhiều lớp cùng lúc, kiểm tra không trùng lịch).
         /// </summary>
-        public async Task<ServiceResult<EnrollmentResultDto>> EnrollCourseAsync(
+        public async Task<ServiceResult<BatchEnrollmentResultDto>> EnrollCourseAsync(
             int studentId,
             int courseId,
             CreateCourseEnrollmentRequestDto request)
@@ -533,31 +546,337 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             var courseExists = await Db.Courses.AsNoTracking().AnyAsync(c => c.Id == courseId);
             if (!courseExists)
             {
-                return ServiceResult<EnrollmentResultDto>.NotFound($"Không tìm thấy khóa học có ID = {courseId}.");
+                return ServiceResult<BatchEnrollmentResultDto>.NotFound($"Không tìm thấy khóa học có ID = {courseId}.");
             }
 
-            // RÀNG BUỘC BẮT BUỘC: Học sinh phải chọn một lớp học cụ thể trước khi thực hiện thanh toán
-            if (!request.ClassId.HasValue || request.ClassId.Value <= 0)
+            var targetClassIds = new List<int>();
+            if (request.ClassIds != null && request.ClassIds.Count > 0)
             {
-                return ServiceResult<EnrollmentResultDto>.BadRequest(
-                    "Vui lòng chọn một lớp học cụ thể từ danh sách trước khi thực hiện thanh toán.");
+                targetClassIds = request.ClassIds.Distinct().ToList();
+            }
+            else if (request.ClassId.HasValue && request.ClassId.Value > 0)
+            {
+                targetClassIds.Add(request.ClassId.Value);
             }
 
-            var validClass = await Db.CourseClasses.AsNoTracking()
-                .AnyAsync(cc => cc.Id == request.ClassId.Value && cc.CourseId == courseId);
-
-            if (!validClass)
+            // RÀNG BUỘC BẮT BUỘC: Học sinh phải chọn ít nhất một lớp học cụ thể trước khi thực hiện thanh toán
+            if (targetClassIds.Count == 0)
             {
-                return ServiceResult<EnrollmentResultDto>.BadRequest(
-                    $"Lớp học ID = {request.ClassId.Value} không thuộc khóa học ID = {courseId}.");
+                return ServiceResult<BatchEnrollmentResultDto>.BadRequest(
+                    "Vui lòng chọn ít nhất một lớp học của khóa học này trước khi thực hiện thanh toán.");
             }
 
-            return await EnrollClassAsync(studentId, new CreateEnrollmentRequestDto
+            // Kiểm tra tất cả các lớp phải thuộc khóa học courseId
+            var invalidClasses = await Db.CourseClasses.AsNoTracking()
+                .Where(cc => targetClassIds.Contains(cc.Id) && cc.CourseId != courseId)
+                .Select(cc => cc.Id)
+                .ToListAsync();
+
+            if (invalidClasses.Count > 0)
             {
-                ClassId = request.ClassId.Value,
+                return ServiceResult<BatchEnrollmentResultDto>.BadRequest(
+                    $"Các lớp học ID [{string.Join(", ", invalidClasses)}] không thuộc khóa học này.");
+            }
+
+            return await EnrollBatchClassesAsync(studentId, new BatchEnrollmentRequestDto
+            {
+                ClassIds = targetClassIds,
                 PaymentMethod = request.PaymentMethod,
                 Note = request.Note
             });
+        }
+
+        /// <summary>
+        /// 2.5b. Đăng ký nhiều khóa học / lớp học cùng lúc (Kiểm tra sĩ số, không trùng lịch & thanh toán).
+        /// </summary>
+        public async Task<ServiceResult<BatchEnrollmentResultDto>> EnrollBatchClassesAsync(
+            int studentId,
+            BatchEnrollmentRequestDto request)
+        {
+            if (request == null || request.ClassIds == null || request.ClassIds.Count == 0)
+            {
+                return ServiceResult<BatchEnrollmentResultDto>.BadRequest("Vui lòng chọn ít nhất một lớp học để đăng ký.");
+            }
+
+            var distinctClassIds = request.ClassIds.Where(id => id > 0).Distinct().ToList();
+            if (distinctClassIds.Count == 0)
+            {
+                return ServiceResult<BatchEnrollmentResultDto>.BadRequest("Danh sách lớp học không hợp lệ.");
+            }
+
+            // 1. Kiểm tra sự tồn tại của các lớp học
+            var targetClassesInfo = await (
+                from cc in Db.CourseClasses.AsNoTracking()
+                join c in Db.Courses.AsNoTracking() on cc.CourseId equals c.Id
+                where distinctClassIds.Contains(cc.Id)
+                select new
+                {
+                    Class = cc,
+                    CourseTitle = c.Title
+                }
+            ).ToListAsync();
+
+            if (targetClassesInfo.Count < distinctClassIds.Count)
+            {
+                var foundIds = targetClassesInfo.Select(x => x.Class.Id).ToHashSet();
+                var missing = distinctClassIds.First(id => !foundIds.Contains(id));
+                return ServiceResult<BatchEnrollmentResultDto>.NotFound($"Không tìm thấy lớp học có ID = {missing}.");
+            }
+
+            // 2. Ràng buộc: Trạng thái không được là cancelled hoặc completed
+            foreach (var info in targetClassesInfo)
+            {
+                var st = info.Class.Status;
+                if (string.Equals(st, "cancelled", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(st, "completed", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ServiceResult<BatchEnrollmentResultDto>.BadRequest(
+                        $"Lớp '{info.Class.ClassName}' hiện không mở đăng ký (trạng thái: {st}).");
+                }
+            }
+
+            // 3. Ràng buộc: Kiểm tra học sinh đã đăng ký lớp nào trong danh sách chưa
+            var existingActiveEnrollments = await Db.Enrollments.AsNoTracking()
+                .Where(e => e.UserId == studentId && distinctClassIds.Contains(e.ClassId) && (e.Status == EnrollmentActive || e.Status == "active"))
+                .Select(e => e.ClassId)
+                .ToListAsync();
+
+            if (existingActiveEnrollments.Count > 0)
+            {
+                var firstCls = targetClassesInfo.First(x => x.Class.Id == existingActiveEnrollments[0]).Class;
+                return ServiceResult<BatchEnrollmentResultDto>.Conflict($"Bạn đã đăng ký tham gia lớp '{firstCls.ClassName}' rồi.");
+            }
+
+            // 4. Ràng buộc: Kiểm tra sĩ số tối đa cho từng lớp
+            var currentActiveCounts = await Db.Enrollments.AsNoTracking()
+                .Where(e => distinctClassIds.Contains(e.ClassId) && (e.Status == EnrollmentActive || e.Status == "active"))
+                .GroupBy(e => e.ClassId)
+                .Select(g => new { ClassId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.ClassId, x => x.Count);
+
+            foreach (var info in targetClassesInfo)
+            {
+                var current = currentActiveCounts.GetValueOrDefault(info.Class.Id, 0);
+                if (current >= info.Class.MaxStudents)
+                {
+                    return ServiceResult<BatchEnrollmentResultDto>.BadRequest(
+                        $"Lớp '{info.Class.ClassName}' đã đủ sĩ số tối đa ({current}/{info.Class.MaxStudents} học viên).");
+                }
+            }
+
+            // 5. Kiểm tra trùng lịch học:
+            // Lấy thời khóa biểu của tất cả các lớp đang đăng ký
+            var targetClassSchedules = await (
+                from cs in Db.ClassSchedules.AsNoTracking()
+                join ts in Db.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
+                where distinctClassIds.Contains(cs.ClassId)
+                select new
+                {
+                    cs.ClassId,
+                    cs.DayOfWeek,
+                    cs.TimeSlotId,
+                    ts.Name,
+                    ts.StartTime,
+                    ts.EndTime
+                }
+            ).ToListAsync();
+
+            // 5a. Kiểm tra trùng lịch nội bộ GIỮA CÁC LỚP ĐƯỢC CHỌN VỚI NHAU
+            for (int i = 0; i < targetClassesInfo.Count; i++)
+            {
+                var c1 = targetClassesInfo[i].Class;
+                var sched1 = targetClassSchedules.Where(s => s.ClassId == c1.Id).ToList();
+
+                for (int j = i + 1; j < targetClassesInfo.Count; j++)
+                {
+                    var c2 = targetClassesInfo[j].Class;
+                    // Nếu thời gian mở lớp trùng nhau
+                    if (c1.StartDate <= c2.EndDate && c2.StartDate <= c1.EndDate)
+                    {
+                        var sched2 = targetClassSchedules.Where(s => s.ClassId == c2.Id).ToList();
+                        foreach (var s1 in sched1)
+                        {
+                            var conflict = sched2.FirstOrDefault(s2 =>
+                                s2.DayOfWeek == s1.DayOfWeek &&
+                                (s2.TimeSlotId == s1.TimeSlotId ||
+                                 (s2.StartTime < s1.EndTime && s1.StartTime < s2.EndTime)));
+
+                            if (conflict != null)
+                            {
+                                var dayName = GetDayOfWeekName(s1.DayOfWeek);
+                                var timeRange = FormatTimeRange(s1.StartTime, s1.EndTime);
+                                return ServiceResult<BatchEnrollmentResultDto>.Conflict(
+                                    $"Trùng lịch học giữa các lớp được chọn: Lớp '{c1.ClassName}' và lớp '{c2.ClassName}' đều có lịch học vào {dayName} ({timeRange}). Vui lòng chọn lớp khác.");
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 5b. Kiểm tra trùng lịch VỚI CÁC LỚP HỌC SINH ĐÃ ĐANG THEO HỌC (Existing Enrollments)
+            var existingSchedules = await (
+                from e in Db.Enrollments.AsNoTracking()
+                join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                join cs in Db.ClassSchedules.AsNoTracking() on cc.Id equals cs.ClassId
+                join ts in Db.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
+                where e.UserId == studentId
+                      && e.Status == EnrollmentActive
+                      && !distinctClassIds.Contains(cc.Id)
+                      && (cc.Status == ClassUpcoming || cc.Status == ClassOngoing)
+                select new
+                {
+                    cc.Id,
+                    cc.ClassName,
+                    cc.StartDate,
+                    cc.EndDate,
+                    cs.DayOfWeek,
+                    cs.TimeSlotId,
+                    ts.StartTime,
+                    ts.EndTime
+                }
+            ).ToListAsync();
+
+            foreach (var info in targetClassesInfo)
+            {
+                var c = info.Class;
+                var cSched = targetClassSchedules.Where(s => s.ClassId == c.Id).ToList();
+                foreach (var slot in cSched)
+                {
+                    var conflict = existingSchedules.FirstOrDefault(ex =>
+                        c.StartDate <= ex.EndDate && c.EndDate >= ex.StartDate &&
+                        ex.DayOfWeek == slot.DayOfWeek &&
+                        (ex.TimeSlotId == slot.TimeSlotId ||
+                         (ex.StartTime < slot.EndTime && slot.StartTime < ex.EndTime)));
+
+                    if (conflict != null)
+                    {
+                        var dayName = GetDayOfWeekName(slot.DayOfWeek);
+                        var timeRange = FormatTimeRange(slot.StartTime, slot.EndTime);
+                        return ServiceResult<BatchEnrollmentResultDto>.Conflict(
+                            $"Trùng lịch học vào {dayName} ({timeRange}) giữa lớp '{c.ClassName}' và lớp '{conflict.ClassName}' mà bạn đang theo học.");
+                    }
+                }
+            }
+
+            // 6. Ghi danh & Thanh toán trong Database Transaction
+            using var transaction = await Db.Database.BeginTransactionAsync();
+            try
+            {
+                var normalizedMethod = "bank_transfer";
+                if (!string.IsNullOrWhiteSpace(request.PaymentMethod))
+                {
+                    var lower = request.PaymentMethod.Trim().ToLowerInvariant();
+                    if (lower.Contains("cash") || lower.Contains("tien_mat") || lower.Contains("tiền mặt"))
+                    {
+                        normalizedMethod = "cash";
+                    }
+                }
+
+                var results = new List<EnrollmentResultDto>();
+                decimal totalAmount = 0m;
+
+                var existingRecords = await Db.Enrollments
+                    .Where(e => e.UserId == studentId && distinctClassIds.Contains(e.ClassId))
+                    .ToListAsync();
+                var existingMap = existingRecords.ToDictionary(e => e.ClassId, e => e);
+
+                foreach (var info in targetClassesInfo)
+                {
+                    var c = info.Class;
+                    totalAmount += c.Price;
+
+                    Enrollment enrollmentEntity;
+                    if (existingMap.TryGetValue(c.Id, out var existing))
+                    {
+                        existing.Status = EnrollmentActive;
+                        existing.EnrolledAt = DateTime.UtcNow;
+                        enrollmentEntity = existing;
+                    }
+                    else
+                    {
+                        var nextEnrollmentId = await GetNextIdAsync(Db.Enrollments, e => e.Id);
+                        enrollmentEntity = new Enrollment
+                        {
+                            Id = nextEnrollmentId,
+                            UserId = studentId,
+                            ClassId = c.Id,
+                            EnrolledAt = DateTime.UtcNow,
+                            Status = EnrollmentActive
+                        };
+                        Db.Enrollments.Add(enrollmentEntity);
+                    }
+
+                    await Db.SaveChangesAsync();
+
+                    var transactionCode = $"PAY-{DateTime.UtcNow:yyyyMMddHHmmss}-{studentId:D4}-{c.Id:D4}";
+                    var paymentEntity = new Payment
+                    {
+                        UserId = studentId,
+                        ClassId = c.Id,
+                        EnrollmentId = enrollmentEntity.Id,
+                        TransactionCode = transactionCode,
+                        Amount = c.Price,
+                        PaymentMethod = normalizedMethod,
+                        Status = "completed",
+                        PaidAt = DateTime.UtcNow,
+                        Note = request.Note ?? $"Thanh toán học phí lớp {c.ClassName} ({c.ClassCode})",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    Db.Payments.Add(paymentEntity);
+                    await Db.SaveChangesAsync();
+
+                    var paymentDto = new PaymentDto
+                    {
+                        Id = paymentEntity.Id,
+                        UserId = studentId,
+                        ClassId = c.Id,
+                        ClassCode = c.ClassCode,
+                        ClassName = c.ClassName,
+                        CourseId = c.CourseId,
+                        CourseTitle = info.CourseTitle,
+                        EnrollmentId = enrollmentEntity.Id,
+                        TransactionCode = paymentEntity.TransactionCode,
+                        Amount = paymentEntity.Amount,
+                        PaymentMethod = paymentEntity.PaymentMethod,
+                        Status = paymentEntity.Status,
+                        PaidAt = paymentEntity.PaidAt,
+                        Note = paymentEntity.Note,
+                        CreatedAt = paymentEntity.CreatedAt
+                    };
+
+                    results.Add(new EnrollmentResultDto
+                    {
+                        EnrollmentId = enrollmentEntity.Id,
+                        UserId = studentId,
+                        ClassId = c.Id,
+                        ClassCode = c.ClassCode,
+                        ClassName = c.ClassName,
+                        CourseTitle = info.CourseTitle,
+                        Status = enrollmentEntity.Status,
+                        EnrolledAt = enrollmentEntity.EnrolledAt,
+                        Payment = paymentDto
+                    });
+                }
+
+                await transaction.CommitAsync();
+
+                var batchResult = new BatchEnrollmentResultDto
+                {
+                    TotalEnrolled = results.Count,
+                    TotalAmount = totalAmount,
+                    Results = results
+                };
+
+                return ServiceResult<BatchEnrollmentResultDto>.Created(
+                    batchResult,
+                    $"Đăng ký thành công {results.Count} khóa/lớp học. Tổng học phí: {totalAmount:N0} ₫.");
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         /// <summary>

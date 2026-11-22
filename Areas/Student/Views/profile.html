@@ -62,11 +62,6 @@
 
       <!-- Right Controls -->
       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span id="nav-streak-text">5 ngày</span>
-        </div>
-
         <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
           <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo" style="background: none; border: 1px solid var(--border-color); border-radius: var(--radius-md); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); position: relative;">
@@ -116,6 +111,7 @@
             <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
             <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
             <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
             <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
@@ -226,26 +222,10 @@
             <h2 id="card-fullname" style="font-size: 1.25rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Trần Hoàng</h2>
             <div id="card-email" style="font-size: 0.8125rem; color: var(--text-muted); word-break: break-all; margin-bottom: 0.75rem;">student@englishlearning.example</div>
             
-            <div style="margin-bottom: 1.25rem;">
+            <div style="margin-bottom: 1.5rem;">
               <span class="badge badge-primary" style="font-weight: 600; padding: 4px 12px; font-size: 0.75rem;">
                 🎓 Học viên chính thức
               </span>
-            </div>
-
-            <!-- Mini Stats Grid -->
-            <div class="profile-mini-stats" style="margin-bottom: 1.25rem;">
-              <div class="profile-mini-stat-item">
-                <span class="profile-mini-stat-val" style="color: #2563EB;" id="stat-classes-count">2</span>
-                <span class="profile-mini-stat-label">Lớp học</span>
-              </div>
-              <div class="profile-mini-stat-item" style="border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">
-                <span class="profile-mini-stat-val" style="color: #D97706;" id="stat-avg-score">8.75</span>
-                <span class="profile-mini-stat-label">Điểm TB</span>
-              </div>
-              <div class="profile-mini-stat-item">
-                <span class="profile-mini-stat-val" style="color: #EA580C;" id="stat-streak-val">5🔥</span>
-                <span class="profile-mini-stat-label">Streak</span>
-              </div>
             </div>
 
             <!-- Meta Details List -->

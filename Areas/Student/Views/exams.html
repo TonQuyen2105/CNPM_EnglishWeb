@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -133,10 +133,6 @@
 
       <!-- Right Controls -->
       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span id="nav-streak-text">5 ngày</span>
-        </div>
 
         <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
@@ -187,6 +183,7 @@
             <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
             <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
             <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
             <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
@@ -498,7 +495,7 @@
           const title = escapeHtml(e.title);
           const desc = escapeHtml(e.description || 'Bài thi khảo thí và đánh giá năng lực học viên.');
           const duration = e.duration_minutes || 45;
-          const passScore = e.pass_score || 5.0;
+          const passScore = e.pass_score ? (e.pass_score > 10 ? (e.pass_score / 10) : e.pass_score) : 5.0;
 
           let attemptInfo = '';
           if (e.max_attempts) {
@@ -507,14 +504,37 @@
             attemptInfo = `<span>🔄 Đã làm: <strong>${e.attempt_count}</strong> lần</span>`;
           }
 
+          let scoreInfo = '';
+          if (e.best_score != null) {
+            scoreInfo = `<span>•</span><span>🏆 Điểm: <strong style="color: #059669;">${e.best_score}/10</strong></span>`;
+          }
+
+          const isClosed = e.is_class_closed;
+          const closedStatus = (e.class_status || '').toLowerCase();
+          const isCancel = closedStatus.includes('cancel');
+
           let actionBtn = '';
-          if (e.in_progress_user_exam_id) {
+          if (isClosed) {
+            if (e.attempt_count === 0) {
+              actionBtn = `<button type="button" class="btn btn-secondary" disabled style="width: 100%; text-align: center; opacity: 0.65; cursor: not-allowed; background: #E2E8F0; color: #64748B;">Lớp học đã ${isCancel ? 'hủy' : 'kết thúc'} (Không thể vào thi)</button>`;
+            } else {
+              actionBtn = `<a href="results.html" class="btn btn-secondary" style="width: 100%; text-align: center; font-weight: 600;">Xem điểm & Kết quả (${e.best_score != null ? e.best_score + '/10' : 'Đã nộp'}) →</a>`;
+            }
+          } else if (e.in_progress_user_exam_id) {
             actionBtn = `<a href="take-exam.html?examId=${e.exam_id}" class="btn" style="width: 100%; text-align: center; background: #D97706; color: white;">Tiếp tục làm bài (Đang làm dở) →</a>`;
           } else if (e.can_start) {
             actionBtn = `<a href="take-exam.html?examId=${e.exam_id}" class="btn btn-primary" style="width: 100%; text-align: center;">Bắt đầu làm bài thi →</a>`;
           } else {
-            actionBtn = `<button type="button" class="btn btn-secondary" disabled style="width: 100%; text-align: center; opacity: 0.6; cursor: not-allowed;">Đã hết lượt thi (${e.attempt_count}/${e.max_attempts})</button>`;
+            if (e.attempt_count > 0 && e.best_score != null) {
+              actionBtn = `<a href="results.html" class="btn btn-secondary" style="width: 100%; text-align: center; font-weight: 600;">Xem điểm & Kết quả (${e.best_score}/10) →</a>`;
+            } else {
+              actionBtn = `<button type="button" class="btn btn-secondary" disabled style="width: 100%; text-align: center; opacity: 0.6; cursor: not-allowed;">Đã hết lượt thi (${e.attempt_count}/${e.max_attempts})</button>`;
+            }
           }
+
+          const closedWarningHtml = (isClosed && e.attempt_count === 0)
+            ? `<div style="font-size: 0.75rem; color: #DC2626; font-weight: 600; margin-bottom: 0.75rem; background: #FEF2F2; padding: 4px 8px; border-radius: 4px;">⚠️ Lớp học đã ${isCancel ? 'bị hủy' : 'kết thúc'}, bài thi đã khóa.</div>`
+            : '';
 
           return `
             <div class="card card-hover" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
@@ -537,7 +557,9 @@
                   <span>🎯 Điểm đạt: <strong>${passScore}/10</strong></span>
                   <span>•</span>
                   ${attemptInfo}
+                  ${scoreInfo}
                 </div>
+                ${closedWarningHtml}
               </div>
               <div>
                 ${actionBtn}
@@ -563,20 +585,29 @@
           const s = (h.duration_seconds || 0) % 60;
           const durStr = `${m} phút ${s}s`;
 
-          let scoreDisplay = '-';
-          if (h.total_score != null) {
-            scoreDisplay = `<strong style="color: var(--primary-600); font-size: 1.0625rem;">${h.total_score}</strong> / 10`;
-          } else {
-            scoreDisplay = `<span style="color: #92400E; font-weight: 700;">Chờ chấm</span>`;
+          // Xử lý hiển thị theo yêu cầu:
+          // Nếu bài thi đang ở trạng thái submitted (chờ chấm): Cột điểm số và cột hành động hiện dấu gạch ngang '-'
+          // Khi bài thi ở trạng thái passed hoặc failed: Mới hiện điểm số và nút Xem bài giải
+          const isGraded = (h.status === 'passed' || h.status === 'failed');
+
+          let scoreDisplay = '<span style="color: #94A3B8; font-weight: 700;">-</span>';
+          let actionDisplay = '<span style="color: #94A3B8; font-weight: 700;">-</span>';
+
+          if (isGraded) {
+            const scoreVal = (h.total_score != null) ? h.total_score : 0;
+            scoreDisplay = `<strong style="color: var(--primary-600); font-size: 1.0625rem;">${scoreVal}</strong> / 10`;
+            actionDisplay = `<a href="result-detail.html?userExamId=${h.user_exam_id}" class="btn btn-sm btn-secondary">Xem bài giải</a>`;
           }
 
           let statusBadge = '';
           if (h.status === 'submitted') {
-            statusBadge = `<span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">Đang chấm bài</span>`;
+            statusBadge = `<span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">Chờ chấm bài</span>`;
           } else if (h.status === 'passed') {
             statusBadge = `<span class="badge badge-success">Đạt chuẩn</span>`;
-          } else {
+          } else if (h.status === 'failed') {
             statusBadge = `<span class="badge badge-danger">Chưa đạt</span>`;
+          } else {
+            statusBadge = `<span class="badge badge-secondary">${escapeHtml(h.status || 'Chưa rõ')}</span>`;
           }
 
           return `
@@ -590,7 +621,7 @@
               <td>${scoreDisplay}</td>
               <td>${statusBadge}</td>
               <td style="text-align: right;">
-                <a href="result-detail.html?userExamId=${h.user_exam_id}" class="btn btn-sm btn-secondary">Xem bài giải</a>
+                ${actionDisplay}
               </td>
             </tr>
           `;

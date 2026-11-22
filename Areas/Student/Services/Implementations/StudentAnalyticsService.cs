@@ -210,7 +210,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 TotalStudyHours = calculatedStudyHours,
                 TotalSubmittedAssignments = totalAssignmentsSubmitted,
                 StreakDays = streakDays,
-                AverageScore = avgExamScore > 0 ? avgExamScore : 8.8,
+                AverageScore = avgExamScore,
                 AttendanceRate = 100
             };
 

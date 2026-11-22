@@ -57,10 +57,10 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public int MasteredVocabularies { get; set; }
 
         [JsonPropertyName("average_score")]
-        public double AverageScore { get; set; } = 8.5;
+        public double? AverageScore { get; set; } = null;
 
         [JsonPropertyName("score_rank")]
-        public string ScoreRank { get; set; } = "Giỏi";
+        public string ScoreRank { get; set; } = "Chưa có";
 
         [JsonPropertyName("total_lessons_completed")]
         public int TotalLessonsCompleted { get; set; }
@@ -196,7 +196,7 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public string Level { get; set; } = string.Empty;
 
         [JsonPropertyName("price")]
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
         [JsonPropertyName("average_rating")]
         public double AverageRating { get; set; }
@@ -235,7 +235,7 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public string Level { get; set; } = string.Empty;
 
         [JsonPropertyName("price")]
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
         [JsonPropertyName("average_rating")]
         public double AverageRating { get; set; }
@@ -292,7 +292,7 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public DateTime EndDate { get; set; }
 
         [JsonPropertyName("price")]
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
         [JsonPropertyName("status")]
         public string Status { get; set; } = string.Empty;
@@ -381,11 +381,39 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         [JsonPropertyName("class_id")]
         public int? ClassId { get; set; }
 
+        [JsonPropertyName("class_ids")]
+        public List<int>? ClassIds { get; set; }
+
         [JsonPropertyName("payment_method")]
-        public string PaymentMethod { get; set; } = "banking";
+        public string PaymentMethod { get; set; } = "bank_transfer";
 
         [JsonPropertyName("note")]
         public string? Note { get; set; }
+    }
+
+    public class BatchEnrollmentRequestDto
+    {
+        [Required]
+        [JsonPropertyName("class_ids")]
+        public List<int> ClassIds { get; set; } = new();
+
+        [JsonPropertyName("payment_method")]
+        public string PaymentMethod { get; set; } = "bank_transfer";
+
+        [JsonPropertyName("note")]
+        public string? Note { get; set; }
+    }
+
+    public class BatchEnrollmentResultDto
+    {
+        [JsonPropertyName("total_enrolled")]
+        public int TotalEnrolled { get; set; }
+
+        [JsonPropertyName("total_amount")]
+        public decimal TotalAmount { get; set; }
+
+        [JsonPropertyName("results")]
+        public List<EnrollmentResultDto> Results { get; set; } = new();
     }
 
     public class PaymentDto
@@ -830,6 +858,12 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         [JsonPropertyName("completed_at")]
         public DateTime? CompletedAt { get; set; }
 
+        [JsonPropertyName("is_class_closed")]
+        public bool IsClassClosed { get; set; }
+
+        [JsonPropertyName("class_status")]
+        public string? ClassStatus { get; set; }
+
         [JsonPropertyName("attachments")]
         public List<LessonAttachmentItem> Attachments { get; set; } = new();
 
@@ -1002,6 +1036,12 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("can_start")]
         public bool CanStart { get; set; }
+
+        [JsonPropertyName("is_class_closed")]
+        public bool IsClassClosed { get; set; }
+
+        [JsonPropertyName("class_status")]
+        public string? ClassStatus { get; set; }
     }
 
     public class ExamSessionStartDto
