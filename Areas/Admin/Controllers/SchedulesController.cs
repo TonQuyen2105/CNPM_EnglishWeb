@@ -51,8 +51,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     id = ts.Id,
                     name = ts.Name,
-                    startTime = ts.StartTime,
-                    endTime = ts.EndTime,
+                    startTime = AdminCoreHelpers.FormatTime24(ts.StartTime),
+                    endTime = AdminCoreHelpers.FormatTime24(ts.EndTime),
                     timeRange = AdminCoreHelpers.FormatTimeRange(ts.StartTime, ts.EndTime),
                     description = ts.Description
                 }).ToList();
@@ -512,22 +512,48 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var targetEnd = targetClass.EndDate;
                 var timeLabel = $"{timeSlot.Name} ({AdminCoreHelpers.FormatTimeRange(slotStart, slotEnd)})";
 
-                // Ràng buộc không cho mở chung phòng giữa 2 lớp đang hoạt động (upcoming / ongoing) có khoảng thời gian giao nhau
-                var exclusiveRoomScheduleHit = await (
+                // Quy tắc phòng-ca học: Một phòng có thể mở nhiều lớp đang hoạt động,
+                // nhưng trong cùng khoảng ngày [StartDate, EndDate] giao nhau, mỗi lớp bắt buộc phải học ở ca học khác nhau (không trùng TimeSlotId và không giao giờ).
+                var roomSlotConflict = await (
                     from cs in _context.ClassSchedules.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                    join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
                     where cs.ClassroomId == classroomId
                           && cs.ClassId != classId
                           && (cc.Status == "upcoming" || cc.Status == "ongoing")
-                          && targetStart <= cc.EndDate && cc.StartDate <= targetEnd
-                    select new { cc.ClassCode, cc.ClassName, cc.StartDate, cc.EndDate }
+                          && targetStart <= cc.EndDate
+                          && cc.StartDate <= targetEnd
+                          && (cs.TimeSlotId == dto.TimeSlotId
+                              || (ts.StartTime < slotEnd && slotStart < ts.EndTime))
+                    select new { cc.ClassCode, cc.ClassName, SlotName = ts.Name, ts.StartTime, ts.EndTime }
                 ).FirstOrDefaultAsync(cancellationToken);
 
-                if (exclusiveRoomScheduleHit != null)
+                if (roomSlotConflict != null)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
+                    var hitRange = AdminCoreHelpers.FormatTimeRange(roomSlotConflict.StartTime, roomSlotConflict.EndTime);
                     return this.ApiBadRequest(
-                        $"Không thể mở chung phòng: Phòng {classroom.Name} đang được mở cho lớp {exclusiveRoomScheduleHit.ClassCode} ({exclusiveRoomScheduleHit.ClassName}) từ {exclusiveRoomScheduleHit.StartDate:dd/MM/yyyy} đến {exclusiveRoomScheduleHit.EndDate:dd/MM/yyyy}.");
+                        $"Trùng ca học trong cùng phòng: Phòng {classroom.Name} đã có lớp {roomSlotConflict.ClassCode} ({roomSlotConflict.ClassName}) đăng ký ở ca {roomSlotConflict.SlotName} ({hitRange}). Mỗi lớp trong cùng một phòng bắt buộc phải chọn ca học khác nhau.");
+                }
+
+                // Không cho cùng 1 lớp đăng ký 2 ca học giao giờ khác nhau trong cùng 1 phòng
+                var sameClassRoomSlotOverlap = await (
+                    from cs in _context.ClassSchedules.AsNoTracking()
+                    join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
+                    where cs.ClassroomId == classroomId
+                          && cs.ClassId == classId
+                          && cs.TimeSlotId != dto.TimeSlotId
+                          && ts.StartTime < slotEnd
+                          && slotStart < ts.EndTime
+                    select new { SlotName = ts.Name, ts.StartTime, ts.EndTime }
+                ).FirstOrDefaultAsync(cancellationToken);
+
+                if (sameClassRoomSlotOverlap != null)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    var hitRange = AdminCoreHelpers.FormatTimeRange(sameClassRoomSlotOverlap.StartTime, sameClassRoomSlotOverlap.EndTime);
+                    return this.ApiBadRequest(
+                        $"Chồng chéo ca học trong cùng phòng: Lớp {targetClass.ClassCode} đã đăng ký ca {sameClassRoomSlotOverlap.SlotName} ({hitRange}) tại phòng {classroom.Name}, giao giờ với ca {timeLabel}.");
                 }
 
                 // Mỗi loại xung đột chỉ cần 1 truy vấn cho toàn bộ các ngày được chọn (không truy vấn trong vòng lặp).
@@ -542,23 +568,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     select new { cs.DayOfWeek, ts.Name, ts.StartTime, ts.EndTime }
                 ).ToListAsync(cancellationToken);
 
-                // 2. Trùng phòng học theo khoảng giờ & khoảng ngày giao nhau (chỉ xét lớp upcoming / ongoing)
-                var roomConflicts = await (
-                    from cs in _context.ClassSchedules.AsNoTracking()
-                    join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
-                    join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
-                    where cs.ClassroomId == classroomId
-                          && cs.ClassId != classId
-                          && (cc.Status == "upcoming" || cc.Status == "ongoing")
-                          && targetStart <= cc.EndDate
-                          && cc.StartDate <= targetEnd
-                          && days.Contains(cs.DayOfWeek)
-                          && ts.StartTime < slotEnd
-                          && slotStart < ts.EndTime
-                    select new { cs.DayOfWeek, cc.ClassCode, cc.ClassName, ts.Name, ts.StartTime, ts.EndTime }
-                ).ToListAsync(cancellationToken);
-
-                // 3. Trùng lịch cho cả giảng viên chính và trợ giảng theo khoảng giờ & khoảng ngày giao nhau
+                // 2. Trùng lịch cho cả giảng viên chính và trợ giảng theo khoảng giờ & khoảng ngày giao nhau
                 var teacherNameById = teacherNameByIdOverride;
 
                 var teacherConflicts = teacherIds.Count == 0
@@ -597,15 +607,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         var conflictRange = $"{sameClassConflict.Name} ({AdminCoreHelpers.FormatTimeRange(sameClassConflict.StartTime, sameClassConflict.EndTime)})";
                         return this.ApiBadRequest(
                             $"Lớp {targetClass.ClassCode} đã có lịch học trùng/giao giờ vào {AdminCoreHelpers.FormatDayFull(day)}, {conflictRange}.");
-                    }
-
-                    var roomConflict = roomConflicts.FirstOrDefault(x => x.DayOfWeek == day);
-                    if (roomConflict != null)
-                    {
-                        await transaction.RollbackAsync(CancellationToken.None);
-                        var conflictRange = $"{roomConflict.Name} ({AdminCoreHelpers.FormatTimeRange(roomConflict.StartTime, roomConflict.EndTime)})";
-                        return this.ApiBadRequest(
-                            $"Trùng phòng học: Phòng {classroom.Name} vào {AdminCoreHelpers.FormatDayFull(day)}, khung giờ {timeLabel} bị giao với ca {conflictRange} của lớp {roomConflict.ClassCode} ({roomConflict.ClassName}).");
                     }
 
                     var teacherConflict = teacherConflicts.FirstOrDefault(x => x.DayOfWeek == day);
@@ -1248,12 +1249,18 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                         foreach (var room in rooms)
                         {
+                            // Phòng bận ở ca slot nếu đã có lớp hoạt động khác (giao khoảng ngày) đăng ký cùng ca hoặc giao giờ tại phòng đó; các ca khác vẫn khả dụng.
                             var roomHit = otherSchedules.FirstOrDefault(o =>
                                 o.ClassroomId == room.Id
-                                && o.DayOfWeek == day
                                 && targetClass.StartDate <= o.EndDate && o.StartDate <= targetClass.EndDate
-                                && o.StartTime < slot.EndTime && slot.StartTime < o.EndTime);
+                                && (o.TimeSlotId == slot.Id || (o.StartTime < slot.EndTime && slot.StartTime < o.EndTime)));
                             if (roomHit != null) continue;
+
+                            var sameClassSlotOverlap = existingClassSchedules.Any(s =>
+                                s.ClassroomId == room.Id
+                                && s.TimeSlotId != slot.Id
+                                && s.StartTime < slot.EndTime && slot.StartTime < s.EndTime);
+                            if (sameClassSlotOverlap) continue;
 
                             var teacherHit = FindTeacherConflictInSnapshot(
                                 effectiveTeacherId, assistantTeacherIds, targetClass.StartDate, targetClass.EndDate,
@@ -1308,9 +1315,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                             var freeRoom = rooms.FirstOrDefault(room => !otherSchedules.Any(o =>
                                 o.ClassroomId == room.Id
-                                && o.DayOfWeek == day
                                 && targetClass.StartDate <= o.EndDate && o.StartDate <= targetClass.EndDate
-                                && o.StartTime < slot.EndTime && slot.StartTime < o.EndTime));
+                                && (o.TimeSlotId == slot.Id || (o.StartTime < slot.EndTime && slot.StartTime < o.EndTime))));
 
                             var chosenRoom = freeRoom ?? rooms[0];
                             string? conflictType = null;
@@ -1320,11 +1326,10 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             {
                                 var roomHit = otherSchedules.First(o =>
                                     o.ClassroomId == chosenRoom.Id
-                                    && o.DayOfWeek == day
                                     && targetClass.StartDate <= o.EndDate && o.StartDate <= targetClass.EndDate
-                                    && o.StartTime < slot.EndTime && slot.StartTime < o.EndTime);
+                                    && (o.TimeSlotId == slot.Id || (o.StartTime < slot.EndTime && slot.StartTime < o.EndTime)));
                                 conflictType = "room";
-                                conflictMsg = $"Trùng phòng {chosenRoom.Name}: Đã có lớp {roomHit.ClassCode} ({roomHit.SlotName} {AdminCoreHelpers.FormatTimeRange(roomHit.StartTime, roomHit.EndTime)}).";
+                                conflictMsg = $"Trùng ca học trong cùng phòng {chosenRoom.Name}: Đã có lớp {roomHit.ClassCode} đăng ký ca {roomHit.SlotName} ({AdminCoreHelpers.FormatTimeRange(roomHit.StartTime, roomHit.EndTime)}). Mỗi lớp trong cùng phòng bắt buộc phải chọn ca học khác nhau.";
                             }
                             else
                             {
@@ -1717,8 +1722,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     id = ts.Id,
                     name = ts.Name,
                     slotName = ts.Name,
-                    startTime = $"{ts.StartTime:hh\\:mm}",
-                    endTime = $"{ts.EndTime:hh\\:mm}",
+                    startTime = AdminCoreHelpers.FormatTime24(ts.StartTime),
+                    endTime = AdminCoreHelpers.FormatTime24(ts.EndTime),
                     timeRange = AdminCoreHelpers.FormatTimeRange(ts.StartTime, ts.EndTime),
                     description = ts.Description,
                     isActive = ts.IsActive,
@@ -1875,8 +1880,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                     if (affectedSchedules.Count > 0)
                     {
-                        var affectedDays = affectedSchedules.Select(x => x.DayOfWeek).Distinct().ToList();
-
                         var overlappingOthers = await (
                             from cs in _context.ClassSchedules.AsNoTracking()
                             join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
@@ -1884,7 +1887,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
                             where cs.TimeSlotId != id
                                   && (cc.Status == "upcoming" || cc.Status == "ongoing")
-                                  && affectedDays.Contains(cs.DayOfWeek)
                                   && ts.StartTime < endTime
                                   && startTime < ts.EndTime
                             select new
@@ -1929,15 +1931,25 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             {
                                 teachersByClass.TryGetValue(mine.ClassId, out var mineTeachers);
 
-                                foreach (var other in overlappingOthers.Where(o => o.DayOfWeek == mine.DayOfWeek))
+                                foreach (var other in overlappingOthers)
                                 {
                                     var otherRange = AdminCoreHelpers.FormatTimeRange(other.StartTime, other.EndTime);
 
                                     if (other.ClassId == mine.ClassId)
                                     {
-                                        await transaction.RollbackAsync(CancellationToken.None);
-                                        return this.ApiBadRequest(
-                                            $"Không thể đổi giờ ca {slotName} ({newRange}): Lớp {mine.ClassCode} bị trùng/giao giờ vào {AdminCoreHelpers.FormatDayFull(mine.DayOfWeek)} với ca {other.SlotName} ({otherRange}).");
+                                        if (other.DayOfWeek == mine.DayOfWeek)
+                                        {
+                                            await transaction.RollbackAsync(CancellationToken.None);
+                                            return this.ApiBadRequest(
+                                                $"Không thể đổi giờ ca {slotName} ({newRange}): Lớp {mine.ClassCode} bị trùng/giao giờ vào {AdminCoreHelpers.FormatDayFull(mine.DayOfWeek)} với ca {other.SlotName} ({otherRange}).");
+                                        }
+                                        if (other.ClassroomId == mine.ClassroomId)
+                                        {
+                                            await transaction.RollbackAsync(CancellationToken.None);
+                                            return this.ApiBadRequest(
+                                                $"Không thể đổi giờ ca {slotName} ({newRange}): Lớp {mine.ClassCode} bị giao giờ tại phòng {mine.ClassroomName} với ca {other.SlotName} ({otherRange}).");
+                                        }
+                                        continue;
                                     }
 
                                     // Chỉ coi là xung đột phòng/giảng viên nếu khoảng ngày [StartDate, EndDate] của 2 lớp có giao nhau
@@ -1947,14 +1959,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                                         continue;
                                     }
 
+                                    // Quy tắc phòng-ca học: Trong cùng 1 phòng, các lớp hoạt động giao ngày bắt buộc có khung giờ ca học không giao nhau (bất kể thứ)
                                     if (other.ClassroomId == mine.ClassroomId)
                                     {
                                         await transaction.RollbackAsync(CancellationToken.None);
                                         return this.ApiBadRequest(
-                                            $"Không thể đổi giờ ca {slotName} ({newRange}): Phòng {mine.ClassroomName} vào {AdminCoreHelpers.FormatDayFull(mine.DayOfWeek)} bị trùng giữa lớp {mine.ClassCode} và lớp {other.ClassCode} (ca {other.SlotName} {otherRange}).");
+                                            $"Không thể đổi giờ ca {slotName} ({newRange}): Phòng {mine.ClassroomName} bị trùng/giao ca học giữa lớp {mine.ClassCode} và lớp {other.ClassCode} (ca {other.SlotName} {otherRange}). Mỗi lớp trong cùng phòng bắt buộc phải chọn ca học khác nhau.");
                                     }
 
-                                    if (mineTeachers != null && teachersByClass.TryGetValue(other.ClassId, out var otherTeachers))
+                                    if (other.DayOfWeek == mine.DayOfWeek && mineTeachers != null && teachersByClass.TryGetValue(other.ClassId, out var otherTeachers))
                                     {
                                         var sharedTeacher = mineTeachers.FirstOrDefault(mt => otherTeachers.Any(ot => ot.TeacherId == mt.TeacherId));
                                         if (sharedTeacher != null)
@@ -2188,8 +2201,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     success = true,
                     addedCount,
                     message = addedCount > 0
-                        ? $"Đã khởi tạo / kích hoạt nhanh {addedCount} ca học mẫu (Ca 1 -> Ca 6) vào bảng time_slots."
-                        : "Các khung giờ Ca 1 -> Ca 6 đã có đủ trong bảng time_slots."
+                        ? $"Đã khởi tạo / kích hoạt nhanh {addedCount} ca học mẫu chuẩn 24h (Ca 1 -> Ca 6: 08:00 - 21:30) vào bảng time_slots."
+                        : "Các khung giờ chuẩn 24h (Ca 1 -> Ca 6: 08:00 - 21:30) đã có đủ trong bảng time_slots."
                 });
             }
             catch (OperationCanceledException)
@@ -2235,12 +2248,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
             if (!TryParseClockTime(dto.StartTime, out startTime) || !TryParseClockTime(dto.EndTime, out endTime))
             {
-                return "Định dạng giờ bắt đầu hoặc giờ kết thúc không hợp lệ (sử dụng HH:mm, ví dụ 08:00).";
+                return "Định dạng giờ bắt đầu hoặc giờ kết thúc không hợp lệ (sử dụng chuẩn 24h HH:mm trong khoảng 00:00 - 23:59, ví dụ 08:00, 14:30, 20:00).";
             }
 
             if (startTime >= endTime)
             {
-                return "Giờ kết thúc phải lớn hơn giờ bắt đầu.";
+                return "Giờ kết thúc phải lớn hơn giờ bắt đầu (chuẩn 24h 00:00 - 23:59).";
             }
 
             return null;
@@ -2261,7 +2274,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return false;
             }
 
-            if (parsed < TimeSpan.Zero || parsed >= TimeSpan.FromHours(24))
+            if (parsed.Days != 0 || parsed < TimeSpan.Zero || parsed >= TimeSpan.FromHours(24))
             {
                 return false;
             }
@@ -2443,23 +2456,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 select new { cs.DayOfWeek, ts.Name, ts.StartTime, ts.EndTime }
             ).ToListAsync(cancellationToken);
 
-            var exclusiveRoomHit = await (
-                from cs in _context.ClassSchedules.AsNoTracking()
-                join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
-                where cs.ClassroomId == classroomId
-                      && cs.ClassId != classId
-                      && (cc.Status == "upcoming" || cc.Status == "ongoing")
-                      && targetClass.StartDate <= cc.EndDate && cc.StartDate <= targetClass.EndDate
-                select new { cc.ClassCode, cc.ClassName, cc.StartDate, cc.EndDate }
-            ).FirstOrDefaultAsync(cancellationToken);
-            if (exclusiveRoomHit != null)
-            {
-                conflicts.Add(new CandidateConflictItem(
-                    "room", 0, "Chung", null, null, exclusiveRoomHit.ClassCode, exclusiveRoomHit.ClassName,
-                    $"Không thể mở chung phòng: Phòng {classroom.Name} đã được mở cho lớp {exclusiveRoomHit.ClassCode} ({exclusiveRoomHit.ClassName}) từ {exclusiveRoomHit.StartDate:dd/MM/yyyy} đến {exclusiveRoomHit.EndDate:dd/MM/yyyy}."));
-            }
-
-            var roomHits = await (
+            // Kiểm tra xung đột phòng - ca học: Một phòng được mở nhiều lớp,
+            // nhưng trong cùng khoảng ngày [StartDate, EndDate] giao nhau, mỗi lớp bắt buộc phải học ở ca học khác nhau (không trùng TimeSlotId hoặc giao giờ).
+            var roomSlotHits = await (
                 from cs in _context.ClassSchedules.AsNoTracking()
                 join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
                 join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
@@ -2467,10 +2466,39 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                       && cs.ClassId != classId
                       && (cc.Status == "upcoming" || cc.Status == "ongoing")
                       && targetClass.StartDate <= cc.EndDate && cc.StartDate <= targetClass.EndDate
-                      && days.Contains(cs.DayOfWeek)
-                      && ts.StartTime < slotEnd && slotStart < ts.EndTime
-                select new { cs.DayOfWeek, cc.ClassCode, cc.ClassName, ts.Name, ts.StartTime, ts.EndTime }
+                      && (cs.TimeSlotId == timeSlotId
+                          || (ts.StartTime < slotEnd && slotStart < ts.EndTime))
+                select new { cs.DayOfWeek, ClassId = cc.Id, cc.ClassCode, cc.ClassName, SlotId = ts.Id, SlotName = ts.Name, ts.StartTime, ts.EndTime }
             ).ToListAsync(cancellationToken);
+
+            foreach (var grp in roomSlotHits.GroupBy(x => (x.ClassId, x.SlotId)))
+            {
+                var hit = grp.First();
+                var hitRange = AdminCoreHelpers.FormatTimeRange(hit.StartTime, hit.EndTime);
+                var hitDays = string.Join(", ", grp.Select(x => x.DayOfWeek).Distinct().OrderBy(d => d).Select(AdminCoreHelpers.FormatDayShort));
+                conflicts.Add(new CandidateConflictItem(
+                    "room", 0, hitDays, null, null, hit.ClassCode, hit.ClassName,
+                    $"Trùng ca học trong cùng phòng: Phòng {classroom.Name} đã có lớp {hit.ClassCode} ({hit.ClassName}, {hitDays}) đăng ký ở ca {hit.SlotName} ({hitRange}). Mỗi lớp trong cùng một phòng bắt buộc phải chọn ca học khác nhau."));
+            }
+
+            // Không cho cùng 1 lớp đăng ký 2 ca khác nhau giao giờ trong cùng 1 phòng
+            var sameClassRoomSlotOverlap = await (
+                from cs in _context.ClassSchedules.AsNoTracking()
+                join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
+                where cs.ClassroomId == classroomId
+                      && cs.ClassId == classId
+                      && (!excludeScheduleId.HasValue || cs.Id != excludeScheduleId.Value)
+                      && cs.TimeSlotId != timeSlotId
+                      && ts.StartTime < slotEnd && slotStart < ts.EndTime
+                select new { SlotName = ts.Name, ts.StartTime, ts.EndTime }
+            ).FirstOrDefaultAsync(cancellationToken);
+            if (sameClassRoomSlotOverlap != null)
+            {
+                var hitRange = AdminCoreHelpers.FormatTimeRange(sameClassRoomSlotOverlap.StartTime, sameClassRoomSlotOverlap.EndTime);
+                conflicts.Add(new CandidateConflictItem(
+                    "room", 0, "Chung", null, null, targetClass.ClassCode, targetClass.ClassName,
+                    $"Chồng chéo ca học trong cùng phòng: Lớp {targetClass.ClassCode} đã đăng ký ca {sameClassRoomSlotOverlap.SlotName} ({hitRange}) tại phòng {classroom.Name}, giao giờ với ca {timeLabel}."));
+            }
 
             // Tải toàn bộ lịch bận của TẤT CẢ giảng viên trong khung ngày/giờ đang kiểm tra (và các lịch khác của lớp nếu đổi GV)
             var classOtherSchedules = await (
@@ -2510,15 +2538,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     conflicts.Add(new CandidateConflictItem(
                         "sameClass", day, dayLabel, null, null, targetClass.ClassCode, targetClass.ClassName,
                         $"Lớp {targetClass.ClassCode} đã có lịch học trùng/giao giờ vào {dayLabel}, {range}."));
-                }
-
-                var rHit = roomHits.FirstOrDefault(x => x.DayOfWeek == day);
-                if (rHit != null)
-                {
-                    var range = $"{rHit.Name} ({AdminCoreHelpers.FormatTimeRange(rHit.StartTime, rHit.EndTime)})";
-                    conflicts.Add(new CandidateConflictItem(
-                        "room", day, dayLabel, null, null, rHit.ClassCode, rHit.ClassName,
-                        $"Trùng phòng học: Phòng {classroom.Name} vào {dayLabel}, khung giờ {timeLabel} bị giao với ca {range} của lớp {rHit.ClassCode} ({rHit.ClassName})."));
                 }
 
                 foreach (var tid in checkTeacherIds)

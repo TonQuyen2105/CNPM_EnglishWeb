@@ -137,31 +137,22 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     }
                 ).ToListAsync(cancellationToken);
 
-                var coursesBySubjectId = allCoursesWithSubject
-                    .GroupBy(c => c.SubjectId)
-                    .ToDictionary(g => g.Key, g => g.OrderBy(x => x.Id).ToList());
-
                 var courseDisplayById = allCoursesWithSubject.ToDictionary(
                     c => c.Id,
                     c =>
                     {
-                        var siblings = coursesBySubjectId.TryGetValue(c.SubjectId, out var sList) ? sList : [c];
-                        var subjectTotal = siblings.Sum(x => x.Price);
-                        var breakdown = string.Join(" + ", siblings.Select(x => x.Title));
-                        var displayTitle = !string.IsNullOrWhiteSpace(c.SubjectName) && siblings.Count > 1
-                            ? $"{c.SubjectName}: {c.Title} (Tổng khóa {c.SubjectName}: {breakdown})"
-                            : (!string.IsNullOrWhiteSpace(c.SubjectName) ? $"{c.SubjectName} — {c.Title}" : c.Title);
+                        var subjectName = !string.IsNullOrWhiteSpace(c.SubjectName) ? c.SubjectName : "Chưa phân môn";
+                        var displayTitle = !string.IsNullOrWhiteSpace(c.SubjectName)
+                            ? $"{c.Title} (Môn: {c.SubjectName})"
+                            : c.Title;
                         return new
                         {
                             c.Id,
                             c.SubjectId,
-                            SubjectName = c.SubjectName ?? c.Title,
+                            SubjectName = subjectName,
                             c.Title,
                             DisplayTitle = displayTitle,
                             CoursePrice = c.Price,
-                            SubjectTotalPrice = subjectTotal,
-                            SiblingCount = siblings.Count,
-                            Breakdown = breakdown,
                             c.Level
                         };
                     });
@@ -178,8 +169,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             title = info.DisplayTitle,
                             rawTitle = c.Title,
                             coursePrice = c.Price,
-                            subjectTotalPrice = info.SubjectTotalPrice,
-                            price = info.SubjectTotalPrice > 0 ? info.SubjectTotalPrice : c.Price,
+                            price = c.Price,
                             level = c.Level
                         };
                     }).ToList()
@@ -214,6 +204,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         {
                             id = ts.Id,
                             name = ts.Name,
+                            startTime = AdminCoreHelpers.FormatTime24(ts.StartTime),
+                            endTime = AdminCoreHelpers.FormatTime24(ts.EndTime),
                             timeRange = AdminCoreHelpers.FormatTimeRange(ts.StartTime, ts.EndTime)
                         })
                         .ToListAsync(cancellationToken)
@@ -314,15 +306,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                     var cInfo = courseDisplayById.TryGetValue(c.CourseId, out var ci) ? ci : null;
                     var effectiveCourseTitle = cInfo != null
-                        ? (cInfo.SiblingCount > 1
-                            ? $"{cInfo.SubjectName} ({cInfo.Breakdown})"
-                            : (!string.IsNullOrWhiteSpace(cInfo.SubjectName) && cInfo.SubjectName != cInfo.Title
-                                ? $"{cInfo.SubjectName} — {cInfo.Title}"
-                                : cInfo.Title))
+                        ? cInfo.DisplayTitle
                         : (c.CourseTitle ?? "--");
-                    var effectivePrice = cInfo != null && cInfo.SubjectTotalPrice > 0 && c.Price == cInfo.CoursePrice
-                        ? cInfo.SubjectTotalPrice
-                        : c.Price;
 
                     return new
                     {
@@ -342,7 +327,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         endDate = c.EndDate,
                         activeStudents = activeCounts.GetValueOrDefault(c.Id),
                         maxStudents = c.MaxStudents,
-                        price = effectivePrice,
+                        price = c.Price,
                         status = c.Status
                     };
                 }).ToList();
@@ -455,11 +440,26 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                // Thứ tự khóa tăng dần chống deadlock: Phòng (200M) -> Giảng viên (300M) -> Ca học shared (700M)
                 if (classroomId.HasValue)
                 {
                     await AcquireAdvisoryLockAsync(ClassroomLockOffset + classroomId.Value, cancellationToken);
                 }
 
+                if (teacherId.HasValue)
+                {
+                    // Khóa giảng viên (300M + teacherId) trong transaction để tránh race với thu hồi xác minh hoặc xóa tài khoản GV
+                    await AcquireAdvisoryLockAsync(TeacherLockOffset + teacherId.Value, cancellationToken);
+                }
+
+                var autoDays = ResolveSchedulePatternDays(requestedScheduleDays);
+                var needTimeSlotCheck = classroomId.HasValue && IsActiveClassStatus(status) && requestedTimeSlotId.HasValue;
+                if (needTimeSlotCheck)
+                {
+                    await AcquireSharedAdvisoryLockAsync(TimeSlotLockKey, cancellationToken);
+                }
+
+                string? roomName = null;
                 if (classroomId.HasValue)
                 {
                     var roomInfo = await _context.Classrooms
@@ -483,23 +483,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         await transaction.RollbackAsync(CancellationToken.None);
                         return this.ApiBadRequest($"Sức chứa phòng {roomInfo.Name} ({roomInfo.Capacity} chỗ) nhỏ hơn sĩ số tối đa của lớp ({dto.MaxStudents} học viên).");
                     }
-
-                    if (IsActiveClassStatus(status))
-                    {
-                        var roomConflictMsg = await CheckExclusiveRoomOccupancyAsync(
-                            null, classroomId.Value, roomInfo.Name, dto.StartDate.Date, dto.EndDate.Date, cancellationToken);
-                        if (roomConflictMsg != null)
-                        {
-                            await transaction.RollbackAsync(CancellationToken.None);
-                            return this.ApiBadRequest(roomConflictMsg);
-                        }
-                    }
-                }
-
-                if (teacherId.HasValue)
-                {
-                    // Khóa giảng viên (300M + teacherId) trong transaction để tránh race với thu hồi xác minh hoặc xóa tài khoản GV
-                    await AcquireAdvisoryLockAsync(TeacherLockOffset + teacherId.Value, cancellationToken);
+                    roomName = roomInfo.Name;
                 }
 
                 if (!await _context.Courses.AsNoTracking().AnyAsync(c => c.Id == dto.CourseId, cancellationToken))
@@ -532,13 +516,74 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     }
                 }
 
+                var normalizedStart = DateTime.SpecifyKind(dto.StartDate.Date, DateTimeKind.Unspecified);
+                var normalizedEnd = DateTime.SpecifyKind(dto.EndDate.Date, DateTimeKind.Unspecified);
+
+                int? resolvedTimeSlotId = null;
+                if (needTimeSlotCheck)
+                {
+                    var tsInfo = await _context.TimeSlots
+                        .AsNoTracking()
+                        .Where(ts => ts.Id == requestedTimeSlotId!.Value && ts.IsActive)
+                        .Select(ts => new { ts.Id, ts.Name, ts.StartTime, ts.EndTime })
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    if (tsInfo == null)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Ca học được chọn không tồn tại hoặc đang ngừng sử dụng.");
+                    }
+
+                    // Một phòng có thể mở nhiều lớp, nhưng mỗi lớp trong cùng phòng bắt buộc phải chọn ca học khác nhau (không trùng TimeSlotId / giao giờ)
+                    var roomSlotConflict = await CheckRoomTimeSlotConflictAsync(
+                        null,
+                        classroomId!.Value,
+                        roomName!,
+                        normalizedStart,
+                        normalizedEnd,
+                        tsInfo.Id,
+                        tsInfo.StartTime,
+                        tsInfo.EndTime,
+                        cancellationToken);
+                    if (roomSlotConflict != null)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest(roomSlotConflict);
+                    }
+
+                    if (autoDays.Count > 0 && teacherId.HasValue)
+                    {
+                        var busyTeacherHit = await (
+                            from cs in _context.ClassSchedules.AsNoTracking()
+                            join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                            join ct in _context.ClassTeachers.AsNoTracking() on cc.Id equals ct.ClassId
+                            join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
+                            where ct.TeacherId == teacherId.Value
+                                  && (cc.Status == "upcoming" || cc.Status == "ongoing")
+                                  && normalizedStart <= cc.EndDate && cc.StartDate <= normalizedEnd
+                                  && autoDays.Contains(cs.DayOfWeek)
+                                  && ts.StartTime < tsInfo.EndTime && tsInfo.StartTime < ts.EndTime
+                            select new { cs.DayOfWeek, cc.ClassCode, ts.Name, ts.StartTime, ts.EndTime }
+                        ).FirstOrDefaultAsync(cancellationToken);
+
+                        if (busyTeacherHit != null)
+                        {
+                            await transaction.RollbackAsync(CancellationToken.None);
+                            return this.ApiBadRequest(
+                                $"Không thể tạo lớp vì lịch học vào {AdminCoreHelpers.FormatDayFull(busyTeacherHit.DayOfWeek)} ({tsInfo.Name}) bị trùng với lớp {busyTeacherHit.ClassCode} của giảng viên đã chọn.");
+                        }
+                    }
+
+                    resolvedTimeSlotId = tsInfo.Id;
+                }
+
                 var newClass = new CourseClass
                 {
                     CourseId = dto.CourseId,
                     ClassCode = classCode,
                     ClassName = className,
-                    StartDate = DateTime.SpecifyKind(dto.StartDate.Date, DateTimeKind.Unspecified),
-                    EndDate = DateTime.SpecifyKind(dto.EndDate.Date, DateTimeKind.Unspecified),
+                    StartDate = normalizedStart,
+                    EndDate = normalizedEnd,
                     MaxStudents = dto.MaxStudents,
                     Price = dto.Price,
                     Status = status,
@@ -561,62 +606,21 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 // Nếu lớp có chọn phòng + lịch thứ + ca học -> tự động xếp lịch vào class_schedules để hiển thị Thời khóa biểu
-                var autoDays = ResolveSchedulePatternDays(requestedScheduleDays);
-                if (classroomId.HasValue && IsActiveClassStatus(status) && autoDays.Count > 0 && requestedTimeSlotId.HasValue)
+                if (classroomId.HasValue && IsActiveClassStatus(status) && autoDays.Count > 0 && resolvedTimeSlotId.HasValue)
                 {
-                    await AcquireSharedAdvisoryLockAsync(TimeSlotLockKey, cancellationToken);
-                    var tsInfo = await _context.TimeSlots
-                        .AsNoTracking()
-                        .Where(ts => ts.Id == requestedTimeSlotId.Value && ts.IsActive)
-                        .Select(ts => new { ts.Id, ts.Name, ts.StartTime, ts.EndTime })
-                        .FirstOrDefaultAsync(cancellationToken);
-
-                    if (tsInfo == null)
+                    var nowSched = DateTime.UtcNow;
+                    foreach (var d in autoDays)
                     {
-                        await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiBadRequest("Ca học được chọn không tồn tại hoặc đang ngừng sử dụng.");
-                    }
-
-                    if (tsInfo != null)
-                    {
-                        if (teacherId.HasValue)
+                        _context.ClassSchedules.Add(new ClassSchedule
                         {
-                            var busyTeacherHit = await (
-                                from cs in _context.ClassSchedules.AsNoTracking()
-                                join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
-                                join ct in _context.ClassTeachers.AsNoTracking() on cc.Id equals ct.ClassId
-                                join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
-                                where cs.ClassId != newClass.Id
-                                      && ct.TeacherId == teacherId.Value
-                                      && (cc.Status == "upcoming" || cc.Status == "ongoing")
-                                      && newClass.StartDate <= cc.EndDate && cc.StartDate <= newClass.EndDate
-                                      && autoDays.Contains(cs.DayOfWeek)
-                                      && ts.StartTime < tsInfo.EndTime && tsInfo.StartTime < ts.EndTime
-                                select new { cs.DayOfWeek, cc.ClassCode, ts.Name, ts.StartTime, ts.EndTime }
-                            ).FirstOrDefaultAsync(cancellationToken);
-
-                            if (busyTeacherHit != null)
-                            {
-                                await transaction.RollbackAsync(CancellationToken.None);
-                                return this.ApiBadRequest(
-                                    $"Không thể tạo lớp vì lịch học vào {AdminCoreHelpers.FormatDayFull(busyTeacherHit.DayOfWeek)} ({tsInfo.Name}) bị trùng với lớp {busyTeacherHit.ClassCode} của giảng viên đã chọn.");
-                            }
-                        }
-
-                        var nowSched = DateTime.UtcNow;
-                        foreach (var d in autoDays)
-                        {
-                            _context.ClassSchedules.Add(new ClassSchedule
-                            {
-                                ClassId = newClass.Id,
-                                ClassroomId = classroomId.Value,
-                                TimeSlotId = tsInfo.Id,
-                                DayOfWeek = d,
-                                CreatedAt = nowSched
-                            });
-                        }
-                        await _context.SaveChangesAsync(cancellationToken);
+                            ClassId = newClass.Id,
+                            ClassroomId = classroomId.Value,
+                            TimeSlotId = resolvedTimeSlotId.Value,
+                            DayOfWeek = d,
+                            CreatedAt = nowSched
+                        });
                     }
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
 
                 await transaction.CommitAsync(cancellationToken);
@@ -913,6 +917,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     : new List<ClassScheduleWindow>();
 
                 var oldClassroomId = classSchedules.Select(s => (int?)s.ClassroomId).FirstOrDefault();
+                var isClearingRoom = dto.ClassroomId.HasValue && !requestedClassroomId.HasValue;
+                var isReplacingSchedule = willBeActive && requestedClassroomId.HasValue && !string.IsNullOrEmpty(requestedScheduleDays) && requestedTimeSlotId.HasValue;
+                var isMovingExistingRoom = willBeActive && !isReplacingSchedule && !isClearingRoom
+                    && dto.ClassroomId.HasValue && requestedClassroomId.HasValue
+                    && oldClassroomId != requestedClassroomId && classSchedules.Count > 0;
 
                 // 2. Khóa các phòng liên quan theo thứ tự tăng dần (200M + classroomId)
                 var roomsToLock = classSchedules.Select(s => s.ClassroomId).ToList();
@@ -922,6 +931,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     await AcquireAdvisoryLockAsync(ClassroomLockOffset + roomId, cancellationToken);
                 }
 
+                string? requestedRoomName = null;
                 if (requestedClassroomId.HasValue && willBeActive)
                 {
                     var roomInfo = await _context.Classrooms
@@ -939,27 +949,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         await transaction.RollbackAsync(CancellationToken.None);
                         return this.ApiBadRequest($"Sức chứa phòng {roomInfo.Name} ({roomInfo.Capacity} chỗ) nhỏ hơn sĩ số tối đa của lớp ({dto.MaxStudents} học viên).");
                     }
-
-                    var classroomChanged = oldClassroomId != requestedClassroomId;
-                    if (classroomChanged || isActivating || datesChanged)
-                    {
-                        var roomOccErr = await CheckExclusiveRoomOccupancyAsync(
-                            id, requestedClassroomId.Value, roomInfo.Name, newStartDate, newEndDate, cancellationToken);
-                        if (roomOccErr != null)
-                        {
-                            await transaction.RollbackAsync(CancellationToken.None);
-                            return this.ApiBadRequest(roomOccErr);
-                        }
-                    }
+                    requestedRoomName = roomInfo.Name;
                 }
 
                 // 3. Khóa các giảng viên liên quan (cả main và assistant) theo thứ tự tăng dần (300M + teacherId)
                 var teacherIdsToCheck = new HashSet<int>();
-                if (needAllTeachersConflictCheck && classSchedules.Count > 0)
+                if (needAllTeachersConflictCheck && classSchedules.Count > 0 && !isReplacingSchedule && !isClearingRoom)
                 {
                     foreach (var tid in resultingTeacherIds) teacherIdsToCheck.Add(tid);
                 }
-                else if (needNewMainTeacherConflictCheck && classSchedules.Count > 0 && requestedMainTeacherId.HasValue)
+                else if (needNewMainTeacherConflictCheck && classSchedules.Count > 0 && !isReplacingSchedule && !isClearingRoom && requestedMainTeacherId.HasValue)
                 {
                     teacherIdsToCheck.Add(requestedMainTeacherId.Value);
                 }
@@ -969,7 +968,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     teacherIdsToLock.Add(requestedMainTeacherId.Value);
                 }
-                if (willBeActive && classSchedules.Count == 0 && (isActivating || classroomUpdated))
+                if (willBeActive && (isReplacingSchedule || (classSchedules.Count == 0 && (isActivating || classroomUpdated))))
                 {
                     foreach (var tid in resultingTeacherIds) teacherIdsToLock.Add(tid);
                 }
@@ -979,8 +978,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     await AcquireAdvisoryLockAsync(TeacherLockOffset + tid, cancellationToken);
                 }
 
-                // 4. Khóa chia sẻ Ca học (700M) khi cần đối chiếu lịch
-                if ((needRoomConflictCheck || teacherIdsToCheck.Count > 0) && classSchedules.Count > 0)
+                // 4. Khóa chia sẻ Ca học (700M) khi cần đối chiếu lịch / phòng-ca học
+                var needTimeSlotSharedLock = willBeActive && !isClearingRoom && (
+                    isReplacingSchedule
+                    || (requestedClassroomId.HasValue && requestedTimeSlotId.HasValue)
+                    || ((needRoomConflictCheck || isMovingExistingRoom || teacherIdsToCheck.Count > 0) && classSchedules.Count > 0));
+                if (needTimeSlotSharedLock)
                 {
                     await AcquireSharedAdvisoryLockAsync(TimeSlotLockKey, cancellationToken);
                 }
@@ -1000,58 +1003,102 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     }
                 }
 
-                if (needRoomActiveAndCapacityCheck && classSchedules.Count > 0)
+                if (willBeActive && !isClearingRoom && !isReplacingSchedule)
                 {
-                    var roomConstraintErr = await CheckRoomsActiveAndCapacityAsync(dto.MaxStudents, classSchedules, cancellationToken);
-                    if (roomConstraintErr != null)
+                    if (requestedClassroomId.HasValue && requestedTimeSlotId.HasValue)
                     {
-                        await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiBadRequest(roomConstraintErr);
-                    }
-                }
-
-                if (needRoomConflictCheck && classSchedules.Count > 0)
-                {
-                    var timeSlotErr = await CheckTimeSlotsActiveAsync(classSchedules, cancellationToken);
-                    if (timeSlotErr != null)
-                    {
-                        await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiBadRequest(timeSlotErr);
-                    }
-
-                    var roomConflict = await CheckRoomScheduleConflictsAsync(id, newStartDate, newEndDate, classSchedules, cancellationToken);
-                    if (roomConflict != null)
-                    {
-                        await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiBadRequest(roomConflict);
-                    }
-                }
-
-                if (teacherIdsToCheck.Count > 0 && classSchedules.Count > 0)
-                {
-                    var checkList = teacherIdsToCheck.OrderBy(x => x).ToList();
-                    var teacherNames = await (
-                        from t in _context.Teachers.AsNoTracking()
-                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
-                        where checkList.Contains(t.Id)
-                        select new { t.Id, u.FullName }
-                    ).ToDictionaryAsync(x => x.Id, x => x.FullName, cancellationToken);
-
-                    foreach (var tid in checkList)
-                    {
-                        var tName = teacherNames.GetValueOrDefault(tid, $"Giảng viên #{tid}");
-                        var teacherConflict = await CheckTeacherScheduleConflictsAsync(
-                            id,
-                            tid,
-                            tName,
-                            newStartDate,
-                            newEndDate,
-                            classSchedules,
-                            cancellationToken);
-                        if (teacherConflict != null)
+                        var explicitTs = await _context.TimeSlots
+                            .AsNoTracking()
+                            .Where(ts => ts.Id == requestedTimeSlotId.Value && ts.IsActive)
+                            .Select(ts => new { ts.Id, ts.Name, ts.StartTime, ts.EndTime })
+                            .FirstOrDefaultAsync(cancellationToken);
+                        if (explicitTs == null)
                         {
                             await transaction.RollbackAsync(CancellationToken.None);
-                            return this.ApiBadRequest(teacherConflict);
+                            return this.ApiBadRequest("Ca học được chọn không tồn tại hoặc đang ngừng sử dụng.");
+                        }
+
+                        var explicitRoomSlotErr = await CheckRoomTimeSlotConflictAsync(
+                            id,
+                            requestedClassroomId.Value,
+                            requestedRoomName!,
+                            newStartDate,
+                            newEndDate,
+                            explicitTs.Id,
+                            explicitTs.StartTime,
+                            explicitTs.EndTime,
+                            cancellationToken);
+                        if (explicitRoomSlotErr != null)
+                        {
+                            await transaction.RollbackAsync(CancellationToken.None);
+                            return this.ApiBadRequest(explicitRoomSlotErr);
+                        }
+                    }
+
+                    if (classSchedules.Count > 0)
+                    {
+                        var effectiveSchedules = isMovingExistingRoom
+                            ? classSchedules.Select(s => s with
+                            {
+                                ClassroomId = requestedClassroomId!.Value,
+                                ClassroomName = requestedRoomName!
+                            }).ToList()
+                            : classSchedules;
+
+                        if (needRoomActiveAndCapacityCheck && !isMovingExistingRoom)
+                        {
+                            var roomConstraintErr = await CheckRoomsActiveAndCapacityAsync(dto.MaxStudents, effectiveSchedules, cancellationToken);
+                            if (roomConstraintErr != null)
+                            {
+                                await transaction.RollbackAsync(CancellationToken.None);
+                                return this.ApiBadRequest(roomConstraintErr);
+                            }
+                        }
+
+                        if (needRoomConflictCheck || isMovingExistingRoom)
+                        {
+                            var timeSlotErr = await CheckTimeSlotsActiveAsync(effectiveSchedules, cancellationToken);
+                            if (timeSlotErr != null)
+                            {
+                                await transaction.RollbackAsync(CancellationToken.None);
+                                return this.ApiBadRequest(timeSlotErr);
+                            }
+
+                            var roomConflict = await CheckRoomScheduleConflictsAsync(id, newStartDate, newEndDate, effectiveSchedules, cancellationToken);
+                            if (roomConflict != null)
+                            {
+                                await transaction.RollbackAsync(CancellationToken.None);
+                                return this.ApiBadRequest(roomConflict);
+                            }
+                        }
+
+                        if (teacherIdsToCheck.Count > 0)
+                        {
+                            var checkList = teacherIdsToCheck.OrderBy(x => x).ToList();
+                            var teacherNames = await (
+                                from t in _context.Teachers.AsNoTracking()
+                                join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                                where checkList.Contains(t.Id)
+                                select new { t.Id, u.FullName }
+                            ).ToDictionaryAsync(x => x.Id, x => x.FullName, cancellationToken);
+
+                            foreach (var tid in checkList)
+                            {
+                                var tName = teacherNames.GetValueOrDefault(tid, $"Giảng viên #{tid}");
+                                var teacherConflict = await CheckTeacherScheduleConflictsAsync(
+                                    id,
+                                    tid,
+                                    tName,
+                                    newStartDate,
+                                    newEndDate,
+                                    classSchedules,
+                                    cancellationToken);
+                                if (teacherConflict != null)
+                                {
+                                    await transaction.RollbackAsync(CancellationToken.None);
+                                    return this.ApiBadRequest(teacherConflict);
+                                }
+                            }
                         }
                     }
                 }
@@ -1074,24 +1121,39 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     await CancelClassEffectsAsync(id, now, cancellationToken);
                 }
-                else if (dto.ClassroomId.HasValue && !requestedClassroomId.HasValue)
+                else if (isClearingRoom)
                 {
                     await ClearClassSchedulesAsync(id, cancellationToken);
                     classSchedules.Clear();
                 }
-                else if (requestedClassroomId.HasValue && !string.IsNullOrEmpty(requestedScheduleDays) && requestedTimeSlotId.HasValue)
+                else if (isReplacingSchedule)
                 {
                     var autoDays = ResolveSchedulePatternDays(requestedScheduleDays);
-                    await AcquireSharedAdvisoryLockAsync(TimeSlotLockKey, cancellationToken);
                     var tsInfo = await _context.TimeSlots
                         .AsNoTracking()
-                        .Where(ts => ts.Id == requestedTimeSlotId.Value && ts.IsActive)
+                        .Where(ts => ts.Id == requestedTimeSlotId!.Value && ts.IsActive)
                         .Select(ts => new { ts.Id, ts.Name, ts.StartTime, ts.EndTime })
                         .FirstOrDefaultAsync(cancellationToken);
                     if (tsInfo == null)
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
                         return this.ApiBadRequest("Ca học được chọn không tồn tại hoặc đang ngừng sử dụng.");
+                    }
+
+                    var roomSlotConflict = await CheckRoomTimeSlotConflictAsync(
+                        id,
+                        requestedClassroomId!.Value,
+                        requestedRoomName!,
+                        newStartDate,
+                        newEndDate,
+                        tsInfo.Id,
+                        tsInfo.StartTime,
+                        tsInfo.EndTime,
+                        cancellationToken);
+                    if (roomSlotConflict != null)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest(roomSlotConflict);
                     }
 
                     if (resultingTeacherIds.Count > 0)
@@ -1130,13 +1192,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         });
                     }
                     classSchedules = autoDays.Select(d => new ClassScheduleWindow(
-                        requestedClassroomId.Value, "", d, tsInfo.Id, tsInfo.Name, tsInfo.StartTime, tsInfo.EndTime)).ToList();
+                        requestedClassroomId.Value, requestedRoomName!, d, tsInfo.Id, tsInfo.Name, tsInfo.StartTime, tsInfo.EndTime)).ToList();
                 }
-                else if (dto.ClassroomId.HasValue && oldClassroomId != requestedClassroomId && requestedClassroomId.HasValue && classSchedules.Count > 0)
+                else if (isMovingExistingRoom)
                 {
                     await _context.ClassSchedules
                         .Where(cs => cs.ClassId == id)
-                        .ExecuteUpdateAsync(s => s.SetProperty(cs => cs.ClassroomId, requestedClassroomId.Value), cancellationToken);
+                        .ExecuteUpdateAsync(s => s.SetProperty(cs => cs.ClassroomId, requestedClassroomId!.Value), cancellationToken);
                 }
 
                 if (!isCancelling)
@@ -1776,7 +1838,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     join ts in _context.TimeSlots.AsNoTracking() on sched.TimeSlotId equals ts.Id into tsGroup
                     from slot in tsGroup.DefaultIfEmpty()
                     where cl.ClassId == id
-                    orderby cl.ScheduleDate == null, cl.ScheduleDate, l.OrderIndex, cl.Id
                     select new
                     {
                         id = cl.Id,
@@ -1798,25 +1859,28 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     }
                 ).ToListAsync(cancellationToken);
 
-                var classLessons = rawClassLessons.Select(cl => new
-                {
-                    cl.id,
-                    cl.lessonId,
-                    cl.lessonOrder,
-                    cl.lessonTitle,
-                    cl.contentType,
-                    cl.scheduleId,
-                    cl.teacherId,
-                    cl.teacherName,
-                    cl.classroomName,
-                    scheduleLabel = cl.dayOfWeek.HasValue && cl.startTime.HasValue && cl.endTime.HasValue
-                        ? $"{AdminCoreHelpers.FormatDayShort(cl.dayOfWeek.Value)} ({AdminCoreHelpers.FormatTimeRange(cl.startTime.Value, cl.endTime.Value)})"
-                        : null,
-                    cl.scheduleDate,
-                    cl.status,
-                    cl.notes,
-                    cl.createdAt
-                }).ToList();
+                var classLessons = rawClassLessons
+                    .OrderBy(cl => cl.scheduleDate ?? DateTime.MaxValue)
+                    .ThenBy(cl => cl.id)
+                    .Select(cl => new
+                    {
+                        cl.id,
+                        cl.lessonId,
+                        cl.lessonOrder,
+                        cl.lessonTitle,
+                        cl.contentType,
+                        cl.scheduleId,
+                        cl.teacherId,
+                        cl.teacherName,
+                        cl.classroomName,
+                        scheduleLabel = cl.dayOfWeek.HasValue && cl.startTime.HasValue && cl.endTime.HasValue
+                            ? $"{AdminCoreHelpers.FormatDayShort(cl.dayOfWeek.Value)} ({AdminCoreHelpers.FormatTimeRange(cl.startTime.Value, cl.endTime.Value)})"
+                            : null,
+                        scheduleDate = cl.scheduleDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        cl.status,
+                        cl.notes,
+                        cl.createdAt
+                    }).ToList();
 
                 var (totalLessons, studentRows) = await LoadClassStudentsWithStatsAsync(id, courseId, cancellationToken);
 
@@ -1883,31 +1947,22 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     }
                 ).ToListAsync(cancellationToken);
 
-                var coursesBySubjectId = allCoursesWithSubject
-                    .GroupBy(c => c.SubjectId)
-                    .ToDictionary(g => g.Key, g => g.OrderBy(x => x.Id).ToList());
-
                 var courseDisplayById = allCoursesWithSubject.ToDictionary(
                     c => c.Id,
                     c =>
                     {
-                        var siblings = coursesBySubjectId.TryGetValue(c.SubjectId, out var sList) ? sList : [c];
-                        var subjectTotal = siblings.Sum(x => x.Price);
-                        var breakdown = string.Join(" + ", siblings.Select(x => x.Title));
-                        var displayTitle = !string.IsNullOrWhiteSpace(c.SubjectName) && siblings.Count > 1
-                            ? $"{c.SubjectName}: {c.Title} (Tổng khóa {c.SubjectName}: {breakdown})"
-                            : (!string.IsNullOrWhiteSpace(c.SubjectName) ? $"{c.SubjectName} — {c.Title}" : c.Title);
+                        var subjectName = !string.IsNullOrWhiteSpace(c.SubjectName) ? c.SubjectName : "Chưa phân môn";
+                        var displayTitle = !string.IsNullOrWhiteSpace(c.SubjectName)
+                            ? $"{c.Title} (Môn: {c.SubjectName})"
+                            : c.Title;
                         return new
                         {
                             c.Id,
                             c.SubjectId,
-                            SubjectName = c.SubjectName ?? c.Title,
+                            SubjectName = subjectName,
                             c.Title,
                             DisplayTitle = displayTitle,
                             CoursePrice = c.Price,
-                            SubjectTotalPrice = subjectTotal,
-                            SiblingCount = siblings.Count,
-                            Breakdown = breakdown,
                             c.Level
                         };
                     });
@@ -1924,8 +1979,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             title = info.DisplayTitle,
                             rawTitle = c.Title,
                             coursePrice = c.Price,
-                            subjectTotalPrice = info.SubjectTotalPrice,
-                            price = info.SubjectTotalPrice > 0 ? info.SubjectTotalPrice : c.Price,
+                            price = c.Price,
                             level = c.Level
                         };
                     }).ToList()
@@ -2123,10 +2177,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 var courseClass = await _context.CourseClasses
-                    .AsNoTracking()
-                    .Where(c => c.Id == enrollment.ClassId)
-                    .Select(c => new { c.ClassCode, c.Status, c.MaxStudents, c.StartDate, c.EndDate })
-                    .FirstOrDefaultAsync(cancellationToken);
+                    .FirstOrDefaultAsync(c => c.Id == enrollment.ClassId, cancellationToken);
                 if (courseClass == null)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
@@ -2190,16 +2241,31 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 enrollment.Status = newStatus;
+                if (newStatus == "active" && string.Equals(courseClass.Status, "upcoming", StringComparison.OrdinalIgnoreCase))
+                {
+                    courseClass.Status = "ongoing";
+                    courseClass.UpdatedAt = DateTime.UtcNow;
+                }
                 if (newStatus == "cancelled")
                 {
-                    var pendingPayments = await _context.Payments
-                        .Where(p => p.EnrollmentId == enrollment.Id && p.Status == "pending")
+                    var relatedPayments = await _context.Payments
+                        .Where(p => p.EnrollmentId == enrollment.Id
+                                    || (p.EnrollmentId == null && p.UserId == enrollment.UserId && p.ClassId == enrollment.ClassId))
                         .ToListAsync(cancellationToken);
                     var payNow = DateTime.UtcNow;
-                    foreach (var pendingPay in pendingPayments)
+                    foreach (var pay in relatedPayments)
                     {
-                        pendingPay.Status = "failed";
-                        pendingPay.UpdatedAt = payNow;
+                        pay.EnrollmentId ??= enrollment.Id;
+                        if (string.Equals(pay.Status, "pending", StringComparison.OrdinalIgnoreCase))
+                        {
+                            pay.Status = "failed";
+                            pay.UpdatedAt = payNow;
+                        }
+                        else if (string.Equals(pay.Status, "completed", StringComparison.OrdinalIgnoreCase))
+                        {
+                            pay.Status = "refunded";
+                            pay.UpdatedAt = payNow;
+                        }
                     }
                 }
                 await _context.SaveChangesAsync(cancellationToken);
@@ -2230,6 +2296,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 .Where(p => p.ClassId == classId && p.Status == "pending")
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(p => p.Status, "failed")
+                    .SetProperty(p => p.UpdatedAt, now), cancellationToken);
+
+            await _context.Payments
+                .Where(p => p.ClassId == classId && p.Status == "completed")
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.Status, "refunded")
                     .SetProperty(p => p.UpdatedAt, now), cancellationToken);
 
             await ClearClassSchedulesAsync(classId, cancellationToken);
@@ -2354,7 +2426,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
 
             var roomIds = classSchedules.Select(s => s.ClassroomId).Distinct().ToList();
-            var days = classSchedules.Select(s => s.DayOfWeek).Distinct().ToList();
 
             var otherSchedules = await (
                 from cs in _context.ClassSchedules.AsNoTracking()
@@ -2365,32 +2436,29 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                       && startDate <= cc.EndDate
                       && cc.StartDate <= endDate
                       && roomIds.Contains(cs.ClassroomId)
-                      && days.Contains(cs.DayOfWeek)
                 select new
                 {
                     cs.ClassroomId,
-                    cs.DayOfWeek,
+                    cs.TimeSlotId,
                     cc.ClassCode,
                     cc.ClassName,
-                    ts.Name,
+                    SlotName = ts.Name,
                     ts.StartTime,
                     ts.EndTime
                 }
             ).ToListAsync(cancellationToken);
 
-            foreach (var mine in classSchedules)
+            foreach (var mine in classSchedules.GroupBy(s => (s.ClassroomId, s.TimeSlotId)).Select(g => g.First()))
             {
                 var conflict = otherSchedules.FirstOrDefault(other =>
                     other.ClassroomId == mine.ClassroomId
-                    && other.DayOfWeek == mine.DayOfWeek
-                    && other.StartTime < mine.EndTime
-                    && mine.StartTime < other.EndTime);
+                    && (other.TimeSlotId == mine.TimeSlotId
+                        || (other.StartTime < mine.EndTime && mine.StartTime < other.EndTime)));
 
                 if (conflict != null)
                 {
-                    var myRange = $"{mine.TimeSlotName} ({AdminCoreHelpers.FormatTimeRange(mine.StartTime, mine.EndTime)})";
-                    var conflictRange = $"{conflict.Name} ({AdminCoreHelpers.FormatTimeRange(conflict.StartTime, conflict.EndTime)})";
-                    return $"Trùng phòng học: Phòng {mine.ClassroomName} vào {AdminCoreHelpers.FormatDayFull(mine.DayOfWeek)}, ca {myRange} bị giao với ca {conflictRange} của lớp {conflict.ClassCode} ({conflict.ClassName}).";
+                    var hitRange = AdminCoreHelpers.FormatTimeRange(conflict.StartTime, conflict.EndTime);
+                    return $"Trùng ca học trong cùng phòng: Phòng {mine.ClassroomName} đã có lớp {conflict.ClassCode} ({conflict.ClassName}) đăng ký ở ca {conflict.SlotName} ({hitRange}). Mỗi lớp trong cùng một phòng bắt buộc phải chọn ca học khác nhau.";
                 }
             }
 
@@ -2584,23 +2652,65 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             var activeScheduled = await (
                 from cs in _context.ClassSchedules.AsNoTracking()
                 join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
                 where cc.Status == "upcoming" || cc.Status == "ongoing"
-                select new { RoomId = cs.ClassroomId, cc.Id, cc.ClassCode, cc.ClassName, cc.StartDate, cc.EndDate, cc.Status }
+                select new
+                {
+                    RoomId = cs.ClassroomId,
+                    cc.Id,
+                    cc.ClassCode,
+                    cc.ClassName,
+                    cc.StartDate,
+                    cc.EndDate,
+                    cc.Status,
+                    cs.DayOfWeek,
+                    TimeSlotId = ts.Id,
+                    SlotName = ts.Name,
+                    ts.StartTime,
+                    ts.EndTime
+                }
             ).ToListAsync(cancellationToken);
 
             var byRoom = activeScheduled
-                .GroupBy(x => (x.RoomId, x.Id))
-                .Select(g => g.First())
-                .GroupBy(x => x.RoomId)
-                .ToDictionary(g => g.Key, g => g.OrderBy(x => x.ClassCode).Select(x => new
+                .GroupBy(x => (x.RoomId, x.Id, x.TimeSlotId))
+                .Select(g =>
                 {
-                    id = x.Id,
-                    classCode = x.ClassCode,
-                    className = x.ClassName,
-                    startDate = x.StartDate,
-                    endDate = x.EndDate,
-                    status = x.Status
-                }).ToList());
+                    var first = g.First();
+                    var daysLabel = string.Join(" - ", g.Select(r => r.DayOfWeek).Distinct().OrderBy(d => d).Select(AdminCoreHelpers.FormatDayShort));
+                    return new
+                    {
+                        first.RoomId,
+                        first.Id,
+                        first.ClassCode,
+                        first.ClassName,
+                        first.StartDate,
+                        first.EndDate,
+                        first.Status,
+                        first.TimeSlotId,
+                        first.SlotName,
+                        first.StartTime,
+                        first.EndTime,
+                        DaysLabel = daysLabel
+                    };
+                })
+                .GroupBy(x => x.RoomId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderBy(x => x.StartTime).ThenBy(x => x.ClassCode).Select(x => new
+                    {
+                        id = x.Id,
+                        classCode = x.ClassCode,
+                        className = x.ClassName,
+                        startDate = x.StartDate,
+                        endDate = x.EndDate,
+                        status = x.Status,
+                        timeSlotId = x.TimeSlotId,
+                        timeSlotName = x.SlotName,
+                        startTime = AdminCoreHelpers.FormatTime24(x.StartTime),
+                        endTime = AdminCoreHelpers.FormatTime24(x.EndTime),
+                        timeRange = AdminCoreHelpers.FormatTimeRange(x.StartTime, x.EndTime),
+                        daysLabel = x.DaysLabel
+                    }).ToList());
 
             return rooms.Select(r =>
             {
@@ -2627,28 +2737,42 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }).ToList();
         }
 
-        private async Task<string?> CheckExclusiveRoomOccupancyAsync(
+        private async Task<string?> CheckRoomTimeSlotConflictAsync(
             int? excludeClassId,
             int classroomId,
             string classroomName,
             DateTime targetStart,
             DateTime targetEnd,
+            int targetTimeSlotId,
+            TimeSpan targetSlotStart,
+            TimeSpan targetSlotEnd,
             CancellationToken cancellationToken)
         {
-            var scheduleHit = await (
+            var hit = await (
                 from cs in _context.ClassSchedules.AsNoTracking()
                 join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
                 where (!excludeClassId.HasValue || cc.Id != excludeClassId.Value)
                       && cs.ClassroomId == classroomId
                       && (cc.Status == "upcoming" || cc.Status == "ongoing")
                       && targetStart <= cc.EndDate
                       && cc.StartDate <= targetEnd
-                select new { cc.ClassCode, cc.ClassName, cc.StartDate, cc.EndDate }
+                      && (cs.TimeSlotId == targetTimeSlotId
+                          || (ts.StartTime < targetSlotEnd && targetSlotStart < ts.EndTime))
+                select new
+                {
+                    cc.ClassCode,
+                    cc.ClassName,
+                    SlotName = ts.Name,
+                    ts.StartTime,
+                    ts.EndTime
+                }
             ).FirstOrDefaultAsync(cancellationToken);
 
-            if (scheduleHit != null)
+            if (hit != null)
             {
-                return $"Không thể mở chung phòng: Phòng {classroomName} đang có lịch mở của lớp {scheduleHit.ClassCode} ({scheduleHit.ClassName}) từ {scheduleHit.StartDate:dd/MM/yyyy} đến {scheduleHit.EndDate:dd/MM/yyyy}.";
+                var hitRange = AdminCoreHelpers.FormatTimeRange(hit.StartTime, hit.EndTime);
+                return $"Trùng ca học trong cùng phòng: Phòng {classroomName} đã có lớp {hit.ClassCode} ({hit.ClassName}) đăng ký ở ca {hit.SlotName} ({hitRange}). Mỗi lớp trong cùng một phòng bắt buộc phải chọn ca học khác nhau.";
             }
 
             return null;

@@ -582,7 +582,20 @@
           return;
         }
 
-        tbody.innerHTML = recents.map(r => `
+        tbody.innerHTML = recents.map(r => {
+          const isCancelled = r.status === 'cancelled' || r.classStatus === 'cancelled';
+          const payStatus = (r.paymentStatus || '').toLowerCase();
+          let feeCellHtml = '';
+          if (isCancelled) {
+            feeCellHtml = `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(r.price)}</span> <small class="text-muted">(0 ₫)</small>`;
+          } else if (payStatus === 'completed') {
+            const paidVal = r.paymentAmount !== null && r.paymentAmount !== undefined ? r.paymentAmount : r.price;
+            feeCellHtml = `<strong>${formatCurrency(paidVal)}</strong><div style="margin-top:2px;"><span class="badge badge-success" style="font-size:0.7rem;">Đã thu</span></div>`;
+          } else {
+            const unpaidLabel = payStatus === 'pending' ? 'Chờ TT' : 'Chưa thu';
+            feeCellHtml = `<strong>${formatCurrency(r.price)}</strong><div style="margin-top:2px;"><span class="badge badge-neutral" style="font-size:0.7rem;">${unpaidLabel}</span></div>`;
+          }
+          return `
           <tr>
             <td>
               <strong>${escapeHtml(r.studentName)}</strong><br>
@@ -595,13 +608,12 @@
               <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(r.className)}</div>
             </td>
             <td>${escapeHtml(r.courseTitle)}</td>
-            <td style="white-space: nowrap;">${(r.status === 'cancelled' || r.classStatus === 'cancelled')
-              ? `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(r.price)}</span> <small class="text-muted">(0 ₫)</small>`
-              : `<strong>${formatCurrency(r.price)}</strong>`}</td>
+            <td style="white-space: nowrap;">${feeCellHtml}</td>
             <td style="white-space: nowrap;">${formatDate(r.enrolledAt)}</td>
             <td style="white-space: nowrap;">${renderEnrollmentStatus(r.status)}</td>
           </tr>
-        `).join('');
+        `;
+        }).join('');
       }
 
       async function loadDashboard() {

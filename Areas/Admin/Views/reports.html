@@ -224,7 +224,7 @@
       </select>
       <select id="report-year-filter" class="form-control" style="width: auto; min-width: 110px;"></select>
       <button type="button" class="btn btn-secondary" id="btn-refresh-reports">Làm mới</button>
-      <button type="button" class="btn btn-primary" id="btn-export-reports">Xuất file Excel</button>
+      <button type="button" class="btn btn-primary" id="btn-export-reports">Xuất báo cáo CSV</button>
     </div>
   </div>
 
@@ -254,7 +254,7 @@
         <div class="card-subtitle" id="rep-trend-subtitle">Biểu đồ theo từng tháng trong kỳ báo cáo</div>
       </div>
       <div style="display: flex; gap: 0.5rem; align-items: center;">
-        <span class="badge badge-info" id="rep-students-badge">-- học viên hoạt động</span>
+        <span class="badge badge-primary" id="rep-students-badge">-- học viên hoạt động</span>
         <span class="badge badge-primary" id="rep-rating-badge">★ -- / 5.0</span>
       </div>
     </div>
@@ -270,10 +270,13 @@
         <h3 class="card-title" style="margin: 0;" id="rep-table-title">Hiệu quả tuyển sinh &amp; doanh thu theo khóa học</h3>
         <div class="card-subtitle" id="rep-table-subtitle">Tổng hợp theo các lượt ghi danh hợp lệ (active / completed)</div>
       </div>
-      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-        <button type="button" class="btn btn-sm btn-primary" data-rep-tab="courses">Theo Khóa học</button>
-        <button type="button" class="btn btn-sm btn-secondary" data-rep-tab="subjects">Theo Môn học</button>
-        <button type="button" class="btn btn-sm btn-secondary" data-rep-tab="teachers">Theo Giảng viên</button>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <input type="text" id="report-table-search" class="form-control" placeholder="Tìm nhanh khóa học, môn học, giảng viên..." style="width: 245px; height: 34px; font-size: 0.8125rem;">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-sm btn-primary" data-rep-tab="courses">Theo Khóa học</button>
+          <button type="button" class="btn btn-sm btn-secondary" data-rep-tab="subjects">Theo Môn học</button>
+          <button type="button" class="btn btn-sm btn-secondary" data-rep-tab="teachers">Theo Giảng viên</button>
+        </div>
       </div>
     </div>
 
@@ -296,6 +299,7 @@
             <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải dữ liệu báo cáo...</td>
           </tr>
         </tbody>
+        <tfoot id="rep-courses-tfoot"></tfoot>
       </table>
     </div>
 
@@ -317,13 +321,14 @@
             <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải...</td>
           </tr>
         </tbody>
+        <tfoot id="rep-subjects-tfoot"></tfoot>
       </table>
     </div>
 
     <!-- Tab 3: Giảng viên -->
     <div id="rep-panel-teachers" style="display: none;">
       <div style="padding: 0.75rem 1.5rem; background: #EFF6FF; border-bottom: 1px solid #BFDBFE; font-size: 0.8rem; color: #1E3A8A;">
-        <strong>Logic phân bổ doanh thu:</strong> Doanh thu từng lớp học được ghi nhận cho giảng viên chính đứng lớp (chia đều nếu lớp có nhiều giảng viên chính; không cộng trùng với trợ giảng). Lớp chưa phân công giảng viên được tách dòng riêng để đối soát 100% với tổng doanh thu kỳ.
+        <strong>Logic phân bổ doanh thu:</strong> Doanh thu và lượt học viên từng lớp học được ghi nhận cho giảng viên chính đứng lớp (chia đều nếu lớp có nhiều giảng viên chính; chỉ tính trợ giảng nếu lớp không có GV chính). Lớp chưa phân công giảng viên được tách dòng riêng để đối soát 100% với tổng doanh thu kỳ.
       </div>
       <div class="table-container">
         <table class="table">
@@ -342,6 +347,7 @@
               <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải...</td>
             </tr>
           </tbody>
+          <tfoot id="rep-teachers-tfoot"></tfoot>
         </table>
       </div>
     </div>
@@ -446,6 +452,11 @@
       const COLS = 7;
       let loadController = null;
       let hasInitializedFilters = false;
+      let activeReportTab = 'courses';
+      let cachedCourseBreakdown = [];
+      let cachedSubjectBreakdown = [];
+      let cachedTeacherBreakdown = [];
+      let cachedPeriodRevenue = 0;
 
       function populateYearFilter(years, selectedYear) {
         const yearSel = document.getElementById('report-year-filter');
@@ -459,6 +470,7 @@
 
       function renderKpi(data) {
         const kpi = data.kpi || {};
+        cachedPeriodRevenue = Number(kpi.periodRevenue) || 0;
         const periodText = data.selectedQuarter > 0
           ? `Quý ${data.selectedQuarter} / ${data.selectedYear}`
           : `Năm ${data.selectedYear}`;
@@ -499,16 +511,26 @@
           return;
         }
 
-        const maxRev = Math.max(1, ...list.map(x => Number(x.revenue) || 0));
+        const maxRev = Math.max(0, ...list.map(x => Number(x.revenue) || 0));
+        const maxCnt = Math.max(0, ...list.map(x => Number(x.enrollments) || 0));
+        const useCountScale = maxRev === 0 && maxCnt > 0;
         box.innerHTML = list.map(m => {
           const rev = Number(m.revenue) || 0;
           const cnt = Number(m.enrollments) || 0;
-          const barHeight = rev > 0 ? Math.max(18, Math.round((rev / maxRev) * 145)) : 4;
-          const isPeak = rev > 0 && rev === maxRev;
-          const bg = rev === 0 ? 'var(--neutral-200)' : (isPeak ? 'var(--primary-600)' : 'var(--primary-500)');
+          const barHeight = useCountScale
+            ? (cnt > 0 ? Math.max(18, Math.round((cnt / maxCnt) * 145)) : 4)
+            : (rev > 0 ? Math.max(18, Math.round((rev / Math.max(1, maxRev)) * 145)) : 4);
+          const hasValue = useCountScale ? cnt > 0 : rev > 0;
+          const isPeak = useCountScale
+            ? (cnt > 0 && cnt === maxCnt)
+            : (rev > 0 && rev === maxRev);
+          const bg = !hasValue ? 'var(--neutral-200)' : (isPeak ? 'var(--primary-600)' : 'var(--primary-500)');
+          const topLabel = useCountScale
+            ? (cnt > 0 ? `${cnt} lượt` : '0')
+            : (rev > 0 ? formatCompactCurrency(rev) : '0');
           return `
             <div style="flex: 1; text-align: center; min-width: 32px;" title="${escapeHtml(m.label)}: ${formatCurrency(rev)} (${cnt} lượt)">
-              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">${rev > 0 ? escapeHtml(formatCompactCurrency(rev)) : '0'}</div>
+              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">${escapeHtml(topLabel)}</div>
               <div style="height: ${barHeight}px; width: 65%; max-width: 38px; background: ${bg}; border-radius: 4px 4px 0 0; margin: 0 auto; transition: height 0.3s ease;"></div>
               <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-top: 6px; display: block;">${escapeHtml(m.label)}</span>
               <span style="font-size: 0.68rem; color: var(--text-muted);">${cnt} lượt</span>
@@ -517,11 +539,17 @@
         }).join('');
       }
 
-      function renderBreakdown(items) {
+      function renderBreakdown(items, isFiltered = false) {
         const tbody = document.getElementById('rep-courses-tbody');
+        const tfoot = document.getElementById('rep-courses-tfoot');
         const list = Array.isArray(items) ? items : [];
         if (list.length === 0) {
-          tbody.innerHTML = stateRow(COLS, 'Chưa có khóa học nào', 'Dữ liệu phân tích theo khóa học sẽ hiển thị tại đây.');
+          tbody.innerHTML = stateRow(
+            COLS,
+            isFiltered ? 'Không tìm thấy khóa học phù hợp' : 'Chưa có khóa học nào',
+            isFiltered ? 'Hãy thử đổi từ khóa tìm kiếm.' : 'Dữ liệu phân tích theo khóa học sẽ hiển thị tại đây.'
+          );
+          if (tfoot) tfoot.innerHTML = '';
           return;
         }
 
@@ -546,13 +574,37 @@
             </tr>
           `;
         }).join('');
+
+        if (tfoot) {
+          const totalClasses = list.reduce((sum, x) => sum + (Number(x.classCount) || 0), 0);
+          const totalEnrollments = list.reduce((sum, x) => sum + (Number(x.enrollmentCount) || 0), 0);
+          const totalCompleted = list.reduce((sum, x) => sum + (Number(x.completedCount) || 0), 0);
+          const totalRevenue = list.reduce((sum, x) => sum + (Number(x.revenue) || 0), 0);
+          const totalRate = totalEnrollments > 0 ? Math.round((totalCompleted * 1000) / totalEnrollments) / 10 : 0;
+          tfoot.innerHTML = `
+            <tr style="background: var(--neutral-50, #F8FAFC); border-top: 2px solid var(--border-color); font-weight: 700;">
+              <td colspan="2">Tổng cộng đối soát (${list.length} khóa học)</td>
+              <td>${totalClasses} lớp</td>
+              <td>${totalEnrollments} lượt</td>
+              <td>${totalCompleted} (${totalRate}%)</td>
+              <td>--</td>
+              <td class="text-right" style="color: var(--primary-600);">${formatCurrency(totalRevenue)}</td>
+            </tr>
+          `;
+        }
       }
 
-      function renderSubjectBreakdown(items) {
+      function renderSubjectBreakdown(items, isFiltered = false) {
         const tbody = document.getElementById('rep-subjects-tbody');
+        const tfoot = document.getElementById('rep-subjects-tfoot');
         const list = Array.isArray(items) ? items : [];
         if (list.length === 0) {
-          tbody.innerHTML = stateRow(6, 'Chưa có dữ liệu môn học', 'Dữ liệu doanh thu theo môn học sẽ hiển thị tại đây.');
+          tbody.innerHTML = stateRow(
+            6,
+            isFiltered ? 'Không tìm thấy môn học phù hợp' : 'Chưa có dữ liệu môn học',
+            isFiltered ? 'Hãy thử đổi từ khóa tìm kiếm.' : 'Dữ liệu doanh thu theo môn học sẽ hiển thị tại đây.'
+          );
+          if (tfoot) tfoot.innerHTML = '';
           return;
         }
 
@@ -581,13 +633,39 @@
             </tr>
           `;
         }).join('');
+
+        if (tfoot) {
+          const totalCourses = list.reduce((sum, x) => sum + (Number(x.courseCount) || 0), 0);
+          const totalClasses = list.reduce((sum, x) => sum + (Number(x.classCount) || 0), 0);
+          const totalEnrollments = list.reduce((sum, x) => sum + (Number(x.enrollmentCount) || 0), 0);
+          const totalCompleted = list.reduce((sum, x) => sum + (Number(x.completedCount) || 0), 0);
+          const totalRevenue = list.reduce((sum, x) => sum + (Number(x.revenue) || 0), 0);
+          const totalRate = totalEnrollments > 0 ? Math.round((totalCompleted * 1000) / totalEnrollments) / 10 : 0;
+          const totalShare = cachedPeriodRevenue > 0 ? Math.min(100, Math.round((totalRevenue / cachedPeriodRevenue) * 1000) / 10) : 0;
+          tfoot.innerHTML = `
+            <tr style="background: var(--neutral-50, #F8FAFC); border-top: 2px solid var(--border-color); font-weight: 700;">
+              <td>Tổng cộng đối soát (${list.length} môn học)</td>
+              <td>${totalCourses} khóa &bull; ${totalClasses} lớp</td>
+              <td>${totalEnrollments} lượt</td>
+              <td>${totalCompleted} (${totalRate}%)</td>
+              <td>${totalShare}%</td>
+              <td class="text-right" style="color: var(--primary-600);">${formatCurrency(totalRevenue)}</td>
+            </tr>
+          `;
+        }
       }
 
-      function renderTeacherBreakdown(items) {
+      function renderTeacherBreakdown(items, isFiltered = false) {
         const tbody = document.getElementById('rep-teachers-tbody');
+        const tfoot = document.getElementById('rep-teachers-tfoot');
         const list = Array.isArray(items) ? items : [];
         if (list.length === 0) {
-          tbody.innerHTML = stateRow(6, 'Chưa có dữ liệu giảng viên', 'Dữ liệu doanh thu phân bổ theo giảng viên sẽ hiển thị tại đây.');
+          tbody.innerHTML = stateRow(
+            6,
+            isFiltered ? 'Không tìm thấy giảng viên phù hợp' : 'Chưa có dữ liệu giảng viên',
+            isFiltered ? 'Hãy thử đổi từ khóa tìm kiếm.' : 'Dữ liệu doanh thu phân bổ theo giảng viên sẽ hiển thị tại đây.'
+          );
+          if (tfoot) tfoot.innerHTML = '';
           return;
         }
 
@@ -602,7 +680,7 @@
           return `
             <tr>
               <td>${nameCell}</td>
-              <td>${isUnassigned ? '--' : `<strong>${t.mainClassCount ?? 0}</strong> / ${t.assignedClassCount ?? 0} lớp`}</td>
+              <td>${isUnassigned ? `${t.assignedClassCount ?? 0} lớp` : `<strong>${t.mainClassCount ?? 0}</strong> / ${t.assignedClassCount ?? 0} lớp`}</td>
               <td><strong>${t.enrollmentCount ?? 0}</strong> lượt</td>
               <td>${t.completedCount ?? 0} (${t.completionRate ?? 0}%)</td>
               <td style="min-width: 140px;">
@@ -617,21 +695,77 @@
             </tr>
           `;
         }).join('');
+
+        if (tfoot) {
+          const totalMain = list.reduce((sum, x) => sum + (Number(x.mainClassCount) || 0), 0);
+          const totalAssigned = list.reduce((sum, x) => sum + (Number(x.assignedClassCount) || 0), 0);
+          const totalEnrollments = list.reduce((sum, x) => sum + (Number(x.enrollmentCount) || 0), 0);
+          const totalCompleted = list.reduce((sum, x) => sum + (Number(x.completedCount) || 0), 0);
+          const totalRevenue = list.reduce((sum, x) => sum + (Number(x.revenue) || 0), 0);
+          const totalRate = totalEnrollments > 0 ? Math.round((totalCompleted * 1000) / totalEnrollments) / 10 : 0;
+          const totalShare = cachedPeriodRevenue > 0 ? Math.min(100, Math.round((totalRevenue / cachedPeriodRevenue) * 1000) / 10) : 0;
+          tfoot.innerHTML = `
+            <tr style="background: var(--neutral-50, #F8FAFC); border-top: 2px solid var(--border-color); font-weight: 700;">
+              <td>Tổng cộng đối soát (${list.length} dòng)</td>
+              <td>${totalMain} / ${totalAssigned} lớp</td>
+              <td>${totalEnrollments} lượt</td>
+              <td>${totalCompleted} (${totalRate}%)</td>
+              <td>${totalShare}%</td>
+              <td class="text-right" style="color: var(--primary-600);">${formatCurrency(totalRevenue)}</td>
+            </tr>
+          `;
+        }
+      }
+
+      function applyReportTableFilter() {
+        const searchEl = document.getElementById('report-table-search');
+        const keyword = (searchEl ? searchEl.value : '').trim().toLowerCase();
+        const isFiltered = keyword.length > 0;
+
+        if (activeReportTab === 'courses') {
+          const filtered = isFiltered
+            ? cachedCourseBreakdown.filter(c =>
+                (c.courseTitle || '').toLowerCase().includes(keyword) ||
+                (c.subjectName || '').toLowerCase().includes(keyword))
+            : cachedCourseBreakdown;
+          renderBreakdown(filtered, isFiltered);
+        } else if (activeReportTab === 'subjects') {
+          const filtered = isFiltered
+            ? cachedSubjectBreakdown.filter(s => (s.subjectName || '').toLowerCase().includes(keyword))
+            : cachedSubjectBreakdown;
+          renderSubjectBreakdown(filtered, isFiltered);
+        } else if (activeReportTab === 'teachers') {
+          const filtered = isFiltered
+            ? cachedTeacherBreakdown.filter(t =>
+                (t.teacherName || '').toLowerCase().includes(keyword) ||
+                (t.qualification || '').toLowerCase().includes(keyword))
+            : cachedTeacherBreakdown;
+          renderTeacherBreakdown(filtered, isFiltered);
+        }
       }
 
       function switchReportTab(tab) {
+        activeReportTab = ['courses', 'subjects', 'teachers'].includes(tab) ? tab : 'courses';
         const titles = {
           courses: 'Hiệu quả tuyển sinh & doanh thu theo khóa học',
           subjects: 'Thống kê doanh thu theo Môn học',
           teachers: 'Thống kê doanh thu phân bổ theo Giảng viên'
         };
-        document.getElementById('rep-table-title').textContent = titles[tab] || titles.courses;
+        const placeholders = {
+          courses: 'Tìm nhanh theo tên khóa học, môn học...',
+          subjects: 'Tìm nhanh theo tên môn học...',
+          teachers: 'Tìm nhanh theo tên giảng viên, trình độ...'
+        };
+        document.getElementById('rep-table-title').textContent = titles[activeReportTab] || titles.courses;
+        const searchEl = document.getElementById('report-table-search');
+        if (searchEl) searchEl.placeholder = placeholders[activeReportTab] || placeholders.courses;
         ['courses', 'subjects', 'teachers'].forEach(key => {
-          document.getElementById(`rep-panel-${key}`).style.display = key === tab ? 'block' : 'none';
+          document.getElementById(`rep-panel-${key}`).style.display = key === activeReportTab ? 'block' : 'none';
         });
         document.querySelectorAll('[data-rep-tab]').forEach(btn => {
-          btn.className = btn.getAttribute('data-rep-tab') === tab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
+          btn.className = btn.getAttribute('data-rep-tab') === activeReportTab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
         });
+        applyReportTableFilter();
       }
 
       async function loadReports() {
@@ -647,6 +781,10 @@
         document.getElementById('rep-courses-tbody').innerHTML = skeletonRows(COLS, 5);
         document.getElementById('rep-subjects-tbody').innerHTML = skeletonRows(6, 4);
         document.getElementById('rep-teachers-tbody').innerHTML = skeletonRows(6, 4);
+        ['rep-courses-tfoot', 'rep-subjects-tfoot', 'rep-teachers-tfoot'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = '';
+        });
 
         try {
           const params = new URLSearchParams();
@@ -656,15 +794,23 @@
           if (quarterVal) params.set('quarter', quarterVal);
 
           const data = await fetchJson(`/Admin/api/Reports/Summary?${params.toString()}`, { signal: controller.signal });
+          cachedCourseBreakdown = Array.isArray(data.courseBreakdown) ? data.courseBreakdown : [];
+          cachedSubjectBreakdown = Array.isArray(data.subjectBreakdown) ? data.subjectBreakdown : [];
+          cachedTeacherBreakdown = Array.isArray(data.teacherBreakdown) ? data.teacherBreakdown : [];
           populateYearFilter(data.availableYears, data.selectedYear);
           renderKpi(data);
           renderMonthlyChart(data.monthlyTrend);
-          renderBreakdown(data.courseBreakdown);
-          renderSubjectBreakdown(data.subjectBreakdown);
-          renderTeacherBreakdown(data.teacherBreakdown);
+          renderBreakdown(cachedCourseBreakdown, false);
+          renderSubjectBreakdown(cachedSubjectBreakdown, false);
+          renderTeacherBreakdown(cachedTeacherBreakdown, false);
+          applyReportTableFilter();
         } catch (err) {
           if (isAbortError(err)) return;
           console.error('Lỗi tải báo cáo:', err);
+          cachedCourseBreakdown = [];
+          cachedSubjectBreakdown = [];
+          cachedTeacherBreakdown = [];
+          cachedPeriodRevenue = 0;
           document.getElementById('rep-revenue').textContent = '--';
           document.getElementById('rep-revenue-sub').textContent = 'Không thể tải dữ liệu';
           document.getElementById('rep-completion-rate').textContent = '--';
@@ -675,6 +821,10 @@
           document.getElementById('rep-courses-tbody').innerHTML = errorRowWithRetry(COLS, err.message);
           document.getElementById('rep-subjects-tbody').innerHTML = errorRowWithRetry(6, err.message);
           document.getElementById('rep-teachers-tbody').innerHTML = errorRowWithRetry(6, err.message);
+          ['rep-courses-tfoot', 'rep-subjects-tfoot', 'rep-teachers-tfoot'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
+          });
           showToast(err.message, 'error');
         } finally {
           if (loadController === controller) {
@@ -691,6 +841,7 @@
           btn.addEventListener('click', () => switchReportTab(btn.getAttribute('data-rep-tab')));
         });
 
+        document.getElementById('report-table-search').addEventListener('input', applyReportTableFilter);
         document.getElementById('report-year-filter').addEventListener('change', loadReports);
         document.getElementById('report-quarter-filter').addEventListener('change', loadReports);
         document.getElementById('btn-refresh-reports').addEventListener('click', loadReports);

@@ -553,7 +553,10 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ca học trong ngày <span class="required" style="color:red;">*</span></label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0;">Ca học trong ngày <span class="required" style="color:red;">*</span></label>
+                <button type="button" id="btn-inline-manage-timeslots" style="border: none; background: transparent; color: var(--primary-600, #2563EB); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0;">+ Thêm / Quản lý ca học</button>
+              </div>
               <select id="sched-timeslot-id" class="form-control" required>
                 <option value="">-- Đang tải ca học --</option>
               </select>
@@ -828,12 +831,22 @@
                 <input type="text" id="ts-name" class="form-control" placeholder="VD: Ca Tối 1" maxlength="50" required>
               </div>
               <div class="form-group">
-                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ bắt đầu <span style="color:red;">*</span></label>
-                <input type="time" id="ts-start-time" class="form-control" required>
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ bắt đầu (24h) <span style="color:red;">*</span></label>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <select id="ts-start-hour" class="form-control" aria-label="Giờ bắt đầu (00-23)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
+                  <span style="font-weight: 700; color: var(--text-muted);">:</span>
+                  <select id="ts-start-minute" class="form-control" aria-label="Phút bắt đầu (00-59)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
+                </div>
+                <input type="hidden" id="ts-start-time" value="">
               </div>
               <div class="form-group">
-                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ kết thúc <span style="color:red;">*</span></label>
-                <input type="time" id="ts-end-time" class="form-control" required>
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ kết thúc (24h) <span style="color:red;">*</span></label>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <select id="ts-end-hour" class="form-control" aria-label="Giờ kết thúc (00-23)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
+                  <span style="font-weight: 700; color: var(--text-muted);">:</span>
+                  <select id="ts-end-minute" class="form-control" aria-label="Phút kết thúc (00-59)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
+                </div>
+                <input type="hidden" id="ts-end-time" value="">
               </div>
               <div class="form-group">
                 <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Trạng thái</label>
@@ -858,7 +871,7 @@
             <thead>
               <tr>
                 <th>Tên ca học</th>
-                <th>Khung giờ</th>
+                <th>Khung giờ (24h)</th>
                 <th>Lịch đang xếp</th>
                 <th>Trạng thái</th>
                 <th class="text-right">Thao tác</th>
@@ -1244,11 +1257,70 @@
         box.style.display = msg ? 'block' : 'none';
       }
 
+      function initTime24Picker(prefix) {
+        const hSel = document.getElementById(`ts-${prefix}-hour`);
+        const mSel = document.getElementById(`ts-${prefix}-minute`);
+        if (!hSel || !mSel) return;
+        let hHtml = '<option value="">Giờ</option>';
+        for (let h = 0; h < 24; h++) {
+          const hh = String(h).padStart(2, '0');
+          hHtml += `<option value="${hh}">${hh}</option>`;
+        }
+        hSel.innerHTML = hHtml;
+
+        let mHtml = '<option value="">Phút</option>';
+        for (let m = 0; m < 60; m++) {
+          const mm = String(m).padStart(2, '0');
+          mHtml += `<option value="${mm}">${mm}</option>`;
+        }
+        mSel.innerHTML = mHtml;
+
+        hSel.addEventListener('change', () => {
+          if (hSel.value && !mSel.value) mSel.value = '00';
+          syncTime24Value(prefix);
+        });
+        mSel.addEventListener('change', () => syncTime24Value(prefix));
+      }
+
+      function syncTime24Value(prefix) {
+        const hSel = document.getElementById(`ts-${prefix}-hour`);
+        const mSel = document.getElementById(`ts-${prefix}-minute`);
+        const hidden = document.getElementById(`ts-${prefix}-time`);
+        if (!hidden) return '';
+        const hh = hSel ? hSel.value : '';
+        const mm = mSel ? mSel.value : '';
+        const val = (hh !== '' && mm !== '') ? `${hh}:${mm}` : '';
+        hidden.value = val;
+        return val;
+      }
+
+      function setTime24Value(prefix, hhmm) {
+        const hSel = document.getElementById(`ts-${prefix}-hour`);
+        const mSel = document.getElementById(`ts-${prefix}-minute`);
+        const hidden = document.getElementById(`ts-${prefix}-time`);
+        const m = String(hhmm || '').trim().match(/^(\d{1,2}):(\d{2})/);
+        if (m) {
+          const hhNum = parseInt(m[1], 10);
+          const mmNum = parseInt(m[2], 10);
+          if (hhNum >= 0 && hhNum <= 23 && mmNum >= 0 && mmNum <= 59) {
+            const hh = String(hhNum).padStart(2, '0');
+            const mm = String(mmNum).padStart(2, '0');
+            if (hSel) hSel.value = hh;
+            if (mSel) mSel.value = mm;
+            if (hidden) hidden.value = `${hh}:${mm}`;
+            return;
+          }
+        }
+        if (hSel) hSel.value = '';
+        if (mSel) mSel.value = '';
+        if (hidden) hidden.value = '';
+      }
+
       function resetTimeSlotForm() {
         document.getElementById('ts-id').value = '';
         document.getElementById('ts-name').value = '';
-        document.getElementById('ts-start-time').value = '';
-        document.getElementById('ts-end-time').value = '';
+        setTime24Value('start', '');
+        setTime24Value('end', '');
         document.getElementById('ts-active').value = 'true';
         document.getElementById('ts-description').value = '';
         document.getElementById('ts-form-heading').textContent = 'Thêm ca học mới';
@@ -1262,8 +1334,8 @@
         if (!slot) return;
         document.getElementById('ts-id').value = String(slot.id);
         document.getElementById('ts-name').value = slot.slotName || slot.name || '';
-        document.getElementById('ts-start-time').value = slot.startTime || '';
-        document.getElementById('ts-end-time').value = slot.endTime || '';
+        setTime24Value('start', slot.startTime || '');
+        setTime24Value('end', slot.endTime || '');
         document.getElementById('ts-active').value = slot.isActive ? 'true' : 'false';
         document.getElementById('ts-description').value = slot.description || '';
         document.getElementById('ts-form-heading').textContent = `Chỉnh sửa ca học: ${slot.slotName || slot.name}`;
@@ -1395,8 +1467,8 @@
         const isEdit = Boolean(id);
         const payload = {
           slotName: document.getElementById('ts-name').value.trim(),
-          startTime: document.getElementById('ts-start-time').value,
-          endTime: document.getElementById('ts-end-time').value,
+          startTime: syncTime24Value('start'),
+          endTime: syncTime24Value('end'),
           description: document.getElementById('ts-description').value.trim(),
           isActive: document.getElementById('ts-active').value === 'true'
         };
@@ -1409,8 +1481,13 @@
           showTimeSlotError('Mô tả ca học không được vượt quá 500 ký tự.');
           return;
         }
-        if (!payload.startTime || !payload.endTime || payload.startTime >= payload.endTime) {
-          showTimeSlotError('Giờ kết thúc phải lớn hơn giờ bắt đầu.');
+        const time24Regex = /^([01]\d|2[0-3]):[0-5]\d$/;
+        if (!time24Regex.test(payload.startTime) || !time24Regex.test(payload.endTime)) {
+          showTimeSlotError('Vui lòng chọn đầy đủ giờ bắt đầu và giờ kết thúc theo chuẩn 24h (00:00 - 23:59).');
+          return;
+        }
+        if (payload.startTime >= payload.endTime) {
+          showTimeSlotError('Giờ kết thúc phải lớn hơn giờ bắt đầu (chuẩn 24h 00:00 - 23:59).');
           return;
         }
 
@@ -2825,12 +2902,18 @@
         });
         document.getElementById('btn-apply-auto-schedule').addEventListener('click', applyAutoSchedule);
 
-        document.getElementById('btn-open-manage-timeslots').addEventListener('click', () => {
+        initTime24Picker('start');
+        initTime24Picker('end');
+
+        function openTimeSlotsModal() {
           resetTimeSlotForm();
           openModal('modal-manage-timeslots');
           loadTimeSlots();
           focusFirstField('modal-manage-timeslots', 'ts-name');
-        });
+        }
+
+        document.getElementById('btn-open-manage-timeslots').addEventListener('click', openTimeSlotsModal);
+        document.getElementById('btn-inline-manage-timeslots')?.addEventListener('click', openTimeSlotsModal);
 
         document.getElementById('btn-cancel-edit-timeslot').addEventListener('click', resetTimeSlotForm);
         document.getElementById('btn-seed-default-timeslots')?.addEventListener('click', (e) => seedDefaultTimeSlots(e.currentTarget));

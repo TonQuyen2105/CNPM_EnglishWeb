@@ -211,18 +211,18 @@
         
   <div class="page-header">
     <div>
-      <h1 class="page-header-title">Quản lý Môn học &amp; Tổng tiền Khóa học (Course)</h1>
-      <p class="page-header-subtitle" id="courses-subtitle">Đang tải danh sách môn học và tổng học phí theo chủ đề...</p>
+      <h1 class="page-header-title">Quản lý Khóa học</h1>
+      <p class="page-header-subtitle" id="courses-subtitle">Đang tải danh sách khóa học theo môn học...</p>
     </div>
     <div class="page-header-actions">
       <button type="button" class="btn btn-primary" id="btn-open-create-course" data-modal-target="modal-create-course">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Tạo môn học mới
+        Tạo khóa học mới
       </button>
     </div>
   </div>
 
-  <!-- Bảng tổng hợp Khóa học theo Chủ đề (Subject) + Tổng tiền các môn học -->
+  <!-- Bảng tổng hợp Khóa học theo Môn học (Subject) -->
   <div id="subject-totals-summary" style="margin-bottom: 1.5rem;"></div>
 
   <!-- Thanh lọc & tìm kiếm -->
@@ -240,9 +240,9 @@
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label class="form-label" style="font-size: 0.8125rem;">Cấp độ</label>
+          <label class="form-label" style="font-size: 0.8125rem;">Trình độ</label>
           <select id="filter-level" class="form-control">
-            <option value="all">Tất cả cấp độ</option>
+            <option value="all">Tất cả trình độ</option>
             <option value="beginner">Cơ bản (Beginner)</option>
             <option value="intermediate">Trung cấp (Intermediate)</option>
             <option value="advanced">Nâng cao (Advanced)</option>
@@ -445,8 +445,8 @@
       ];
 
       const LEVEL_META = {
-        beginner: { label: 'Cơ bản (Beginner)', badge: 'badge-info' },
-        intermediate: { label: 'Trung cấp (Intermediate)', badge: 'badge-primary' },
+        beginner: { label: 'Cơ bản (Beginner)', badge: 'badge-primary' },
+        intermediate: { label: 'Trung cấp (Intermediate)', badge: 'badge-success' },
         advanced: { label: 'Nâng cao (Advanced)', badge: 'badge-warning' }
       };
 
@@ -506,26 +506,26 @@
         container.innerHTML = `
           <div class="card" style="padding: 1rem 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-              <strong style="font-size: 0.9375rem; color: var(--text-primary);">Tổng hợp Khóa học theo Chủ đề (Subject) &amp; Tổng tiền các môn học</strong>
-              <a href="/Admin/subjects.html" style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">+ Quản lý Chủ đề (Subject) →</a>
+              <strong style="font-size: 0.9375rem; color: var(--text-primary);">Tổng hợp Khóa học theo Môn học</strong>
+              <a href="/Admin/subjects.html" style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">+ Quản lý Môn học →</a>
             </div>
             <div class="grid grid-cols-3 gap-4">
               ${filtered.map(s => {
                 const cList = Array.isArray(s.courses) ? s.courses : [];
                 const detailsHtml = cList.length > 0
                   ? cList.map(c => `<div style="display: flex; justify-content: space-between; font-size: 0.78rem; padding: 2px 0;"><span>&bull; ${escapeHtml(c.title)}</span><strong>${formatCurrency(c.price)}</strong></div>`).join('')
-                  : '<div style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Chưa có môn học nào trong chủ đề này</div>';
+                  : '<div style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Chưa có khóa học nào thuộc môn học này</div>';
                 return `
                   <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; background: var(--neutral-50, #F8FAFC); display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                        <strong style="font-size: 0.92rem; color: var(--primary-700, #1D4ED8);">Khóa: ${escapeHtml(s.name)}</strong>
-                        <span class="badge badge-info">${cList.length} môn học</span>
+                        <strong style="font-size: 0.92rem; color: var(--primary-700, #1D4ED8);">Môn: ${escapeHtml(s.name)}</strong>
+                        <span class="badge badge-primary">${cList.length} khóa học</span>
                       </div>
                       <div style="margin-bottom: 0.5rem;">${detailsHtml}</div>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); padding-top: 0.45rem; font-weight: 700; font-size: 0.85rem; color: #047857;">
-                      <span>Tổng tiền khóa học:</span>
+                      <span>Tổng học phí các khóa:</span>
                       <span>${formatCurrency(s.totalPrice)}</span>
                     </div>
                   </div>
@@ -544,8 +544,8 @@
         const currentFilter = subjectEl.value !== '0' ? subjectEl.value : (pendingInitialSubjectId || '0');
         const currentCreate = createSubjectEl.value;
 
-        subjectEl.innerHTML = '<option value="0">Tất cả chủ đề / khóa học</option>' +
-          subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)} — Tổng: ${formatCurrency(s.totalPrice)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
+        subjectEl.innerHTML = '<option value="0">Tất cả môn học</option>' +
+          subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
         if (currentFilter && subjects.some(s => String(s.id) === String(currentFilter))) {
           subjectEl.value = String(currentFilter);
         } else if (urlSubjectId && !lookupsLoaded && subjects.some(s => String(s.id) === String(urlSubjectId))) {
@@ -553,7 +553,7 @@
         }
         pendingInitialSubjectId = null;
 
-        createSubjectEl.innerHTML = '<option value="">-- Chọn chủ đề (Subject) --</option>' +
+        createSubjectEl.innerHTML = '<option value="">-- Chọn môn học --</option>' +
           subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
         if (currentCreate) createSubjectEl.value = currentCreate;
 
@@ -576,10 +576,10 @@
 
         gridEl.innerHTML = items.map((c, idx) => {
           const grad = GRADIENTS[idx % GRADIENTS.length];
-          const lv = LEVEL_META[(c.level || 'beginner').toLowerCase()] || { label: c.level || 'Cơ bản', badge: 'badge-info' };
+          const lv = LEVEL_META[(c.level || 'beginner').toLowerCase()] || { label: c.level || 'Cơ bản', badge: 'badge-primary' };
           const statusBadge = c.isPublished
             ? '<span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>'
-            : '<span class="badge badge-secondary" style="align-self: flex-start; background: rgba(255,255,255,0.2); color: #fff;">Bản nháp</span>';
+            : '<span class="badge badge-neutral" style="align-self: flex-start; background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.35);">Bản nháp</span>';
           const rawDesc = c.description ? String(c.description) : 'Chưa có mô tả mục tiêu cho khóa học này.';
           const shortDesc = escapeHtml(rawDesc.length > 130 ? rawDesc.slice(0, 127) + '...' : rawDesc);
 
@@ -588,19 +588,16 @@
               <div style="height: 140px; background: ${grad}; color: white; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
                   ${statusBadge}
-                  <span style="font-size: 0.75rem; opacity: 0.9;">${escapeHtml(c.subjectName)}</span>
+                  <span style="font-size: 0.75rem; opacity: 0.9;">Môn: ${escapeHtml(c.subjectName)}</span>
                 </div>
                 <h3 style="color: white; margin: 0; font-size: 1.125rem; line-height: 1.3;">${escapeHtml(c.title)}</h3>
               </div>
               <div class="card-body" style="flex: 1;">
                 <span class="badge ${lv.badge}">${escapeHtml(lv.label)}</span>
                 <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.625rem; min-height: 2.5rem;">${shortDesc}</p>
-                <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
-                  <span style="font-size: 0.8125rem; color: var(--text-muted);">${Number(c.lessonCount || 0)} bài học &bull; ${Number(c.classCount || 0)} lớp</span>
-                  <div style="text-align: right;">
-                    <div style="font-size: 0.78rem; color: var(--text-secondary);">Học phí môn: <strong>${formatCurrency(c.price)}</strong></div>
-                    <strong style="color: #047857; font-size: 0.85rem;">Tổng khóa ${escapeHtml(c.subjectName)}: ${formatCurrency(c.subjectTotalPrice ?? c.price)}</strong>
-                  </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+                  <span style="font-size: 0.8125rem; color: var(--text-muted);">${Number(c.classCount || 0)} lớp &bull; ${Number(c.lessonCount || 0)} bài học</span>
+                  <strong style="color: var(--primary-700, #1D4ED8); font-size: 0.9rem;">${formatCurrency(c.price)}</strong>
                 </div>
               </div>
               <div class="card-footer" style="display: flex; flex-direction: column; gap: 6px;">

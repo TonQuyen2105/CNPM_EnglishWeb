@@ -47,41 +47,78 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var ongoingClasses = classStatusCounts.GetValueOrDefault("ongoing");
                 var upcomingClasses = classStatusCounts.GetValueOrDefault("upcoming");
 
-                // 3. KPI ghi danh & doanh thu ước tính: chỉ tính các ghi danh active/completed thuộc lớp chưa bị hủy (cc.Status != "cancelled")
-                var validEnrollmentStats = await (
+                // 3. KPI ghi danh & doanh thu đối soát từng lượt ghi danh hợp lệ (active/completed thuộc lớp chưa bị hủy)
+                var validEnrollments = await (
                     from e in _context.Enrollments.AsNoTracking()
                     join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
                     where (e.Status == "active" || e.Status == "completed") && cc.Status != "cancelled"
-                    group cc.Price by e.Status into g
                     select new
                     {
-                        Status = g.Key,
-                        Count = g.Count(),
-                        Revenue = g.Sum(p => (decimal?)p) ?? 0m
+                        e.Id,
+                        e.UserId,
+                        e.ClassId,
+                        e.Status,
+                        cc.Price
                     }
                 ).ToListAsync(cancellationToken);
 
-                var activeEnrollments = validEnrollmentStats
-                    .Where(x => x.Status == "active")
-                    .Sum(x => x.Count);
-                var hasPayments = await _context.Payments.AsNoTracking().AnyAsync(cancellationToken);
-                int revenueEnrollmentCount;
-                decimal estimatedRevenue;
-                if (hasPayments)
+                var activeEnrollments = validEnrollments.Count(x => x.Status == "active");
+
+                var validEnrIds = validEnrollments.Select(x => x.Id).ToList();
+                var validUserIds = validEnrollments.Select(x => x.UserId).Distinct().ToList();
+                var validClassIds = validEnrollments.Select(x => x.ClassId).Distinct().ToList();
+
+                var rawValidPayments = validEnrIds.Count == 0
+                    ? []
+                    : await _context.Payments.AsNoTracking()
+                        .Where(p => (p.EnrollmentId != null && validEnrIds.Contains(p.EnrollmentId.Value))
+                                    || (p.EnrollmentId == null && validUserIds.Contains(p.UserId) && validClassIds.Contains(p.ClassId)))
+                        .OrderByDescending(p => p.Id)
+                        .Select(p => new { p.Id, p.EnrollmentId, p.UserId, p.ClassId, p.Status, p.Amount })
+                        .ToListAsync(cancellationToken);
+
+                var payByEnr = rawValidPayments
+                    .Where(p => p.EnrollmentId.HasValue)
+                    .GroupBy(p => p.EnrollmentId!.Value)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                var payByLegacyPair = rawValidPayments
+                    .Where(p => !p.EnrollmentId.HasValue)
+                    .GroupBy(p => (p.UserId, p.ClassId))
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                decimal estimatedRevenue = 0m;
+                int revenueEnrollmentCount = 0;
+                int legacyFallbackCount = 0;
+                bool hasAnyMatchedPayment = false;
+
+                foreach (var e in validEnrollments)
                 {
-                    var completedPayments = await _context.Payments.AsNoTracking()
-                        .Where(p => p.Status == "completed")
-                        .GroupBy(_ => 1)
-                        .Select(g => new { Count = g.Count(), Amount = g.Sum(p => (decimal?)p.Amount) ?? 0m })
-                        .FirstOrDefaultAsync(cancellationToken);
-                    revenueEnrollmentCount = completedPayments?.Count ?? 0;
-                    estimatedRevenue = completedPayments?.Amount ?? 0m;
+                    if (!payByEnr.TryGetValue(e.Id, out var pay))
+                    {
+                        payByLegacyPair.TryGetValue((e.UserId, e.ClassId), out pay);
+                    }
+
+                    if (pay != null)
+                    {
+                        hasAnyMatchedPayment = true;
+                        if (string.Equals(pay.Status, "completed", StringComparison.OrdinalIgnoreCase))
+                        {
+                            estimatedRevenue += pay.Amount;
+                            revenueEnrollmentCount++;
+                        }
+                    }
+                    else
+                    {
+                        estimatedRevenue += e.Price;
+                        revenueEnrollmentCount++;
+                        legacyFallbackCount++;
+                    }
                 }
-                else
-                {
-                    revenueEnrollmentCount = validEnrollmentStats.Sum(x => x.Count);
-                    estimatedRevenue = validEnrollmentStats.Sum(x => x.Revenue);
-                }
+
+                var revenueSource = hasAnyMatchedPayment && legacyFallbackCount == 0
+                    ? "payments"
+                    : "enrollments_estimate";
 
                 // 4. Ghi danh theo tháng (12 tháng của năm hiện tại, hoặc năm mới nhất có dữ liệu; loại ghi danh/lớp đã hủy)
                 var validEnrollmentsBase =
@@ -216,6 +253,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     .GroupBy(p => p.EnrollmentId!.Value)
                     .ToDictionary(g => g.Key, g => g.First());
                 var paymentByPair = recentPayments
+                    .Where(p => !p.EnrollmentId.HasValue)
                     .GroupBy(p => (p.UserId, p.ClassId))
                     .ToDictionary(g => g.Key, g => g.First());
 
@@ -256,7 +294,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         activeEnrollments,
                         estimatedRevenue,
                         revenueEnrollmentCount,
-                        revenueSource = hasPayments ? "payments" : "enrollments_estimate"
+                        revenueSource
                     },
                     chartYear = targetYear,
                     monthlyEnrollments,

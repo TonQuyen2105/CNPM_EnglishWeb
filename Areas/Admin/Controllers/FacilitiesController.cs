@@ -53,30 +53,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     })
                     .ToListAsync(cancellationToken);
 
-                var teachers = await (
-                    from t in _context.Teachers.AsNoTracking()
-                    join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
-                    where t.IsVerified && u.Role == "teacher" && u.IsActive
-                    orderby u.FullName
-                    select new
-                    {
-                        id = t.Id,
-                        fullName = u.FullName,
-                        qualification = t.Qualification
-                    }
-                ).ToListAsync(cancellationToken);
-
-                var courses = await _context.Courses
-                    .AsNoTracking()
-                    .OrderBy(c => c.Title)
-                    .Select(c => new
-                    {
-                        id = c.Id,
-                        title = c.Title,
-                        price = c.Price
-                    })
-                    .ToListAsync(cancellationToken);
-
                 var timeSlots = await _context.TimeSlots
                     .AsNoTracking()
                     .OrderBy(ts => ts.StartTime)
@@ -84,6 +60,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     {
                         id = ts.Id,
                         name = ts.Name,
+                        startTime = AdminCoreHelpers.FormatTime24(ts.StartTime),
+                        endTime = AdminCoreHelpers.FormatTime24(ts.EndTime),
                         timeRange = AdminCoreHelpers.FormatTimeRange(ts.StartTime, ts.EndTime),
                         isActive = ts.IsActive
                     })
@@ -105,8 +83,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     : await (
                         from cs in _context.ClassSchedules.AsNoTracking()
                         join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
-                        join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id into cJoin
-                        from course in cJoin.DefaultIfEmpty()
                         join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id into tsJoin
                         from slot in tsJoin.DefaultIfEmpty()
                         where roomIds.Contains(cs.ClassroomId) && (cc.Status == "upcoming" || cc.Status == "ongoing")
@@ -119,61 +95,60 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             cc.Status,
                             cc.StartDate,
                             cc.EndDate,
-                            CourseTitle = course != null ? course.Title : null,
                             cs.DayOfWeek,
+                            TimeSlotId = cs.TimeSlotId,
                             SlotName = slot != null ? slot.Name : null,
                             StartTime = slot != null ? (TimeSpan?)slot.StartTime : null,
                             EndTime = slot != null ? (TimeSpan?)slot.EndTime : null
                         }
                     ).ToListAsync(cancellationToken);
 
-                var activeClassIds = scheduledClasses.Select(x => x.Id).Distinct().ToList();
-                var classMainTeachers = activeClassIds.Count == 0
-                    ? new Dictionary<int, string>()
-                    : await (
-                        from ct in _context.ClassTeachers.AsNoTracking()
-                        join t in _context.Teachers.AsNoTracking() on ct.TeacherId equals t.Id
-                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
-                        where activeClassIds.Contains(ct.ClassId) && ct.Role == "main"
-                        select new { ct.ClassId, u.FullName }
-                    ).GroupBy(x => x.ClassId).ToDictionaryAsync(g => g.Key, g => g.First().FullName, cancellationToken);
-
                 var activeClassesByRoom = scheduledClasses
-                    .GroupBy(x => (x.RoomId, x.Id))
-                    .Select(g => g.First())
+                    .GroupBy(x => (x.RoomId, x.Id, x.TimeSlotId))
+                    .Select(g =>
+                    {
+                        var first = g.First();
+                        var daysLabel = string.Join(" - ", g.Select(r => r.DayOfWeek).Distinct().OrderBy(d => d).Select(AdminCoreHelpers.FormatDayShort));
+                        return new
+                        {
+                            first.RoomId,
+                            first.Id,
+                            first.ClassCode,
+                            first.ClassName,
+                            first.Status,
+                            first.StartDate,
+                            first.EndDate,
+                            first.TimeSlotId,
+                            first.SlotName,
+                            first.StartTime,
+                            first.EndTime,
+                            DaysLabel = daysLabel
+                        };
+                    })
                     .GroupBy(x => x.RoomId)
                     .ToDictionary(
                         g => g.Key,
-                        g => g.OrderBy(x => x.ClassCode).Select(x => new
+                        g => g.OrderBy(x => x.StartTime ?? TimeSpan.MaxValue).ThenBy(x => x.ClassCode).Select(x => new
                         {
                             id = x.Id,
                             classCode = x.ClassCode,
                             className = x.ClassName,
                             status = x.Status,
                             startDate = x.StartDate,
-                            endDate = x.EndDate
+                            endDate = x.EndDate,
+                            timeSlotId = x.TimeSlotId,
+                            timeSlotName = x.SlotName,
+                            startTime = x.StartTime.HasValue ? AdminCoreHelpers.FormatTime24(x.StartTime.Value) : null,
+                            endTime = x.EndTime.HasValue ? AdminCoreHelpers.FormatTime24(x.EndTime.Value) : null,
+                            timeRange = x.StartTime.HasValue && x.EndTime.HasValue
+                                ? AdminCoreHelpers.FormatTimeRange(x.StartTime.Value, x.EndTime.Value)
+                                : null,
+                            daysLabel = x.DaysLabel
                         }).ToList());
-
-                var scheduledRowsByRoom = scheduledClasses
-                    .GroupBy(x => x.RoomId)
-                    .ToDictionary(g => g.Key, g => g.ToList());
 
                 var items = rooms.Select(c =>
                 {
                     var roomActiveClasses = activeClassesByRoom.TryGetValue(c.Id, out var list) ? list : [];
-                    var roomSchedRows = scheduledRowsByRoom.TryGetValue(c.Id, out var sRows) ? sRows : [];
-                    var firstClass = roomSchedRows.FirstOrDefault();
-                    var activeDays = roomSchedRows.Select(x => x.DayOfWeek).Distinct().OrderBy(d => d).ToArray();
-                    var daysLabel = activeDays.Length > 0
-                        ? string.Join(" - ", activeDays.Select(AdminCoreHelpers.FormatDayFull))
-                        : null;
-                    var slotLabel = firstClass != null && firstClass.SlotName != null && firstClass.StartTime.HasValue && firstClass.EndTime.HasValue
-                        ? $"{firstClass.SlotName} ({AdminCoreHelpers.FormatTimeRange(firstClass.StartTime.Value, firstClass.EndTime.Value)})"
-                        : null;
-                    var teacherName = firstClass != null && classMainTeachers.TryGetValue(firstClass.Id, out var tn)
-                        ? tn
-                        : null;
-                    var sessionStats = AdminCoreHelpers.CalculateSessionStats(activeDays, firstClass?.StartDate, firstClass?.EndDate);
                     var activeSchedCount = scheduleCounts.GetValueOrDefault(c.Id);
 
                     return new
@@ -184,21 +159,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         capacity = c.Capacity,
                         description = c.Description,
                         isActive = c.IsActive,
-                        defaultTeacherId = (int?)null,
-                        defaultTeacherName = teacherName,
-                        defaultCourseId = (int?)null,
-                        defaultCourseTitle = firstClass?.CourseTitle,
-                        scheduleDays = (string?)null,
-                        scheduleDaysLabel = daysLabel,
-                        defaultTimeSlotId = (int?)null,
-                        defaultTimeSlotLabel = slotLabel,
-                        openDate = firstClass?.StartDate,
-                        closeDate = firstClass?.EndDate,
                         createdAt = c.CreatedAt,
                         activeScheduleCount = activeSchedCount,
-                        sessionsPerWeek = sessionStats.SessionsPerWeek,
-                        totalWeeks = sessionStats.TotalWeeks,
-                        totalSessions = sessionStats.TotalSessions,
                         hasConflict = false,
                         conflictMessages = Array.Empty<string>(),
                         isOccupied = roomActiveClasses.Count > 0,
@@ -210,8 +172,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     success = true,
                     items,
-                    teachers,
-                    courses,
                     timeSlots = timeSlots.Where(ts => ts.isActive).ToList()
                 });
             }

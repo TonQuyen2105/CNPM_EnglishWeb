@@ -33,9 +33,14 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             _ => $"Thứ {day}"
         };
 
+        public static string FormatTime24(TimeSpan time)
+        {
+            return $"{time.Hours:D2}:{time.Minutes:D2}";
+        }
+
         public static string FormatTimeRange(TimeSpan start, TimeSpan end)
         {
-            return $"{start:hh\\:mm} - {end:hh\\:mm}";
+            return $"{FormatTime24(start)} - {FormatTime24(end)}";
         }
 
         public static string FormatEnrollmentStatusVi(string? status) => (status ?? string.Empty).ToLowerInvariant() switch
@@ -252,8 +257,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         /// <summary>
         /// Tự động chuyển trạng thái các lớp sắp diễn ra / đang diễn ra sang đã kết thúc (completed)
         /// khi đã đến hoặc qua ngày kết thúc (EndDate <= hôm nay theo giờ Việt Nam UTC+7),
-        /// tự động chuyển sang đang diễn ra (ongoing) khi tới ngày bắt đầu hoặc có học viên đăng ký,
+        /// tự động chuyển sang đang diễn ra (ongoing) khi đủ điều kiện,
         /// đồng thời dọn sạch lịch học (ClassSchedules) còn sót của các lớp đã hủy (cancelled).
+        /// Không hạ ngược lớp đang diễn ra (ongoing) về sắp khai giảng (upcoming).
         /// </summary>
         public static async Task<int> SyncExpiredClassesAsync(
             ApplicationDbContext context,
@@ -270,11 +276,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     .SetProperty(c => c.UpdatedAt, nowUtc),
                     cancellationToken);
 
-            // Tự động chuyển lớp Sắp khai giảng (upcoming) sang Đang diễn ra (ongoing) KHI VÀ CHỈ KHI đủ thông tin:
-            // 1) Đã tới ngày bắt đầu (StartDate <= todayVn), VÀ
-            // 2) Đã có giảng viên phụ trách (ClassTeachers), VÀ
-            // 3) Đã có phòng học & lịch học (ClassSchedules), VÀ
-            // 4) Đã có ít nhất 1 học viên đăng ký đang học (Enrollments.Status == "active").
+            // Tự động chuyển các ghi danh đang active thuộc các lớp đã kết thúc (completed) sang completed
+            await context.Enrollments
+                .Where(e => e.Status == "active"
+                            && context.CourseClasses.Any(cc => cc.Id == e.ClassId && cc.Status == "completed"))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(e => e.Status, "completed"),
+                    cancellationToken);
+
+            // Tự động chuyển lớp Sắp khai giảng (upcoming) sang Đang diễn ra (ongoing) khi đủ điều kiện
             await context.CourseClasses
                 .Where(c => c.Status == "upcoming"
                             && c.EndDate >= tomorrowVn
@@ -284,21 +294,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             && context.Enrollments.Any(e => e.ClassId == c.Id && e.Status == "active"))
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(c => c.Status, "ongoing")
-                    .SetProperty(c => c.UpdatedAt, nowUtc),
-                    cancellationToken);
-
-            // Nếu lớp đang ở trạng thái Đang diễn ra (ongoing) nhưng chưa đủ thông tin
-            // (chưa tới ngày khai giảng, chưa có giảng viên, chưa có lịch/phòng hoặc chưa có học viên đăng ký)
-            // thì tự động đưa về Sắp khai giảng (upcoming) để Admin có thể sửa hoặc hủy lớp.
-            await context.CourseClasses
-                .Where(c => c.Status == "ongoing"
-                            && c.EndDate >= tomorrowVn
-                            && (c.StartDate >= tomorrowVn
-                                || !context.ClassTeachers.Any(ct => ct.ClassId == c.Id)
-                                || !context.ClassSchedules.Any(cs => cs.ClassId == c.Id)
-                                || !context.Enrollments.Any(e => e.ClassId == c.Id && e.Status == "active")))
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(c => c.Status, "upcoming")
                     .SetProperty(c => c.UpdatedAt, nowUtc),
                     cancellationToken);
 
@@ -376,6 +371,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             var conflicts = new List<SystemConflictDetail>();
 
             // 1. Xung đột giữa các ClassSchedule (lớp vs lớp)
+            var reportedCrossDayRoomSlotPairs = new HashSet<(int, int, int, int, int)>();
             for (int i = 0; i < activeClassSchedules.Count; i++)
             {
                 var a = activeClassSchedules[i];
@@ -386,12 +382,41 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 for (int j = i + 1; j < activeClassSchedules.Count; j++)
                 {
                     var b = activeClassSchedules[j];
-                    if (a.DayOfWeek != b.DayOfWeek) continue;
-                    if (!(a.StartTime < b.EndTime && b.StartTime < a.EndTime)) continue;
+                    var timeOverlap = a.TimeSlotId == b.TimeSlotId || (a.StartTime < b.EndTime && b.StartTime < a.EndTime);
+                    if (!timeOverlap) continue;
 
                     var bKey = $"cs-{b.ScheduleId}";
-                    var dayLabel = FormatDayFull(a.DayOfWeek);
                     var bRange = FormatTimeRange(b.StartTime, b.EndTime);
+
+                    if (a.DayOfWeek != b.DayOfWeek)
+                    {
+                        if (a.ClassId != b.ClassId
+                            && a.ClassroomId == b.ClassroomId
+                            && a.StartDate <= b.EndDate
+                            && b.StartDate <= a.EndDate)
+                        {
+                            var pairKey = (
+                                Math.Min(a.ClassId, b.ClassId),
+                                Math.Max(a.ClassId, b.ClassId),
+                                a.ClassroomId,
+                                Math.Min(a.TimeSlotId, b.TimeSlotId),
+                                Math.Max(a.TimeSlotId, b.TimeSlotId));
+                            if (reportedCrossDayRoomSlotPairs.Add(pairKey))
+                            {
+                                conflicts.Add(new SystemConflictDetail(
+                                    aKey, bKey, "class", "class",
+                                    a.ScheduleId, b.ScheduleId, "room",
+                                    a.ClassId, a.ClassCode, a.ClassName,
+                                    b.ClassId, b.ClassCode, b.ClassName,
+                                    null, null, a.ClassroomId, a.ClassroomName, b.ClassroomId,
+                                    a.DayOfWeek, a.TimeSlotId, a.SlotName, aRange,
+                                    $"Trùng ca học trong cùng phòng {a.ClassroomName}: Lớp {a.ClassCode} ({a.SlotName} {aRange}) trùng ca với lớp {b.ClassCode} ({b.SlotName} {bRange})."));
+                            }
+                        }
+                        continue;
+                    }
+
+                    var dayLabel = FormatDayFull(a.DayOfWeek);
 
                     if (a.ClassId == b.ClassId)
                     {
@@ -417,7 +442,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                             b.ClassId, b.ClassCode, b.ClassName,
                             null, null, a.ClassroomId, a.ClassroomName, b.ClassroomId,
                             a.DayOfWeek, a.TimeSlotId, a.SlotName, aRange,
-                            $"Trùng phòng {a.ClassroomName} ({dayLabel}, {a.SlotName} {aRange}): Lớp {a.ClassCode} trùng với {b.ClassCode}."));
+                            $"Trùng ca học trong cùng phòng {a.ClassroomName} ({dayLabel}, {a.SlotName} {aRange}): Lớp {a.ClassCode} trùng với {b.ClassCode}."));
                     }
 
                     if (aTeachers != null && teachersByClass.TryGetValue(b.ClassId, out var bTeachers))

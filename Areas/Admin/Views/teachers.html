@@ -554,7 +554,7 @@
             ? '<span class="badge badge-danger">Tài khoản đang khóa</span>'
             : '';
           const qualBadge = t.qualification
-            ? `<span class="badge badge-info">${escapeHtml(t.qualification)}</span>`
+            ? `<span class="badge badge-primary">${escapeHtml(t.qualification)}</span>`
             : '<span class="badge badge-neutral">Chưa cập nhật bằng cấp</span>';
           const bioText = t.bio
             ? escapeHtml(t.bio)
@@ -676,7 +676,7 @@
           const classStatusBadge = (s) => {
             switch ((s || '').toLowerCase()) {
               case 'ongoing': return '<span class="badge badge-success">Đang diễn ra</span>';
-              case 'upcoming': return '<span class="badge badge-info">Sắp khai giảng</span>';
+              case 'upcoming': return '<span class="badge badge-primary">Sắp khai giảng</span>';
               case 'completed': return '<span class="badge badge-neutral">Đã hoàn thành</span>';
               case 'cancelled': return '<span class="badge badge-danger">Đã hủy</span>';
               default: return '';
