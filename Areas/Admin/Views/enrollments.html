@@ -433,9 +433,9 @@
               <label class="filter-label" for="enrollments-status-filter">Trạng thái học</label>
               <select id="enrollments-status-filter" class="form-control">
                 <option value="all">Tất cả trạng thái</option>
-                <option value="active">Đang học (Active)</option>
-                <option value="completed">Hoàn thành (Completed)</option>
-                <option value="cancelled">Đã hủy (Cancelled)</option>
+                <option value="active">Đang học</option>
+                <option value="completed">Hoàn thành</option>
+                <option value="cancelled">Đã hủy</option>
               </select>
             </div>
 
@@ -808,11 +808,11 @@
       function renderStatusBadge(status) {
         switch ((status || '').toLowerCase()) {
           case 'active':
-            return '<span class="badge badge-success">Đang học (Active)</span>';
+            return '<span class="badge badge-success">Đang học</span>';
           case 'completed':
-            return '<span class="badge badge-primary">Hoàn thành (Completed)</span>';
+            return '<span class="badge badge-primary">Hoàn thành</span>';
           case 'cancelled':
-            return '<span class="badge badge-danger">Đã hủy (Cancelled)</span>';
+            return '<span class="badge badge-danger">Đã hủy</span>';
           default:
             return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
         }
@@ -970,20 +970,6 @@
         return params;
       }
 
-      async function updateStatus(id, newStatus, sel) {
-        try {
-          const data = await postJson(`/Admin/api/Enrollments/UpdateStatus/${id}`, { status: newStatus });
-          showToast(data.message || 'Cập nhật trạng thái ghi danh thành công.');
-        } catch (err) {
-          console.error(err);
-          showToast(err.message, 'error');
-        } finally {
-          needLookups = true;
-          await loadEnrollments();
-          if (sel && sel.isConnected) sel.disabled = false;
-        }
-      }
-
       function renderTuitionCellHtml(e) {
         const isCancelled = e.status === 'cancelled' || e.classStatus === 'cancelled';
         const payStatus = (e.paymentStatus || '').toLowerCase();
@@ -1053,14 +1039,9 @@
                 ${renderStatusBadge(e.status)}
               </div>
 
-              <!-- Cột 5: Nút Xem chi tiết biên lai + Đổi trạng thái cùng hàng -->
+              <!-- Cột 5: Nút Xem chi tiết biên lai -->
               <div class="enr-row-actions">
                 <button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}" style="white-space: nowrap;">Chi tiết biên lai</button>
-                <select class="form-control enr-status-select" data-id="${e.id}" data-prev-status="${escapeHtml(e.status)}" data-student-name="${escapeHtml(e.studentName)}" data-class-code="${escapeHtml(e.classCode)}" style="width: auto; padding: 4px 8px; font-size: 0.8125rem; height: 32px;">
-                  <option value="active" ${e.status === 'active' ? 'selected' : ''}>Active</option>
-                  <option value="completed" ${e.status === 'completed' ? 'selected' : ''}>Completed</option>
-                  <option value="cancelled" ${e.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                </select>
               </div>
             </div>
           `;
@@ -1103,14 +1084,7 @@
             <td style="white-space: nowrap;">${formatDate(e.enrolledAt)}</td>
             <td style="white-space: nowrap;">${renderStatusBadge(e.status)}</td>
             <td class="text-right" style="white-space: nowrap;">
-              <div style="display: inline-flex; gap: 6px; align-items: center;">
-                <button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}">Chi tiết biên lai</button>
-                <select class="form-control enr-status-select" data-id="${e.id}" data-prev-status="${escapeHtml(e.status)}" data-student-name="${escapeHtml(e.studentName)}" data-class-code="${escapeHtml(e.classCode)}" style="width: auto; display: inline-block; padding: 4px 8px; font-size: 0.8125rem;">
-                  <option value="active" ${e.status === 'active' ? 'selected' : ''}>Active</option>
-                  <option value="completed" ${e.status === 'completed' ? 'selected' : ''}>Completed</option>
-                  <option value="cancelled" ${e.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                </select>
-              </div>
+              <button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}">Chi tiết biên lai</button>
             </td>
           </tr>
         `).join('');
@@ -1383,32 +1357,11 @@
           }
         };
 
-        const handleStatusChange = (e) => {
-          const sel = e.target.closest('.enr-status-select');
-          if (!sel) return;
-          const id = Number(sel.getAttribute('data-id'));
-          const newStatus = sel.value;
-          const prevStatus = sel.getAttribute('data-prev-status') || '';
-          if (newStatus === 'cancelled' && prevStatus !== 'cancelled') {
-            const stuName = sel.getAttribute('data-student-name') || `#ENR-${id}`;
-            const clsCode = sel.getAttribute('data-class-code') || '';
-            const ok = confirm(`Bạn có chắc chắn muốn hủy ghi danh của học viên "${stuName}"${clsCode ? ` tại lớp ${clsCode}` : ''} không? Các giao dịch thanh toán liên quan (nếu có) sẽ được tự động cập nhật trạng thái.`);
-            if (!ok) {
-              sel.value = prevStatus || 'active';
-              return;
-            }
-          }
-          sel.disabled = true;
-          updateStatus(id, newStatus, sel);
-        };
-
         const tbody = document.getElementById('enrollments-tbody');
         const cardsContainer = document.getElementById('enrollments-cards-container');
 
         tbody.addEventListener('click', handleListClick);
-        tbody.addEventListener('change', handleStatusChange);
         cardsContainer.addEventListener('click', handleListClick);
-        cardsContainer.addEventListener('change', handleStatusChange);
       });
     })();
   </script>

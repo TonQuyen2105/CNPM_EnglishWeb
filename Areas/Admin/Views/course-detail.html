@@ -232,7 +232,7 @@
       <div class="card" style="padding: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 8px; flex-wrap: wrap;">
           <h3 class="card-title" id="cd-syllabus-title" style="margin: 0;">Đề cương bài học</h3>
-          <span class="badge badge-primary">Chỉ xem (Bài học do giảng viên tạo &amp; cập nhật)</span>
+          <span class="badge badge-primary">Chỉ xem</span>
         </div>
         <div id="cd-lessons-list" style="display: flex; flex-direction: column; gap: 8px;">
           <div style="color: var(--text-muted); font-size: 0.875rem;">Đang tải đề cương bài học...</div>
@@ -311,9 +311,9 @@
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Cấp độ <span class="required" style="color:red;">*</span></label>
               <select id="ec-level" class="form-control" required>
-                <option value="beginner">Cơ bản (Beginner)</option>
-                <option value="intermediate">Trung cấp (Intermediate)</option>
-                <option value="advanced">Nâng cao (Advanced)</option>
+                <option value="beginner">Cơ bản</option>
+                <option value="intermediate">Trung cấp</option>
+                <option value="advanced">Nâng cao</option>
               </select>
             </div>
           </div>
@@ -326,7 +326,7 @@
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái tuyển sinh</label>
               <select id="ec-published" class="form-control">
                 <option value="true">Đang mở tuyển sinh</option>
-                <option value="false">Bản nháp (Ẩn)</option>
+                <option value="false">Bản nháp</option>
               </select>
             </div>
           </div>
@@ -489,9 +489,9 @@
 
       function levelLabel(level) {
         switch ((level || '').toLowerCase()) {
-          case 'advanced': return 'Nâng cao (Advanced)';
-          case 'intermediate': return 'Trung cấp (Intermediate)';
-          default: return 'Cơ bản (Beginner)';
+          case 'advanced': return 'Nâng cao';
+          case 'intermediate': return 'Trung cấp';
+          default: return 'Cơ bản';
         }
       }
 
