@@ -17,7 +17,7 @@ namespace CNPM_EnglishLearning.Models.Entities
         public int QuestionId { get; set; }
 
         [Column("points")]
-        public decimal Points { get; set; } = 1.0m;
+        public int Points { get; set; } = 10;
 
         [Column("order_index")]
         public int OrderIndex { get; set; }

@@ -8,8 +8,8 @@
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -25,6 +25,10 @@
     .user-profile-trigger:hover {
       background-color: var(--neutral-100); border-color: var(--border-color);
     }
+    #modal-create-class .modal-dialog {
+      max-width: 640px;
+      width: 94%;
+    }
   </style>
 </head>
 <body>
@@ -35,7 +39,7 @@
     <!-- Sidebar Trắng Hiện Đại -->
     <aside class="app-sidebar" id="app-sidebar" style="background-color: #FFFFFF;">
       <div class="sidebar-header">
-        <a href="dashboard.html" class="brand-logo" style="text-decoration: none;">
+        <a href="/Admin/dashboard.html" class="brand-logo" style="text-decoration: none;">
           <div class="logo-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
@@ -48,62 +52,66 @@
 
       <nav class="sidebar-nav">
         <div class="nav-section-title">Tổng quan</div>
-      <a href="dashboard.html" class="nav-item ">
+      <a href="/Admin/dashboard.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
         <span>Bảng điều khiển</span>
       </a>
     <div class="nav-section-title">Quản lý đào tạo</div>
-      <a href="subjects.html" class="nav-item ">
+      <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
         <span>Môn học</span>
       </a>
     
-      <a href="courses.html" class="nav-item ">
+      <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
         <span>Khóa học</span>
       </a>
     
-      <a href="classes.html" class="nav-item active">
+      <a href="/Admin/course-objectives.html" class="nav-item ">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+        <span>Mô tả &amp; Mục tiêu</span>
+      </a>
+          <a href="/Admin/classes.html" class="nav-item active">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
         <span>Lớp học</span>
       </a>
     
-      <a href="schedules.html" class="nav-item ">
+      <a href="/Admin/schedules.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
         <span>Thời khóa biểu</span>
       </a>
     <div class="nav-section-title">Quản lý người dùng</div>
-      <a href="users.html" class="nav-item ">
+      <a href="/Admin/users.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
         <span>Tài khoản người dùng</span>
       </a>
     
-      <a href="teachers.html" class="nav-item ">
+      <a href="/Admin/teachers.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
         <span>Giảng viên</span>
       </a>
     
-      <a href="enrollments.html" class="nav-item ">
+      <a href="/Admin/enrollments.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
         <span>Học viên & Đăng ký</span>
       </a>
     <div class="nav-section-title">Khảo thí & Đánh giá</div>
-      <a href="exams.html" class="nav-item ">
+      <a href="/Admin/exams.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
         <span>Đề thi & Khảo thí</span>
       </a>
     
-      <a href="reviews.html" class="nav-item ">
+      <a href="/Admin/reviews.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
         <span>Đánh giá khóa học</span>
       </a>
     <div class="nav-section-title">Cơ sở & Báo cáo</div>
-      <a href="facilities.html" class="nav-item ">
+      <a href="/Admin/facilities.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
         <span>Phòng học & Cơ sở</span>
       </a>
     
-      <a href="reports.html" class="nav-item ">
+      <a href="/Admin/reports.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
         <span>Báo cáo & Thống kê</span>
       </a>
@@ -190,7 +198,7 @@
                 <div style="font-weight: 700; font-size: 0.875rem;">Quản trị viên</div>
                 <span class="badge badge-primary" style="margin-top: 4px;">Super Admin</span>
               </div>
-              <a href="users.html" class="dropdown-item">
+              <a href="/Admin/users.html" class="dropdown-item">
                 <span>Quản lý người dùng</span>
               </a>
               <div class="dropdown-divider"></div>
@@ -205,104 +213,73 @@
       <!-- Vùng Nội Dung Chính -->
       <main class="page-container" id="app-main-content">
         
-  <div class="page-header">
+  <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
     <div>
       <h1 class="page-header-title">Quản lý lớp học</h1>
       <p class="page-header-subtitle">Danh sách tất cả các lớp đang mở, đang học và sắp khai giảng</p>
     </div>
-    <div class="page-header-actions">
-      <button class="btn btn-primary" data-modal-target="modal-create-class">
+    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button type="button" class="btn btn-secondary" id="btn-open-manage-timeslots">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        Quản lý ca học
+      </button>
+      <button type="button" class="btn btn-primary" id="btn-open-create-class" data-modal-target="modal-create-class">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Tạo lớp học mới
       </button>
     </div>
   </div>
 
+  <!-- Thanh tìm kiếm & lọc -->
+  <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+    <div id="classes-course-filter-banner" style="display: none; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: #EFF6FF; border: 1px solid #BFDBFE; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8125rem;">
+      <span id="classes-course-filter-label" style="color: #1E3A8A; font-weight: 600;">Đang lọc theo khóa học</span>
+      <button type="button" class="btn btn-sm btn-secondary" id="btn-clear-course-filter">Xem tất cả lớp</button>
+    </div>
+    <div style="display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+      <div class="input-with-icon" style="flex: 1 1 240px; min-width: 220px; max-width: 340px;">
+        <span class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
+        <input type="text" id="classes-search-input" class="form-control" placeholder="Tìm theo mã lớp, tên lớp hoặc khóa học...">
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap; align-items: center; flex: 0 1 auto; overflow-x: auto;">
+        <select id="classes-course-filter" class="form-control" style="width: 185px; flex: 0 0 auto;">
+          <option value="0">Tất cả khóa học</option>
+        </select>
+        <select id="classes-teacher-filter" class="form-control" style="width: 175px; flex: 0 0 auto;">
+          <option value="0">Tất cả giảng viên</option>
+        </select>
+        <select id="classes-status-filter" class="form-control" style="width: 160px; flex: 0 0 auto;">
+          <option value="all">Tất cả trạng thái</option>
+          <option value="upcoming">Sắp diễn ra</option>
+          <option value="ongoing">Đang diễn ra</option>
+          <option value="completed">Đã kết thúc</option>
+          <option value="cancelled">Đã hủy</option>
+        </select>
+        <button type="button" class="btn btn-sm btn-secondary" id="btn-filter-classes" style="height: 38px; padding: 0 12px; white-space: nowrap; flex: 0 0 auto;">Lọc</button>
+        <button type="button" class="btn btn-sm btn-secondary" id="btn-reset-classes-filter" style="height: 38px; padding: 0 12px; white-space: nowrap; flex: 0 0 auto;">Đặt lại</button>
+      </div>
+    </div>
+  </div>
+
   <div class="card" style="padding: 0; overflow: hidden;">
     <div class="table-container">
-      <table class="table">
+      <table class="table" style="min-width: 860px;">
         <thead>
           <tr>
             <th>Mã lớp</th>
-            <th>Tên lớp</th>
-            <th>Giảng viên</th>
-            <th>Phòng</th>
-            <th>Lịch học</th>
+            <th>Tên lớp & Khóa học</th>
+            <th>Giảng viên chính</th>
+            <th>Phòng & Lịch học</th>
             <th>Sĩ số</th>
             <th>Trạng thái</th>
-            <th class="text-right">Chi tiết</th>
+            <th class="text-right">Thao tác</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="classes-tbody">
           <tr>
-            <td><span class="badge badge-primary">COMM-01</span></td>
-            <td><strong>Giao Tiếp Cơ Bản K01</strong></td>
-            <td>Lê Thị Mai</td>
-            <td>Phòng LAB-01</td>
-            <td>T2-T4-T6 (18:00 - 19:30)</td>
-            <td><strong>18</strong> / 20</td>
-            <td><span class="badge badge-success">Đang diễn ra</span></td>
-            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-primary">IELTS-B01</span></td>
-            <td><strong>Luyện Thi IELTS 6.5+ Sáng</strong></td>
-            <td>Lê Thị Mai</td>
-            <td>Phòng A101</td>
-            <td>T3-T5-T7 (08:30 - 10:30)</td>
-            <td><strong>15</strong> / 15</td>
-            <td><span class="badge badge-success">Đang diễn ra</span></td>
-            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-primary">TOEIC-A01</span></td>
-            <td><strong>TOEIC Cấp Tốc Tối</strong></td>
-            <td>Nguyễn Văn Hùng</td>
-            <td>Phòng B202</td>
-            <td>T2-T4-T6 (19:30 - 21:00)</td>
-            <td><strong>12</strong> / 25</td>
-            <td><span class="badge badge-warning">Sắp khai giảng</span></td>
-            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-primary">KIDS-01</span></td>
-            <td><strong>Super Kids Khởi Động K01</strong></td>
-            <td>Phạm Quang Huy</td>
-            <td>Phòng LAB-01</td>
-            <td>T7-CN (09:00 - 10:30)</td>
-            <td><strong>14</strong> / 16</td>
-            <td><span class="badge badge-success">Đang diễn ra</span></td>
-            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-primary">IELTS-W02</span></td>
-            <td><strong>IELTS Writing Chuyên Sâu Tối</strong></td>
-            <td>Lê Thị Mai</td>
-            <td>Phòng A101</td>
-            <td>T3-T5 (18:00 - 20:00)</td>
-            <td><strong>10</strong> / 12</td>
-            <td><span class="badge badge-success">Đang diễn ra</span></td>
-            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-primary">BIZ-01</span></td>
-            <td><strong>Business English Giao Tiếp</strong></td>
-            <td>Nguyễn Văn Hùng</td>
-            <td>Phòng LAB-02</td>
-            <td>T2-T6 (19:30 - 21:00)</td>
-            <td><strong>8</strong> / 15</td>
-            <td><span class="badge badge-warning">Sắp khai giảng</span></td>
-            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-primary">COMM-02</span></td>
-            <td><strong>Giao Tiếp Phản Xạ K02</strong></td>
-            <td>Phạm Quang Huy</td>
-            <td>Phòng B202</td>
-            <td>T3-T5-T7 (19:30 - 21:00)</td>
-            <td><strong>20</strong> / 20</td>
-            <td><span class="badge badge-neutral">Đã kết thúc</span></td>
-            <td class="text-right"><a href="class-detail.html" class="btn btn-sm btn-secondary">Xem</a></td>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải danh sách lớp học...</td>
           </tr>
         </tbody>
       </table>
@@ -313,60 +290,92 @@
     </div>
   </div>
 
-  <!-- Modal Tạo Lớp Học Mới -->
+  <!-- Modal Tạo / Chỉnh sửa Lớp Học -->
   <div class="modal-backdrop" id="modal-create-class">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Tạo lớp học mới</h3>
+        <h3 class="modal-title" id="cls-modal-title">Tạo lớp học mới</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
-      <form class="modal-form" data-modal-form>
+      <form id="create-class-form">
+        <input type="hidden" id="cls-edit-id" value="">
         <div class="modal-body">
+          <div id="class-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+          <div id="cls-edit-mode-note" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; font-size: 0.84rem; margin-bottom: 1rem;"></div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mã lớp học <span class="required" style="color:red;">*</span></label>
-              <input type="text" class="form-control" placeholder="Ví dụ: IELTS-A02" required>
+              <input type="text" id="cls-code" class="form-control" placeholder="Ví dụ: IELTS-A02" maxlength="50" required>
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên lớp học <span class="required" style="color:red;">*</span></label>
-              <input type="text" class="form-control" placeholder="Ví dụ: Luyện Thi IELTS 6.5+ Tối" required>
+              <input type="text" id="cls-name" class="form-control" placeholder="Ví dụ: Luyện Thi IELTS 6.5+ Tối" maxlength="150" required>
             </div>
-          </div>
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học trực thuộc <span class="required" style="color:red;">*</span></label>
-            <select class="form-control" required>
-              <option value="1">Tiếng Anh Giao Tiếp Cơ Bản</option>
-              <option value="2">Luyện Thi IELTS 6.5+</option>
-              <option value="3">TOEIC 750+ Cấp Tốc</option>
-              <option value="4">Tiếng Anh Trẻ Em Super Kids</option>
-            </select>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên phụ trách <span class="required" style="color:red;">*</span></label>
-              <select class="form-control" required>
-                <option value="1">ThS. Lê Thị Mai (IELTS 8.5)</option>
-                <option value="2">Nguyễn Văn Hùng (Giao tiếp & TOEIC)</option>
-                <option value="3">Phạm Quang Huy (TOEIC 980)</option>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học trực thuộc <span class="required" style="color:red;">*</span></label>
+              <select id="cls-course-id" class="form-control" required>
+                <option value="">-- Đang tải khóa học --</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Phòng học <span class="required" style="color:red;">*</span></label>
-              <select class="form-control" required>
-                <option value="1">Phòng LAB-01 (Tầng 1 - 25 máy)</option>
-                <option value="2">Phòng A101 (Tầng 2 - 30 chỗ)</option>
-                <option value="3">Phòng B202 (Tầng 2 - 60 chỗ)</option>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Phòng học mở lớp</label>
+              <select id="cls-classroom-id" class="form-control">
+                <option value="">-- Chưa chọn phòng học --</option>
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.5rem;">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên phụ trách</label>
+            <select id="cls-teacher-id" class="form-control">
+              <option value="">-- Chưa phân công --</option>
+            </select>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Nếu phòng học có giảng viên mặc định, hệ thống sẽ tự động gợi ý chọn giảng viên đó.</div>
+          </div>
+          <div id="cls-schedule-row" class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Sĩ số tối đa</label>
-              <input type="number" class="form-control" value="20" required>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lịch thứ học</label>
+              <select id="cls-schedule-days" class="form-control">
+                <option value="">-- Theo cấu hình phòng / Chưa xếp --</option>
+                <option value="t246">Thứ 2 - Thứ 4 - Thứ 6</option>
+                <option value="t357">Thứ 3 - Thứ 5 - Thứ 7</option>
+                <option value="all">Cả tuần (Thứ 2 - Thứ 7)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0;">Ca học</label>
+                <button type="button" id="btn-inline-manage-timeslots" style="border: none; background: transparent; color: var(--primary-600, #2563EB); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0;">+ Thêm / Quản lý ca học</button>
+              </div>
+              <select id="cls-timeslot-id" class="form-control">
+                <option value="">-- Theo cấu hình phòng / Chưa xếp --</option>
+              </select>
+            </div>
+          </div>
+          <div id="cls-room-status-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.84rem; margin-bottom: 1rem;"></div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ngày khai giảng <span class="required" style="color:red;">*</span></label>
+              <input type="date" id="cls-start-date" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ngày kết thúc <span class="required" style="color:red;">*</span></label>
+              <input type="date" id="cls-end-date" class="form-control" required>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Sĩ số tối đa <span class="required" style="color:red;">*</span></label>
+              <input type="number" id="cls-max-students" class="form-control" value="20" min="1" max="1000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí (₫) <span class="required" style="color:red;">*</span></label>
+              <input type="number" id="cls-price" class="form-control" value="0" min="0" step="10000" required>
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái lớp</label>
-              <select class="form-control">
+              <select id="cls-status" class="form-control">
                 <option value="upcoming">Sắp khai giảng</option>
                 <option value="ongoing">Đang diễn ra</option>
               </select>
@@ -375,13 +384,1471 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" class="btn btn-primary">Tạo lớp học</button>
+          <button type="submit" class="btn btn-primary" id="cls-submit-btn">Tạo lớp học</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Modal Quản lý Danh mục Ca học (TimeSlots) ngay tại trang Lớp học -->
+  <div class="modal-backdrop" id="modal-manage-timeslots">
+    <div class="modal-dialog modal-dialog-lg" style="max-width: 820px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title">Quản lý danh mục ca học</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 76vh; overflow-y: auto;">
+        <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--neutral-50); margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; gap: 8px; flex-wrap: wrap;">
+            <strong id="ts-form-heading" style="font-size: 0.9rem;">Thêm ca học mới (Ca 1, Ca 2, Ca 3...)</strong>
+            <div style="display: inline-flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-seed-default-timeslots" style="border-color: #93C5FD; color: #1D4ED8; background: #EFF6FF;" title="Tạo nhanh Ca 1 -> Ca 6 mẫu vào bảng time_slots nếu vừa reset dữ liệu">⚡ Tạo nhanh Ca 1 - Ca 6 mẫu</button>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-cancel-edit-timeslot" style="display: none;">Hủy sửa</button>
+            </div>
+          </div>
+          <form id="timeslot-form">
+            <input type="hidden" id="ts-id" value="">
+            <div id="timeslot-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 0.875rem;"></div>
+            <div class="grid grid-cols-4 gap-4" style="margin-bottom: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Tên ca học <span style="color:red;">*</span></label>
+                <input type="text" id="ts-name" class="form-control" placeholder="VD: Ca 1, Ca 2, Ca 3..." maxlength="50" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ bắt đầu (24h) <span style="color:red;">*</span></label>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <select id="ts-start-hour" class="form-control" aria-label="Giờ bắt đầu (00-23)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
+                  <span style="font-weight: 700; color: var(--text-muted);">:</span>
+                  <select id="ts-start-minute" class="form-control" aria-label="Phút bắt đầu (00-59)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
+                </div>
+                <input type="hidden" id="ts-start-time" value="">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ kết thúc (24h) <span style="color:red;">*</span></label>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <select id="ts-end-hour" class="form-control" aria-label="Giờ kết thúc (00-23)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
+                  <span style="font-weight: 700; color: var(--text-muted);">:</span>
+                  <select id="ts-end-minute" class="form-control" aria-label="Phút kết thúc (00-59)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
+                </div>
+                <input type="hidden" id="ts-end-time" value="">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Trạng thái</label>
+                <select id="ts-active" class="form-control">
+                  <option value="true">Đang hoạt động</option>
+                  <option value="false">Tạm ngưng</option>
+                </select>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
+              <div class="form-group" style="flex: 1; min-width: 240px;">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Mô tả / Ghi chú</label>
+                <input type="text" id="ts-description" class="form-control" placeholder="Tùy chọn (ví dụ: Ca sáng 1, Ca chiều...)" maxlength="500">
+              </div>
+              <button type="submit" class="btn btn-primary" id="ts-submit-btn">Lưu vào bảng time_slots</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <table class="table" style="min-width: 600px;">
+            <thead>
+              <tr>
+                <th>Tên ca học</th>
+                <th>Khung giờ (24h)</th>
+                <th>Lịch đang xếp</th>
+                <th>Trạng thái</th>
+                <th class="text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="timeslots-tbody">
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải danh mục ca học...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>
+  <script>
+    (function () {
+      // ===== Helpers dùng chung =====
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
+      }
+
+      // Định dạng dd/MM/yyyy (không phụ thuộc locale của trình duyệt)
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '--';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
+      }
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      // Skeleton loading cho bảng
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      // Hàng thông báo trạng thái (empty / error) trong bảng
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      // Gắn nút "Thử lại" vào hàng lỗi
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+      const COLS = 7;
+      let coursesList = [];
+      let teachersList = [];
+      let classroomsList = [];
+      let timeSlotsList = [];
+      let classesCache = [];
+      let dropdownsLoaded = false;
+      let hasLoadedOnce = false;
+      let loadController = null;
+      const initialUrlParams = new URLSearchParams(window.location.search);
+      let activeCourseFilter = initialUrlParams.get('courseId') || '';
+      let activeTeacherFilter = initialUrlParams.get('teacherId') || '';
+      let pendingAutoOpenCreate = initialUrlParams.get('action') === 'create';
+
+      function toDateInputValue(value) {
+        if (!value) return '';
+        const str = String(value);
+        if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '';
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
+
+      function renderStatusBadge(status) {
+        switch ((status || '').toLowerCase()) {
+          case 'ongoing':
+            return '<span class="badge badge-success">Đang diễn ra</span>';
+          case 'upcoming':
+            return '<span class="badge badge-warning">Sắp diễn ra</span>';
+          case 'completed':
+            return '<span class="badge badge-neutral">Đã kết thúc</span>';
+          case 'cancelled':
+            return '<span class="badge badge-danger">Đã hủy</span>';
+          default:
+            return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
+        }
+      }
+
+      function showFormError(msg) {
+        const box = document.getElementById('class-form-error');
+        if (!box) return;
+        if (msg) {
+          box.textContent = msg;
+          box.style.display = 'block';
+        } else {
+          box.textContent = '';
+          box.style.display = 'none';
+        }
+      }
+
+      function syncCourseFilterBanner() {
+        const banner = document.getElementById('classes-course-filter-banner');
+        const label = document.getElementById('classes-course-filter-label');
+        if (!banner || !label) return;
+        if (activeCourseFilter && activeCourseFilter !== '0') {
+          const matched = coursesList.find(c => String(c.id) === String(activeCourseFilter));
+          label.textContent = `Đang lọc lớp thuộc khóa: ${matched?.title || ('#' + activeCourseFilter)}`;
+          banner.style.display = 'flex';
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+
+      function syncUrlFilters() {
+        if (!window.history || !window.history.replaceState) return;
+        const params = new URLSearchParams();
+        if (activeCourseFilter && activeCourseFilter !== '0') params.set('courseId', activeCourseFilter);
+        if (activeTeacherFilter && activeTeacherFilter !== '0') params.set('teacherId', activeTeacherFilter);
+        const qs = params.toString();
+        window.history.replaceState({}, '', qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
+      }
+
+      function removeTempTeacherOption() {
+        const teacherSelect = document.getElementById('cls-teacher-id');
+        if (!teacherSelect) return;
+        teacherSelect.querySelectorAll('option[data-temp-teacher="true"]').forEach(opt => opt.remove());
+      }
+
+      function setModalBusy(id, busy) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        if (busy) modal.dataset.busy = 'true';
+        else delete modal.dataset.busy;
+      }
+
+      function focusFirstField(modalId, preferredId) {
+        setTimeout(() => {
+          const target = (preferredId && document.getElementById(preferredId))
+            || document.querySelector(`#${modalId} input:not([type="hidden"]):not(:disabled), #${modalId} select:not(:disabled), #${modalId} textarea:not(:disabled)`);
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 30);
+      }
+
+      function bindModalKeyboardAndGuard() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          const openModals = Array.from(document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.show'));
+          const topModal = openModals[openModals.length - 1];
+          if (!topModal || topModal.dataset.busy === 'true') return;
+          topModal.classList.remove('open', 'show');
+        });
+
+        document.addEventListener('click', (e) => {
+          const isBackdrop = e.target && e.target.classList && e.target.classList.contains('modal-backdrop');
+          const dismissBtn = !isBackdrop && e.target && e.target.closest
+            ? (e.target.closest('[data-dismiss="modal"]') || e.target.closest('.modal-close'))
+            : null;
+          if (!isBackdrop && !dismissBtn) return;
+          const modal = isBackdrop
+            ? e.target
+            : (dismissBtn.closest('.modal-backdrop') || document.querySelector('.modal-backdrop.open, .modal-backdrop.show'));
+          if (modal && modal.dataset.busy === 'true') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+      }
+
+      function parseTimeMinutes(hhmm) {
+        if (!hhmm) return null;
+        const m = String(hhmm).trim().match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return null;
+        return Number(m[1]) * 60 + Number(m[2]);
+      }
+
+      function isTimeSlotOverlapping(slotA, slotB) {
+        if (!slotA || !slotB) return false;
+        const idA = Number(slotA.id || slotA.timeSlotId || 0);
+        const idB = Number(slotB.timeSlotId || slotB.id || 0);
+        if (idA > 0 && idB > 0 && idA === idB) return true;
+        const aStart = parseTimeMinutes(slotA.startTime);
+        const aEnd = parseTimeMinutes(slotA.endTime);
+        const bStart = parseTimeMinutes(slotB.startTime);
+        const bEnd = parseTimeMinutes(slotB.endTime);
+        if (aStart !== null && aEnd !== null && bStart !== null && bEnd !== null) {
+          return aStart < bEnd && bStart < aEnd;
+        }
+        return false;
+      }
+
+      function updateRoomStatusPreview(autoAssignDefaultTeacher = false) {
+        const roomSel = document.getElementById('cls-classroom-id');
+        const box = document.getElementById('cls-room-status-box');
+        if (!roomSel || !box) return;
+
+        const roomId = Number(roomSel.value);
+        if (!roomId) {
+          box.style.display = 'none';
+          box.innerHTML = '';
+          return;
+        }
+
+        const room = classroomsList.find(r => r.id === roomId);
+        if (!room) {
+          box.style.display = 'none';
+          return;
+        }
+
+        const editId = Number(document.getElementById('cls-edit-id').value) || 0;
+        const editingRow = editId ? classesCache.find(x => x.id === editId) : null;
+        if (editingRow && (editingRow.status || '').toLowerCase() === 'completed') {
+          box.style.display = 'none';
+          box.innerHTML = '';
+          return;
+        }
+
+        const startVal = document.getElementById('cls-start-date').value;
+        const endVal = document.getElementById('cls-end-date').value;
+        const overlappingClasses = (Array.isArray(room.activeClasses) ? room.activeClasses : []).filter(ac => {
+          if (editId && ac.id === editId) return false;
+          if (!startVal || !endVal) return true;
+          const aStart = new Date(startVal);
+          const aEnd = new Date(endVal);
+          const bStart = new Date(toDateInputValue(ac.startDate));
+          const bEnd = new Date(toDateInputValue(ac.endDate));
+          return aStart <= bEnd && bStart <= aEnd;
+        });
+
+        if (autoAssignDefaultTeacher && !editId) {
+          const schedDaysEl = document.getElementById('cls-schedule-days');
+          const slotEl = document.getElementById('cls-timeslot-id');
+          if (schedDaysEl && !schedDaysEl.value) schedDaysEl.value = 't246';
+          if (slotEl && !slotEl.value && timeSlotsList.length > 0) {
+            const firstFreeSlot = timeSlotsList.find(ts => !overlappingClasses.some(ac => isTimeSlotOverlapping(ts, ac)));
+            slotEl.value = String((firstFreeSlot || timeSlotsList[0]).id);
+          }
+          syncClassStatusByStartDate();
+        }
+
+        const maxStudents = parseInt(document.getElementById('cls-max-students').value, 10) || 0;
+        const statusVal = (document.getElementById('cls-status').value || 'upcoming').toLowerCase();
+        const isTargetActive = statusVal === 'upcoming' || statusVal === 'ongoing';
+        const selectedTimeSlotId = Number(document.getElementById('cls-timeslot-id')?.value) || 0;
+        const selectedSlot = selectedTimeSlotId
+          ? (timeSlotsList.find(ts => ts.id === selectedTimeSlotId) || { id: selectedTimeSlotId })
+          : null;
+
+        const slotConflicts = selectedSlot
+          ? overlappingClasses.filter(ac => isTimeSlotOverlapping(selectedSlot, ac))
+          : [];
+
+        const capacityBad = maxStudents > 0 && room.capacity < maxStudents;
+        const occupiedSummaryHtml = overlappingClasses.length > 0
+          ? overlappingClasses.map(ac => {
+              const slotTxt = ac.timeSlotName
+                ? `${ac.timeSlotName}${ac.timeRange ? ` (${ac.timeRange})` : ''}`
+                : (ac.timeRange || 'Chưa rõ ca');
+              const daysTxt = ac.daysLabel ? ` • ${ac.daysLabel}` : '';
+              return `<strong>${escapeHtml(ac.classCode)}</strong>: ${escapeHtml(slotTxt + daysTxt)}`;
+            }).join('; ')
+          : '';
+        const todayIso = toDateInputValue(new Date());
+        const expiredDateHint = endVal && endVal <= todayIso
+          ? '<div style="margin-top: 4px; font-size: 0.78rem; color: #92400E;"><strong>Lưu ý:</strong> Ngày kết thúc đang chọn đã đến/qua hôm nay, sau khi lưu lớp sẽ tự động chuyển sang trạng thái <strong>Đã kết thúc</strong>. Nếu muốn mở lớp đang/sắp chạy lên Thời khóa biểu, hãy chọn ngày kết thúc sau hôm nay.</div>'
+          : '';
+
+        if (isTargetActive && slotConflicts.length > 0) {
+          const hit = slotConflicts[0];
+          const hitSlotLabel = hit.timeSlotName
+            ? `${hit.timeSlotName}${hit.timeRange ? ` (${hit.timeRange})` : ''}`
+            : (hit.timeRange || '');
+          box.style.display = 'block';
+          box.style.background = '#FEF2F2';
+          box.style.border = '1px solid #FECACA';
+          box.style.color = '#991B1B';
+          box.innerHTML = `<strong>⚠ Trùng ca học tại phòng ${escapeHtml(room.name)}:</strong> Lớp <strong>${escapeHtml(hit.classCode)}</strong> (${escapeHtml(hit.className)}) đã đăng ký ca <strong>${escapeHtml(hitSlotLabel)}</strong> (${formatDate(hit.startDate)} - ${formatDate(hit.endDate)}). Vui lòng chọn ca học khác cho lớp này.` +
+            `<br><span style="font-size: 0.78rem;">Các ca đang có lớp tại phòng ${escapeHtml(room.name)}: ${occupiedSummaryHtml}.</span>`;
+        } else if (capacityBad) {
+          box.style.display = 'block';
+          box.style.background = '#FFFBEB';
+          box.style.border = '1px solid #FDE68A';
+          box.style.color = '#92400E';
+          box.innerHTML = `<strong>⚠ Sức chứa phòng chưa đủ:</strong> Phòng ${escapeHtml(room.name)} chỉ có <strong>${room.capacity} chỗ</strong>, nhỏ hơn sĩ số tối đa (${maxStudents}).`;
+        } else {
+          box.style.display = 'block';
+          box.style.background = '#ECFDF5';
+          box.style.border = '1px solid #A7F3D0';
+          box.style.color = '#065F46';
+          const selectedSlotDesc = selectedSlot && selectedSlot.name
+            ? ` với ca <strong>${escapeHtml(selectedSlot.name)} (${escapeHtml(selectedSlot.timeRange || '')})</strong>`
+            : '';
+          const occupiedLine = overlappingClasses.length > 0
+            ? `<br><span style="font-size: 0.78rem;">Các ca đã có lớp đăng ký trong phòng ${escapeHtml(room.name)}: ${occupiedSummaryHtml}.</span>`
+            : `<br><span style="font-size: 0.78rem;">Phòng hiện chưa có lớp nào đăng ký trùng khoảng ngày.</span>`;
+          box.innerHTML = `<strong>✓ Phòng &amp; ca học hợp lệ:</strong> Phòng <strong>${escapeHtml(room.name)}</strong> (${room.capacity} chỗ)${selectedSlotDesc} sẵn sàng mở lớp.${occupiedLine}${expiredDateHint}`;
+        }
+      }
+
+      function setClassFormFieldsDisabled(disabled) {
+        [
+          'cls-code',
+          'cls-name',
+          'cls-course-id',
+          'cls-classroom-id',
+          'cls-teacher-id',
+          'cls-start-date',
+          'cls-end-date',
+          'cls-max-students',
+          'cls-price'
+        ].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.disabled = disabled;
+        });
+      }
+
+      function syncClassStatusByStartDate() {
+        const editId = document.getElementById('cls-edit-id').value.trim();
+        const editingRow = editId ? classesCache.find(x => String(x.id) === editId) : null;
+        if (editingRow && (editingRow.status || '').toLowerCase() === 'completed') {
+          return;
+        }
+        const sel = document.getElementById('cls-status');
+        const startEl = document.getElementById('cls-start-date');
+        if (!sel || !startEl) return;
+        const upcomingOpt = sel.querySelector('option[value="upcoming"]');
+        const ongoingOpt = sel.querySelector('option[value="ongoing"]');
+        if (!ongoingOpt) return;
+
+        // Khi tạo mới lớp học (chưa có học viên đăng ký), trạng thái luôn là Sắp khai giảng
+        // để Admin vẫn có thể sửa thông tin hoặc hủy lớp vừa tạo.
+        if (!editId) {
+          if (upcomingOpt) {
+            upcomingOpt.disabled = false;
+            upcomingOpt.textContent = 'Sắp khai giảng';
+          }
+          ongoingOpt.disabled = true;
+          ongoingOpt.textContent = 'Đang diễn ra (Tự động khi đủ GV, phòng/lịch & có học viên ĐK)';
+          sel.value = 'upcoming';
+          return;
+        }
+
+        const startVal = startEl.value;
+        const todayIso = toDateInputValue(new Date());
+        const hasTeacher = Boolean(document.getElementById('cls-teacher-id')?.value) || Boolean(editingRow?.teacherId);
+        const hasRoom = Boolean(document.getElementById('cls-classroom-id')?.value) || Boolean(editingRow?.classroomId);
+        const hasStudent = (Number(editingRow?.activeStudents) || 0) > 0;
+        const canBeOngoing = Boolean(startVal) && startVal <= todayIso && hasTeacher && hasRoom && hasStudent;
+        if (!canBeOngoing) {
+          if (upcomingOpt) {
+            upcomingOpt.disabled = false;
+            upcomingOpt.textContent = 'Sắp khai giảng';
+          }
+          ongoingOpt.disabled = true;
+          ongoingOpt.textContent = 'Đang diễn ra (Cần đủ GV, phòng/lịch, tới ngày mở & có học viên ĐK)';
+          sel.value = 'upcoming';
+        } else {
+          if (upcomingOpt) {
+            upcomingOpt.disabled = false;
+            upcomingOpt.textContent = 'Sắp khai giảng';
+          }
+          ongoingOpt.disabled = false;
+          ongoingOpt.textContent = 'Đang diễn ra';
+          sel.value = 'ongoing';
+        }
+      }
+
+      function populateClassStatusSelect(mode, currentStatus = 'upcoming') {
+        const sel = document.getElementById('cls-status');
+        if (!sel) return;
+        const st = (currentStatus || 'upcoming').toLowerCase();
+        if (mode === 'create') {
+          // Tạo mới chỉ cho phép 2 trạng thái: Sắp khai giảng & Đang diễn ra
+          sel.innerHTML =
+            '<option value="upcoming">Sắp khai giảng</option>' +
+            '<option value="ongoing">Đang diễn ra</option>';
+          sel.value = 'upcoming';
+          return;
+        }
+
+        if (st === 'completed') {
+          // Lớp đã kết thúc chỉ được phép đổi trạng thái sang Đã hủy
+          sel.innerHTML =
+            '<option value="completed" disabled>Đã kết thúc (Hiện tại)</option>' +
+            '<option value="cancelled">Đã hủy</option>';
+          sel.value = 'cancelled';
+          return;
+        }
+
+        // Lớp sắp diễn ra: trong UI chỉnh sửa chỉ list 2 trạng thái Sắp khai giảng & Đang diễn ra
+        sel.innerHTML =
+          '<option value="upcoming">Sắp khai giảng</option>' +
+          '<option value="ongoing">Đang diễn ra</option>';
+        sel.value = st === 'ongoing' ? 'ongoing' : 'upcoming';
+      }
+
+      function openCreateMode() {
+        removeTempTeacherOption();
+        setClassFormFieldsDisabled(false);
+        const modeNote = document.getElementById('cls-edit-mode-note');
+        if (modeNote) { modeNote.style.display = 'none'; modeNote.textContent = ''; }
+        document.getElementById('cls-edit-id').value = '';
+        document.getElementById('cls-modal-title').textContent = 'Tạo lớp học mới';
+        document.getElementById('cls-submit-btn').textContent = 'Tạo lớp học';
+        document.getElementById('create-class-form').reset();
+        document.getElementById('cls-classroom-id').value = '';
+        const schedRow = document.getElementById('cls-schedule-row');
+        if (schedRow) schedRow.style.display = 'grid';
+        const schedDaysEl = document.getElementById('cls-schedule-days');
+        const slotEl = document.getElementById('cls-timeslot-id');
+        if (schedDaysEl) schedDaysEl.value = '';
+        if (slotEl) slotEl.value = '';
+        populateClassStatusSelect('create', 'upcoming');
+        document.getElementById('cls-max-students').value = '20';
+        initDefaultDates(true);
+        syncClassStatusByStartDate();
+        if (coursesList.length > 0) {
+          const matchedCourse = activeCourseFilter
+            ? coursesList.find(c => String(c.id) === String(activeCourseFilter))
+            : null;
+          const targetCourse = matchedCourse || coursesList[0];
+          document.getElementById('cls-course-id').value = String(targetCourse.id);
+          document.getElementById('cls-price').value = targetCourse.price ?? 0;
+        }
+        updateRoomStatusPreview(false);
+        showFormError('');
+        focusFirstField('modal-create-class', 'cls-code');
+      }
+
+      function openEditMode(classId) {
+        const cls = classesCache.find(x => x.id === classId);
+        if (!cls) return;
+        const st = (cls.status || '').toLowerCase();
+        if (st === 'ongoing' || st === 'cancelled') return;
+
+        removeTempTeacherOption();
+        const isCompletedOnlyStatus = st === 'completed';
+        setClassFormFieldsDisabled(isCompletedOnlyStatus);
+        const modeNote = document.getElementById('cls-edit-mode-note');
+        if (modeNote) {
+          if (isCompletedOnlyStatus) {
+            modeNote.textContent = 'Lớp đã kết thúc không được chỉnh sửa thông tin lớp học, chỉ được phép đổi trạng thái sang Đã hủy.';
+            modeNote.style.display = 'block';
+          } else {
+            modeNote.textContent = '';
+            modeNote.style.display = 'none';
+          }
+        }
+
+        document.getElementById('cls-edit-id').value = String(cls.id);
+        document.getElementById('cls-modal-title').textContent = isCompletedOnlyStatus
+          ? `Đổi trạng thái lớp: ${cls.classCode}`
+          : `Chỉnh sửa lớp học: ${cls.classCode}`;
+        document.getElementById('cls-submit-btn').textContent = isCompletedOnlyStatus ? 'Đổi sang Đã hủy' : 'Lưu thay đổi';
+        const schedRow = document.getElementById('cls-schedule-row');
+        if (schedRow) schedRow.style.display = isCompletedOnlyStatus ? 'none' : 'grid';
+        const schedDaysEl = document.getElementById('cls-schedule-days');
+        const slotEl = document.getElementById('cls-timeslot-id');
+        if (schedDaysEl) schedDaysEl.value = cls.scheduleDays || '';
+        if (slotEl) slotEl.value = cls.timeSlotId ? String(cls.timeSlotId) : '';
+        document.getElementById('cls-code').value = cls.classCode || '';
+        document.getElementById('cls-name').value = cls.className || '';
+        document.getElementById('cls-course-id').value = String(cls.courseId || '');
+        document.getElementById('cls-classroom-id').value = cls.classroomId ? String(cls.classroomId) : '';
+        document.getElementById('cls-start-date').value = toDateInputValue(cls.startDate);
+        document.getElementById('cls-end-date').value = toDateInputValue(cls.endDate);
+        document.getElementById('cls-max-students').value = String(cls.maxStudents ?? 20);
+        document.getElementById('cls-price').value = String(cls.price ?? 0);
+        populateClassStatusSelect('edit', st || 'upcoming');
+        syncClassStatusByStartDate();
+
+        const teacherSelect = document.getElementById('cls-teacher-id');
+        if (cls.teacherId) {
+          const existsInList = Array.from(teacherSelect.options).some(opt => opt.value === String(cls.teacherId));
+          if (!existsInList) {
+            const tempOpt = document.createElement('option');
+            tempOpt.value = String(cls.teacherId);
+            tempOpt.textContent = `${cls.teacherName || ('Giảng viên #' + cls.teacherId)} (Hiện tại)`;
+            tempOpt.dataset.tempTeacher = 'true';
+            teacherSelect.appendChild(tempOpt);
+          }
+          teacherSelect.value = String(cls.teacherId);
+        } else {
+          teacherSelect.value = '';
+        }
+
+        updateRoomStatusPreview(false);
+        showFormError('');
+        openModal('modal-create-class');
+        focusFirstField('modal-create-class', isCompletedOnlyStatus ? 'cls-status' : 'cls-code');
+      }
+
+      function populateDropdowns(courses, teachers, classrooms, timeSlots) {
+        if (Array.isArray(timeSlots)) {
+          timeSlotsList = timeSlots;
+          const slotSelect = document.getElementById('cls-timeslot-id');
+          if (slotSelect) {
+            const prevSlot = slotSelect.value;
+            slotSelect.innerHTML = '<option value="">-- Theo cấu hình phòng / Chưa xếp --</option>' +
+              timeSlotsList.map(ts => `<option value="${ts.id}">${escapeHtml(ts.name)} (${escapeHtml(ts.timeRange)})</option>`).join('');
+            if (prevSlot && timeSlotsList.some(ts => String(ts.id) === prevSlot)) {
+              slotSelect.value = prevSlot;
+            }
+          }
+        }
+        if (Array.isArray(classrooms)) {
+          classroomsList = classrooms;
+          const roomSelect = document.getElementById('cls-classroom-id');
+          if (roomSelect) {
+            const prevRoom = roomSelect.value;
+            roomSelect.innerHTML = '<option value="">-- Chưa chọn phòng học --</option>' +
+              classroomsList.map(r => {
+                const activeList = Array.isArray(r.activeClasses) ? r.activeClasses : [];
+                const distinctClassCount = new Set(activeList.map(c => c.id)).size;
+                const slotNames = [...new Set(activeList.map(c => c.timeSlotName).filter(Boolean))];
+                const statusTxt = distinctClassCount > 0
+                  ? `Đang mở ${distinctClassCount} lớp${slotNames.length > 0 ? ` (${slotNames.join(', ')})` : ''}`
+                  : '✓ Phòng trống';
+                const teacherTxt = r.defaultTeacherName ? ` • GV: ${r.defaultTeacherName}` : '';
+                return `<option value="${r.id}">${escapeHtml(`${r.name} (${r.capacity} chỗ) — ${statusTxt}${teacherTxt}`)}</option>`;
+              }).join('');
+            if (prevRoom && classroomsList.some(r => String(r.id) === prevRoom)) {
+              roomSelect.value = prevRoom;
+            }
+          }
+        }
+        if (dropdownsLoaded) return;
+        coursesList = Array.isArray(courses) ? courses : [];
+        teachersList = Array.isArray(teachers) ? teachers : [];
+
+        const courseSelect = document.getElementById('cls-course-id');
+        const teacherSelect = document.getElementById('cls-teacher-id');
+        const courseFilterEl = document.getElementById('classes-course-filter');
+        const teacherFilterEl = document.getElementById('classes-teacher-filter');
+
+        courseSelect.innerHTML = coursesList.length === 0
+          ? '<option value="">-- Chưa có khóa học --</option>'
+          : coursesList.map(c => `<option value="${c.id}" data-price="${c.price}">${escapeHtml(c.title)} (${formatCurrency(c.price)})</option>`).join('');
+
+        courseFilterEl.innerHTML = '<option value="0">Tất cả khóa học</option>' +
+          coursesList.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+
+        if (activeCourseFilter && coursesList.some(c => String(c.id) === String(activeCourseFilter))) {
+          courseFilterEl.value = String(activeCourseFilter);
+        } else if (activeCourseFilter === '0') {
+          activeCourseFilter = '';
+        }
+
+        if (coursesList.length > 0) {
+          if (activeCourseFilter && coursesList.some(c => String(c.id) === String(activeCourseFilter))) {
+            courseSelect.value = String(activeCourseFilter);
+            const matched = coursesList.find(c => String(c.id) === String(activeCourseFilter));
+            document.getElementById('cls-price').value = matched?.price ?? 0;
+          } else {
+            document.getElementById('cls-price').value = coursesList[0].price ?? 0;
+          }
+        }
+        syncCourseFilterBanner();
+
+        teacherSelect.innerHTML = '<option value="">-- Chưa phân công giảng viên --</option>' +
+          teachersList.map(t => {
+            const qual = t.qualification ? ` (${escapeHtml(t.qualification)})` : '';
+            return `<option value="${t.id}">${escapeHtml(t.fullName)}${qual}</option>`;
+          }).join('');
+
+        teacherFilterEl.innerHTML = '<option value="0">Tất cả giảng viên</option>' +
+          teachersList.map(t => `<option value="${t.id}">${escapeHtml(t.fullName)}</option>`).join('');
+
+        if (activeTeacherFilter && teachersList.some(t => String(t.id) === String(activeTeacherFilter))) {
+          teacherFilterEl.value = String(activeTeacherFilter);
+        } else if (activeTeacherFilter === '0') {
+          activeTeacherFilter = '';
+        }
+
+        dropdownsLoaded = true;
+
+        if (pendingAutoOpenCreate) {
+          pendingAutoOpenCreate = false;
+          openCreateMode();
+          openModal('modal-create-class');
+        }
+      }
+
+      function hasActiveFilter() {
+        return !!activeCourseFilter ||
+          !!activeTeacherFilter ||
+          !!document.getElementById('classes-search-input').value.trim() ||
+          document.getElementById('classes-status-filter').value !== 'all';
+      }
+
+      function renderClasses(items) {
+        const tbody = document.getElementById('classes-tbody');
+        if (!items || items.length === 0) {
+          if (hasActiveFilter()) {
+            tbody.innerHTML = `<tr><td colspan="${COLS}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+              '<div class="empty-state-title">Không tìm thấy lớp học phù hợp</div>' +
+              '<div class="empty-state-text">Hãy thử đổi từ khóa tìm kiếm hoặc đặt lại bộ lọc hiện tại.</div>' +
+              '<button type="button" class="btn btn-sm btn-secondary" data-reset-filters>Đặt lại bộ lọc</button>' +
+              '</div></td></tr>';
+          } else {
+            tbody.innerHTML = stateRow(COLS, 'Chưa có lớp học nào', 'Nhấn "Tạo lớp học mới" để thêm lớp học đầu tiên.');
+          }
+          return;
+        }
+
+        tbody.innerHTML = items.map(c => {
+          const st = (c.status || '').toLowerCase();
+          const canCancel = st === 'upcoming' || st === 'completed';
+          const canEdit = st === 'upcoming' || st === 'completed';
+          const cancelBtnHtml = canCancel
+            ? `<button type="button" class="btn btn-sm btn-danger-soft" data-cancel-class="${c.id}">Hủy lớp</button>`
+            : (st === 'ongoing'
+                ? '<button type="button" class="btn btn-sm btn-secondary" disabled title="Lớp đang diễn ra không được phép hủy" style="opacity: 0.55; cursor: not-allowed;">Không hủy được</button>'
+                : '');
+          const editBtnTitle = st === 'ongoing'
+            ? 'Lớp đang diễn ra không được phép chỉnh sửa'
+            : (st === 'cancelled'
+                ? 'Lớp đã hủy không thể chỉnh sửa'
+                : (st === 'completed' ? 'Chỉ được phép đổi trạng thái sang Đã hủy' : 'Chỉnh sửa lớp học'));
+          const editBtnLabel = st === 'completed' ? 'Đổi trạng thái' : 'Sửa lớp';
+          const editBtnHtml = canEdit
+            ? `<button type="button" class="btn btn-sm btn-secondary" data-edit-class="${c.id}" title="${editBtnTitle}">${editBtnLabel}</button>`
+            : '';
+          return `
+          <tr>
+            <td style="white-space: nowrap;">
+              <span class="badge badge-primary">${escapeHtml(c.classCode)}</span>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">${formatDate(c.startDate)} - ${formatDate(c.endDate)}</div>
+            </td>
+            <td>
+              <strong>${escapeHtml(c.className)}</strong>
+              <div style="font-size: 0.78rem; color: var(--text-secondary);">${escapeHtml(c.courseTitle)} • ${formatCurrency(c.price)}</div>
+            </td>
+            <td>${escapeHtml(c.teacherName)}</td>
+            <td>
+              <div style="font-weight: 600; font-size: 0.8125rem;">${escapeHtml(c.classroomSummary)}</div>
+              <small class="text-muted">${escapeHtml(c.scheduleSummary)}</small>
+            </td>
+            <td style="white-space: nowrap;"><strong>${Number(c.activeStudents) || 0}</strong> / ${Number(c.maxStudents) || 0}</td>
+            <td style="white-space: nowrap;">${renderStatusBadge(c.status)}</td>
+            <td class="text-right" style="white-space: nowrap;">
+              <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                ${cancelBtnHtml}
+                ${editBtnHtml}
+                <a href="/Admin/class-detail.html?id=${encodeURIComponent(c.id)}" class="btn btn-sm btn-primary">Xem</a>
+              </div>
+            </td>
+          </tr>
+        `;
+        }).join('');
+      }
+
+      async function loadClasses() {
+        // Hủy request cũ khi người dùng gõ / đổi bộ lọc liên tục
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        const tbody = document.getElementById('classes-tbody');
+        if (!hasLoadedOnce) {
+          tbody.innerHTML = skeletonRows(COLS, 5);
+        } else {
+          tbody.style.opacity = '0.55';
+        }
+
+        const search = document.getElementById('classes-search-input').value.trim();
+        const status = document.getElementById('classes-status-filter').value;
+
+        const params = new URLSearchParams();
+        if (activeCourseFilter && activeCourseFilter !== '0') params.set('courseId', activeCourseFilter);
+        if (activeTeacherFilter && activeTeacherFilter !== '0') params.set('teacherId', activeTeacherFilter);
+        if (status && status !== 'all') params.set('status', status);
+        if (search) params.set('search', search);
+        if (dropdownsLoaded) params.set('lookups', 'false');
+
+        try {
+          const data = await fetchJson(`/Admin/api/Classes/List?${params.toString()}`, { signal: controller.signal });
+          classesCache = Array.isArray(data.items) ? data.items : [];
+          populateDropdowns(data.courses, data.teachers, data.classrooms, data.timeSlots);
+          renderClasses(classesCache);
+          hasLoadedOnce = true;
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải danh sách lớp:', err);
+          tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            tbody.style.opacity = '';
+          }
+        }
+      }
+
+      function initDefaultDates(force = false) {
+        const today = new Date();
+        const nextTwoMonths = new Date();
+        nextTwoMonths.setMonth(nextTwoMonths.getMonth() + 2);
+        const toInputValue = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const startEl = document.getElementById('cls-start-date');
+        const endEl = document.getElementById('cls-end-date');
+        if (startEl && (force || !startEl.value)) startEl.value = toInputValue(today);
+        if (endEl && (force || !endEl.value)) endEl.value = toInputValue(nextTwoMonths);
+      }
+
+      async function submitClassForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showFormError('');
+
+        const editId = document.getElementById('cls-edit-id').value.trim();
+        const isEdit = Boolean(editId);
+        const editingClass = isEdit ? classesCache.find(x => String(x.id) === editId) : null;
+        const isCompletedStatusOnly = isEdit && ((editingClass?.status || '').toLowerCase() === 'completed');
+
+        if (isCompletedStatusOnly) {
+          const newStatus = (document.getElementById('cls-status').value || '').toLowerCase();
+          if (newStatus !== 'cancelled') {
+            showFormError('Lớp đã kết thúc chỉ được phép đổi trạng thái sang Đã hủy.');
+            return;
+          }
+          const submitBtn = document.getElementById('cls-submit-btn');
+          setBusy(submitBtn, true);
+          setModalBusy('modal-create-class', true);
+          try {
+            const data = await postJson(`/Admin/api/Classes/UpdateStatus/${encodeURIComponent(editId)}`, { status: 'cancelled' }, 'POST');
+            setModalBusy('modal-create-class', false);
+            closeModal('modal-create-class');
+            showToast(data.message || 'Đã chuyển trạng thái lớp sang Đã hủy.');
+            dropdownsLoaded = false;
+            await loadClasses();
+          } catch (err) {
+            console.error(err);
+            showFormError(err.message);
+          } finally {
+            setModalBusy('modal-create-class', false);
+            setBusy(submitBtn, false);
+          }
+          return;
+        }
+
+        const teacherVal = document.getElementById('cls-teacher-id').value;
+        const parsedTeacherId = teacherVal ? parseInt(teacherVal, 10) : null;
+        const roomVal = document.getElementById('cls-classroom-id').value;
+        const parsedClassroomId = roomVal ? parseInt(roomVal, 10) : null;
+        const parsedPrice = parseFloat(document.getElementById('cls-price').value);
+
+        const common = {
+          classCode: document.getElementById('cls-code').value.trim(),
+          className: document.getElementById('cls-name').value.trim(),
+          courseId: parseInt(document.getElementById('cls-course-id').value, 10) || 0,
+          classroomId: parsedClassroomId,
+          startDate: document.getElementById('cls-start-date').value,
+          endDate: document.getElementById('cls-end-date').value,
+          maxStudents: parseInt(document.getElementById('cls-max-students').value, 10) || 0,
+          status: document.getElementById('cls-status').value
+        };
+
+        if (!common.classCode || !common.className) {
+          showFormError('Mã lớp và tên lớp không được để trống.');
+          return;
+        }
+        if (common.classCode.length > 50) {
+          showFormError('Mã lớp không được vượt quá 50 ký tự.');
+          return;
+        }
+        if (common.className.length > 150) {
+          showFormError('Tên lớp không được vượt quá 150 ký tự.');
+          return;
+        }
+        if (common.courseId <= 0) {
+          showFormError('Vui lòng chọn khóa học trực thuộc.');
+          return;
+        }
+        if (!common.startDate || !common.endDate || new Date(common.endDate) <= new Date(common.startDate)) {
+          showFormError('Ngày kết thúc phải sau ngày khai giảng.');
+          return;
+        }
+        const todayIso = toDateInputValue(new Date());
+        if (common.status === 'ongoing' && common.startDate > todayIso) {
+          showFormError('Chưa tới ngày khai giảng nên không thể đặt trạng thái Đang diễn ra.');
+          return;
+        }
+        if (common.maxStudents <= 0 || common.maxStudents > 1000) {
+          showFormError('Sĩ số tối đa phải từ 1 đến 1.000 học viên.');
+          return;
+        }
+        if (isNaN(parsedPrice) || parsedPrice < 0 || parsedPrice > 99999999.99) {
+          showFormError('Học phí phải nằm trong khoảng 0 - 99.999.999 ₫.');
+          return;
+        }
+
+        const submitBtn = document.getElementById('cls-submit-btn');
+        setBusy(submitBtn, true);
+        setModalBusy('modal-create-class', true);
+
+        try {
+          let data;
+          if (isEdit) {
+            const schedDaysVal = document.getElementById('cls-schedule-days')?.value || null;
+            const slotVal = document.getElementById('cls-timeslot-id')?.value;
+            const updatePayload = {
+              ...common,
+              classroomId: parsedClassroomId ?? 0,
+              scheduleDays: schedDaysVal,
+              timeSlotId: slotVal ? parseInt(slotVal, 10) : null,
+              priceOverride: parsedPrice,
+              mainTeacherId: parsedTeacherId
+            };
+            data = await postJson(`/Admin/api/Classes/Update/${encodeURIComponent(editId)}`, updatePayload, 'PUT');
+          } else {
+            const schedDaysVal = document.getElementById('cls-schedule-days')?.value || null;
+            const slotVal = document.getElementById('cls-timeslot-id')?.value;
+            if (parsedClassroomId && (!schedDaysVal || !slotVal)) {
+              setModalBusy('modal-create-class', false);
+              setBusy(submitBtn, false);
+              showFormError('Khi chọn phòng học cho lớp, vui lòng chọn đầy đủ Lịch ngày học và Ca học để hiển thị trên Thời khóa biểu.');
+              return;
+            }
+            const createPayload = {
+              ...common,
+              teacherId: parsedTeacherId,
+              scheduleDays: schedDaysVal,
+              timeSlotId: slotVal ? parseInt(slotVal, 10) : null,
+              price: parsedPrice
+            };
+            data = await postJson('/Admin/api/Classes/Create', createPayload, 'POST');
+          }
+
+          setModalBusy('modal-create-class', false);
+          closeModal('modal-create-class');
+          showToast(data.message || (isEdit ? 'Cập nhật lớp học thành công.' : 'Tạo lớp học thành công.'));
+          dropdownsLoaded = false;
+          await loadClasses();
+        } catch (err) {
+          console.error(err);
+          showFormError(err.message);
+        } finally {
+          setModalBusy('modal-create-class', false);
+          setBusy(submitBtn, false);
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        bindModalKeyboardAndGuard();
+        initDefaultDates();
+        loadClasses();
+
+        const searchInput = document.getElementById('classes-search-input');
+        const debouncedLoad = debounce(loadClasses, 300);
+
+        const resetAllFilters = () => {
+          debouncedLoad.cancel();
+          activeCourseFilter = '';
+          activeTeacherFilter = '';
+          searchInput.value = '';
+          document.getElementById('classes-course-filter').value = '0';
+          document.getElementById('classes-teacher-filter').value = '0';
+          document.getElementById('classes-status-filter').value = 'all';
+          syncCourseFilterBanner();
+          syncUrlFilters();
+          loadClasses();
+        };
+
+        document.getElementById('btn-filter-classes').addEventListener('click', () => {
+          debouncedLoad.cancel();
+          loadClasses();
+        });
+        document.getElementById('btn-reset-classes-filter').addEventListener('click', resetAllFilters);
+        document.getElementById('classes-course-filter').addEventListener('change', (e) => {
+          debouncedLoad.cancel();
+          activeCourseFilter = e.target.value === '0' ? '' : e.target.value;
+          syncCourseFilterBanner();
+          syncUrlFilters();
+          loadClasses();
+        });
+        document.getElementById('classes-teacher-filter').addEventListener('change', (e) => {
+          debouncedLoad.cancel();
+          activeTeacherFilter = e.target.value === '0' ? '' : e.target.value;
+          syncUrlFilters();
+          loadClasses();
+        });
+        document.getElementById('classes-status-filter').addEventListener('change', () => {
+          debouncedLoad.cancel();
+          loadClasses();
+        });
+        searchInput.addEventListener('input', debouncedLoad);
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            debouncedLoad.cancel();
+            loadClasses();
+          }
+        });
+
+        document.getElementById('btn-clear-course-filter').addEventListener('click', () => {
+          debouncedLoad.cancel();
+          activeCourseFilter = '';
+          document.getElementById('classes-course-filter').value = '0';
+          syncCourseFilterBanner();
+          syncUrlFilters();
+          loadClasses();
+        });
+
+        document.getElementById('classes-tbody').addEventListener('click', async (e) => {
+          if (e.target.closest('[data-retry-load]')) {
+            loadClasses();
+            return;
+          }
+          if (e.target.closest('[data-reset-filters]')) {
+            resetAllFilters();
+            return;
+          }
+          const cancelBtn = e.target.closest('[data-cancel-class]');
+          if (cancelBtn) {
+            const classId = Number(cancelBtn.getAttribute('data-cancel-class'));
+            const cls = classesCache.find(x => x.id === classId);
+            if (!cls) return;
+            if ((cls.status || '').toLowerCase() === 'ongoing') {
+              showToast('Lớp đang diễn ra không được phép hủy.', 'error');
+              return;
+            }
+            if (!confirm(`Xác nhận hủy lớp ${cls.classCode} (${cls.className})?\nLớp sẽ chuyển sang trạng thái Đã hủy, gỡ khỏi Thời khóa biểu và trả lại phòng học trống.`)) {
+              return;
+            }
+            setBusy(cancelBtn, true, 'Đang hủy...');
+            try {
+              const data = await postJson(`/Admin/api/Classes/UpdateStatus/${encodeURIComponent(classId)}`, { status: 'cancelled' }, 'POST');
+              showToast(data.message || 'Đã hủy lớp học thành công.');
+              dropdownsLoaded = false;
+              await loadClasses();
+            } catch (err) {
+              console.error(err);
+              showToast(err.message, 'error');
+            } finally {
+              if (cancelBtn && cancelBtn.isConnected) setBusy(cancelBtn, false);
+            }
+            return;
+          }
+          const editBtn = e.target.closest('[data-edit-class]');
+          if (editBtn) {
+            openEditMode(Number(editBtn.getAttribute('data-edit-class')));
+          }
+        });
+
+        document.getElementById('cls-course-id').addEventListener('change', (e) => {
+          if (document.getElementById('cls-edit-id').value) return;
+          const opt = e.target.selectedOptions[0];
+          if (opt && opt.dataset.price !== undefined) {
+            document.getElementById('cls-price').value = opt.dataset.price;
+          }
+        });
+
+        document.getElementById('cls-classroom-id').addEventListener('change', () => {
+          updateRoomStatusPreview(true);
+          syncClassStatusByStartDate();
+        });
+        document.getElementById('cls-start-date').addEventListener('change', () => {
+          syncClassStatusByStartDate();
+          updateRoomStatusPreview(false);
+        });
+        document.getElementById('cls-start-date').addEventListener('input', syncClassStatusByStartDate);
+        ['cls-timeslot-id', 'cls-end-date', 'cls-max-students', 'cls-status'].forEach(elId => {
+          document.getElementById(elId).addEventListener('change', () => updateRoomStatusPreview(false));
+        });
+
+        document.getElementById('btn-open-create-class').addEventListener('click', () => {
+          openCreateMode();
+        });
+
+        document.getElementById('create-class-form').addEventListener('submit', submitClassForm);
+
+        // ===== Quản lý Ca học (Time Slots) trực tiếp tại trang Lớp học =====
+        let timeSlotsAdminCache = [];
+        let tsController = null;
+        const TS_COLS = 5;
+
+        function initTime24Picker(prefix) {
+          const hSel = document.getElementById(`ts-${prefix}-hour`);
+          const mSel = document.getElementById(`ts-${prefix}-minute`);
+          if (!hSel || !mSel) return;
+          let hHtml = '<option value="">Giờ</option>';
+          for (let h = 0; h < 24; h++) {
+            const hh = String(h).padStart(2, '0');
+            hHtml += `<option value="${hh}">${hh}</option>`;
+          }
+          hSel.innerHTML = hHtml;
+
+          let mHtml = '<option value="">Phút</option>';
+          for (let m = 0; m < 60; m++) {
+            const mm = String(m).padStart(2, '0');
+            mHtml += `<option value="${mm}">${mm}</option>`;
+          }
+          mSel.innerHTML = mHtml;
+
+          hSel.addEventListener('change', () => {
+            if (hSel.value && !mSel.value) mSel.value = '00';
+            syncTime24Value(prefix);
+          });
+          mSel.addEventListener('change', () => syncTime24Value(prefix));
+        }
+
+        function syncTime24Value(prefix) {
+          const hSel = document.getElementById(`ts-${prefix}-hour`);
+          const mSel = document.getElementById(`ts-${prefix}-minute`);
+          const hidden = document.getElementById(`ts-${prefix}-time`);
+          if (!hidden) return '';
+          const hh = hSel ? hSel.value : '';
+          const mm = mSel ? mSel.value : '';
+          const val = (hh !== '' && mm !== '') ? `${hh}:${mm}` : '';
+          hidden.value = val;
+          return val;
+        }
+
+        function setTime24Value(prefix, hhmm) {
+          const hSel = document.getElementById(`ts-${prefix}-hour`);
+          const mSel = document.getElementById(`ts-${prefix}-minute`);
+          const hidden = document.getElementById(`ts-${prefix}-time`);
+          const m = String(hhmm || '').trim().match(/^(\d{1,2}):(\d{2})/);
+          if (m) {
+            const hhNum = parseInt(m[1], 10);
+            const mmNum = parseInt(m[2], 10);
+            if (hhNum >= 0 && hhNum <= 23 && mmNum >= 0 && mmNum <= 59) {
+              const hh = String(hhNum).padStart(2, '0');
+              const mm = String(mmNum).padStart(2, '0');
+              if (hSel) hSel.value = hh;
+              if (mSel) mSel.value = mm;
+              if (hidden) hidden.value = `${hh}:${mm}`;
+              return;
+            }
+          }
+          if (hSel) hSel.value = '';
+          if (mSel) mSel.value = '';
+          if (hidden) hidden.value = '';
+        }
+
+        initTime24Picker('start');
+        initTime24Picker('end');
+
+        function showTimeSlotError(msg) {
+          const box = document.getElementById('timeslot-form-error');
+          if (!box) return;
+          box.textContent = msg || '';
+          box.style.display = msg ? 'block' : 'none';
+        }
+
+        function resetTimeSlotForm() {
+          const form = document.getElementById('timeslot-form');
+          if (form) form.reset();
+          document.getElementById('ts-id').value = '';
+          document.getElementById('ts-name').value = '';
+          setTime24Value('start', '');
+          setTime24Value('end', '');
+          document.getElementById('ts-active').value = 'true';
+          document.getElementById('ts-description').value = '';
+          document.getElementById('ts-form-heading').textContent = 'Thêm ca học mới (Ca 1, Ca 2, Ca 3...)';
+          document.getElementById('ts-submit-btn').textContent = 'Lưu vào bảng time_slots';
+          document.getElementById('btn-cancel-edit-timeslot').style.display = 'none';
+          showTimeSlotError('');
+        }
+
+        function openEditTimeSlot(id) {
+          const slot = timeSlotsAdminCache.find(x => x.id === id);
+          if (!slot) return;
+          document.getElementById('ts-id').value = String(slot.id);
+          document.getElementById('ts-name').value = slot.slotName || slot.name || '';
+          setTime24Value('start', slot.startTime || '');
+          setTime24Value('end', slot.endTime || '');
+          document.getElementById('ts-active').value = slot.isActive ? 'true' : 'false';
+          document.getElementById('ts-description').value = slot.description || '';
+          document.getElementById('ts-form-heading').textContent = `Chỉnh sửa ca học: ${slot.slotName || slot.name}`;
+          document.getElementById('ts-submit-btn').textContent = 'Lưu thay đổi';
+          document.getElementById('btn-cancel-edit-timeslot').style.display = 'inline-flex';
+          showTimeSlotError('');
+          document.getElementById('ts-name').focus();
+        }
+
+        function renderTimeSlotsTable(items) {
+          const tbody = document.getElementById('timeslots-tbody');
+          if (!Array.isArray(items) || items.length === 0) {
+            tbody.innerHTML = stateRow(TS_COLS, 'Chưa có ca học nào trong bảng time_slots', 'Hãy nhập Tên ca (Ca 1, Ca 2...) và Giờ bắt đầu / Giờ kết thúc ở trên hoặc bấm "⚡ Tạo nhanh Ca 1 - Ca 6 mẫu".');
+            return;
+          }
+
+          tbody.innerHTML = items.map(ts => {
+            const statusBadge = ts.isActive
+              ? '<span class="badge badge-success">Đang hoạt động</span>'
+              : '<span class="badge badge-warning">Tạm ngưng</span>';
+            const toggleLabel = ts.isActive ? 'Tạm ngưng' : 'Kích hoạt';
+            const toggleBtnClass = ts.isActive ? 'btn btn-sm btn-danger-soft' : 'btn btn-sm btn-primary';
+            const descHtml = ts.description
+              ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">${escapeHtml(ts.description)}</div>`
+              : '';
+
+            return `
+              <tr>
+                <td>
+                  <strong>${escapeHtml(ts.slotName || ts.name)}</strong>
+                  ${descHtml}
+                </td>
+                <td><span class="badge badge-primary">${escapeHtml(ts.timeRange)}</span></td>
+                <td><strong>${ts.activeScheduleCount ?? 0}</strong> buổi/tuần</td>
+                <td>${statusBadge}</td>
+                <td class="text-right">
+                  <div style="display: inline-flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-sm btn-secondary" data-edit-timeslot="${ts.id}">Sửa</button>
+                    <button type="button" class="${toggleBtnClass}" data-toggle-timeslot="${ts.id}">${toggleLabel}</button>
+                    ${(ts.activeScheduleCount ?? 0) === 0 ? `<button type="button" class="btn btn-sm btn-danger-soft" data-delete-timeslot="${ts.id}">Xóa</button>` : ''}
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        function syncClassModalTimeSlotSelect(items) {
+          const activeSlots = (Array.isArray(items) ? items : []).filter(ts => ts.isActive);
+          timeSlotsList = activeSlots.map(ts => ({
+            id: ts.id,
+            name: ts.slotName || ts.name,
+            startTime: ts.startTime,
+            endTime: ts.endTime,
+            timeRange: ts.timeRange
+          }));
+          const slotSelect = document.getElementById('cls-timeslot-id');
+          if (slotSelect) {
+            const prevSlot = slotSelect.value;
+            slotSelect.innerHTML = '<option value="">-- Theo cấu hình phòng / Chưa xếp --</option>' +
+              timeSlotsList.map(ts => `<option value="${ts.id}">${escapeHtml(ts.name)} (${escapeHtml(ts.timeRange)})</option>`).join('');
+            if (prevSlot && timeSlotsList.some(ts => String(ts.id) === prevSlot)) {
+              slotSelect.value = prevSlot;
+            } else if (!prevSlot && timeSlotsList.length > 0 && document.getElementById('cls-classroom-id')?.value) {
+              slotSelect.value = String(timeSlotsList[0].id);
+            }
+          }
+          updateRoomStatusPreview(false);
+        }
+
+        async function loadTimeSlotsAdmin() {
+          if (tsController) tsController.abort();
+          const controller = new AbortController();
+          tsController = controller;
+
+          const tbody = document.getElementById('timeslots-tbody');
+          tbody.innerHTML = skeletonRows(TS_COLS, 4);
+
+          try {
+            const data = await fetchJson('/Admin/api/Schedules/TimeSlots', { signal: controller.signal });
+            timeSlotsAdminCache = Array.isArray(data.items) ? data.items : [];
+            renderTimeSlotsTable(timeSlotsAdminCache);
+            syncClassModalTimeSlotSelect(timeSlotsAdminCache);
+          } catch (err) {
+            if (isAbortError(err)) return;
+            tbody.innerHTML = `<tr><td colspan="${TS_COLS}"><div class="empty-state" style="padding: 1.5rem;">` +
+              '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải danh mục ca học</div>' +
+              `<div class="empty-state-text">${escapeHtml(err.message)}</div>` +
+              '<button type="button" class="btn btn-sm btn-secondary" data-retry-timeslots>Thử lại</button>' +
+              '</div></td></tr>';
+          } finally {
+            if (tsController === controller) tsController = null;
+          }
+        }
+
+        async function submitTimeSlotForm(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          showTimeSlotError('');
+
+          const id = document.getElementById('ts-id').value.trim();
+          const isEdit = Boolean(id);
+          const payload = {
+            slotName: document.getElementById('ts-name').value.trim(),
+            startTime: syncTime24Value('start'),
+            endTime: syncTime24Value('end'),
+            description: document.getElementById('ts-description').value.trim(),
+            isActive: document.getElementById('ts-active').value === 'true'
+          };
+
+          if (!payload.slotName || payload.slotName.length > 50) {
+            showTimeSlotError('Tên ca học phải từ 1 đến 50 ký tự.');
+            return;
+          }
+          const time24Regex = /^([01]\d|2[0-3]):[0-5]\d$/;
+          if (!time24Regex.test(payload.startTime) || !time24Regex.test(payload.endTime)) {
+            showTimeSlotError('Vui lòng chọn đầy đủ giờ bắt đầu và giờ kết thúc theo chuẩn 24h (00:00 - 23:59).');
+            return;
+          }
+          if (payload.startTime >= payload.endTime) {
+            showTimeSlotError('Giờ kết thúc phải lớn hơn giờ bắt đầu (chuẩn 24h 00:00 - 23:59).');
+            return;
+          }
+
+          const btn = document.getElementById('ts-submit-btn');
+          setBusy(btn, true);
+          setModalBusy('modal-manage-timeslots', true);
+          try {
+            const url = isEdit
+              ? `/Admin/api/Schedules/TimeSlots/Update/${encodeURIComponent(id)}`
+              : '/Admin/api/Schedules/TimeSlots/Create';
+            const data = await postJson(url, payload, isEdit ? 'PUT' : 'POST');
+            resetTimeSlotForm();
+            showToast(data.message || 'Lưu ca học thành công.');
+            await loadTimeSlotsAdmin();
+          } catch (err) {
+            showTimeSlotError(err.message);
+          } finally {
+            setModalBusy('modal-manage-timeslots', false);
+            setBusy(btn, false);
+          }
+        }
+
+        async function toggleTimeSlotStatus(id, btn) {
+          setBusy(btn, true, 'Đang xử lý...');
+          try {
+            const data = await postJson(`/Admin/api/Schedules/TimeSlots/ToggleStatus/${encodeURIComponent(id)}`);
+            showToast(data.message || 'Đã đổi trạng thái ca học.');
+            await loadTimeSlotsAdmin();
+          } catch (err) {
+            showToast(err.message, 'error');
+          } finally {
+            if (btn && btn.isConnected) setBusy(btn, false);
+          }
+        }
+
+        async function deleteTimeSlot(id, btn) {
+          const slot = timeSlotsAdminCache.find(x => x.id === id);
+          if (!confirm(`Xác nhận xóa ca học "${slot ? (slot.slotName || slot.name) : id}" khỏi bảng time_slots?`)) return;
+          setBusy(btn, true, 'Đang xóa...');
+          try {
+            const data = await postJson(`/Admin/api/Schedules/TimeSlots/Delete/${encodeURIComponent(id)}`);
+            showToast(data.message || 'Đã xóa ca học.');
+            await loadTimeSlotsAdmin();
+          } catch (err) {
+            showToast(err.message, 'error');
+          } finally {
+            if (btn && btn.isConnected) setBusy(btn, false);
+          }
+        }
+
+        async function seedDefaultTimeSlots(btn) {
+          setBusy(btn, true, 'Đang tạo...');
+          try {
+            const data = await postJson('/Admin/api/Schedules/TimeSlots/SeedDefaults');
+            showToast(data.message || 'Đã tạo nhanh các ca học mẫu.');
+            await loadTimeSlotsAdmin();
+          } catch (err) {
+            showToast(err.message, 'error');
+          } finally {
+            if (btn && btn.isConnected) setBusy(btn, false);
+          }
+        }
+
+        const openTimeSlotsModal = () => {
+          resetTimeSlotForm();
+          openModal('modal-manage-timeslots');
+          loadTimeSlotsAdmin();
+          focusFirstField('modal-manage-timeslots', 'ts-name');
+        };
+
+        document.getElementById('btn-open-manage-timeslots')?.addEventListener('click', openTimeSlotsModal);
+        document.getElementById('btn-inline-manage-timeslots')?.addEventListener('click', openTimeSlotsModal);
+        document.getElementById('btn-cancel-edit-timeslot')?.addEventListener('click', resetTimeSlotForm);
+        document.getElementById('btn-seed-default-timeslots')?.addEventListener('click', (e) => seedDefaultTimeSlots(e.currentTarget));
+        document.getElementById('timeslot-form')?.addEventListener('submit', submitTimeSlotForm);
+
+        document.getElementById('timeslots-tbody')?.addEventListener('click', (e) => {
+          const editBtn = e.target.closest('[data-edit-timeslot]');
+          if (editBtn) {
+            openEditTimeSlot(Number(editBtn.getAttribute('data-edit-timeslot')));
+            return;
+          }
+          const toggleBtn = e.target.closest('[data-toggle-timeslot]');
+          if (toggleBtn) {
+            toggleTimeSlotStatus(Number(toggleBtn.getAttribute('data-toggle-timeslot')), toggleBtn);
+            return;
+          }
+          const delBtn = e.target.closest('[data-delete-timeslot]');
+          if (delBtn) {
+            deleteTimeSlot(Number(delBtn.getAttribute('data-delete-timeslot')), delBtn);
+            return;
+          }
+          if (e.target.closest('[data-retry-timeslots]')) {
+            loadTimeSlotsAdmin();
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

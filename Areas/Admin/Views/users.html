@@ -8,8 +8,8 @@
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -35,7 +35,7 @@
     <!-- Sidebar Trắng Hiện Đại -->
     <aside class="app-sidebar" id="app-sidebar" style="background-color: #FFFFFF;">
       <div class="sidebar-header">
-        <a href="dashboard.html" class="brand-logo" style="text-decoration: none;">
+        <a href="/Admin/dashboard.html" class="brand-logo" style="text-decoration: none;">
           <div class="logo-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
@@ -48,62 +48,66 @@
 
       <nav class="sidebar-nav">
         <div class="nav-section-title">Tổng quan</div>
-      <a href="dashboard.html" class="nav-item ">
+      <a href="/Admin/dashboard.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
         <span>Bảng điều khiển</span>
       </a>
     <div class="nav-section-title">Quản lý đào tạo</div>
-      <a href="subjects.html" class="nav-item ">
+      <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
         <span>Môn học</span>
       </a>
     
-      <a href="courses.html" class="nav-item ">
+      <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
         <span>Khóa học</span>
       </a>
     
-      <a href="classes.html" class="nav-item ">
+      <a href="/Admin/course-objectives.html" class="nav-item ">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+        <span>Mô tả &amp; Mục tiêu</span>
+      </a>
+          <a href="/Admin/classes.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
         <span>Lớp học</span>
       </a>
     
-      <a href="schedules.html" class="nav-item ">
+      <a href="/Admin/schedules.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
         <span>Thời khóa biểu</span>
       </a>
     <div class="nav-section-title">Quản lý người dùng</div>
-      <a href="users.html" class="nav-item active">
+      <a href="/Admin/users.html" class="nav-item active">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
         <span>Tài khoản người dùng</span>
       </a>
     
-      <a href="teachers.html" class="nav-item ">
+      <a href="/Admin/teachers.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
         <span>Giảng viên</span>
       </a>
     
-      <a href="enrollments.html" class="nav-item ">
+      <a href="/Admin/enrollments.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
         <span>Học viên & Đăng ký</span>
       </a>
     <div class="nav-section-title">Khảo thí & Đánh giá</div>
-      <a href="exams.html" class="nav-item ">
+      <a href="/Admin/exams.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
         <span>Đề thi & Khảo thí</span>
       </a>
     
-      <a href="reviews.html" class="nav-item ">
+      <a href="/Admin/reviews.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
         <span>Đánh giá khóa học</span>
       </a>
     <div class="nav-section-title">Cơ sở & Báo cáo</div>
-      <a href="facilities.html" class="nav-item ">
+      <a href="/Admin/facilities.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
         <span>Phòng học & Cơ sở</span>
       </a>
     
-      <a href="reports.html" class="nav-item ">
+      <a href="/Admin/reports.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
         <span>Báo cáo & Thống kê</span>
       </a>
@@ -190,7 +194,7 @@
                 <div style="font-weight: 700; font-size: 0.875rem;">Quản trị viên</div>
                 <span class="badge badge-primary" style="margin-top: 4px;">Super Admin</span>
               </div>
-              <a href="users.html" class="dropdown-item">
+              <a href="/Admin/users.html" class="dropdown-item">
                 <span>Quản lý người dùng</span>
               </a>
               <div class="dropdown-divider"></div>
@@ -211,35 +215,58 @@
       <p class="page-header-subtitle">Danh sách toàn bộ tài khoản Quản trị, Giảng viên và Học viên</p>
     </div>
     <div class="page-header-actions">
-      <button type="button" class="btn btn-primary" data-modal-target="modal-create-user">
+      <button type="button" class="btn btn-primary" id="btn-open-create-user" data-modal-target="modal-user">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span>Thêm tài khoản mới</span>
       </button>
     </div>
   </div>
 
+  <!-- Thống kê nhanh -->
+  <div class="grid grid-cols-3 gap-6" style="margin-bottom: 1.25rem;">
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Tổng tài khoản</span>
+        <span class="stat-value" id="stat-total-users">--</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Đang hoạt động</span>
+        <span class="stat-value text-success" id="stat-active-users">--</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-info">
+        <span class="stat-label">Tài khoản đã khóa</span>
+        <span class="stat-value text-danger" id="stat-locked-users">--</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bộ lọc & Tìm kiếm -->
   <div class="card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
     <div class="grid grid-cols-12 gap-4 items-center">
       <div class="col-span-5">
-        <input type="text" class="form-control" placeholder="Tìm theo tên hoặc email...">
+        <input type="text" id="users-search-input" class="form-control" placeholder="Tìm theo tên hoặc email...">
       </div>
       <div class="col-span-3">
-        <select class="form-control">
-          <option value="">Tất cả vai trò</option>
-          <option value="admin">Quản trị viên (Admin)</option>
-          <option value="teacher">Giảng viên (Teacher)</option>
-          <option value="student">Học viên (Student)</option>
+        <select id="users-role-filter" class="form-control">
+          <option value="all">Tất cả vai trò</option>
+          <option value="admin">Quản trị viên</option>
+          <option value="teacher">Giảng viên</option>
+          <option value="student">Học viên</option>
         </select>
       </div>
       <div class="col-span-2">
-        <select class="form-control">
-          <option value="">Tất cả trạng thái</option>
+        <select id="users-status-filter" class="form-control">
+          <option value="all">Tất cả trạng thái</option>
           <option value="1">Đang hoạt động</option>
           <option value="0">Đã khóa</option>
         </select>
       </div>
       <div class="col-span-2 text-right">
-        <button type="button" class="btn btn-secondary" style="width: 100%;">Đặt lại</button>
+        <button type="button" class="btn btn-secondary" id="btn-reset-users" style="width: 100%;">Đặt lại</button>
       </div>
     </div>
   </div>
@@ -257,163 +284,18 @@
             <th class="text-right">Thao tác</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="users-tbody">
           <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm">AD</div>
-                <strong>Nguyễn Quản Trị</strong>
-              </div>
-            </td>
-            <td>admin@el.com</td>
-            <td><span class="badge badge-primary">Quản trị viên</span></td>
-            <td><span class="badge badge-success">Hoạt động</span></td>
-            <td>15/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Sửa</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm" style="background: #059669; color: white;">LM</div>
-                <strong>Lê Thị Mai</strong>
-              </div>
-            </td>
-            <td>teacher@el.com</td>
-            <td><span class="badge badge-info">Giảng viên</span></td>
-            <td><span class="badge badge-success">Hoạt động</span></td>
-            <td>15/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Sửa</button>
-              <button class="btn btn-sm btn-danger">Khóa</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm" style="background: #2563EB; color: white;">HA</div>
-                <strong>Nguyễn Hoàng Anh</strong>
-              </div>
-            </td>
-            <td>student@el.com</td>
-            <td><span class="badge badge-neutral">Học viên</span></td>
-            <td><span class="badge badge-success">Hoạt động</span></td>
-            <td>20/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Sửa</button>
-              <button class="btn btn-sm btn-danger">Khóa</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm">PN</div>
-                <strong>Trần Phương Nam</strong>
-              </div>
-            </td>
-            <td>nam.tran@el.com</td>
-            <td><span class="badge badge-neutral">Học viên</span></td>
-            <td><span class="badge badge-success">Hoạt động</span></td>
-            <td>22/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Sửa</button>
-              <button class="btn btn-sm btn-danger">Khóa</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm">KN</div>
-                <strong>Lê Thị Kim Ngân</strong>
-              </div>
-            </td>
-            <td>ngan.le@el.com</td>
-            <td><span class="badge badge-neutral">Học viên</span></td>
-            <td><span class="badge badge-danger">Đã khóa</span></td>
-            <td>25/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Mở khóa</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm" style="background: #059669; color: white;">VH</div>
-                <strong>Nguyễn Văn Hùng</strong>
-              </div>
-            </td>
-            <td>hung.nguyen@el.com</td>
-            <td><span class="badge badge-info">Giảng viên</span></td>
-            <td><span class="badge badge-success">Hoạt động</span></td>
-            <td>16/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Sửa</button>
-              <button class="btn btn-sm btn-danger">Khóa</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm" style="background: #059669; color: white;">QH</div>
-                <strong>Phạm Quang Huy</strong>
-              </div>
-            </td>
-            <td>huy.pham@el.com</td>
-            <td><span class="badge badge-info">Giảng viên</span></td>
-            <td><span class="badge badge-success">Hoạt động</span></td>
-            <td>18/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Sửa</button>
-              <button class="btn btn-sm btn-danger">Khóa</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm" style="background: #2563EB; color: white;">ML</div>
-                <strong>Vũ Mai Linh</strong>
-              </div>
-            </td>
-            <td>linh.vu@el.com</td>
-            <td><span class="badge badge-neutral">Học viên</span></td>
-            <td><span class="badge badge-success">Hoạt động</span></td>
-            <td>26/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Sửa</button>
-              <button class="btn btn-sm btn-danger">Khóa</button>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar avatar-sm" style="background: #2563EB; color: white;">QB</div>
-                <strong>Đặng Quốc Bảo</strong>
-              </div>
-            </td>
-            <td>bao.dang@el.com</td>
-            <td><span class="badge badge-neutral">Học viên</span></td>
-            <td><span class="badge badge-success">Hoạt động</span></td>
-            <td>28/09/2026</td>
-            <td class="text-right">
-              <button class="btn btn-sm btn-secondary">Sửa</button>
-              <button class="btn btn-sm btn-danger">Khóa</button>
-            </td>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải danh sách tài khoản...</td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <!-- Pagination -->
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color);">
-      <span style="font-size: 0.8125rem; color: var(--text-muted);">Hiển thị 1 - 9 trong 47 tài khoản</span>
-      <div style="display: flex; gap: 4px;">
-        <button class="btn btn-sm btn-secondary" disabled>«</button>
-        <button class="btn btn-sm btn-primary">1</button>
-        <button class="btn btn-sm btn-secondary">2</button>
-        <button class="btn btn-sm btn-secondary">3</button>
-        <button class="btn btn-sm btn-secondary">»</button>
-      </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 0.75rem;">
+      <span id="users-pagination-info" style="font-size: 0.8125rem; color: var(--text-muted);">Đang tải...</span>
+      <div id="users-pagination-controls" style="display: flex; gap: 4px; flex-wrap: wrap;"></div>
     </div>
   </div>
 
@@ -421,48 +303,50 @@
     </div>
   </div>
 
-  <!-- Modal Thêm Tài Khoản Mới -->
-  <div class="modal-backdrop" id="modal-create-user">
+  <!-- Modal Thêm / Sửa Tài Khoản -->
+  <div class="modal-backdrop" id="modal-user">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Thêm tài khoản người dùng mới</h3>
+        <h3 class="modal-title" id="user-modal-title">Thêm tài khoản người dùng mới</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
-      <form class="modal-form" data-modal-form>
+      <form id="user-form">
+        <input type="hidden" id="user-id" value="">
         <div class="modal-body">
+          <div id="user-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
           <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Họ và tên <span class="required" style="color:red;">*</span></label>
-            <input type="text" class="form-control" placeholder="Ví dụ: Trần Văn Nam" required>
+            <input type="text" id="user-fullname" class="form-control" placeholder="Ví dụ: Trần Văn Nam" maxlength="100" required>
           </div>
           <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Địa chỉ Email <span class="required" style="color:red;">*</span></label>
-            <input type="email" class="form-control" placeholder="Ví dụ: nam.tran@el.com" required>
+            <input type="email" id="user-email" class="form-control" placeholder="Ví dụ: nam.tran@el.com" maxlength="150" required>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mật khẩu ban đầu <span class="required" style="color:red;">*</span></label>
-              <input type="password" class="form-control" value="123456" required>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;" id="user-password-label">Mật khẩu ban đầu <span class="required" style="color:red;">*</span></label>
+              <input type="password" id="user-password" class="form-control" placeholder="Tối thiểu 6 ký tự" maxlength="255">
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Vai trò hệ thống <span class="required" style="color:red;">*</span></label>
-              <select class="form-control" required>
-                <option value="student">Học viên (Student)</option>
-                <option value="teacher">Giảng viên (Teacher)</option>
-                <option value="admin">Quản trị viên (Admin)</option>
+              <select id="user-role" class="form-control" required>
+                <option value="student">Học viên</option>
+                <option value="teacher">Giảng viên</option>
+                <option value="admin">Quản trị viên</option>
               </select>
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái tài khoản</label>
-            <select class="form-control">
-              <option value="1">Kích hoạt ngay (Hoạt động)</option>
-              <option value="0">Tạm khóa tài khoản</option>
+            <select id="user-active" class="form-control">
+              <option value="true">Kích hoạt ngay</option>
+              <option value="false">Tạm khóa tài khoản</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+          <button type="submit" class="btn btn-primary" id="user-submit-btn">Tạo tài khoản</button>
         </div>
       </form>
     </div>
@@ -470,5 +354,435 @@
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>
+  <script>
+    (function () {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '--';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
+      }
+
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      function skeletonRows(cols, rows = 5) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+
+      function getInitials(name) {
+        const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return 'U';
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+      }
+
+      function renderRoleBadge(role) {
+        switch ((role || '').toLowerCase()) {
+          case 'admin':
+            return '<span class="badge badge-primary">Quản trị viên</span>';
+          case 'teacher':
+            return '<span class="badge badge-primary">Giảng viên</span>';
+          default:
+            return '<span class="badge badge-neutral">Học viên</span>';
+        }
+      }
+
+      function avatarStyle(role) {
+        switch ((role || '').toLowerCase()) {
+          case 'admin': return '';
+          case 'teacher': return 'background: #059669; color: white;';
+          default: return 'background: #2563EB; color: white;';
+        }
+      }
+
+      const COLS = 6;
+      const PAGE_SIZE = 10;
+      let currentPage = 1;
+      let usersCache = [];
+      let hasLoadedOnce = false;
+      let loadController = null;
+
+      function showFormError(msg) {
+        const box = document.getElementById('user-form-error');
+        if (!box) return;
+        if (msg) {
+          box.textContent = msg;
+          box.style.display = 'block';
+        } else {
+          box.textContent = '';
+          box.style.display = 'none';
+        }
+      }
+
+      function openCreateMode() {
+        document.getElementById('user-id').value = '';
+        document.getElementById('user-fullname').value = '';
+        document.getElementById('user-email').value = '';
+        document.getElementById('user-password').value = '123456';
+        document.getElementById('user-password').required = true;
+        document.getElementById('user-password').placeholder = 'Tối thiểu 6 ký tự';
+        document.getElementById('user-password-label').innerHTML = 'Mật khẩu ban đầu <span class="required" style="color:red;">*</span>';
+        document.getElementById('user-role').value = 'student';
+        document.getElementById('user-active').value = 'true';
+        document.getElementById('user-modal-title').textContent = 'Thêm tài khoản người dùng mới';
+        document.getElementById('user-submit-btn').textContent = 'Tạo tài khoản';
+        showFormError('');
+      }
+
+      function openEditMode(id) {
+        const user = usersCache.find(u => u.id === id);
+        if (!user) return;
+        document.getElementById('user-id').value = user.id;
+        document.getElementById('user-fullname').value = user.fullName || '';
+        document.getElementById('user-email').value = user.email || '';
+        document.getElementById('user-password').value = '';
+        document.getElementById('user-password').required = false;
+        document.getElementById('user-password').placeholder = 'Để trống nếu giữ mật khẩu cũ';
+        document.getElementById('user-password-label').textContent = 'Mật khẩu mới (tùy chọn)';
+        document.getElementById('user-role').value = user.role || 'student';
+        document.getElementById('user-active').value = user.isActive ? 'true' : 'false';
+        document.getElementById('user-modal-title').textContent = `Cập nhật tài khoản: ${user.fullName}`;
+        document.getElementById('user-submit-btn').textContent = 'Lưu thay đổi';
+        showFormError('');
+        openModal('modal-user');
+      }
+
+      function renderPagination(page, totalPages, totalCount, pageSize) {
+        const infoEl = document.getElementById('users-pagination-info');
+        const ctrlEl = document.getElementById('users-pagination-controls');
+
+        if (totalCount === 0) {
+          infoEl.textContent = 'Hiển thị 0 tài khoản';
+          ctrlEl.innerHTML = '';
+          return;
+        }
+
+        const start = (page - 1) * pageSize + 1;
+        const end = Math.min(page * pageSize, totalCount);
+        infoEl.textContent = `Hiển thị ${start} - ${end} trong ${totalCount} tài khoản`;
+
+        const pages = [];
+        const addBtn = (label, targetPage, active = false, disabled = false) => {
+          const cls = active ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
+          pages.push(`<button type="button" class="${cls}" data-page="${targetPage}" ${disabled ? 'disabled' : ''}>${label}</button>`);
+        };
+
+        addBtn('&laquo;', page - 1, false, page <= 1);
+
+        const maxVisible = 5;
+        let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage + 1 < maxVisible) {
+          startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+          addBtn('1', 1, page === 1);
+          if (startPage > 2) pages.push('<span style="padding: 4px 6px; color: var(--text-muted);">...</span>');
+        }
+        for (let p = startPage; p <= endPage; p++) {
+          addBtn(String(p), p, p === page);
+        }
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) pages.push('<span style="padding: 4px 6px; color: var(--text-muted);">...</span>');
+          addBtn(String(totalPages), totalPages, page === totalPages);
+        }
+
+        addBtn('&raquo;', page + 1, false, page >= totalPages);
+        ctrlEl.innerHTML = pages.join('');
+      }
+
+      function renderUsers(items) {
+        const tbody = document.getElementById('users-tbody');
+        if (!Array.isArray(items) || items.length === 0) {
+          tbody.innerHTML = stateRow(COLS, 'Không có tài khoản nào', 'Không tìm thấy tài khoản phù hợp với điều kiện lọc hiện tại.');
+          return;
+        }
+
+        tbody.innerHTML = items.map(u => {
+          const statusBadge = u.isActive
+            ? '<span class="badge badge-success">Hoạt động</span>'
+            : '<span class="badge badge-danger">Đã khóa</span>';
+          const toggleBtn = u.isActive
+            ? `<button type="button" class="btn btn-sm btn-danger" data-toggle-user="${u.id}">Khóa</button>`
+            : `<button type="button" class="btn btn-sm btn-secondary" data-toggle-user="${u.id}">Mở khóa</button>`;
+
+          return `
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div class="avatar avatar-sm" style="${avatarStyle(u.role)}">${escapeHtml(getInitials(u.fullName))}</div>
+                  <strong>${escapeHtml(u.fullName)}</strong>
+                </div>
+              </td>
+              <td>${escapeHtml(u.email)}</td>
+              <td>${renderRoleBadge(u.role)}</td>
+              <td>${statusBadge}</td>
+              <td>${formatDate(u.createdAt)}</td>
+              <td class="text-right">
+                <div style="display: inline-flex; gap: 6px;">
+                  <button type="button" class="btn btn-sm btn-secondary" data-edit-user="${u.id}">Sửa</button>
+                  ${toggleBtn}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      async function loadUsers(page = currentPage) {
+        const tbody = document.getElementById('users-tbody');
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        if (!hasLoadedOnce) {
+          tbody.innerHTML = skeletonRows(COLS, 5);
+        } else {
+          tbody.style.opacity = '0.55';
+        }
+
+        try {
+          const params = new URLSearchParams({
+            search: (document.getElementById('users-search-input').value || '').trim(),
+            role: document.getElementById('users-role-filter').value || 'all',
+            status: document.getElementById('users-status-filter').value || 'all',
+            page: String(page),
+            pageSize: String(PAGE_SIZE)
+          });
+
+          const data = await fetchJson(`/Admin/api/Users/List?${params.toString()}`, { signal: controller.signal });
+          usersCache = Array.isArray(data.items) ? data.items : [];
+          currentPage = data.page || 1;
+
+          if (data.stats) {
+            document.getElementById('stat-total-users').textContent = data.stats.totalUsers ?? 0;
+            document.getElementById('stat-active-users').textContent = data.stats.activeUsers ?? 0;
+            document.getElementById('stat-locked-users').textContent = data.stats.lockedUsers ?? 0;
+          }
+
+          renderUsers(usersCache);
+          renderPagination(currentPage, data.totalPages || 1, data.totalCount || 0, data.pageSize || PAGE_SIZE);
+          hasLoadedOnce = true;
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải tài khoản:', err);
+          tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+          renderPagination(1, 1, 0, PAGE_SIZE);
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            tbody.style.opacity = '';
+          }
+        }
+      }
+
+      async function toggleUserStatus(id, btn) {
+        if (btn) btn.disabled = true;
+        try {
+          const data = await postJson(`/Admin/api/Users/ToggleStatus/${id}`);
+          showToast(data.message || 'Đã cập nhật trạng thái tài khoản.');
+          await loadUsers(currentPage);
+        } catch (err) {
+          console.error(err);
+          showToast(err.message, 'error');
+          if (btn) btn.disabled = false;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadUsers(1);
+
+        const debouncedSearch = debounce(() => loadUsers(1), 300);
+        document.getElementById('users-search-input').addEventListener('input', debouncedSearch);
+        document.getElementById('users-role-filter').addEventListener('change', () => {
+          debouncedSearch.cancel();
+          loadUsers(1);
+        });
+        document.getElementById('users-status-filter').addEventListener('change', () => {
+          debouncedSearch.cancel();
+          loadUsers(1);
+        });
+        document.getElementById('btn-reset-users').addEventListener('click', () => {
+          debouncedSearch.cancel();
+          document.getElementById('users-search-input').value = '';
+          document.getElementById('users-role-filter').value = 'all';
+          document.getElementById('users-status-filter').value = 'all';
+          loadUsers(1);
+        });
+
+        document.getElementById('btn-open-create-user').addEventListener('click', openCreateMode);
+
+        document.getElementById('users-tbody').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) {
+            loadUsers(currentPage);
+            return;
+          }
+          const editBtn = e.target.closest('[data-edit-user]');
+          if (editBtn) {
+            openEditMode(Number(editBtn.getAttribute('data-edit-user')));
+            return;
+          }
+          const toggleBtn = e.target.closest('[data-toggle-user]');
+          if (toggleBtn) {
+            toggleUserStatus(Number(toggleBtn.getAttribute('data-toggle-user')), toggleBtn);
+          }
+        });
+
+        document.getElementById('users-pagination-controls').addEventListener('click', (e) => {
+          const btn = e.target.closest('button[data-page]');
+          if (!btn || btn.disabled) return;
+          const targetPage = Number(btn.getAttribute('data-page'));
+          if (targetPage && targetPage !== currentPage) {
+            loadUsers(targetPage);
+          }
+        });
+
+        document.getElementById('user-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showFormError('');
+          const id = document.getElementById('user-id').value;
+          const isEdit = Boolean(id);
+          const payload = {
+            fullName: document.getElementById('user-fullname').value.trim(),
+            email: document.getElementById('user-email').value.trim(),
+            password: document.getElementById('user-password').value,
+            role: document.getElementById('user-role').value,
+            isActive: document.getElementById('user-active').value === 'true'
+          };
+
+          const submitBtn = document.getElementById('user-submit-btn');
+          setBusy(submitBtn, true);
+
+          try {
+            const url = isEdit ? `/Admin/api/Users/Update/${encodeURIComponent(id)}` : '/Admin/api/Users/Create';
+            const data = await postJson(url, payload);
+            closeModal('modal-user');
+            showToast(data.message || (isEdit ? 'Cập nhật tài khoản thành công.' : 'Tạo tài khoản mới thành công.'));
+            await loadUsers(isEdit ? currentPage : 1);
+          } catch (err) {
+            console.error(err);
+            showFormError(err.message);
+            showToast(err.message, 'error');
+          } finally {
+            setBusy(submitBtn, false);
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

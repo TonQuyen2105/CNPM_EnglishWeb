@@ -26,7 +26,7 @@ namespace CNPM_EnglishLearning.Models.Entities
 
         [Column("content_type")]
         [MaxLength(20)]
-        public string ContentType { get; set; } = "vocabulary"; // vocabulary, grammar, listening, reading, speaking, writing, quiz
+        public string? ContentType { get; set; } = "vocabulary"; // vocabulary, grammar, listening, reading, speaking, writing, quiz
 
         [Column("content")]
         public string? Content { get; set; }

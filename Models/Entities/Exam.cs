@@ -28,13 +28,13 @@ namespace CNPM_EnglishLearning.Models.Entities
         public int DurationMinutes { get; set; } = 45;
 
         [Column("pass_score")]
-        public decimal PassScore { get; set; } = 5.0m;
+        public int PassScore { get; set; } = 50;
 
         [Column("max_attempts")]
         public int? MaxAttempts { get; set; }
 
         [Column("is_published")]
-        public bool IsPublished { get; set; } = true;
+        public bool IsPublished { get; set; } = false;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

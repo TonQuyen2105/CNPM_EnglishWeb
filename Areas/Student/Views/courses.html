@@ -8,8 +8,8 @@
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
 
   <style>
     .student-navbar-wrapper {
@@ -329,10 +329,11 @@
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Hình thức thanh toán học phí</label>
-            <select class="form-control">
-              <option value="transfer">Chuyển khoản ngân hàng (QR Code)</option>
+            <select class="form-control" id="student-payment-method">
+              <option value="bank_transfer">Chuyển khoản ngân hàng (QR Code)</option>
+              <option value="vnpay">Cổng thanh toán VNPAY</option>
+              <option value="momo">Ví điện tử MoMo</option>
               <option value="cash">Nộp trực tiếp tại trung tâm</option>
-              <option value="installment">Trả góp học phí 0%</option>
             </select>
           </div>
         </div>

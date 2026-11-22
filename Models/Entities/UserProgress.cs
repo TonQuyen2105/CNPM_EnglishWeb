@@ -17,7 +17,7 @@ namespace CNPM_EnglishLearning.Models.Entities
         public int LessonId { get; set; }
 
         [Column("score")]
-        public decimal? Score { get; set; }
+        public int? Score { get; set; }
 
         [Column("is_completed")]
         public bool IsCompleted { get; set; } = false;
