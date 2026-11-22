@@ -40,13 +40,18 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     from t in _context.Teachers.AsNoTracking()
                     join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
                     where u.Role == "teacher"
-                    group t by t.IsVerified into g
-                    select new { IsVerified = g.Key, Count = g.Count() }
+                    group new { t.IsVerified, u.IsActive } by new { t.IsVerified, u.IsActive } into g
+                    select new
+                    {
+                        g.Key.IsVerified,
+                        g.Key.IsActive,
+                        Count = g.Count()
+                    }
                 ).ToListAsync(cancellationToken);
 
                 var totalCount = verifyStats.Sum(x => x.Count);
-                var verifiedCount = verifyStats.Where(x => x.IsVerified).Sum(x => x.Count);
-                var pendingCount = verifyStats.Where(x => !x.IsVerified).Sum(x => x.Count);
+                var verifiedCount = verifyStats.Where(x => x.IsVerified && x.IsActive).Sum(x => x.Count);
+                var pendingCount = verifyStats.Where(x => !x.IsVerified && x.IsActive).Sum(x => x.Count);
 
                 var query =
                     from t in _context.Teachers.AsNoTracking()
@@ -88,10 +93,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     {
                         query = query.Where(x => !x.isVerified);
                     }
+                    else if (norm is "inactive" or "locked")
+                    {
+                        query = query.Where(x => !x.isUserActive);
+                    }
                 }
 
                 var teachers = await query
-                    .OrderBy(x => x.isVerified)
+                    .OrderByDescending(x => x.isUserActive)
+                    .ThenBy(x => x.isVerified)
                     .ThenByDescending(x => x.id)
                     .ToListAsync(cancellationToken);
 
@@ -183,6 +193,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     var clsList = classesByTeacher.TryGetValue(t.id, out var list) ? list : null;
                     var schedList = schedulesByTeacher.TryGetValue(t.id, out var sl) ? sl : null;
+                    var activeClassCount = clsList?
+                        .Where(c => c.status == "upcoming" || c.status == "ongoing")
+                        .Select(c => c.classId)
+                        .Distinct()
+                        .Count() ?? 0;
+
                     return new
                     {
                         t.id,
@@ -197,6 +213,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         t.createdAt,
                         t.updatedAt,
                         classCount = clsList?.Select(c => c.classId).Distinct().Count() ?? 0,
+                        activeClassCount,
                         scheduleCount = schedList?.Count ?? 0,
                         classes = clsList ?? (object)Array.Empty<object>(),
                         schedules = schedList ?? (object)Array.Empty<object>()
@@ -284,6 +301,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
                         return this.ApiBadRequest($"Email này đã thuộc tài khoản vai trò '{existingUser.Role}'. Vui lòng dùng email khác hoặc đổi vai trò trước.");
+                    }
+
+                    if (dto.IsVerified == true && !existingUser.IsActive)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest("Tài khoản liên kết đang bị khóa nên không thể đặt trạng thái đã xác minh.");
                     }
 
                     existingUser.FullName = fullName;
@@ -411,6 +434,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     return this.ApiBadRequest("Không thể xác minh hồ sơ vì tài khoản giảng viên đang bị khóa.");
                 }
 
+                if (dto.IsVerified == false && teacher.IsVerified)
+                {
+                    var activeClasses = await GetActiveClassCodesAsync(id, cancellationToken);
+                    if (activeClasses.Count > 0)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest($"Không thể thu hồi xác minh vì giảng viên đang phụ trách lớp đang mở/diễn ra ({string.Join(", ", activeClasses)}).");
+                    }
+                }
+
                 var now = DateTime.UtcNow;
 
                 user.FullName = fullName;
@@ -454,9 +487,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         public Task<IActionResult> ToggleVerify(int id, CancellationToken cancellationToken)
             => SetVerificationAsync(id, targetIsVerified: null, cancellationToken);
 
-        /// <summary>
-        /// Cập nhật hoặc đảo trạng thái xác minh giảng viên dưới khóa tư vấn 300M + id để đồng bộ với ClassesController.
-        /// </summary>
         private async Task<IActionResult> SetVerificationAsync(int id, bool? targetIsVerified, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -497,6 +527,15 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         return this.ApiBadRequest("Không thể xác minh hồ sơ vì tài khoản giảng viên đang bị khóa.");
                     }
                 }
+                else if (teacher.IsVerified)
+                {
+                    var activeClasses = await GetActiveClassCodesAsync(id, cancellationToken);
+                    if (activeClasses.Count > 0)
+                    {
+                        await transaction.RollbackAsync(CancellationToken.None);
+                        return this.ApiBadRequest($"Không thể thu hồi xác minh vì giảng viên đang phụ trách lớp đang mở/diễn ra ({string.Join(", ", activeClasses)}).");
+                    }
+                }
 
                 teacher.IsVerified = nextVerified;
                 teacher.UpdatedAt = DateTime.UtcNow;
@@ -529,6 +568,17 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     ? "Không thể duyệt hồ sơ giảng viên."
                     : "Không thể thay đổi trạng thái xác minh giảng viên.");
             }
+        }
+
+        private Task<List<string>> GetActiveClassCodesAsync(int teacherId, CancellationToken cancellationToken)
+        {
+            return (
+                from ct in _context.ClassTeachers.AsNoTracking()
+                join cc in _context.CourseClasses.AsNoTracking() on ct.ClassId equals cc.Id
+                where ct.TeacherId == teacherId && (cc.Status == "upcoming" || cc.Status == "ongoing")
+                orderby cc.ClassCode
+                select cc.ClassCode
+            ).Distinct().ToListAsync(cancellationToken);
         }
 
         private Task AcquireTeacherLockAsync(int teacherId, CancellationToken cancellationToken)

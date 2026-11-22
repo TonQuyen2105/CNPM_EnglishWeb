@@ -48,14 +48,33 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         s.Description,
                         s.IsActive,
                         s.CreatedAt,
-                        s.UpdatedAt,
-                        CourseCount = _context.Courses.Count(c => c.SubjectId == s.Id)
+                        s.UpdatedAt
                     })
                     .ToListAsync(cancellationToken);
+
+                var allCourses = await _context.Courses
+                    .AsNoTracking()
+                    .OrderBy(c => c.Id)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        c.SubjectId,
+                        c.Title,
+                        c.Price,
+                        c.Level,
+                        c.IsPublished
+                    })
+                    .ToListAsync(cancellationToken);
+
+                var coursesBySubject = allCourses
+                    .GroupBy(c => c.SubjectId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
 
                 var parsed = rawSubjects.Select(s =>
                 {
                     var code = ExtractSubjectCode(s.Id, s.Description, out var cleanDescription);
+                    var subjCourses = coursesBySubject.TryGetValue(s.Id, out var cList) ? cList : [];
+                    var totalPrice = subjCourses.Sum(c => c.Price);
                     return new
                     {
                         id = s.Id,
@@ -63,7 +82,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         code,
                         description = cleanDescription,
                         isActive = s.IsActive,
-                        courseCount = s.CourseCount,
+                        courseCount = subjCourses.Count,
+                        totalPrice,
+                        courses = subjCourses.Select(c => new
+                        {
+                            id = c.Id,
+                            title = c.Title,
+                            price = c.Price,
+                            level = c.Level,
+                            isPublished = c.IsPublished
+                        }).ToList(),
                         createdAt = s.CreatedAt,
                         updatedAt = s.UpdatedAt
                     };

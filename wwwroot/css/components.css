@@ -733,12 +733,21 @@ select.form-control {
   transform: translateY(0) scale(1);
 }
 
+.modal-dialog > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .modal-header {
   padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -749,6 +758,8 @@ select.form-control {
 
 .modal-body {
   padding: var(--space-5);
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -760,6 +771,7 @@ select.form-control {
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 /* ==========================================================================

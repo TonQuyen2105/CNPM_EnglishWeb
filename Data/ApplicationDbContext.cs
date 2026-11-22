@@ -72,6 +72,15 @@ public partial class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Quy ước cột day_of_week trong PostgreSQL (class_schedules) dùng chung với bên Giáo viên & Học viên:
+        // DB: 2 = Thứ 2, 3 = Thứ 3, 4 = Thứ 4, 5 = Thứ 5, 6 = Thứ 6, 7 = Thứ 7, 1 = Chủ Nhật (CN).
+        // C# Admin nội bộ: 1 = Thứ 2 ... 6 = Thứ 7, 7 = Chủ Nhật (ISO).
+        modelBuilder.Entity<ClassSchedule>()
+            .Property(cs => cs.DayOfWeek)
+            .HasConversion(
+                isoDay => isoDay == 7 ? 1 : (isoDay >= 1 && isoDay <= 6 ? isoDay + 1 : isoDay),
+                dbDay => dbDay == 1 ? 7 : (dbDay >= 2 && dbDay <= 7 ? dbDay - 1 : dbDay));
     }
 
     public decimal CalculateEstimatedRevenue()

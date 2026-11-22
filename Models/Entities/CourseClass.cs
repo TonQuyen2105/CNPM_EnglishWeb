@@ -26,10 +26,10 @@ namespace CNPM_EnglishLearning.Models.Entities
         [MaxLength(150)]
         public string ClassName { get; set; } = string.Empty;
 
-        [Column("start_date")]
+        [Column("start_date", TypeName = "timestamp without time zone")]
         public DateTime StartDate { get; set; }
 
-        [Column("end_date")]
+        [Column("end_date", TypeName = "timestamp without time zone")]
         public DateTime EndDate { get; set; }
 
         [Column("max_students")]

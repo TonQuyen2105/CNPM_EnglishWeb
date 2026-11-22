@@ -166,3 +166,282 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+/**
+ * Tạo gợi ý Mô tả chung riêng biệt, phù hợp với tên khóa học, môn học và cấp độ.
+ */
+window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
+  const cleanTitle = String(title || '').trim();
+  const cleanSubject = String(subjectName || '').trim();
+  const normLevel = String(level || 'beginner').trim().toLowerCase();
+  const combined = `${cleanTitle} ${cleanSubject}`.toLowerCase();
+
+  const audienceByLevel = {
+    beginner: 'Phù hợp cho người mới bắt đầu hoặc mất gốc muốn xây dựng nền tảng vững chắc.',
+    intermediate: 'Dành cho học viên đã có kiến thức nền tảng và cần bứt phá lên trình độ trung cấp.',
+    advanced: 'Dành cho học viên trình độ khá giỏi muốn hoàn thiện kỹ năng chuyên sâu và đạt chuẩn đầu ra cao.'
+  };
+
+  const rules = [
+    {
+      match: /ielts/,
+      knowledge: `Trang bị chiến lược làm bài IELTS cho khóa "${cleanTitle || 'Luyện thi IELTS'}", phát triển từ vựng học thuật, cấu trúc câu ghi điểm và luyện tập sát đề thi thật 4 kỹ năng.`,
+      audience: {
+        beginner: 'Dành cho học viên làm quen định dạng IELTS, củng cố nền tảng từ band 4.0 - 5.5.',
+        intermediate: 'Dành cho học viên hướng tới mục tiêu IELTS 6.0 - 7.0, tối ưu Listening, Reading, Writing Task 1-2 và Speaking.',
+        advanced: 'Dành cho học viên chinh phục band IELTS 7.5+ với tư duy phản biện và ngôn ngữ học thuật C1-C2.'
+      }
+    },
+    {
+      match: /toeic/,
+      knowledge: `Hệ thống hóa từ vựng thương mại, ngữ pháp trọng tâm và chiến thuật xử lý bẫy đề TOEIC trong khóa "${cleanTitle || 'Luyện thi TOEIC'}".`,
+      audience: {
+        beginner: 'Dành cho sinh viên và người đi làm bắt đầu luyện thi TOEIC mục tiêu 450 - 550+.',
+        intermediate: 'Dành cho học viên cần tăng tốc điểm số TOEIC 650 - 750+ phục vụ tốt nghiệp và công việc.',
+        advanced: 'Dành cho học viên mục tiêu TOEIC 800+ và hoàn thiện cả 4 kỹ năng chuẩn quốc tế ETS.'
+      }
+    },
+    {
+      match: /thương mại|business|đàm phán|công sở/,
+      knowledge: `Cung cấp mẫu câu giao tiếp công sở, viết email, thuyết trình và đàm phán thực tế trong khóa "${cleanTitle || 'Tiếng Anh Thương Mại'}".`,
+      audience: {
+        beginner: 'Dành cho nhân sự mới đi làm cần sử dụng tiếng Anh cơ bản trong giao tiếp văn phòng.',
+        intermediate: 'Dành cho nhân viên văn phòng làm việc với đối tác, họp nhóm và trao đổi công việc bằng tiếng Anh.',
+        advanced: 'Dành cho quản lý và chuyên viên thường xuyên đàm phán, thuyết trình trong môi trường đa quốc gia.'
+      }
+    },
+    {
+      match: /giao tiếp|communication|phản xạ/,
+      knowledge: `Tập trung phát triển phản xạ nghe nói tự nhiên, mẫu câu ứng dụng theo tình huống thực tế của khóa "${cleanTitle || 'Tiếng Anh Giao Tiếp'}".`,
+      audience: {
+        beginner: 'Dành cho người mất gốc hoặc ngại nói muốn giao tiếp trôi chảy các chủ đề đời sống hàng ngày.',
+        intermediate: 'Dành cho người học muốn mở rộng vốn diễn đạt, thảo luận và phản biện tự tin hơn.',
+        advanced: 'Dành cho học viên muốn giao tiếp lưu loát, tự nhiên như người bản xứ trong mọi ngữ cảnh.'
+      }
+    },
+    {
+      match: /phát âm|ipa|ngữ điệu|pronunciation/,
+      knowledge: `Chuẩn hóa bảng phiên âm quốc tế IPA, trọng âm, nối âm và ngữ điệu tự nhiên trong khóa "${cleanTitle || 'Phát âm chuẩn'}".`,
+      audience: {
+        beginner: 'Dành cho người học muốn sửa lỗi phát âm sai, phát âm rõ âm cuối ngay từ đầu.',
+        intermediate: 'Dành cho học viên muốn cải thiện ngữ điệu, nói có nhấn nhá và nghe hiểu người bản xứ tốt hơn.',
+        advanced: 'Dành cho học viên tinh chỉnh giọng điệu tự nhiên phục vụ thuyết trình và thi nói.'
+      }
+    },
+    {
+      match: /ngữ pháp|grammar|viết|writing/,
+      knowledge: `Hệ thống hóa kiến thức ngữ pháp trọng tâm và cách vận dụng chính xác vào câu văn trong khóa "${cleanTitle || 'Ngữ pháp tiếng Anh'}".`,
+      audience: {
+        beginner: 'Dành cho người học cần nắm vững các thì cơ bản, từ loại và cấu trúc câu đơn - câu ghép.',
+        intermediate: 'Dành cho học viên cần củng cố ngữ pháp nâng cao phục vụ đọc hiểu và viết đoạn văn mạch lạc.',
+        advanced: 'Dành cho học viên rèn luyện cấu trúc học thuật phức tạp (đảo ngữ, mệnh đề rút gọn, viết luận).'
+      }
+    },
+    {
+      match: /thiếu nhi|trẻ em|kids|starters|movers|flyers|cambridge/,
+      knowledge: `Thiết kế nội dung trực quan qua hình ảnh, bài hát và hoạt động tương tác sinh động cho khóa "${cleanTitle || 'Tiếng Anh Thiếu Nhi'}".`,
+      audience: {
+        beginner: 'Dành cho các bé mới làm quen tiếng Anh (6 - 10 tuổi), khơi gợi hứng thú nghe nói tự nhiên.',
+        intermediate: 'Dành cho học sinh tiểu học và THCS ôn luyện chứng chỉ Cambridge Movers / Flyers.',
+        advanced: 'Dành cho học sinh thiếu niên phát triển toàn diện kỹ năng giao tiếp và tư duy bằng tiếng Anh.'
+      }
+    }
+  ];
+
+  const matched = rules.find(r => r.match.test(combined));
+  const knowledge = matched
+    ? matched.knowledge
+    : `Trang bị kiến thức và kỹ năng trọng tâm của khóa học "${cleanTitle || cleanSubject || 'Tiếng Anh'}"${cleanSubject ? ` thuộc môn ${cleanSubject}` : ''}.`;
+  const audience = matched
+    ? (matched.audience[normLevel] || matched.audience.beginner)
+    : (audienceByLevel[normLevel] || audienceByLevel.beginner);
+
+  return {
+    knowledge,
+    audience,
+    fullText: `• Mô tả chung:\n\t• ${knowledge}\n\t• ${audience}`
+  };
+};
+
+// ===== Helpers hiển thị bài học lấy file PDF / Video từ Supabase Storage =====
+(function () {
+  const SUPABASE_URL = 'https://wymdewnklhrnmirbvgxi.supabase.co';
+  const DEFAULT_STORAGE_BUCKET = 'Lesson_media';
+
+  function esc(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function buildStoragePublicUrl(mediaObj) {
+    if (!mediaObj) return null;
+    if (typeof mediaObj === 'string') {
+      if (/^https?:\/\//i.test(mediaObj)) return mediaObj;
+      return `${SUPABASE_URL}/storage/v1/object/public/${DEFAULT_STORAGE_BUCKET}/${mediaObj.replace(/^\/+/, '')}`;
+    }
+    if (mediaObj.Url || mediaObj.url) return mediaObj.Url || mediaObj.url;
+    const key = mediaObj.Key || mediaObj.key || mediaObj.Path || mediaObj.path;
+    if (!key) return null;
+    if (/^https?:\/\//i.test(key)) return key;
+
+    const bucket = mediaObj.Bucket || mediaObj.bucket || DEFAULT_STORAGE_BUCKET;
+    const cleanKey = String(key).replace(/^\/+/, '');
+    if (cleanKey.startsWith(bucket + '/')) {
+      return `${SUPABASE_URL}/storage/v1/object/public/${cleanKey}`;
+    }
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${cleanKey}`;
+  }
+
+  window.parseLessonMedia = function (lessonOrContent) {
+    if (lessonOrContent && typeof lessonOrContent === 'object' && lessonOrContent.media) {
+      const m = lessonOrContent.media;
+      return {
+        isStructured: !!m.isStructured,
+        text: (m.text || '').trim(),
+        pdfUrl: m.pdfUrl || null,
+        pdfName: m.pdfName || 'Tài liệu PDF',
+        pdfBucket: m.pdfBucket || DEFAULT_STORAGE_BUCKET,
+        videoUrl: m.videoUrl || null,
+        videoName: m.videoName || 'Video bài giảng',
+        videoBucket: m.videoBucket || DEFAULT_STORAGE_BUCKET,
+        requiresPublicBucket: !!m.requiresPublicBucket
+      };
+    }
+
+    const raw = (typeof lessonOrContent === 'string' ? lessonOrContent : (lessonOrContent?.content || '')).trim();
+    if (!raw) {
+      return { isStructured: false, text: '', pdfUrl: null, pdfName: '', videoUrl: null, videoName: '' };
+    }
+
+    const prefix = 'EL_LESSON_MEDIA_V1';
+    if (raw.startsWith(prefix)) {
+      const jsonPart = raw.slice(prefix.length).trim();
+      try {
+        const parsed = JSON.parse(jsonPart);
+        const pdfObj = parsed.Pdf || parsed.pdf || null;
+        const videoObj = parsed.Video || parsed.video || null;
+        return {
+          isStructured: true,
+          text: (parsed.Text || parsed.text || '').trim(),
+          pdfUrl: buildStoragePublicUrl(pdfObj),
+          pdfName: pdfObj?.FileName || pdfObj?.Name || pdfObj?.Key || 'Tài liệu PDF',
+          videoUrl: buildStoragePublicUrl(videoObj),
+          videoName: videoObj?.FileName || videoObj?.Name || videoObj?.Key || 'Video bài giảng'
+        };
+      } catch (e) {
+        console.warn('Không parse được JSON bài học:', e);
+      }
+    }
+
+    return { isStructured: false, text: raw, pdfUrl: null, pdfName: '', videoUrl: null, videoName: '' };
+  };
+
+  window.renderLessonReadOnlyItem = function (lesson, typeLabel) {
+    const media = window.parseLessonMedia(lesson);
+    const badges = [];
+    if (media.pdfUrl) badges.push('<span class="badge badge-warning" style="margin-left: 6px;">PDF</span>');
+    if (media.videoUrl) badges.push('<span class="badge badge-success" style="margin-left: 6px;">Video</span>');
+
+    let previewSub = '';
+    if (media.pdfUrl || media.videoUrl) {
+      const parts = [];
+      if (media.pdfUrl) parts.push(`PDF: ${esc(media.pdfName)}`);
+      if (media.videoUrl) parts.push(`Video: ${esc(media.videoName)}`);
+      previewSub = `<div style="font-size: 0.78rem; color: var(--primary-600); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${parts.join(' • ')}</div>`;
+    } else if (media.text) {
+      previewSub = `<div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${esc(media.text)}</div>`;
+    }
+
+    return `
+      <div style="padding: 10px 12px; background: var(--neutral-50); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+        <div style="min-width: 0;">
+          <div>
+            <strong>Bài ${lesson.orderIndex}:</strong> ${esc(lesson.title)}
+            <span class="badge badge-info" style="margin-left: 6px;">${esc(typeLabel)}</span>
+            ${badges.join('')}
+          </div>
+          ${previewSub}
+        </div>
+        <div style="display: inline-flex; gap: 6px; flex-shrink: 0;">
+          <button type="button" class="btn btn-sm btn-secondary" data-view-lesson="${lesson.id}">Xem bài học</button>
+        </div>
+      </div>
+    `;
+  };
+
+  window.openLessonMediaModal = function (lesson, typeLabel, updatedLabel, openModalFn) {
+    if (!lesson) return;
+    const media = window.parseLessonMedia(lesson);
+
+    document.getElementById('lv-modal-title').textContent = `Bài ${lesson.orderIndex}: ${lesson.title || ''}`;
+    document.getElementById('lv-order-badge').textContent = `Bài ${lesson.orderIndex}`;
+    document.getElementById('lv-type-badge').textContent = typeLabel;
+    document.getElementById('lv-updated-at').textContent = updatedLabel;
+    document.getElementById('lv-title').textContent = lesson.title || '--';
+
+    const textSection = document.getElementById('lv-text-section');
+    const contentEl = document.getElementById('lv-content');
+    if (textSection && contentEl) {
+      if (media.text) {
+        textSection.style.display = 'block';
+        contentEl.textContent = media.text;
+      } else {
+        textSection.style.display = 'none';
+        contentEl.textContent = '';
+      }
+    }
+
+    const viewerEl = document.getElementById('lv-media-viewer');
+    const extLink = document.getElementById('lv-open-external');
+    const primaryUrl = media.pdfUrl || media.videoUrl;
+
+    if (extLink) {
+      if (primaryUrl) {
+        extLink.href = primaryUrl;
+        extLink.style.display = 'inline-flex';
+      } else {
+        extLink.style.display = 'none';
+      }
+    }
+
+    if (viewerEl) {
+      let html = '';
+      if (media.requiresPublicBucket) {
+        const bucketLabel = esc(media.pdfBucket || media.videoBucket || DEFAULT_STORAGE_BUCKET);
+        html += `
+          <div style="padding: 0.75rem 1rem; background: #FEF3C7; color: #92400E; border-bottom: 1px solid #F59E0B; font-size: 0.825rem; line-height: 1.5;">
+            Bucket <strong>${bucketLabel}</strong> trên Supabase Storage đang ở chế độ <strong>Private</strong> (<code>public = false</code>), nên trình duyệt chưa thể mở trực tiếp qua <code>/object/public/</code>.
+            Hãy bật <strong>Public bucket</strong> cho <strong>${bucketLabel}</strong> trong Supabase Storage (hoặc thêm <code>Supabase:ServiceRoleKey</code> vào <code>appsettings.json</code>).
+          </div>`;
+      }
+      if (media.videoUrl) {
+        html += `
+          <div style="padding: 0.75rem;">
+            <video controls style="width: 100%; max-height: 420px; border-radius: 6px; background: #000;" src="${esc(media.videoUrl)}">
+              Trình duyệt không hỗ trợ phát video trực tiếp.
+            </video>
+          </div>`;
+      }
+      if (media.pdfUrl) {
+        html += `
+          <iframe src="${esc(media.pdfUrl)}" style="width: 100%; height: 480px; border: none; display: block;" title="Tài liệu bài giảng"></iframe>`;
+      }
+      if (!html) {
+        html = '<div style="padding: 1.25rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Giảng viên chưa đính kèm tệp PDF/Video từ Storage cho bài học này.</div>';
+      }
+      viewerEl.innerHTML = html;
+    }
+
+    if (typeof openModalFn === 'function') {
+      openModalFn('modal-lesson-view');
+    } else {
+      const m = document.getElementById('modal-lesson-view');
+      if (m) m.classList.add('open', 'show');
+    }
+  };
+})();

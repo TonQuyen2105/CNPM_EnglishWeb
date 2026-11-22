@@ -15,6 +15,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         private const int MaxDescriptionLength = 1000;
         private const int MaxCapacity = 1000;
         private const long ClassroomLockOffset = 200_000_000L;
+        private const long TeacherLockOffset = 300_000_000L;
 
         private readonly ApplicationDbContext _context;
         private readonly ILogger<FacilitiesController> _logger;
@@ -35,7 +36,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         {
             try
             {
-                // Gộp đếm số ca/tuần bằng 1 truy vấn GroupBy thay cho correlated subquery Count() trên từng dòng
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+
                 var rooms = await _context.Classrooms
                     .AsNoTracking()
                     .OrderBy(c => c.Id)
@@ -51,6 +53,42 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     })
                     .ToListAsync(cancellationToken);
 
+                var teachers = await (
+                    from t in _context.Teachers.AsNoTracking()
+                    join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                    where t.IsVerified && u.Role == "teacher" && u.IsActive
+                    orderby u.FullName
+                    select new
+                    {
+                        id = t.Id,
+                        fullName = u.FullName,
+                        qualification = t.Qualification
+                    }
+                ).ToListAsync(cancellationToken);
+
+                var courses = await _context.Courses
+                    .AsNoTracking()
+                    .OrderBy(c => c.Title)
+                    .Select(c => new
+                    {
+                        id = c.Id,
+                        title = c.Title,
+                        price = c.Price
+                    })
+                    .ToListAsync(cancellationToken);
+
+                var timeSlots = await _context.TimeSlots
+                    .AsNoTracking()
+                    .OrderBy(ts => ts.StartTime)
+                    .Select(ts => new
+                    {
+                        id = ts.Id,
+                        name = ts.Name,
+                        timeRange = AdminCoreHelpers.FormatTimeRange(ts.StartTime, ts.EndTime),
+                        isActive = ts.IsActive
+                    })
+                    .ToListAsync(cancellationToken);
+
                 var roomIds = rooms.Select(r => r.Id).ToList();
                 var scheduleCounts = roomIds.Count == 0
                     ? new Dictionary<int, int>()
@@ -62,19 +100,120 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         select new { ClassroomId = g.Key, Count = g.Count() }
                     ).ToDictionaryAsync(x => x.ClassroomId, x => x.Count, cancellationToken);
 
-                var items = rooms.Select(c => new
+                var scheduledClasses = roomIds.Count == 0
+                    ? []
+                    : await (
+                        from cs in _context.ClassSchedules.AsNoTracking()
+                        join cc in _context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                        join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id into cJoin
+                        from course in cJoin.DefaultIfEmpty()
+                        join ts in _context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id into tsJoin
+                        from slot in tsJoin.DefaultIfEmpty()
+                        where roomIds.Contains(cs.ClassroomId) && (cc.Status == "upcoming" || cc.Status == "ongoing")
+                        select new
+                        {
+                            RoomId = cs.ClassroomId,
+                            cc.Id,
+                            cc.ClassCode,
+                            cc.ClassName,
+                            cc.Status,
+                            cc.StartDate,
+                            cc.EndDate,
+                            CourseTitle = course != null ? course.Title : null,
+                            cs.DayOfWeek,
+                            SlotName = slot != null ? slot.Name : null,
+                            StartTime = slot != null ? (TimeSpan?)slot.StartTime : null,
+                            EndTime = slot != null ? (TimeSpan?)slot.EndTime : null
+                        }
+                    ).ToListAsync(cancellationToken);
+
+                var activeClassIds = scheduledClasses.Select(x => x.Id).Distinct().ToList();
+                var classMainTeachers = activeClassIds.Count == 0
+                    ? new Dictionary<int, string>()
+                    : await (
+                        from ct in _context.ClassTeachers.AsNoTracking()
+                        join t in _context.Teachers.AsNoTracking() on ct.TeacherId equals t.Id
+                        join u in _context.Users.AsNoTracking() on t.UserId equals u.Id
+                        where activeClassIds.Contains(ct.ClassId) && ct.Role == "main"
+                        select new { ct.ClassId, u.FullName }
+                    ).GroupBy(x => x.ClassId).ToDictionaryAsync(g => g.Key, g => g.First().FullName, cancellationToken);
+
+                var activeClassesByRoom = scheduledClasses
+                    .GroupBy(x => (x.RoomId, x.Id))
+                    .Select(g => g.First())
+                    .GroupBy(x => x.RoomId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.OrderBy(x => x.ClassCode).Select(x => new
+                        {
+                            id = x.Id,
+                            classCode = x.ClassCode,
+                            className = x.ClassName,
+                            status = x.Status,
+                            startDate = x.StartDate,
+                            endDate = x.EndDate
+                        }).ToList());
+
+                var scheduledRowsByRoom = scheduledClasses
+                    .GroupBy(x => x.RoomId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                var items = rooms.Select(c =>
                 {
-                    id = c.Id,
-                    name = c.Name,
-                    location = c.Location,
-                    capacity = c.Capacity,
-                    description = c.Description,
-                    isActive = c.IsActive,
-                    createdAt = c.CreatedAt,
-                    activeScheduleCount = scheduleCounts.GetValueOrDefault(c.Id)
+                    var roomActiveClasses = activeClassesByRoom.TryGetValue(c.Id, out var list) ? list : [];
+                    var roomSchedRows = scheduledRowsByRoom.TryGetValue(c.Id, out var sRows) ? sRows : [];
+                    var firstClass = roomSchedRows.FirstOrDefault();
+                    var activeDays = roomSchedRows.Select(x => x.DayOfWeek).Distinct().OrderBy(d => d).ToArray();
+                    var daysLabel = activeDays.Length > 0
+                        ? string.Join(" - ", activeDays.Select(AdminCoreHelpers.FormatDayFull))
+                        : null;
+                    var slotLabel = firstClass != null && firstClass.SlotName != null && firstClass.StartTime.HasValue && firstClass.EndTime.HasValue
+                        ? $"{firstClass.SlotName} ({AdminCoreHelpers.FormatTimeRange(firstClass.StartTime.Value, firstClass.EndTime.Value)})"
+                        : null;
+                    var teacherName = firstClass != null && classMainTeachers.TryGetValue(firstClass.Id, out var tn)
+                        ? tn
+                        : null;
+                    var sessionStats = AdminCoreHelpers.CalculateSessionStats(activeDays, firstClass?.StartDate, firstClass?.EndDate);
+                    var activeSchedCount = scheduleCounts.GetValueOrDefault(c.Id);
+
+                    return new
+                    {
+                        id = c.Id,
+                        name = c.Name,
+                        location = c.Location,
+                        capacity = c.Capacity,
+                        description = c.Description,
+                        isActive = c.IsActive,
+                        defaultTeacherId = (int?)null,
+                        defaultTeacherName = teacherName,
+                        defaultCourseId = (int?)null,
+                        defaultCourseTitle = firstClass?.CourseTitle,
+                        scheduleDays = (string?)null,
+                        scheduleDaysLabel = daysLabel,
+                        defaultTimeSlotId = (int?)null,
+                        defaultTimeSlotLabel = slotLabel,
+                        openDate = firstClass?.StartDate,
+                        closeDate = firstClass?.EndDate,
+                        createdAt = c.CreatedAt,
+                        activeScheduleCount = activeSchedCount,
+                        sessionsPerWeek = sessionStats.SessionsPerWeek,
+                        totalWeeks = sessionStats.TotalWeeks,
+                        totalSessions = sessionStats.TotalSessions,
+                        hasConflict = false,
+                        conflictMessages = Array.Empty<string>(),
+                        isOccupied = roomActiveClasses.Count > 0,
+                        activeClasses = roomActiveClasses
+                    };
                 }).ToList();
 
-                return Ok(new { success = true, items });
+                return Ok(new
+                {
+                    success = true,
+                    items,
+                    teachers,
+                    courses,
+                    timeSlots = timeSlots.Where(ts => ts.isActive).ToList()
+                });
             }
             catch (OperationCanceledException)
             {
@@ -96,10 +235,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest(error);
             }
 
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 if (await IsDuplicateNameAsync(name, null, cancellationToken))
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Tên phòng học đã tồn tại trong hệ thống.");
                 }
 
@@ -120,10 +261,12 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
                 catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
+                    await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Tên phòng học đã tồn tại.");
                 }
 
-                return Ok(new { success = true, message = "Thêm phòng học thành công.", item = classroom });
+                await transaction.CommitAsync(cancellationToken);
+                return Ok(new { success = true, message = "Thêm phòng học thành công.", item = classroom, warnings = Array.Empty<string>() });
             }
             catch (OperationCanceledException)
             {
@@ -132,6 +275,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Không thể thêm phòng học.");
+                await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể thêm phòng học.");
             }
         }
@@ -187,7 +331,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         await transaction.RollbackAsync(CancellationToken.None);
                         var codes = string.Join(", ", activeClassesUsingRoom.Select(c => c.ClassCode).OrderBy(x => x));
                         return this.ApiBadRequest(
-                            $"Không thể tạm ngưng phòng {classroom.Name} vì đang có {activeClassesUsingRoom.Count} lớp hoạt động xếp lịch tại đây ({codes}).");
+                            $"Không thể tạm ngưng phòng {classroom.Name} vì đang có {activeClassesUsingRoom.Count} lớp hoạt động mở tại đây ({codes}).");
                     }
 
                     if (isReducingCapacity)
@@ -199,7 +343,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         {
                             await transaction.RollbackAsync(CancellationToken.None);
                             return this.ApiBadRequest(
-                                $"Không thể giảm sức chứa phòng {classroom.Name} xuống {dto.Capacity} chỗ vì lớp {oversized.ClassCode} ({oversized.ClassName}) đang xếp lịch tại đây có sĩ số tối đa là {oversized.MaxStudents} học viên.");
+                                $"Không thể giảm sức chứa phòng {classroom.Name} xuống {dto.Capacity} chỗ vì lớp {oversized.ClassCode} ({oversized.ClassName}) đang mở tại đây có sĩ số tối đa là {oversized.MaxStudents} học viên.");
                         }
                     }
                 }
@@ -216,7 +360,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
-                return Ok(new { success = true, message = "Cập nhật phòng học thành công.", item = classroom });
+                return Ok(new { success = true, message = "Cập nhật phòng học thành công.", item = classroom, warnings = Array.Empty<string>() });
             }
             catch (OperationCanceledException)
             {
@@ -269,7 +413,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
                         return this.ApiBadRequest(
-                            $"Không thể tạm ngưng phòng {classroom.Name} vì đang có {activeClassCodes.Count} lớp hoạt động xếp lịch tại đây ({string.Join(", ", activeClassCodes)}).");
+                            $"Không thể tạm ngưng phòng {classroom.Name} vì đang có {activeClassCodes.Count} lớp hoạt động mở tại đây ({string.Join(", ", activeClassCodes)}).");
                     }
                 }
 
@@ -308,7 +452,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         /// <summary>
         /// Chuẩn hóa (Trim) và kiểm tra dữ liệu đầu vào. Trả về thông báo lỗi (HTTP 400) hoặc null nếu hợp lệ.
         /// </summary>
-        private static string? Normalize(FacilityUpsertDto? dto, out string name, out string? location, out string? description)
+        private static string? Normalize(
+            FacilityUpsertDto? dto,
+            out string name,
+            out string? location,
+            out string? description)
         {
             name = string.Empty;
             location = null;

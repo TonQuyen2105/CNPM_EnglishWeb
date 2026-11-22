@@ -8,8 +8,8 @@
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -24,6 +24,205 @@
     }
     .user-profile-trigger:hover {
       background-color: var(--neutral-100); border-color: var(--border-color);
+    }
+
+    /* Tối ưu hiển thị gọn trong 1 trang */
+    .tkb-page-compact .page-header {
+      margin-bottom: 0.75rem;
+    }
+    .tkb-page-compact .page-header-title {
+      font-size: 1.25rem;
+    }
+    .tkb-main-card {
+      padding: 0.875rem 1rem;
+    }
+    .tkb-unified-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 0.45rem;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      padding-bottom: 0.625rem;
+      margin-bottom: 0.625rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tkb-bar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+    }
+    .tkb-compact-control {
+      width: auto !important;
+      height: 31px !important;
+      padding: 2px 7px !important;
+      font-size: 0.76rem !important;
+      flex: 0 0 auto;
+    }
+    .tkb-tabs {
+      display: inline-flex;
+      background: var(--neutral-100, #F1F5F9);
+      padding: 3px;
+      border-radius: 8px;
+      gap: 3px;
+    }
+    .tkb-tab-btn {
+      border: none;
+      background: transparent;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .tkb-tab-btn.active {
+      background: #FFFFFF;
+      color: var(--primary-700, #1D4ED8);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+    .tkb-legend {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .tkb-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tkb-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+    .tkb-grid-wrapper {
+      max-height: calc(100vh - 225px);
+      overflow: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+    .tkb-grid-table {
+      width: 100%;
+      min-width: 960px;
+      table-layout: fixed;
+      text-align: center;
+      margin: 0;
+    }
+    .tkb-grid-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--neutral-50, #F8FAFC);
+      padding: 6px 4px !important;
+      font-size: 0.78rem !important;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tkb-nav-th {
+      width: 105px;
+      text-align: center !important;
+      vertical-align: middle !important;
+    }
+    .tkb-nav-arrow-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 26px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: #FFFFFF;
+      color: var(--text-primary);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tkb-nav-arrow-btn:hover {
+      background: #EFF6FF;
+      border-color: #93C5FD;
+      color: #1D4ED8;
+    }
+    .tkb-slot-cell,
+    .tkb-time-cell {
+      vertical-align: middle !important;
+      text-align: center !important;
+      background: var(--neutral-50, #F8FAFC);
+      padding: 6px 4px !important;
+      font-size: 0.76rem;
+    }
+    .tkb-day-cell {
+      vertical-align: top !important;
+      padding: 5px !important;
+    }
+    .tkb-event-card {
+      position: relative;
+      padding: 5px 34px 5px 7px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      text-align: left;
+      line-height: 1.3;
+    }
+    .tkb-event-card:last-child {
+      margin-bottom: 0;
+    }
+    .tkb-card-actions {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      display: inline-flex;
+      gap: 2px;
+      align-items: center;
+    }
+    .tkb-mini-btn {
+      font-size: 11px;
+      line-height: 1;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 2px 4px;
+      cursor: pointer;
+    }
+
+    /* Thanh cảnh báo trùng lịch gọn ngay đầu trang */
+    .tkb-conflict-strip {
+      display: none;
+      padding: 0.55rem 0.875rem;
+      margin-bottom: 0.625rem;
+      border-radius: 8px;
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      font-size: 0.8rem;
+    }
+    .tkb-conflict-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 4px 0;
+      border-top: 1px dashed #FECACA;
+    }
+    .tkb-conflict-row:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    @media print {
+      .app-sidebar, .app-topbar, .page-header, .tkb-unified-bar,
+      .tkb-card-actions, .tkb-nav-arrow-btn, #schedule-conflicts-banner,
+      .modal-backdrop { display: none !important; }
+      .tkb-grid-wrapper { max-height: none; overflow: visible; border: none; }
+      .card { box-shadow: none !important; border: none !important; padding: 0 !important; }
     }
   </style>
 </head>
@@ -48,70 +247,62 @@
 
       <nav class="sidebar-nav">
         <div class="nav-section-title">Tổng quan</div>
-      <a href="/Admin/dashboard.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Bảng điều khiển</span>
-      </a>
-    <div class="nav-section-title">Quản lý đào tạo</div>
-      <a href="/Admin/subjects.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
-      </a>
-    
-      <a href="/Admin/courses.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="/Admin/course-objectives.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
-        <span>Mô tả &amp; Mục tiêu</span>
-      </a>
-          <a href="/Admin/classes.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
-        <span>Lớp học</span>
-      </a>
-    
-      <a href="/Admin/schedules.html" class="nav-item active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Thời khóa biểu</span>
-      </a>
-    <div class="nav-section-title">Quản lý người dùng</div>
-      <a href="/Admin/users.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
-        <span>Tài khoản người dùng</span>
-      </a>
-    
-      <a href="/Admin/teachers.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
-        <span>Giảng viên</span>
-      </a>
-    
-      <a href="/Admin/enrollments.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
-        <span>Học viên & Đăng ký</span>
-      </a>
-    <div class="nav-section-title">Khảo thí & Đánh giá</div>
-      <a href="/Admin/exams.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Đề thi & Khảo thí</span>
-      </a>
-    
-      <a href="/Admin/reviews.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-        <span>Đánh giá khóa học</span>
-      </a>
-    <div class="nav-section-title">Cơ sở & Báo cáo</div>
-      <a href="/Admin/facilities.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
-        <span>Phòng học & Cơ sở</span>
-      </a>
-    
-      <a href="/Admin/reports.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-        <span>Báo cáo & Thống kê</span>
-      </a>
-    
+        <a href="/Admin/dashboard.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+          <span>Bảng điều khiển</span>
+        </a>
+        <div class="nav-section-title">Quản lý đào tạo</div>
+        <a href="/Admin/subjects.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+          <span>Môn học</span>
+        </a>
+        <a href="/Admin/courses.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+          <span>Khóa học</span>
+        </a>
+        <a href="/Admin/course-objectives.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+          <span>Mô tả &amp; Mục tiêu</span>
+        </a>
+        <a href="/Admin/classes.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+          <span>Lớp học</span>
+        </a>
+        <a href="/Admin/schedules.html" class="nav-item active">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+          <span>Thời khóa biểu</span>
+        </a>
+        <div class="nav-section-title">Quản lý người dùng</div>
+        <a href="/Admin/users.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+          <span>Tài khoản người dùng</span>
+        </a>
+        <a href="/Admin/teachers.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
+          <span>Giảng viên</span>
+        </a>
+        <a href="/Admin/enrollments.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
+          <span>Học viên &amp; Đăng ký</span>
+        </a>
+        <div class="nav-section-title">Khảo thí &amp; Đánh giá</div>
+        <a href="/Admin/exams.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+          <span>Đề thi &amp; Khảo thí</span>
+        </a>
+        <a href="/Admin/reviews.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+          <span>Đánh giá khóa học</span>
+        </a>
+        <div class="nav-section-title">Cơ sở &amp; Báo cáo</div>
+        <a href="/Admin/facilities.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
+          <span>Phòng học &amp; Cơ sở</span>
+        </a>
+        <a href="/Admin/reports.html" class="nav-item ">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+          <span>Báo cáo &amp; Thống kê</span>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -148,7 +339,6 @@
         </div>
 
         <div class="topbar-actions" style="display: flex; align-items: center; gap: 12px;">
-          <!-- Thông báo Dropdown -->
           <div class="dropdown notification-wrapper">
             <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo hệ thống">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -174,7 +364,6 @@
             </div>
           </div>
 
-          <!-- Avatar & Profile Dropdown -->
           <div class="dropdown">
             <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0">
               <div class="avatar avatar-sm">AD</div>
@@ -206,64 +395,127 @@
         </div>
       </header>
 
-      <!-- Vùng Nội Dung Chính -->
-      <main class="page-container" id="app-main-content">
+      <!-- Vùng Nội Dung Chính (Gọn trong 1 trang) -->
+      <main class="page-container tkb-page-compact" id="app-main-content">
         
-  <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
-    <div>
-      <h1 class="page-header-title">Thời khóa biểu trung tâm</h1>
-      <p class="page-header-subtitle">Lịch phân bổ phòng học và ca giảng dạy theo tuần</p>
-    </div>
-    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <button type="button" class="btn btn-secondary" id="btn-open-manage-timeslots">
-        Quản lý ca học
-      </button>
-      <button type="button" class="btn btn-primary" id="btn-open-create-schedule" data-modal-target="modal-create-schedule">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Xếp lịch học mới
-      </button>
-    </div>
-  </div>
+        <div class="page-header" style="flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h1 class="page-header-title">Thời khóa biểu trung tâm</h1>
+            <p class="page-header-subtitle" id="week-range-label" style="margin: 0;">Đồng bộ lịch lớp học &amp; lịch phòng học theo tuần</p>
+          </div>
+          <div class="page-header-actions" style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-open-manage-timeslots">Quản lý ca học</button>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-open-auto-schedule" style="border-color: #93C5FD; color: #1D4ED8; background: #EFF6FF;">
+              Xếp lịch tự động
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" id="btn-open-create-schedule" data-modal-target="modal-create-schedule">
+              + Xếp lịch học mới
+            </button>
+          </div>
+        </div>
 
-  <div class="card" style="padding: 1.5rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-      <div>
-        <strong style="font-size: 1rem;">Lưới thời khóa biểu cố định theo tuần</strong>
-        <div style="font-size: 0.8125rem; color: var(--text-muted);">Hiển thị lịch các lớp đang hoạt động (Thứ 2 - Chủ Nhật)</div>
-      </div>
-      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-        <select id="filter-classroom" class="form-control" style="min-width: 190px;">
-          <option value="">Tất cả phòng học</option>
-        </select>
-        <select id="filter-teacher" class="form-control" style="min-width: 210px;">
-          <option value="">Tất cả giảng viên</option>
-        </select>
-        <button type="button" class="btn btn-sm btn-secondary" id="btn-reset-schedule-filter">Đặt lại</button>
-      </div>
-    </div>
+        <!-- Cảnh báo trùng lịch giảng viên / phòng học (hiển thị gọn ngay đầu trang khi phát hiện trùng) -->
+        <div id="schedule-conflicts-banner" class="tkb-conflict-strip">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 4px; flex-wrap: wrap;">
+            <div style="display: inline-flex; align-items: center; gap: 6px; color: #991B1B; font-weight: 700;">
+              <span>⚠</span>
+              <span id="schedule-conflicts-title">Phát hiện lịch trùng giảng viên</span>
+            </div>
+            <span style="font-size: 0.74rem; color: #B91C1C;">Bấm "Đổi GV / Sửa" để thay thế bằng giảng viên rảnh</span>
+          </div>
+          <div id="schedule-conflicts-list"></div>
+        </div>
 
-    <div class="table-container">
-      <table class="table" style="text-align: center; table-layout: fixed; min-width: 960px;">
-        <thead>
-          <tr>
-            <th style="width: 130px;">Ca học</th>
-            <th>Thứ 2</th>
-            <th>Thứ 3</th>
-            <th>Thứ 4</th>
-            <th>Thứ 5</th>
-            <th>Thứ 6</th>
-            <th>Thứ 7</th>
-            <th>Chủ Nhật</th>
-          </tr>
-        </thead>
-        <tbody id="weekly-schedule-tbody">
-          <tr>
-            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Đang tải thời khóa biểu...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+        <div class="card tkb-main-card">
+          <!-- Thanh công cụ gộp trên cùng 1 hàng: Tabs + Bộ lọc + Điều hướng tuần -->
+          <div class="tkb-unified-bar">
+            <div class="tkb-bar-group">
+              <div class="tkb-tabs">
+                <button type="button" class="tkb-tab-btn active" id="tab-btn-weekly-grid">Lưới TKB</button>
+                <button type="button" class="tkb-tab-btn" id="tab-btn-room-config">
+                  Phòng (<span id="room-config-count">0</span>)
+                </button>
+              </div>
+              <select id="filter-classroom" class="form-control tkb-compact-control" style="max-width: 155px;">
+                <option value="">Tất cả phòng</option>
+              </select>
+              <select id="filter-teacher" class="form-control tkb-compact-control" style="max-width: 165px;">
+                <option value="">Tất cả GV</option>
+              </select>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-reset-schedule-filter" style="height: 31px; padding: 0 8px; font-size: 0.76rem; white-space: nowrap;">Đặt lại</button>
+            </div>
+
+            <div class="tkb-bar-group">
+              <select id="week-select-dropdown" class="form-control tkb-compact-control" style="max-width: 215px;" title="Chọn tuần cần xem"></select>
+              <input type="date" id="week-picker-date" class="form-control tkb-compact-control" style="width: 122px !important;" title="Nhảy tới ngày">
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-week-current" style="height: 31px; padding: 0 8px; font-size: 0.76rem; white-space: nowrap;">Tuần này</button>
+              <label style="font-size: 0.75rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; color: var(--text-secondary); white-space: nowrap;">
+                <input type="checkbox" id="chk-filter-by-week" checked>
+                Lọc tuần
+              </label>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-print-tkb" style="height: 31px; padding: 0 8px; font-size: 0.76rem; white-space: nowrap;">In</button>
+            </div>
+          </div>
+
+          <!-- Chú thích màu gọn -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <div class="tkb-legend">
+              <span class="tkb-legend-item"><span class="tkb-dot" style="background: #EFF6FF; border: 1px solid #93C5FD;"></span>Lớp học đang mở (Sắp / Đang diễn ra)</span>
+              <span class="tkb-legend-item"><span class="tkb-dot" style="background: #FEF2F2; border: 1px solid #EF4444;"></span>Trùng lịch GV / Phòng</span>
+            </div>
+            <span style="font-size: 0.74rem; color: var(--text-muted);">Bấm biểu tượng <strong>✎</strong> trên thẻ để sửa hoặc thay giảng viên khác</span>
+          </div>
+
+          <!-- Tab 1: Lưới Thời khóa biểu tuần -->
+          <div id="tkb-panel-weekly-grid" class="tkb-grid-wrapper">
+            <table class="table tkb-grid-table">
+              <thead>
+                <tr>
+                  <th class="tkb-nav-th">
+                    <button type="button" class="tkb-nav-arrow-btn" id="btn-week-prev" title="Tuần trước">&larr;</button>
+                  </th>
+                  <th id="th-day-1">Thứ 2</th>
+                  <th id="th-day-2">Thứ 3</th>
+                  <th id="th-day-3">Thứ 4</th>
+                  <th id="th-day-4">Thứ 5</th>
+                  <th id="th-day-5">Thứ 6</th>
+                  <th id="th-day-6">Thứ 7</th>
+                  <th id="th-day-7">Chủ Nhật</th>
+                  <th class="tkb-nav-th">
+                    <button type="button" class="tkb-nav-arrow-btn" id="btn-week-next" title="Tuần sau">&rarr;</button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="weekly-schedule-tbody">
+                <tr>
+                  <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">Đang tải thời khóa biểu...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Tab 2: Danh sách lịch cấu hình đồng bộ từ Phòng học -->
+          <div id="tkb-panel-room-config" style="display: none;">
+            <div class="table-container" style="max-height: calc(100vh - 225px); overflow: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+              <table class="table" style="min-width: 820px; margin: 0;">
+                <thead>
+                  <tr>
+                    <th>Phòng học &amp; Khóa học</th>
+                    <th>Giảng viên mặc định</th>
+                    <th>Lịch ngày &amp; Ca học</th>
+                    <th>Ca / tuần</th>
+                    <th>Thời gian mở &amp; Tổng ca</th>
+                    <th>Trạng thái</th>
+                    <th class="text-right">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="room-schedules-summary-tbody">
+                  <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chưa có phòng học nào cấu hình lịch mặc định.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
       </main>
     </div>
@@ -271,19 +523,27 @@
 
   <!-- Modal Xếp Lịch Học Mới -->
   <div class="modal-backdrop" id="modal-create-schedule">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-lg" style="max-width: 640px; width: 95%;">
       <div class="modal-header">
         <h3 class="modal-title">Xếp lịch giảng dạy mới</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
       <form id="create-schedule-form">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
           <div id="schedule-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lớp học cần xếp lịch <span class="required" style="color:red;">*</span></label>
-            <select id="sched-class-id" class="form-control" required>
-              <option value="">-- Đang tải lớp học --</option>
-            </select>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lớp học cần xếp lịch <span class="required" style="color:red;">*</span></label>
+              <select id="sched-class-id" class="form-control" required>
+                <option value="">-- Đang tải lớp học --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên đứng lớp (tùy chọn thay đổi)</label>
+              <select id="sched-teacher-id" class="form-control">
+                <option value="">-- Giữ theo giảng viên của lớp --</option>
+              </select>
+            </div>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
@@ -299,7 +559,7 @@
               </select>
             </div>
           </div>
-          <div class="form-group" style="margin-bottom: 0.5rem;">
+          <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thứ trong tuần <span class="required" style="color:red;">*</span></label>
             <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px;">
               <label style="font-size: 0.875rem; cursor: pointer;"><input type="checkbox" name="sched-days" value="1"> Thứ 2</label>
@@ -311,12 +571,235 @@
               <label style="font-size: 0.875rem; cursor: pointer;"><input type="checkbox" name="sched-days" value="7"> Chủ Nhật</label>
             </div>
           </div>
+
+          <div id="sched-live-conflict-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.84rem; line-height: 1.5;"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
           <button type="submit" class="btn btn-primary" id="sched-submit-btn">Xác nhận xếp lịch</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal Sửa Lịch Học & Thay Giáo Viên Khác -->
+  <div class="modal-backdrop" id="modal-edit-schedule">
+    <div class="modal-dialog modal-dialog-lg" style="max-width: 640px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title">Sửa lịch học &amp; Thay giảng viên khác</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form id="edit-schedule-form">
+        <input type="hidden" id="es-schedule-id" value="">
+        <input type="hidden" id="es-class-id" value="">
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+          <div id="es-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+
+          <div id="es-class-banner" style="padding: 0.75rem 1rem; border-radius: 8px; background: var(--neutral-50); border: 1px solid var(--border-color); margin-bottom: 1rem; font-size: 0.875rem;"></div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thay giảng viên khác dạy lớp này</label>
+            <select id="es-teacher-id" class="form-control">
+              <option value="">-- Giữ nguyên giảng viên hiện tại --</option>
+            </select>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Hệ thống tự đánh dấu giảng viên nào đang rảnh (✓) hoặc bị trùng lịch (⚠) ở khung giờ này.</div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thứ trong tuần <span class="required" style="color:red;">*</span></label>
+              <select id="es-day-of-week" class="form-control" required>
+                <option value="1">Thứ 2</option>
+                <option value="2">Thứ 3</option>
+                <option value="3">Thứ 4</option>
+                <option value="4">Thứ 5</option>
+                <option value="5">Thứ 6</option>
+                <option value="6">Thứ 7</option>
+                <option value="7">Chủ Nhật</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ca học <span class="required" style="color:red;">*</span></label>
+              <select id="es-timeslot-id" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Phòng học <span class="required" style="color:red;">*</span></label>
+              <select id="es-classroom-id" class="form-control" required></select>
+            </div>
+          </div>
+
+          <div id="es-live-conflict-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.84rem; line-height: 1.5;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-primary" id="es-submit-btn">Lưu thay đổi lịch học</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Sửa Lịch Phòng Học & Thay Giảng Viên Khác -->
+  <div class="modal-backdrop" id="modal-edit-room-schedule">
+    <div class="modal-dialog modal-dialog-lg" style="max-width: 620px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="er-modal-title">Chỉnh sửa lịch phòng học &amp; Đổi giảng viên</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form id="edit-room-schedule-form">
+        <input type="hidden" id="er-room-id" value="">
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+          <div id="er-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+          <div id="er-room-banner" style="padding: 0.75rem 1rem; border-radius: 8px; background: var(--neutral-50); border: 1px solid var(--border-color); margin-bottom: 1rem; font-size: 0.875rem;"></div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thay giảng viên mặc định dạy phòng này</label>
+            <select id="er-teacher-id" class="form-control">
+              <option value="">-- Chưa chỉ định giảng viên --</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lịch ngày học mở lớp</label>
+              <select id="er-schedule-days" class="form-control">
+                <option value="">-- Chưa cố định thứ --</option>
+                <option value="t246">Thứ 2 - Thứ 4 - Thứ 6 (3 ca/tuần)</option>
+                <option value="t357">Thứ 3 - Thứ 5 - Thứ 7 (3 ca/tuần)</option>
+                <option value="all">Cả tuần Thứ 2 - Thứ 7 (6 ca/tuần)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ca học</label>
+              <select id="er-timeslot-id" class="form-control"></select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ngày mở lớp</label>
+              <input type="date" id="er-open-date" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ngày kết thúc</label>
+              <input type="date" id="er-close-date" class="form-control">
+            </div>
+          </div>
+
+          <div id="er-live-conflict-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.84rem; line-height: 1.5;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-primary" id="er-submit-btn">Lưu thay đổi lịch phòng</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Xếp Lịch Tự Động -->
+  <div class="modal-backdrop" id="modal-auto-schedule">
+    <div class="modal-dialog modal-dialog-lg" style="max-width: 900px; width: 96%;">
+      <div class="modal-header">
+        <h3 class="modal-title">Xếp lịch giảng dạy tự động</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 78vh; overflow-y: auto;">
+        <div id="auto-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+
+        <div style="padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); background: var(--neutral-50); margin-bottom: 1rem;">
+          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Lớp học cần xếp lịch <span style="color:red;">*</span></label>
+              <select id="auto-class-id" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giảng viên dự kiến</label>
+              <select id="auto-teacher-id" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Số buổi / tuần</label>
+              <select id="auto-sessions" class="form-control">
+                <option value="1">1 buổi / tuần</option>
+                <option value="2" selected>2 buổi / tuần</option>
+                <option value="3">3 buổi / tuần</option>
+                <option value="4">4 buổi / tuần</option>
+                <option value="5">5 buổi / tuần</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Ca học ưu tiên (nếu có)</label>
+              <select id="auto-timeslot-id" class="form-control">
+                <option value="">-- Tự động chọn ca phù hợp --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Phòng học ưu tiên (nếu có)</label>
+              <select id="auto-classroom-id" class="form-control">
+                <option value="">-- Tự động chọn phòng đủ chỗ --</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <div style="font-weight: 600; font-size: 0.8125rem; margin-bottom: 4px;">Thứ ưu tiên (tùy chọn):</div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <label style="font-size: 0.84rem; cursor: pointer;"><input type="checkbox" name="auto-days" value="1"> Thứ 2</label>
+              <label style="font-size: 0.84rem; cursor: pointer;"><input type="checkbox" name="auto-days" value="2"> Thứ 3</label>
+              <label style="font-size: 0.84rem; cursor: pointer;"><input type="checkbox" name="auto-days" value="3"> Thứ 4</label>
+              <label style="font-size: 0.84rem; cursor: pointer;"><input type="checkbox" name="auto-days" value="4"> Thứ 5</label>
+              <label style="font-size: 0.84rem; cursor: pointer;"><input type="checkbox" name="auto-days" value="5"> Thứ 6</label>
+              <label style="font-size: 0.84rem; cursor: pointer;"><input type="checkbox" name="auto-days" value="6"> Thứ 7</label>
+              <label style="font-size: 0.84rem; cursor: pointer;"><input type="checkbox" name="auto-days" value="7"> Chủ Nhật</label>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <label style="font-size: 0.84rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="auto-replace-existing">
+              Thay thế toàn bộ lịch cũ (nếu chưa có nhật ký buổi dạy)
+            </label>
+            <button type="button" class="btn btn-primary" id="btn-run-auto-preview">
+              Phân tích &amp; Xếp lịch tự động
+            </button>
+          </div>
+        </div>
+
+        <div id="auto-preview-section" style="display: none;">
+          <div id="auto-preview-banner" style="padding: 0.875rem 1rem; border-radius: 8px; margin-bottom: 0.875rem; font-size: 0.875rem; line-height: 1.55;"></div>
+
+          <div id="auto-teacher-switch-box" style="padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: #FFFFFF; margin-bottom: 0.875rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
+            <div>
+              <strong style="font-size: 0.85rem;">Thay giáo viên khác cho lịch học này:</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Nếu giảng viên hiện tại bị trùng lịch, chọn giảng viên rảnh bên cạnh rồi bấm kiểm tra lại.</div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <select id="auto-override-teacher-id" class="form-control" style="min-width: 260px;"></select>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-recheck-auto-teacher">Kiểm tra lại với GV này</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="table" style="min-width: 720px;">
+              <thead>
+                <tr>
+                  <th>Thứ</th>
+                  <th>Ca học</th>
+                  <th>Phòng học</th>
+                  <th>Tình trạng &amp; Cảnh báo trùng lịch</th>
+                  <th>GV rảnh gợi ý</th>
+                </tr>
+              </thead>
+              <tbody id="auto-preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-primary" id="btn-apply-auto-schedule" disabled>Lưu thời khóa biểu đã xếp</button>
+      </div>
     </div>
   </div>
 
@@ -330,8 +813,11 @@
       <div class="modal-body" style="max-height: 76vh; overflow-y: auto;">
         <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--neutral-50); margin-bottom: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; gap: 8px; flex-wrap: wrap;">
-            <strong id="ts-form-heading" style="font-size: 0.9rem;">Thêm ca học mới</strong>
-            <button type="button" class="btn btn-sm btn-secondary" id="btn-cancel-edit-timeslot" style="display: none;">Hủy sửa (Thêm mới)</button>
+            <strong id="ts-form-heading" style="font-size: 0.9rem;">Thêm ca học mới (Ca 1, Ca 2, Ca 3...)</strong>
+            <div style="display: inline-flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-seed-default-timeslots" style="border-color: #93C5FD; color: #1D4ED8; background: #EFF6FF;" title="Tạo nhanh Ca 1 -> Ca 6 mẫu nếu bạn vừa reset dữ liệu">⚡ Tạo nhanh Ca 1 - Ca 6 mẫu</button>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-cancel-edit-timeslot" style="display: none;">Hủy sửa (Thêm mới)</button>
+            </div>
           </div>
           <form id="timeslot-form">
             <input type="hidden" id="ts-id" value="">
@@ -396,7 +882,6 @@
   <script src="../../../wwwroot/js/site.js"></script>
   <script>
     (function () {
-      // ===== Helpers dùng chung =====
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -411,7 +896,6 @@
         return !!err && err.name === 'AbortError';
       }
 
-      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
       async function fetchJson(url, options = {}) {
         let res;
         try {
@@ -434,7 +918,7 @@
           body: payload === undefined ? undefined : JSON.stringify(payload)
         });
       }
-      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+
       function showToast(message, type = 'success', duration) {
         let container = document.getElementById('admin-toast-container');
         if (!container) {
@@ -462,6 +946,7 @@
         container.appendChild(toast);
         setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
       }
+
       function openModal(id) {
         const modal = document.getElementById(id);
         if (modal) modal.classList.add('open', 'show');
@@ -472,7 +957,6 @@
         if (modal) modal.classList.remove('open', 'show');
       }
 
-      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
       function setBusy(btn, busy, busyText = 'Đang lưu...') {
         if (!btn) return;
         if (busy) {
@@ -495,13 +979,11 @@
         return debounced;
       }
 
-      // Skeleton loading cho bảng
       function skeletonRows(cols, rows = 4) {
         const cell = '<td><div class="skeleton skeleton-text"></div></td>';
         return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
       }
 
-      // Hàng thông báo trạng thái (empty / error) trong bảng
       function stateRow(cols, title, text, tone = 'muted') {
         const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
         return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
@@ -510,7 +992,6 @@
           '</div></td></tr>';
       }
 
-      // Gắn nút "Thử lại" vào hàng lỗi
       function errorRowWithRetry(cols, message) {
         return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
           '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
@@ -518,7 +999,8 @@
           '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
           '</div></td></tr>';
       }
-      const COLS = 8;
+
+      const COLS = 9;
       const TS_COLS = 5;
       let needLookups = true;
       let initialUrlApplied = false;
@@ -526,6 +1008,170 @@
       let loadController = null;
       let timeSlotsController = null;
       let timeSlotsCache = [];
+      let schedulesCache = [];
+      let conflictsCache = [];
+      let roomSummariesCache = [];
+      let classesCache = [];
+      let roomsCache = [];
+      let teachersCache = [];
+      let activeSlotsCache = [];
+      let autoPreviewItems = [];
+      let createConflictController = null;
+      let editConflictController = null;
+      let currentWeekMonday = getMondayOfWeek(new Date());
+
+      function switchMainTab(tab) {
+        const gridPanel = document.getElementById('tkb-panel-weekly-grid');
+        const roomPanel = document.getElementById('tkb-panel-room-config');
+        const gridBtn = document.getElementById('tab-btn-weekly-grid');
+        const roomBtn = document.getElementById('tab-btn-room-config');
+
+        if (tab === 'rooms') {
+          gridPanel.style.display = 'none';
+          roomPanel.style.display = 'block';
+          gridBtn.classList.remove('active');
+          roomBtn.classList.add('active');
+        } else {
+          gridPanel.style.display = 'block';
+          roomPanel.style.display = 'none';
+          gridBtn.classList.add('active');
+          roomBtn.classList.remove('active');
+        }
+      }
+
+      function getMondayOfWeek(d) {
+        const dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const day = dt.getDay();
+        const diff = day === 0 ? -6 : (1 - day);
+        dt.setDate(dt.getDate() + diff);
+        return dt;
+      }
+
+      function addDays(d, n) {
+        const dt = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        dt.setDate(dt.getDate() + n);
+        return dt;
+      }
+
+      function formatShortDate(d) {
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      function formatFullDate(d) {
+        if (!d) return '--';
+        const dt = d instanceof Date ? d : new Date(d);
+        if (isNaN(dt.getTime())) return '--';
+        return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+      }
+
+      function toIsoDate(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
+
+      function parseClassDateOnly(val) {
+        if (!val) return null;
+        const s = String(val).slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+          const [y, m, d] = s.split('-').map(Number);
+          return new Date(y, m - 1, d);
+        }
+        const dt = new Date(val);
+        return isNaN(dt.getTime()) ? null : new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+      }
+
+      function getFilteredSchedules() {
+        return Array.isArray(schedulesCache) ? schedulesCache : [];
+      }
+
+      function getFilteredConflicts() {
+        return Array.isArray(conflictsCache) ? conflictsCache : [];
+      }
+
+      function populateWeekDropdown() {
+        const sel = document.getElementById('week-select-dropdown');
+        if (!sel) return;
+
+        const visibleSchedules = getFilteredSchedules();
+        const allDates = [];
+        visibleSchedules.forEach(s => {
+          const d1 = parseClassDateOnly(s.startDate);
+          const d2 = parseClassDateOnly(s.endDate);
+          if (d1) allDates.push(d1);
+          if (d2) allDates.push(d2);
+        });
+
+        const todayMonday = getMondayOfWeek(new Date());
+        let minMonday = todayMonday;
+        let maxMonday = todayMonday;
+        if (allDates.length > 0) {
+          const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+          const maxDate = new Date(Math.max(...allDates.map(d => d.getTime())));
+          minMonday = getMondayOfWeek(minDate);
+          maxMonday = getMondayOfWeek(maxDate);
+          if (todayMonday > maxMonday) maxMonday = todayMonday;
+        } else {
+          minMonday = addDays(todayMonday, -14);
+          maxMonday = addDays(todayMonday, 14);
+        }
+        if (currentWeekMonday < minMonday) minMonday = currentWeekMonday;
+        if (currentWeekMonday > maxMonday) maxMonday = currentWeekMonday;
+
+        const weekHasSchedule = (weekMon) => {
+          for (let d = 0; d < 7; d++) {
+            const dt = addDays(weekMon, d);
+            const isoDay = d + 1;
+            if (visibleSchedules.some(item => item.dayOfWeek === isoDay && isItemActiveOnDate(item, dt))) {
+              return true;
+            }
+          }
+          return false;
+        };
+
+        const totalWeeks = Math.min(80, Math.round((maxMonday - minMonday) / (7 * 86400000)) + 1);
+        const currentIso = toIsoDate(currentWeekMonday);
+        const todayIso = toIsoDate(todayMonday);
+        let html = '';
+        for (let i = 0; i < totalWeeks; i++) {
+          const mon = addDays(minMonday, i * 7);
+          const sun = addDays(mon, 6);
+          const iso = toIsoDate(mon);
+          const activeMark = weekHasSchedule(mon) ? ' • Có lịch' : '';
+          const todayMark = iso === todayIso ? ' (Tuần này)' : '';
+          html += `<option value="${iso}" ${iso === currentIso ? 'selected' : ''}>Tuần ${i + 1}: ${formatShortDate(mon)} – ${formatFullDate(sun)}${activeMark}${todayMark}</option>`;
+        }
+        sel.innerHTML = html;
+        sel.value = currentIso;
+      }
+
+      function renderWeekHeaderBar() {
+        const sunday = addDays(currentWeekMonday, 6);
+        const label = document.getElementById('week-range-label');
+        const picker = document.getElementById('week-picker-date');
+        const filterByWeek = document.getElementById('chk-filter-by-week')?.checked;
+
+        if (label) {
+          label.innerHTML = filterByWeek
+            ? `Đang lọc theo tuần: <strong>${formatFullDate(currentWeekMonday)} – ${formatFullDate(sunday)}</strong>`
+            : `Đồng bộ lịch lớp học &amp; lịch phòng học (Tuần tham chiếu: <strong>${formatFullDate(currentWeekMonday)} – ${formatFullDate(sunday)}</strong>)`;
+        }
+        if (picker) {
+          picker.value = toIsoDate(currentWeekMonday);
+        }
+        populateWeekDropdown();
+
+        const today = new Date();
+        const todayIso = toIsoDate(today);
+        const dayNames = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
+        for (let i = 0; i < 7; i++) {
+          const th = document.getElementById(`th-day-${i + 1}`);
+          if (!th) continue;
+          const cellDate = addDays(currentWeekMonday, i);
+          const isToday = toIsoDate(cellDate) === todayIso;
+          th.style.background = isToday ? '#EFF6FF' : '';
+          th.style.color = isToday ? '#1D4ED8' : '';
+          th.innerHTML = `${dayNames[i]} <span style="font-size: 0.7rem; font-weight: 500; color: ${isToday ? '#2563EB' : 'var(--text-muted)'};">(${formatShortDate(cellDate)})</span>`;
+        }
+      }
 
       const CARD_PALETTES = [
         { bg: '#EFF6FF', border: '#BFDBFE', title: '#1D4ED8' },
@@ -657,6 +1303,7 @@
                 <div style="display: inline-flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
                   <button type="button" class="btn btn-sm btn-secondary" data-edit-timeslot="${ts.id}">Sửa</button>
                   <button type="button" class="${toggleBtnClass}" data-toggle-timeslot="${ts.id}">${toggleLabel}</button>
+                  ${(ts.activeScheduleCount ?? 0) === 0 ? `<button type="button" class="btn btn-sm btn-danger-soft" data-delete-timeslot="${ts.id}" title="Xóa ca học chưa có lớp xếp">Xóa</button>` : ''}
                 </div>
               </td>
             </tr>
@@ -694,6 +1341,40 @@
         try {
           const data = await postJson(`/Admin/api/Schedules/TimeSlots/ToggleStatus/${encodeURIComponent(id)}`);
           showToast(data.message || 'Đã đổi trạng thái ca học.');
+          await loadTimeSlots();
+          needLookups = true;
+          await loadWeeklySchedules();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message, 'error');
+        } finally {
+          if (btn && btn.isConnected) setBusy(btn, false);
+        }
+      }
+
+      async function deleteTimeSlot(id, btn) {
+        const slot = timeSlotsCache.find(x => x.id === id);
+        if (!confirm(`Xác nhận xóa ca học "${slot ? (slot.slotName || slot.name) : id}" khỏi bảng time_slots?`)) return;
+        setBusy(btn, true, 'Đang xóa...');
+        try {
+          const data = await postJson(`/Admin/api/Schedules/TimeSlots/Delete/${encodeURIComponent(id)}`);
+          showToast(data.message || 'Đã xóa ca học.');
+          await loadTimeSlots();
+          needLookups = true;
+          await loadWeeklySchedules();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message, 'error');
+        } finally {
+          if (btn && btn.isConnected) setBusy(btn, false);
+        }
+      }
+
+      async function seedDefaultTimeSlots(btn) {
+        setBusy(btn, true, 'Đang tạo...');
+        try {
+          const data = await postJson('/Admin/api/Schedules/TimeSlots/SeedDefaults');
+          showToast(data.message || 'Đã khởi tạo các ca học mẫu.');
           await loadTimeSlots();
           needLookups = true;
           await loadWeeklySchedules();
@@ -755,22 +1436,118 @@
         }
       }
 
+      function showEditError(msg) {
+        const box = document.getElementById('es-form-error');
+        if (!box) return;
+        box.textContent = msg || '';
+        box.style.display = msg ? 'block' : 'none';
+      }
+
+      function showAutoError(msg) {
+        const box = document.getElementById('auto-form-error');
+        if (!box) return;
+        box.textContent = msg || '';
+        box.style.display = msg ? 'block' : 'none';
+      }
+
+      function renderTeacherSelectOptions(selectEl, teachers, emptyLabel, statuses = null) {
+        if (!selectEl) return;
+        const prev = selectEl.value;
+        const statusMap = new Map((Array.isArray(statuses) ? statuses : []).map(s => [String(s.id), s]));
+        let html = `<option value="">${escapeHtml(emptyLabel)}</option>`;
+        teachers.forEach(t => {
+          const st = statusMap.get(String(t.id));
+          let suffix = '';
+          if (st) {
+            suffix = st.isAvailable ? ' — ✓ Rảnh' : ` — ⚠ ${st.conflictReason || 'Trùng lịch'}`;
+          } else if (t.qualification) {
+            suffix = ` (${t.qualification})`;
+          }
+          html += `<option value="${t.id}">${escapeHtml(t.fullName + suffix)}</option>`;
+        });
+        selectEl.innerHTML = html;
+        if (prev && teachers.some(t => String(t.id) === prev)) {
+          selectEl.value = prev;
+        }
+      }
+
+      function renderLiveConflictBox(boxId, data, onPickFreeTeacherAttr) {
+        const box = document.getElementById(boxId);
+        if (!box) return;
+        if (!data) {
+          box.style.display = 'none';
+          box.innerHTML = '';
+          return;
+        }
+
+        const conflicts = Array.isArray(data.conflicts) ? data.conflicts : [];
+        const freeTeachers = (Array.isArray(data.teacherStatuses) ? data.teacherStatuses : []).filter(t => t.isAvailable);
+
+        if (conflicts.length === 0) {
+          box.style.display = 'block';
+          box.style.background = '#ECFDF5';
+          box.style.border = '1px solid #A7F3D0';
+          box.style.color = '#065F46';
+          box.innerHTML = '<strong>✓ Không phát hiện trùng lịch:</strong> Khung giờ, phòng học và giảng viên đều khả dụng.';
+          return;
+        }
+
+        box.style.display = 'block';
+        box.style.background = '#FEF2F2';
+        box.style.border = '1px solid #FECACA';
+        box.style.color = '#991B1B';
+
+        const listHtml = conflicts.map(c => `<li style="margin-bottom: 3px;">${escapeHtml(c.message)}</li>`).join('');
+        const hasTeacherConflict = conflicts.some(c => c.type === 'teacher');
+        let suggestionHtml = '';
+        if (hasTeacherConflict) {
+          if (freeTeachers.length > 0) {
+            const buttons = freeTeachers.slice(0, 6).map(t =>
+              `<button type="button" class="btn btn-sm btn-secondary" ${onPickFreeTeacherAttr}="${t.id}" style="font-size: 0.75rem; padding: 3px 8px; background: #fff; border-color: #93C5FD; color: #1D4ED8;">Thay bằng: ${escapeHtml(t.fullName)}</button>`
+            ).join(' ');
+            suggestionHtml = `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #FCA5A5;">
+              <div style="font-weight: 600; font-size: 0.78rem; margin-bottom: 5px; color: #7F1D1D;">Gợi ý thay giáo viên khác đang rảnh:</div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">${buttons}</div>
+            </div>`;
+          } else {
+            suggestionHtml = '<div style="margin-top: 6px; font-size: 0.78rem; color: #7F1D1D;">Hiện chưa có giảng viên nào rảnh vào khung giờ này; hãy cân nhắc đổi ca học hoặc thứ khác.</div>';
+          }
+        }
+
+        box.innerHTML = `<strong>⚠ Cảnh báo trùng lịch (${conflicts.length}):</strong><ul style="margin: 6px 0 0 1.25rem; padding: 0;">${listHtml}</ul>${suggestionHtml}`;
+      }
+
       function populateOptions(data) {
+        if (Array.isArray(data.timeSlots)) activeSlotsCache = data.timeSlots;
+        if (Array.isArray(data.classrooms)) roomsCache = data.classrooms;
+        if (Array.isArray(data.teachers)) teachersCache = data.teachers;
+        if (Array.isArray(data.classes)) classesCache = data.classes;
+
         if (!needLookups) return;
 
         const filterRoom = document.getElementById('filter-classroom');
         const filterTeacher = document.getElementById('filter-teacher');
         const schedClass = document.getElementById('sched-class-id');
+        const schedTeacher = document.getElementById('sched-teacher-id');
         const schedRoom = document.getElementById('sched-classroom-id');
         const schedSlot = document.getElementById('sched-timeslot-id');
 
+        const esTeacher = document.getElementById('es-teacher-id');
+        const esRoom = document.getElementById('es-classroom-id');
+        const esSlot = document.getElementById('es-timeslot-id');
+
+        const autoClass = document.getElementById('auto-class-id');
+        const autoTeacher = document.getElementById('auto-teacher-id');
+        const autoRoom = document.getElementById('auto-classroom-id');
+        const autoSlot = document.getElementById('auto-timeslot-id');
+
         const filterRooms = Array.isArray(data.filterClassrooms)
           ? data.filterClassrooms
-          : (Array.isArray(data.classrooms) ? data.classrooms : []);
-        const rooms = Array.isArray(data.classrooms) ? data.classrooms : [];
-        const teachers = Array.isArray(data.teachers) ? data.teachers : [];
-        const classes = Array.isArray(data.classes) ? data.classes : [];
-        const slots = Array.isArray(data.timeSlots) ? data.timeSlots : [];
+          : roomsCache;
+        const rooms = roomsCache;
+        const teachers = teachersCache;
+        const classes = classesCache;
+        const slots = activeSlotsCache;
 
         const prevFilterRoom = filterRoom.value;
         const prevFilterTeacher = filterTeacher.value;
@@ -784,17 +1561,37 @@
         filterTeacher.innerHTML = '<option value="">Tất cả giảng viên</option>' +
           teachers.map(t => `<option value="${t.id}">${escapeHtml(t.fullName)}</option>`).join('');
 
-        schedClass.innerHTML = classes.length === 0
+        const classOptionsHtml = classes.length === 0
           ? '<option value="">-- Không có lớp đang mở / sắp khai giảng --</option>'
           : classes.map(c => `<option value="${c.id}">[${escapeHtml(c.classCode)}] ${escapeHtml(c.className)} (GV: ${escapeHtml(c.teacherName)})</option>`).join('');
 
-        schedRoom.innerHTML = rooms.length === 0
+        const roomOptionsHtml = rooms.length === 0
           ? '<option value="">-- Chưa có phòng học khả dụng --</option>'
-          : rooms.map(r => `<option value="${r.id}">${escapeHtml(r.name)} (${r.capacity} chỗ)</option>`).join('');
+          : rooms.map(r => {
+              const occ = r.isOccupied && Array.isArray(r.occupiedClassCodes) && r.occupiedClassCodes.length > 0
+                ? ` — Đang mở: ${r.occupiedClassCodes.join(', ')}`
+                : ' — ✓ Phòng trống';
+              const defT = r.defaultTeacherName ? ` • GV: ${r.defaultTeacherName}` : '';
+              return `<option value="${r.id}">${escapeHtml(`${r.name} (${r.capacity} chỗ)${occ}${defT}`)}</option>`;
+            }).join('');
 
-        schedSlot.innerHTML = slots.length === 0
+        const slotOptionsHtml = slots.length === 0
           ? '<option value="">-- Chưa có ca học --</option>'
           : slots.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.timeRange)})</option>`).join('');
+
+        schedClass.innerHTML = classOptionsHtml;
+        schedRoom.innerHTML = roomOptionsHtml;
+        schedSlot.innerHTML = slotOptionsHtml;
+        renderTeacherSelectOptions(schedTeacher, teachers, '-- Giữ theo giảng viên của lớp --');
+
+        if (esRoom) esRoom.innerHTML = roomOptionsHtml;
+        if (esSlot) esSlot.innerHTML = slotOptionsHtml;
+        if (esTeacher) renderTeacherSelectOptions(esTeacher, teachers, '-- Giữ nguyên giảng viên hiện tại --');
+
+        if (autoClass) autoClass.innerHTML = classOptionsHtml;
+        if (autoTeacher) renderTeacherSelectOptions(autoTeacher, teachers, '-- Giữ theo giảng viên hiện tại của lớp --');
+        if (autoRoom) autoRoom.innerHTML = '<option value="">-- Tự động chọn phòng đủ chỗ --</option>' + rooms.map(r => `<option value="${r.id}">${escapeHtml(r.name)} (${r.capacity} chỗ)</option>`).join('');
+        if (autoSlot) autoSlot.innerHTML = '<option value="">-- Tự động chọn ca phù hợp --</option>' + slots.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.timeRange)})</option>`).join('');
 
         const initialParams = new URLSearchParams(window.location.search);
         const urlTeacherId = !initialUrlApplied ? (initialParams.get('teacherId') || '') : '';
@@ -819,6 +1616,679 @@
         needLookups = false;
       }
 
+      async function runCreateConflictCheck() {
+        const classId = parseInt(document.getElementById('sched-class-id').value, 10) || 0;
+        const classroomId = parseInt(document.getElementById('sched-classroom-id').value, 10) || 0;
+        const timeSlotId = parseInt(document.getElementById('sched-timeslot-id').value, 10) || 0;
+        const teacherId = parseInt(document.getElementById('sched-teacher-id').value, 10) || null;
+        const daysOfWeek = Array.from(document.querySelectorAll('input[name="sched-days"]:checked'))
+          .map(cb => parseInt(cb.value, 10))
+          .filter(n => !isNaN(n));
+
+        const box = document.getElementById('sched-live-conflict-box');
+        if (classId <= 0 || classroomId <= 0 || timeSlotId <= 0 || daysOfWeek.length === 0) {
+          if (box) box.style.display = 'none';
+          return;
+        }
+
+        if (createConflictController) createConflictController.abort();
+        const controller = new AbortController();
+        createConflictController = controller;
+
+        try {
+          const data = await fetchJson('/Admin/api/Schedules/CheckConflicts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ classId, classroomId, timeSlotId, teacherId, daysOfWeek }),
+            signal: controller.signal
+          });
+          renderTeacherSelectOptions(
+            document.getElementById('sched-teacher-id'),
+            teachersCache,
+            '-- Giữ theo giảng viên của lớp --',
+            data.teacherStatuses
+          );
+          renderLiveConflictBox('sched-live-conflict-box', data, 'data-pick-create-teacher');
+        } catch (err) {
+          if (isAbortError(err)) return;
+        } finally {
+          if (createConflictController === controller) createConflictController = null;
+        }
+      }
+
+      async function runEditConflictCheck() {
+        const scheduleId = parseInt(document.getElementById('es-schedule-id').value, 10) || 0;
+        const classId = parseInt(document.getElementById('es-class-id').value, 10) || 0;
+        const classroomId = parseInt(document.getElementById('es-classroom-id').value, 10) || 0;
+        const timeSlotId = parseInt(document.getElementById('es-timeslot-id').value, 10) || 0;
+        const dayOfWeek = parseInt(document.getElementById('es-day-of-week').value, 10) || 0;
+        const teacherId = parseInt(document.getElementById('es-teacher-id').value, 10) || null;
+
+        if (scheduleId <= 0 || classId <= 0 || classroomId <= 0 || timeSlotId <= 0 || dayOfWeek < 1) {
+          return;
+        }
+
+        if (editConflictController) editConflictController.abort();
+        const controller = new AbortController();
+        editConflictController = controller;
+
+        try {
+          const data = await fetchJson('/Admin/api/Schedules/CheckConflicts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              classId,
+              classroomId,
+              timeSlotId,
+              teacherId,
+              excludeScheduleId: scheduleId,
+              daysOfWeek: [dayOfWeek]
+            }),
+            signal: controller.signal
+          });
+          renderTeacherSelectOptions(
+            document.getElementById('es-teacher-id'),
+            teachersCache,
+            '-- Giữ nguyên giảng viên hiện tại --',
+            data.teacherStatuses
+          );
+          renderLiveConflictBox('es-live-conflict-box', data, 'data-pick-edit-teacher');
+        } catch (err) {
+          if (isAbortError(err)) return;
+        } finally {
+          if (editConflictController === controller) editConflictController = null;
+        }
+      }
+
+      async function openEditScheduleModal(scheduleId) {
+        let item = schedulesCache.find(s => s.id === scheduleId);
+        if (!item) {
+          try {
+            const fullData = await fetchJson('/Admin/api/Schedules/Weekly?lookups=false');
+            item = (Array.isArray(fullData.schedules) ? fullData.schedules : []).find(s => s.id === scheduleId);
+          } catch (_) {}
+        }
+        if (!item) {
+          showToast('Không tìm thấy thông tin lịch học để chỉnh sửa.', 'warning');
+          return;
+        }
+
+        showEditError('');
+        document.getElementById('es-schedule-id').value = String(item.id);
+        document.getElementById('es-class-id').value = String(item.classId);
+
+        const banner = document.getElementById('es-class-banner');
+        const conflictNote = item.hasConflict && Array.isArray(item.conflictMessages) && item.conflictMessages.length > 0
+          ? `<div style="margin-top: 6px; padding: 6px 8px; border-radius: 6px; background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; font-size: 0.8rem;">
+              <strong>⚠ Lịch đang trùng:</strong> ${item.conflictMessages.map(m => escapeHtml(m)).join('<br>')}
+             </div>`
+          : '';
+        banner.innerHTML = `
+          <div><strong>[${escapeHtml(item.classCode)}] ${escapeHtml(item.className)}</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
+            Giảng viên hiện tại: <strong>${escapeHtml(item.teacherName)}</strong> &bull; Hiện tại: ${escapeHtml(item.dayLabel)}, ${escapeHtml(item.classroomName)}
+          </div>
+          ${conflictNote}
+        `;
+
+        renderTeacherSelectOptions(document.getElementById('es-teacher-id'), teachersCache, '-- Giữ nguyên giảng viên hiện tại --');
+        document.getElementById('es-teacher-id').value = item.teacherId ? String(item.teacherId) : '';
+        document.getElementById('es-day-of-week').value = String(item.dayOfWeek);
+        document.getElementById('es-classroom-id').value = String(item.classroomId);
+        document.getElementById('es-timeslot-id').value = String(item.timeSlotId);
+
+        openModal('modal-edit-schedule');
+        runEditConflictCheck();
+      }
+
+      async function submitEditScheduleForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showEditError('');
+
+        const scheduleId = parseInt(document.getElementById('es-schedule-id').value, 10) || 0;
+        const teacherVal = document.getElementById('es-teacher-id').value;
+        const payload = {
+          classroomId: parseInt(document.getElementById('es-classroom-id').value, 10) || 0,
+          timeSlotId: parseInt(document.getElementById('es-timeslot-id').value, 10) || 0,
+          dayOfWeek: parseInt(document.getElementById('es-day-of-week').value, 10) || 0,
+          teacherId: teacherVal ? parseInt(teacherVal, 10) : null
+        };
+
+        const btn = document.getElementById('es-submit-btn');
+        setBusy(btn, true);
+        setModalBusy('modal-edit-schedule', true);
+        try {
+          const data = await postJson(`/Admin/api/Schedules/Update/${encodeURIComponent(scheduleId)}`, payload);
+          setModalBusy('modal-edit-schedule', false);
+          closeModal('modal-edit-schedule');
+          showToast(data.message || 'Đã cập nhật lịch học thành công.');
+          needLookups = true;
+          await loadWeeklySchedules();
+        } catch (err) {
+          console.error(err);
+          showEditError(err.message);
+        } finally {
+          setModalBusy('modal-edit-schedule', false);
+          setBusy(btn, false);
+        }
+      }
+
+      function renderConflictsBanner(conflicts) {
+        const banner = document.getElementById('schedule-conflicts-banner');
+        const titleEl = document.getElementById('schedule-conflicts-title');
+        const listEl = document.getElementById('schedule-conflicts-list');
+        if (!banner || !listEl) return;
+
+        const list = Array.isArray(conflicts) ? conflicts : [];
+        if (list.length === 0) {
+          banner.style.display = 'none';
+          listEl.innerHTML = '';
+          return;
+        }
+
+        const buildActionButton = (sourceType, schedId, roomId, codeLabel) => {
+          if (sourceType === 'room' && roomId) {
+            return `<button type="button" class="btn btn-sm btn-secondary btn-edit-room-schedule" data-room-id="${roomId}" style="font-size: 0.74rem; padding: 2px 8px; height: 26px;">Đổi GV / Đổi thứ (${escapeHtml(codeLabel)})</button>`;
+          }
+          if (schedId) {
+            return `<button type="button" class="btn btn-sm btn-secondary btn-edit-schedule" data-id="${schedId}" style="font-size: 0.74rem; padding: 2px 8px; height: 26px;">Thay GV / Ca (${escapeHtml(codeLabel)})</button>`;
+          }
+          return '';
+        };
+
+        // Gom nhóm trùng lịch theo từng cặp phòng / lớp để cảnh báo gọn, không lặp lại theo từng thứ
+        const dayShortMap = { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' };
+        const groupedMap = new Map();
+        list.forEach(c => {
+          const leftId = c.sourceType === 'room' ? `room:${c.classroomId}` : `class:${c.classId || c.scheduleId}`;
+          const rightId = c.otherSourceType === 'room' ? `room:${c.otherClassroomId}` : `class:${c.otherClassId || c.otherScheduleId}`;
+          const pairKey = [leftId, rightId].sort().join('|') + '|' + (c.conflictType || '');
+          if (!groupedMap.has(pairKey)) {
+            groupedMap.set(pairKey, {
+              ...c,
+              days: new Set([c.dayOfWeek]),
+              slots: new Set([c.timeSlotName].filter(Boolean))
+            });
+          } else {
+            const g = groupedMap.get(pairKey);
+            g.days.add(c.dayOfWeek);
+            if (c.timeSlotName) g.slots.add(c.timeSlotName);
+          }
+        });
+
+        const grouped = Array.from(groupedMap.values());
+        banner.style.display = 'block';
+        titleEl.textContent = `Phát hiện ${grouped.length} cặp phòng / lớp bị trùng lịch`;
+        listEl.innerHTML = grouped.map(c => {
+          const dayList = Array.from(c.days).sort((a, b) => a - b).map(d => dayShortMap[d] || `T${d}`).join(', ');
+          const slotList = Array.from(c.slots).join(', ');
+          const reasonTag = c.conflictType === 'teacher' ? 'Trùng GV' : (c.conflictType === 'room' ? 'Trùng phòng' : 'Trùng ca');
+          const teacherNote = c.teacherName ? ` (${escapeHtml(c.teacherName)})` : '';
+          return `
+            <div class="tkb-conflict-row">
+              <div style="color: #7F1D1D;">
+                <span class="badge badge-danger" style="margin-right: 6px; font-size: 0.68rem;">${reasonTag}</span>
+                <strong>${escapeHtml(c.classCode)}</strong> &harr; <strong>${escapeHtml(c.otherClassCode)}</strong>${teacherNote}
+                <span style="color: #991B1B; font-size: 0.76rem; margin-left: 6px;">(${escapeHtml(dayList)}${slotList ? ` &bull; ${escapeHtml(slotList)}` : ''})</span>
+              </div>
+              <div style="display: inline-flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap;">
+                ${buildActionButton(c.sourceType, c.scheduleId, c.classroomId, c.classCode)}
+                ${buildActionButton(c.otherSourceType, c.otherScheduleId, c.otherClassroomId, c.otherClassCode)}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderRoomSummaries(items) {
+        const tbody = document.getElementById('room-schedules-summary-tbody');
+        const countBadge = document.getElementById('room-config-count');
+        const list = Array.isArray(items) ? items : [];
+        if (countBadge) countBadge.textContent = String(list.length);
+        if (!tbody) return;
+
+        if (list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chưa có phòng học nào cấu hình lịch mặc định.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = list.map(r => {
+          const dStart = parseClassDateOnly(r.openDate);
+          const dEnd = parseClassDateOnly(r.closeDate);
+          const dateRange = (dStart && dEnd)
+            ? `${formatFullDate(dStart)} &rarr; ${formatFullDate(dEnd)}`
+            : '<span class="text-muted">Chưa đặt ngày mở - kết thúc</span>';
+          const totalHtml = r.totalSessions > 0
+            ? `<div style="font-size: 0.78rem; font-weight: 700; color: var(--primary-700, #1D4ED8); margin-top: 2px;">Tổng ${r.totalSessions} ca (${r.totalWeeks} tuần)</div>`
+            : '';
+          const occCodes = Array.isArray(r.occupiedClassCodes) ? r.occupiedClassCodes : [];
+          const statusHtml = r.isOccupied && occCodes.length > 0
+            ? `<span class="badge badge-success">✓ Đang mở: ${escapeHtml(occCodes.join(', '))}</span>`
+            : '<span class="badge badge-neutral">Phòng trống (Chưa lên TKB)</span>';
+          const conflictSub = r.hasConflict && Array.isArray(r.conflictMessages) && r.conflictMessages.length > 0
+            ? `<div style="font-size: 0.74rem; color: #991B1B; margin-top: 3px;">${escapeHtml(r.conflictMessages[0])}</div>`
+            : '';
+
+          return `
+            <tr style="${r.hasConflict ? 'background: #FEF2F2;' : ''}">
+              <td>
+                <strong>${escapeHtml(r.classroomName)}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-secondary);">${escapeHtml(r.defaultCourseTitle || 'Chưa chọn khóa học')}</div>
+              </td>
+              <td>${escapeHtml(r.defaultTeacherName || 'Chưa gán GV')}</td>
+              <td>
+                <div style="font-weight: 600; font-size: 0.82rem;">${escapeHtml(r.scheduleDaysLabel)}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.slotName)} (${escapeHtml(r.timeRange)})</div>
+              </td>
+              <td><span class="badge badge-primary">${r.sessionsPerWeek} ca/tuần</span></td>
+              <td>
+                <div style="font-size: 0.8rem;">${dateRange}</div>
+                ${totalHtml}
+              </td>
+              <td>${statusHtml}${conflictSub}</td>
+              <td class="text-right">
+                <button type="button" class="btn btn-sm btn-secondary btn-edit-room-schedule" data-room-id="${r.classroomId}">Sửa / Đổi GV</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      let editRoomConflictController = null;
+
+      function renderRoomDaySelectOptions(dayOptionStatuses) {
+        const sel = document.getElementById('er-schedule-days');
+        if (!sel) return;
+        const prev = sel.value;
+        const statusMap = new Map((Array.isArray(dayOptionStatuses) ? dayOptionStatuses : []).map(d => [d.value, d]));
+        const baseOptions = [
+          { value: '', label: '-- Chưa cố định thứ --' },
+          { value: 't246', label: 'Thứ 2 - Thứ 4 - Thứ 6 (3 ca/tuần)' },
+          { value: 't357', label: 'Thứ 3 - Thứ 5 - Thứ 7 (3 ca/tuần)' },
+          { value: 'all', label: 'Cả tuần Thứ 2 - Thứ 7 (6 ca/tuần)' }
+        ];
+        sel.innerHTML = baseOptions.map(opt => {
+          const st = opt.value ? statusMap.get(opt.value) : null;
+          let suffix = '';
+          if (st) {
+            suffix = st.isAvailable ? ' — ✓ Không trùng' : ' — ⚠ Đang trùng';
+          }
+          return `<option value="${opt.value}">${escapeHtml(opt.label + suffix)}</option>`;
+        }).join('');
+        sel.value = prev;
+      }
+
+      function renderEditRoomLiveConflictBox(data) {
+        const box = document.getElementById('er-live-conflict-box');
+        if (!box) return;
+        if (!data) {
+          box.style.display = 'none';
+          box.innerHTML = '';
+          return;
+        }
+
+        const conflicts = Array.isArray(data.conflicts) ? data.conflicts : [];
+        const freeTeachers = (Array.isArray(data.teacherStatuses) ? data.teacherStatuses : []).filter(t => t.isAvailable);
+        const freeDays = (Array.isArray(data.dayOptionStatuses) ? data.dayOptionStatuses : []).filter(d => d.isAvailable);
+
+        if (conflicts.length === 0) {
+          box.style.display = 'block';
+          box.style.background = '#ECFDF5';
+          box.style.border = '1px solid #A7F3D0';
+          box.style.color = '#065F46';
+          box.innerHTML = '<strong>✓ Không còn trùng lịch:</strong> Cấu hình giảng viên, thứ học và ca học hiện tại đều hợp lệ. Nhấn <strong>"Lưu thay đổi lịch phòng"</strong> để cập nhật.';
+          return;
+        }
+
+        box.style.display = 'block';
+        box.style.background = '#FEF2F2';
+        box.style.border = '1px solid #FECACA';
+        box.style.color = '#991B1B';
+
+        const listHtml = conflicts.map(m => `<li style="margin-bottom: 3px;">${escapeHtml(m)}</li>`).join('');
+        const teacherBtns = freeTeachers.length > 0
+          ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #FCA5A5;">
+               <div style="font-weight: 600; font-size: 0.78rem; margin-bottom: 5px; color: #7F1D1D;">Cách 1 — Đổi nhanh sang giảng viên rảnh:</div>
+               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                 ${freeTeachers.slice(0, 6).map(t => `<button type="button" class="btn btn-sm btn-secondary" data-er-pick-teacher="${t.id}" style="font-size: 0.75rem; padding: 3px 8px; background: #fff; border-color: #93C5FD; color: #1D4ED8;">Đổi GV: ${escapeHtml(t.fullName)}</button>`).join('')}
+               </div>
+             </div>`
+          : '';
+        const dayBtns = freeDays.length > 0
+          ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #FCA5A5;">
+               <div style="font-weight: 600; font-size: 0.78rem; margin-bottom: 5px; color: #7F1D1D;">Cách 2 — Hoặc đổi sang thứ học không trùng:</div>
+               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                 ${freeDays.map(d => `<button type="button" class="btn btn-sm btn-secondary" data-er-pick-days="${d.value}" style="font-size: 0.75rem; padding: 3px 8px; background: #fff; border-color: #C4B5FD; color: #5B21B6;">Đổi thứ: ${escapeHtml(d.label)}</button>`).join('')}
+               </div>
+             </div>`
+          : '';
+
+        box.innerHTML = `<strong>⚠ Lịch phòng đang bị trùng (${conflicts.length}):</strong><ul style="margin: 6px 0 0 1.25rem; padding: 0;">${listHtml}</ul>${teacherBtns}${dayBtns}`;
+      }
+
+      async function runEditRoomConflictCheck() {
+        const roomId = parseInt(document.getElementById('er-room-id').value, 10) || 0;
+        const teacherVal = document.getElementById('er-teacher-id').value;
+        const scheduleDays = document.getElementById('er-schedule-days').value || null;
+        const timeSlotId = parseInt(document.getElementById('er-timeslot-id').value, 10) || null;
+        const openDate = document.getElementById('er-open-date').value || null;
+        const closeDate = document.getElementById('er-close-date').value || null;
+
+        if (roomId <= 0 || !scheduleDays || !timeSlotId) {
+          renderEditRoomLiveConflictBox(null);
+          return;
+        }
+
+        if (editRoomConflictController) editRoomConflictController.abort();
+        const controller = new AbortController();
+        editRoomConflictController = controller;
+
+        try {
+          const data = await fetchJson('/Admin/api/Schedules/CheckRoomConflicts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              classroomId: roomId,
+              teacherId: teacherVal ? parseInt(teacherVal, 10) : null,
+              scheduleDays,
+              timeSlotId,
+              openDate,
+              closeDate
+            }),
+            signal: controller.signal
+          });
+          renderTeacherSelectOptions(
+            document.getElementById('er-teacher-id'),
+            teachersCache,
+            '-- Chưa chỉ định giảng viên --',
+            data.teacherStatuses
+          );
+          renderRoomDaySelectOptions(data.dayOptionStatuses);
+          renderEditRoomLiveConflictBox(data);
+        } catch (err) {
+          if (isAbortError(err)) return;
+        } finally {
+          if (editRoomConflictController === controller) editRoomConflictController = null;
+        }
+      }
+
+      function showEditRoomError(msg) {
+        const box = document.getElementById('er-form-error');
+        if (!box) return;
+        box.textContent = msg || '';
+        box.style.display = msg ? 'block' : 'none';
+      }
+
+      function openEditRoomModal(roomId) {
+        const summary = roomSummariesCache.find(r => r.classroomId === roomId);
+        const roomLookup = roomsCache.find(r => r.id === roomId);
+        if (!summary && !roomLookup) {
+          showToast('Không tìm thấy thông tin phòng học để chỉnh sửa.', 'warning');
+          return;
+        }
+
+        const rName = summary?.classroomName || roomLookup?.name || '';
+        const teacherId = summary ? summary.defaultTeacherId : roomLookup?.defaultTeacherId;
+        const scheduleDays = summary ? summary.scheduleDays : roomLookup?.scheduleDays;
+        const timeSlotId = summary ? summary.timeSlotId : roomLookup?.defaultTimeSlotId;
+        const openDate = summary ? summary.openDate : roomLookup?.openDate;
+        const closeDate = summary ? summary.closeDate : roomLookup?.closeDate;
+        const conflictMsgs = Array.isArray(summary?.conflictMessages) ? summary.conflictMessages : [];
+
+        showEditRoomError('');
+        document.getElementById('er-room-id').value = String(roomId);
+        document.getElementById('er-modal-title').textContent = `Chỉnh sửa lịch phòng: ${rName}`;
+
+        const conflictNote = conflictMsgs.length > 0
+          ? `<div style="margin-top: 6px; padding: 6px 8px; border-radius: 6px; background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; font-size: 0.8rem;">
+               <strong>⚠ Trùng lịch phòng:</strong> ${conflictMsgs.map(m => escapeHtml(m)).join('<br>')}
+             </div>`
+          : '';
+        document.getElementById('er-room-banner').innerHTML = `
+          <div><strong>${escapeHtml(rName)}</strong>${summary?.defaultCourseTitle ? ' &bull; ' + escapeHtml(summary.defaultCourseTitle) : ''}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
+            ${summary ? `${escapeHtml(summary.scheduleDaysLabel)} (${summary.sessionsPerWeek} ca/tuần${summary.totalSessions > 0 ? `, Tổng ${summary.totalSessions} ca` : ''})` : ''}
+          </div>
+          ${conflictNote}
+        `;
+
+        const erTeacherSel = document.getElementById('er-teacher-id');
+        renderTeacherSelectOptions(erTeacherSel, teachersCache, '-- Chưa chỉ định giảng viên --');
+        erTeacherSel.value = teacherId ? String(teacherId) : '';
+
+        const erSlotSel = document.getElementById('er-timeslot-id');
+        erSlotSel.innerHTML = '<option value="">-- Chưa chọn ca học --</option>' +
+          activeSlotsCache.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.timeRange)})</option>`).join('');
+        erSlotSel.value = timeSlotId ? String(timeSlotId) : '';
+
+        document.getElementById('er-schedule-days').value = scheduleDays || '';
+        const od = parseClassDateOnly(openDate);
+        const cd = parseClassDateOnly(closeDate);
+        document.getElementById('er-open-date').value = od ? toIsoDate(od) : '';
+        document.getElementById('er-close-date').value = cd ? toIsoDate(cd) : '';
+
+        openModal('modal-edit-room-schedule');
+        runEditRoomConflictCheck();
+        focusFirstField('modal-edit-room-schedule', 'er-teacher-id');
+      }
+
+      async function submitEditRoomForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showEditRoomError('');
+
+        const roomId = parseInt(document.getElementById('er-room-id').value, 10) || 0;
+        const summary = roomSummariesCache.find(r => r.classroomId === roomId);
+        const roomLookup = roomsCache.find(r => r.id === roomId);
+        if (!summary && !roomLookup) {
+          showEditRoomError('Không tìm thấy thông tin phòng học.');
+          return;
+        }
+
+        const openDateVal = document.getElementById('er-open-date').value;
+        const closeDateVal = document.getElementById('er-close-date').value;
+        if (openDateVal && closeDateVal && closeDateVal <= openDateVal) {
+          showEditRoomError('Ngày kết thúc mở lớp của phòng phải sau ngày bắt đầu.');
+          return;
+        }
+
+        const teacherVal = document.getElementById('er-teacher-id').value;
+        const slotVal = document.getElementById('er-timeslot-id').value;
+        const payload = {
+          name: summary?.classroomName || roomLookup?.name || '',
+          location: summary?.location ?? roomLookup?.location ?? null,
+          capacity: Number(summary?.capacity ?? roomLookup?.capacity) || 30,
+          description: summary?.description ?? roomLookup?.description ?? null,
+          defaultCourseId: summary?.defaultCourseId ?? roomLookup?.defaultCourseId ?? null,
+          defaultTeacherId: teacherVal ? parseInt(teacherVal, 10) : null,
+          scheduleDays: document.getElementById('er-schedule-days').value || null,
+          defaultTimeSlotId: slotVal ? parseInt(slotVal, 10) : null,
+          openDate: openDateVal || null,
+          closeDate: closeDateVal || null,
+          isActive: summary?.isActive ?? true
+        };
+
+        const btn = document.getElementById('er-submit-btn');
+        setBusy(btn, true);
+        setModalBusy('modal-edit-room-schedule', true);
+        try {
+          const data = await postJson(`/Admin/api/Facilities/Update/${encodeURIComponent(roomId)}`, payload, 'PUT');
+          setModalBusy('modal-edit-room-schedule', false);
+          closeModal('modal-edit-room-schedule');
+          if (Array.isArray(data.warnings) && data.warnings.length > 0) {
+            showToast(`Đã cập nhật phòng, nhưng cảnh báo trùng lịch: ${data.warnings[0]}`, 'warning', 6000);
+          } else {
+            showToast(data.message || 'Đã cập nhật lịch phòng học.');
+          }
+          needLookups = true;
+          await loadWeeklySchedules();
+        } catch (err) {
+          console.error(err);
+          showEditRoomError(err.message);
+        } finally {
+          setModalBusy('modal-edit-room-schedule', false);
+          setBusy(btn, false);
+        }
+      }
+
+      function renderAutoPreviewResult(data) {
+        const section = document.getElementById('auto-preview-section');
+        const banner = document.getElementById('auto-preview-banner');
+        const tbody = document.getElementById('auto-preview-tbody');
+        const applyBtn = document.getElementById('btn-apply-auto-schedule');
+        const overrideSelect = document.getElementById('auto-override-teacher-id');
+
+        section.style.display = 'block';
+        autoPreviewItems = Array.isArray(data.items)
+          ? data.items.map(it => ({ ...it }))
+          : [];
+
+        const statuses = Array.isArray(data.teacherStatuses) ? data.teacherStatuses : [];
+        const currentTid = data.classInfo && data.classInfo.teacherId ? String(data.classInfo.teacherId) : '';
+        renderTeacherSelectOptions(overrideSelect, teachersCache, '-- Giữ giảng viên hiện tại --', statuses);
+        if (currentTid) overrideSelect.value = currentTid;
+
+        if (data.hasConflicts) {
+          const warnItems = Array.isArray(data.warnings) && data.warnings.length > 0
+            ? `<ul style="margin: 6px 0 0 1.25rem; padding: 0;">${data.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>`
+            : '';
+          banner.style.background = '#FEF2F2';
+          banner.style.border = '1px solid #FECACA';
+          banner.style.color = '#991B1B';
+          banner.innerHTML = `<strong>⚠ Cảnh báo trùng lịch (${data.warningCount} buổi):</strong> Đề xuất tự động có buổi bị trùng. Hãy chọn <strong>"Thay giáo viên khác"</strong> rảnh ngay bên dưới hoặc đổi phòng/ca học trước khi lưu.${warnItems}`;
+        } else {
+          banner.style.background = '#ECFDF5';
+          banner.style.border = '1px solid #A7F3D0';
+          banner.style.color = '#065F46';
+          banner.innerHTML = `<strong>✓ Sẵn sàng xếp lịch tự động:</strong> Đã tìm được ${autoPreviewItems.length} buổi học hợp lệ cho lớp <strong>${escapeHtml(data.classInfo?.classCode || '')}</strong> (GV: <strong>${escapeHtml(data.classInfo?.teacherName || 'Chưa phân công')}</strong>) mà không trùng phòng hay giảng viên.`;
+        }
+
+        if (autoPreviewItems.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1rem;">Không còn ngày trống phù hợp trong tuần cho lớp này (có thể bật tùy chọn "Thay thế toàn bộ lịch cũ").</td></tr>';
+          applyBtn.disabled = true;
+          return;
+        }
+
+        tbody.innerHTML = autoPreviewItems.map((row, idx) => {
+          const slotOpts = activeSlotsCache.map(s =>
+            `<option value="${s.id}" ${s.id === row.timeSlotId ? 'selected' : ''}>${escapeHtml(s.name)} (${escapeHtml(s.timeRange)})</option>`
+          ).join('');
+          const roomOpts = roomsCache.map(r =>
+            `<option value="${r.id}" ${r.id === row.classroomId ? 'selected' : ''}>${escapeHtml(r.name)} (${r.capacity} chỗ)</option>`
+          ).join('');
+
+          const statusHtml = row.hasConflict
+            ? `<div style="color: #991B1B; font-size: 0.8rem;">
+                 <span class="badge badge-danger" style="margin-bottom: 3px;">⚠ Trùng lịch</span>
+                 <div>${escapeHtml(row.conflictMessage || 'Bị trùng lịch')}</div>
+               </div>`
+            : `<span class="badge badge-success">✓ Không trùng</span>`;
+
+          const alts = Array.isArray(row.alternativeTeachers) ? row.alternativeTeachers : [];
+          const altHtml = alts.length === 0
+            ? '<span class="text-muted" style="font-size: 0.78rem;">Không có GV rảnh ở ca này</span>'
+            : alts.slice(0, 4).map(t =>
+                `<button type="button" class="btn btn-sm btn-secondary" data-auto-pick-teacher="${t.id}" style="font-size: 0.72rem; padding: 2px 7px; margin: 2px 2px 2px 0; background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE;">Thay: ${escapeHtml(t.fullName)}</button>`
+              ).join('');
+
+          return `
+            <tr style="${row.hasConflict ? 'background: #FEF2F2;' : ''}">
+              <td style="white-space: nowrap;"><strong>${escapeHtml(row.dayLabel)}</strong></td>
+              <td>
+                <select class="form-control" data-auto-row-slot="${idx}" style="font-size: 0.8rem; padding: 4px 6px; min-width: 155px;">${slotOpts}</select>
+              </td>
+              <td>
+                <select class="form-control" data-auto-row-room="${idx}" style="font-size: 0.8rem; padding: 4px 6px; min-width: 145px;">${roomOpts}</select>
+              </td>
+              <td>${statusHtml}</td>
+              <td>${altHtml}</td>
+            </tr>
+          `;
+        }).join('');
+
+        applyBtn.disabled = false;
+      }
+
+      async function runAutoPreview(overrideTeacherId = null) {
+        showAutoError('');
+        const classId = parseInt(document.getElementById('auto-class-id').value, 10) || 0;
+        if (classId <= 0) {
+          showAutoError('Vui lòng chọn lớp học cần xếp lịch tự động.');
+          return;
+        }
+
+        const teacherSelect = document.getElementById('auto-teacher-id');
+        if (overrideTeacherId !== null && overrideTeacherId !== undefined) {
+          teacherSelect.value = overrideTeacherId ? String(overrideTeacherId) : '';
+        }
+
+        const preferredDays = Array.from(document.querySelectorAll('input[name="auto-days"]:checked'))
+          .map(cb => parseInt(cb.value, 10))
+          .filter(n => !isNaN(n));
+
+        const payload = {
+          classId,
+          sessionsPerWeek: parseInt(document.getElementById('auto-sessions').value, 10) || 2,
+          teacherId: parseInt(teacherSelect.value, 10) || null,
+          preferredTimeSlotId: parseInt(document.getElementById('auto-timeslot-id').value, 10) || null,
+          preferredClassroomId: parseInt(document.getElementById('auto-classroom-id').value, 10) || null,
+          preferredDays,
+          replaceExisting: document.getElementById('auto-replace-existing').checked
+        };
+
+        const btn = document.getElementById('btn-run-auto-preview');
+        setBusy(btn, true, 'Đang phân tích...');
+        try {
+          const data = await postJson('/Admin/api/Schedules/AutoPreview', payload);
+          renderAutoPreviewResult(data);
+        } catch (err) {
+          console.error(err);
+          showAutoError(err.message);
+        } finally {
+          setBusy(btn, false);
+        }
+      }
+
+      async function applyAutoSchedule() {
+        showAutoError('');
+        const classId = parseInt(document.getElementById('auto-class-id').value, 10) || 0;
+        if (classId <= 0 || autoPreviewItems.length === 0) {
+          showAutoError('Chưa có lịch đề xuất để lưu.');
+          return;
+        }
+
+        const teacherOverrideVal = document.getElementById('auto-override-teacher-id').value || document.getElementById('auto-teacher-id').value;
+        const payload = {
+          classId,
+          teacherId: teacherOverrideVal ? parseInt(teacherOverrideVal, 10) : null,
+          replaceExisting: document.getElementById('auto-replace-existing').checked,
+          items: autoPreviewItems.map(r => ({
+            dayOfWeek: r.dayOfWeek,
+            timeSlotId: r.timeSlotId,
+            classroomId: r.classroomId
+          }))
+        };
+
+        const btn = document.getElementById('btn-apply-auto-schedule');
+        setBusy(btn, true, 'Đang lưu lịch...');
+        setModalBusy('modal-auto-schedule', true);
+        try {
+          const data = await postJson('/Admin/api/Schedules/AutoApply', payload);
+          setModalBusy('modal-auto-schedule', false);
+          closeModal('modal-auto-schedule');
+          showToast(data.message || 'Đã lưu lịch xếp tự động thành công.');
+          needLookups = true;
+          await loadWeeklySchedules();
+        } catch (err) {
+          console.error(err);
+          showAutoError(err.message);
+        } finally {
+          setModalBusy('modal-auto-schedule', false);
+          setBusy(btn, false);
+        }
+      }
+
       async function deleteSchedule(id, btn) {
         if (!confirm('Bạn có chắc muốn xóa buổi học này khỏi thời khóa biểu?')) return;
         if (btn) btn.disabled = true;
@@ -835,53 +2305,190 @@
         }
       }
 
+      function isItemActiveOnDate(item, cellDate) {
+        const s = parseClassDateOnly(item.startDate);
+        const e = parseClassDateOnly(item.endDate);
+        if (s && cellDate < s) return false;
+        if (e && cellDate > e) return false;
+        return true;
+      }
+
+      function jumpToNearestActiveWeek() {
+        const candidates = getFilteredSchedules()
+          .map(item => ({
+            s: parseClassDateOnly(item.startDate),
+            e: parseClassDateOnly(item.endDate)
+          }))
+          .filter(x => x.s || x.e);
+        if (candidates.length === 0) return;
+
+        // Ưu tiên lịch có ngày kết thúc gần nhất với tuần đang xem
+        candidates.sort((a, b) => {
+          const aRef = (a.e || a.s).getTime();
+          const bRef = (b.e || b.s).getTime();
+          return bRef - aRef;
+        });
+        const best = candidates[0];
+        const targetDate = best.e || best.s;
+        if (targetDate) {
+          currentWeekMonday = getMondayOfWeek(targetDate);
+          document.getElementById('chk-filter-by-week').checked = true;
+          renderGrid(activeSlotsCache, schedulesCache);
+        }
+      }
+
       function renderGrid(timeSlots, schedules) {
+        renderWeekHeaderBar();
         const tbody = document.getElementById('weekly-schedule-tbody');
         if (!timeSlots || timeSlots.length === 0) {
           tbody.innerHTML = stateRow(COLS, 'Chưa có dữ liệu ca học', 'Chưa có ca học (TimeSlots) nào đang kích hoạt trong hệ thống.');
           return;
         }
 
-        const list = Array.isArray(schedules) ? schedules : [];
-        if (list.length === 0 && hasActiveFilter()) {
-          tbody.innerHTML = `<tr><td colspan="${COLS}"><div class="empty-state" style="padding: 2.25rem 1rem;">` +
-            '<div class="empty-state-title">Không có buổi học phù hợp bộ lọc</div>' +
-            '<div class="empty-state-text">Phòng học hoặc giảng viên đang chọn hiện chưa có lịch học nào hoạt động trong tuần.</div>' +
-            '<button type="button" class="btn btn-sm btn-secondary" data-reset-schedule-filter>Đặt lại bộ lọc</button>' +
+        const filterByWeek = document.getElementById('chk-filter-by-week')?.checked;
+        const weekStart = currentWeekMonday;
+
+        const rawList = getFilteredSchedules();
+        const activeConflicts = getFilteredConflicts();
+        const activeConflictByKey = new Map();
+        activeConflicts.forEach(c => {
+          [c.entryKey, c.otherEntryKey].forEach(k => {
+            if (!k) return;
+            if (!activeConflictByKey.has(k)) activeConflictByKey.set(k, []);
+            if (c.message && !activeConflictByKey.get(k).includes(c.message)) {
+              activeConflictByKey.get(k).push(c.message);
+            }
+          });
+        });
+
+        const matchesCell = (item, slotId, day, cellDate) => {
+          if (item.timeSlotId !== slotId || item.dayOfWeek !== day) return false;
+          if (!filterByWeek) return true;
+          return isItemActiveOnDate(item, cellDate);
+        };
+
+        let visibleCount = 0;
+        timeSlots.forEach(slot => {
+          for (let day = 1; day <= 7; day++) {
+            const cellDate = addDays(weekStart, day - 1);
+            visibleCount += rawList.filter(s => matchesCell(s, slot.id, day, cellDate)).length;
+          }
+        });
+
+        if (visibleCount === 0) {
+          const hasAnySchedule = rawList.length > 0;
+          const msgTitle = !hasAnySchedule
+            ? 'Chưa có lớp học nào hiển thị trên Thời khóa biểu'
+            : (filterByWeek ? 'Không có buổi học trong tuần này' : 'Không có buổi học phù hợp bộ lọc');
+          const msgDesc = !hasAnySchedule
+            ? 'Phòng học mới tạo sẽ chưa hiện lên TKB. Hãy vào Quản lý lớp học tạo lớp (Sắp diễn ra / Đang diễn ra) cho phòng đó để hiển thị lên TKB.'
+            : (filterByWeek
+                ? 'Các lớp hoặc phòng học đã kết thúc hoặc chưa bắt đầu trong tuần đang chọn.'
+                : 'Phòng học hoặc giảng viên đang chọn hiện chưa có lịch học nào hoạt động.');
+          const createLinkBtn = !hasAnySchedule
+            ? '<a href="/Admin/classes.html?action=create" class="btn btn-sm btn-primary" style="margin-right: 6px;">+ Tạo lớp học mới</a>'
+            : '';
+          const jumpBtn = (filterByWeek && hasAnySchedule)
+            ? '<button type="button" class="btn btn-sm btn-primary" data-jump-active-week style="margin-right: 6px;">Đi tới tuần có lịch gần nhất</button>'
+            : '';
+          const extraBtn = (filterByWeek && hasAnySchedule)
+            ? '<button type="button" class="btn btn-sm btn-secondary" data-clear-week-filter style="margin-right: 6px;">Hiển thị tất cả các tuần</button>'
+            : '';
+          tbody.innerHTML = `<tr><td colspan="${COLS}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+            `<div class="empty-state-title">${msgTitle}</div>` +
+            `<div class="empty-state-text">${msgDesc}</div>` +
+            `<div>${createLinkBtn}${jumpBtn}${extraBtn}<button type="button" class="btn btn-sm btn-secondary" data-reset-schedule-filter>Đặt lại bộ lọc</button></div>` +
             '</div></td></tr>';
           return;
         }
 
         tbody.innerHTML = timeSlots.map(slot => {
+          const arrowTime = String(slot.timeRange || '').replace(/\s*-\s*/g, ' → ');
+          const startClock = arrowTime.split('→')[0]?.trim() || slot.timeRange || '';
+
           const dayCells = [1, 2, 3, 4, 5, 6, 7].map(day => {
-            const matches = list.filter(s => s.timeSlotId === slot.id && s.dayOfWeek === day);
+            const cellDate = addDays(weekStart, day - 1);
+            const matches = rawList.filter(s => matchesCell(s, slot.id, day, cellDate));
             if (matches.length === 0) {
-              return '<td style="color: var(--text-muted); vertical-align: middle;">—</td>';
+              return '<td class="tkb-day-cell" style="color: var(--text-muted); vertical-align: middle !important;">—</td>';
             }
 
             const cardsHtml = matches.map(item => {
-              const paletteIndex = Math.abs(Number(item.classId) || 0) % CARD_PALETTES.length;
+              const isRoom = item.sourceType === 'room';
+              const paletteIndex = Math.abs(Number(isRoom ? item.classroomId : item.classId) || 0) % CARD_PALETTES.length;
               const palette = CARD_PALETTES[paletteIndex];
+              const itemConflictMsgs = activeConflictByKey.get(item.entryKey) || [];
+              const isConflict = itemConflictMsgs.length > 0;
+              const cardBg = isConflict ? '#FEF2F2' : (isRoom ? '#F5F3FF' : palette.bg);
+              const cardBorder = isConflict ? '1.5px solid #EF4444' : (isRoom ? '1px solid #DDD6FE' : `1px solid ${palette.border}`);
+              const titleColor = isConflict ? '#991B1B' : (isRoom ? '#5B21B6' : palette.title);
+              const conflictTitle = isConflict ? itemConflictMsgs.join('\n') : '';
+              const conflictBadge = isConflict
+                ? `<div title="${escapeHtml(conflictTitle)}" style="margin-top: 2px;"><span class="badge badge-danger" style="font-size: 0.64rem; padding: 1px 5px;">⚠ Trùng lịch</span></div>`
+                : '';
+              const dStart = parseClassDateOnly(item.startDate);
+              const dEnd = parseClassDateOnly(item.endDate);
+              const dateRangeText = (dStart && dEnd)
+                ? `${formatFullDate(dStart)} → ${formatFullDate(dEnd)}`
+                : (dStart ? `Từ ${formatFullDate(dStart)}` : '');
+              const spw = Number(item.sessionsPerWeek) || 0;
+              const ts = Number(item.totalSessions) || 0;
+              const tw = Number(item.totalWeeks) || 0;
+              const caText = spw > 0
+                ? `${spw} ca/tuần${ts > 0 ? ` • Tổng ${ts} ca (${tw} tuần)` : ''}`
+                : '';
+
+              if (isRoom) {
+                return `
+                  <div class="tkb-event-card" title="${escapeHtml(conflictTitle)}" style="background: ${cardBg}; border: ${cardBorder};">
+                    <div class="tkb-card-actions">
+                      <button type="button" class="tkb-mini-btn btn-edit-room-schedule" data-room-id="${item.classroomId}" title="Sửa lịch phòng / Đổi giảng viên" style="color: #5B21B6;">✎</button>
+                    </div>
+                    <div style="font-weight: 700; font-size: 0.76rem; color: ${titleColor}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      ${escapeHtml(item.classroomName)}${item.courseTitle ? ' — ' + escapeHtml(item.courseTitle) : ''}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      GV: <strong>${escapeHtml(item.teacherName)}</strong>
+                    </div>
+                    ${dateRangeText ? `<div style="font-size: 0.68rem; color: var(--text-secondary); margin-top: 1px;">${escapeHtml(dateRangeText)}</div>` : ''}
+                    ${caText ? `<div style="font-size: 0.67rem; color: var(--text-muted);">${escapeHtml(caText)}</div>` : ''}
+                    ${conflictBadge}
+                  </div>
+                `;
+              }
+
               return `
-                <div style="position: relative; background: ${palette.bg}; border: 1px solid ${palette.border}; padding: 8px 20px 8px 8px; border-radius: 6px; margin-bottom: 6px; text-align: left;">
-                  <button type="button" class="btn-delete-schedule" data-id="${item.id}" title="Xóa lịch này" style="position: absolute; top: 4px; right: 5px; font-size: 13px; line-height: 1; color: var(--text-muted); background: none; border: none; cursor: pointer;">&times;</button>
-                  <a href="/Admin/class-detail.html?id=${encodeURIComponent(item.classId)}" style="text-decoration: none; font-weight: 700; font-size: 0.8125rem; color: ${palette.title}; display: block;">${escapeHtml(item.classCode)}</a>
-                  <div style="font-size: 0.75rem; color: var(--text-primary); font-weight: 600;">${escapeHtml(item.classroomName)}</div>
-                  <div style="font-size: 0.72rem; color: var(--text-secondary);">GV: ${escapeHtml(item.teacherName)}</div>
+                <div class="tkb-event-card" title="${escapeHtml(conflictTitle)}" style="background: ${cardBg}; border: ${cardBorder};">
+                  <div class="tkb-card-actions">
+                    <button type="button" class="tkb-mini-btn btn-edit-schedule" data-id="${item.id}" title="Sửa lịch / Thay giảng viên khác" style="color: #1D4ED8;">✎</button>
+                    <button type="button" class="tkb-mini-btn btn-delete-schedule" data-id="${item.id}" title="Xóa lịch này" style="color: var(--text-muted);">&times;</button>
+                  </div>
+                  <a href="/Admin/class-detail.html?id=${encodeURIComponent(item.classId)}" style="text-decoration: none; font-weight: 700; font-size: 0.76rem; color: ${titleColor}; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    ${escapeHtml(item.classCode)} - ${escapeHtml(item.className)}
+                  </a>
+                  <div style="font-size: 0.7rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <strong>${escapeHtml(item.classroomName)}</strong> • GV: ${escapeHtml(item.teacherName)}
+                  </div>
+                  ${dateRangeText ? `<div style="font-size: 0.68rem; color: var(--text-secondary); margin-top: 1px;">${escapeHtml(dateRangeText)}</div>` : ''}
+                  ${caText ? `<div style="font-size: 0.67rem; color: var(--text-muted);">${escapeHtml(caText)}</div>` : ''}
+                  ${conflictBadge}
                 </div>
               `;
             }).join('');
 
-            return `<td style="vertical-align: top; padding: 8px;">${cardsHtml}</td>`;
+            return `<td class="tkb-day-cell">${cardsHtml}</td>`;
           }).join('');
 
           return `
             <tr>
-              <td style="vertical-align: middle; background: var(--neutral-50);">
+              <td class="tkb-slot-cell">
                 <strong>${escapeHtml(slot.name)}</strong><br>
                 <small class="text-muted">${escapeHtml(slot.timeRange)}</small>
               </td>
               ${dayCells}
+              <td class="tkb-time-cell">
+                <strong>${escapeHtml(startClock)}</strong>
+              </td>
             </tr>
           `;
         }).join('');
@@ -910,10 +2517,15 @@
 
         try {
           const data = await fetchJson(`/Admin/api/Schedules/Weekly?${params.toString()}`, { signal: controller.signal });
-          if (data.filterClassrooms || data.classrooms || data.teachers || data.classes) {
+          schedulesCache = Array.isArray(data.schedules) ? data.schedules : [];
+          conflictsCache = Array.isArray(data.conflicts) ? data.conflicts : [];
+          roomSummariesCache = Array.isArray(data.roomSummaries) ? data.roomSummaries : [];
+          if (data.filterClassrooms || data.classrooms || data.teachers || data.classes || data.timeSlots) {
             populateOptions(data);
           }
-          renderGrid(data.timeSlots, data.schedules);
+          renderConflictsBanner(getFilteredConflicts());
+          renderGrid(data.timeSlots, schedulesCache);
+          renderRoomSummaries(roomSummariesCache);
           hasLoadedOnce = true;
         } catch (err) {
           if (isAbortError(err)) return;
@@ -937,10 +2549,12 @@
           .map(cb => parseInt(cb.value, 10))
           .filter(n => !isNaN(n));
 
+        const schedTeacherVal = document.getElementById('sched-teacher-id').value;
         const payload = {
           classId: parseInt(document.getElementById('sched-class-id').value, 10) || 0,
           classroomId: parseInt(document.getElementById('sched-classroom-id').value, 10) || 0,
           timeSlotId: parseInt(document.getElementById('sched-timeslot-id').value, 10) || 0,
+          teacherId: schedTeacherVal ? parseInt(schedTeacherVal, 10) : null,
           daysOfWeek: checkedDays
         };
 
@@ -963,6 +2577,7 @@
           setModalBusy('modal-create-schedule', false);
           closeModal('modal-create-schedule');
           showToast(data.message || 'Xếp lịch học thành công.');
+          needLookups = true;
           await loadWeeklySchedules();
         } catch (err) {
           console.error(err);
@@ -977,6 +2592,9 @@
         bindModalKeyboardAndGuard();
         loadWeeklySchedules();
 
+        document.getElementById('tab-btn-weekly-grid').addEventListener('click', () => switchMainTab('grid'));
+        document.getElementById('tab-btn-room-config').addEventListener('click', () => switchMainTab('rooms'));
+
         const resetScheduleFilters = () => {
           document.getElementById('filter-classroom').value = '';
           document.getElementById('filter-teacher').value = '';
@@ -988,16 +2606,75 @@
 
         document.getElementById('filter-classroom').addEventListener('change', loadWeeklySchedules);
         document.getElementById('filter-teacher').addEventListener('change', loadWeeklySchedules);
-        document.getElementById('btn-reset-schedule-filter').addEventListener('click', resetScheduleFilters);
+        document.getElementById('btn-reset-schedule-filter').addEventListener('click', () => {
+          document.getElementById('chk-filter-by-week').checked = true;
+          resetScheduleFilters();
+        });
 
-        // Event delegation cho nút Xóa lịch, Đặt lại bộ lọc và Thử lại
+        renderWeekHeaderBar();
+        document.getElementById('btn-week-prev').addEventListener('click', () => {
+          currentWeekMonday = addDays(currentWeekMonday, -7);
+          document.getElementById('chk-filter-by-week').checked = true;
+          renderGrid(activeSlotsCache, schedulesCache);
+        });
+        document.getElementById('btn-week-current').addEventListener('click', () => {
+          currentWeekMonday = getMondayOfWeek(new Date());
+          document.getElementById('chk-filter-by-week').checked = true;
+          renderGrid(activeSlotsCache, schedulesCache);
+        });
+        document.getElementById('btn-week-next').addEventListener('click', () => {
+          currentWeekMonday = addDays(currentWeekMonday, 7);
+          document.getElementById('chk-filter-by-week').checked = true;
+          renderGrid(activeSlotsCache, schedulesCache);
+        });
+        document.getElementById('week-picker-date').addEventListener('change', (e) => {
+          const picked = parseClassDateOnly(e.target.value);
+          if (picked) {
+            currentWeekMonday = getMondayOfWeek(picked);
+            document.getElementById('chk-filter-by-week').checked = true;
+            renderGrid(activeSlotsCache, schedulesCache);
+          }
+        });
+        document.getElementById('chk-filter-by-week').addEventListener('change', () => {
+          renderGrid(activeSlotsCache, schedulesCache);
+        });
+        document.getElementById('week-select-dropdown')?.addEventListener('change', (e) => {
+          const picked = parseClassDateOnly(e.target.value);
+          if (picked) {
+            currentWeekMonday = getMondayOfWeek(picked);
+            document.getElementById('chk-filter-by-week').checked = true;
+            renderGrid(activeSlotsCache, schedulesCache);
+          }
+        });
+        document.getElementById('btn-print-tkb')?.addEventListener('click', () => window.print());
+
         document.getElementById('weekly-schedule-tbody').addEventListener('click', (e) => {
+          const editRoomBtn = e.target.closest('.btn-edit-room-schedule');
+          if (editRoomBtn) {
+            openEditRoomModal(Number(editRoomBtn.getAttribute('data-room-id')));
+            return;
+          }
+          const editBtn = e.target.closest('.btn-edit-schedule');
+          if (editBtn) {
+            openEditScheduleModal(Number(editBtn.getAttribute('data-id')));
+            return;
+          }
           const delBtn = e.target.closest('.btn-delete-schedule');
           if (delBtn) {
             deleteSchedule(Number(delBtn.getAttribute('data-id')), delBtn);
             return;
           }
+          if (e.target.closest('[data-jump-active-week]')) {
+            jumpToNearestActiveWeek();
+            return;
+          }
+          if (e.target.closest('[data-clear-week-filter]')) {
+            document.getElementById('chk-filter-by-week').checked = false;
+            renderGrid(activeSlotsCache, schedulesCache);
+            return;
+          }
           if (e.target.closest('[data-reset-schedule-filter]')) {
+            document.getElementById('chk-filter-by-week').checked = false;
             resetScheduleFilters();
             return;
           }
@@ -1006,13 +2683,147 @@
           }
         });
 
+        document.getElementById('schedule-conflicts-banner').addEventListener('click', (e) => {
+          const editRoomBtn = e.target.closest('.btn-edit-room-schedule');
+          if (editRoomBtn) {
+            openEditRoomModal(Number(editRoomBtn.getAttribute('data-room-id')));
+            return;
+          }
+          const editBtn = e.target.closest('.btn-edit-schedule');
+          if (editBtn) {
+            openEditScheduleModal(Number(editBtn.getAttribute('data-id')));
+          }
+        });
+
+        document.getElementById('room-schedules-summary-tbody')?.addEventListener('click', (e) => {
+          const editRoomBtn = e.target.closest('.btn-edit-room-schedule');
+          if (editRoomBtn) {
+            openEditRoomModal(Number(editRoomBtn.getAttribute('data-room-id')));
+          }
+        });
+
+        document.getElementById('edit-room-schedule-form')?.addEventListener('submit', submitEditRoomForm);
+
+        const debouncedEditRoomCheck = debounce(runEditRoomConflictCheck, 150);
+        ['er-teacher-id', 'er-schedule-days', 'er-timeslot-id', 'er-open-date', 'er-close-date'].forEach(elId => {
+          document.getElementById(elId)?.addEventListener('change', debouncedEditRoomCheck);
+        });
+        document.getElementById('er-live-conflict-box')?.addEventListener('click', (e) => {
+          const pickTeacher = e.target.closest('[data-er-pick-teacher]');
+          if (pickTeacher) {
+            document.getElementById('er-teacher-id').value = pickTeacher.getAttribute('data-er-pick-teacher');
+            runEditRoomConflictCheck();
+            return;
+          }
+          const pickDays = e.target.closest('[data-er-pick-days]');
+          if (pickDays) {
+            document.getElementById('er-schedule-days').value = pickDays.getAttribute('data-er-pick-days');
+            runEditRoomConflictCheck();
+          }
+        });
+
         document.getElementById('btn-open-create-schedule').addEventListener('click', () => {
           showError('');
+          const liveBox = document.getElementById('sched-live-conflict-box');
+          if (liveBox) liveBox.style.display = 'none';
           document.querySelectorAll('input[name="sched-days"]').forEach(cb => { cb.checked = false; });
           needLookups = true;
           loadWeeklySchedules();
           focusFirstField('modal-create-schedule', 'sched-class-id');
         });
+
+        const debouncedCreateCheck = debounce(runCreateConflictCheck, 150);
+        document.getElementById('sched-classroom-id').addEventListener('change', () => {
+          const roomId = Number(document.getElementById('sched-classroom-id').value);
+          const room = roomsCache.find(r => r.id === roomId);
+          const teacherSel = document.getElementById('sched-teacher-id');
+          if (room && room.defaultTeacherId && teacherSel && !teacherSel.value) {
+            if (Array.from(teacherSel.options).some(o => o.value === String(room.defaultTeacherId))) {
+              teacherSel.value = String(room.defaultTeacherId);
+            }
+          }
+          if (room && room.defaultTimeSlotId) {
+            const slotSel = document.getElementById('sched-timeslot-id');
+            if (slotSel && Array.from(slotSel.options).some(o => o.value === String(room.defaultTimeSlotId))) {
+              slotSel.value = String(room.defaultTimeSlotId);
+            }
+          }
+          if (room && room.scheduleDays) {
+            const dayMap = { t246: [1, 3, 5], t357: [2, 4, 6], all: [1, 2, 3, 4, 5, 6] };
+            const preset = dayMap[room.scheduleDays] || [];
+            if (preset.length > 0) {
+              document.querySelectorAll('input[name="sched-days"]').forEach(cb => {
+                cb.checked = preset.includes(Number(cb.value));
+              });
+            }
+          }
+          debouncedCreateCheck();
+        });
+        ['sched-class-id', 'sched-teacher-id', 'sched-timeslot-id'].forEach(elId => {
+          document.getElementById(elId).addEventListener('change', debouncedCreateCheck);
+        });
+        document.querySelectorAll('input[name="sched-days"]').forEach(cb => {
+          cb.addEventListener('change', debouncedCreateCheck);
+        });
+        document.getElementById('sched-live-conflict-box').addEventListener('click', (e) => {
+          const pickBtn = e.target.closest('[data-pick-create-teacher]');
+          if (pickBtn) {
+            document.getElementById('sched-teacher-id').value = pickBtn.getAttribute('data-pick-create-teacher');
+            runCreateConflictCheck();
+          }
+        });
+
+        const debouncedEditCheck = debounce(runEditConflictCheck, 150);
+        ['es-teacher-id', 'es-day-of-week', 'es-timeslot-id', 'es-classroom-id'].forEach(elId => {
+          document.getElementById(elId).addEventListener('change', debouncedEditCheck);
+        });
+        document.getElementById('es-live-conflict-box').addEventListener('click', (e) => {
+          const pickBtn = e.target.closest('[data-pick-edit-teacher]');
+          if (pickBtn) {
+            document.getElementById('es-teacher-id').value = pickBtn.getAttribute('data-pick-edit-teacher');
+            runEditConflictCheck();
+          }
+        });
+        document.getElementById('edit-schedule-form').addEventListener('submit', submitEditScheduleForm);
+
+        document.getElementById('btn-open-auto-schedule').addEventListener('click', () => {
+          showAutoError('');
+          document.getElementById('auto-preview-section').style.display = 'none';
+          document.getElementById('btn-apply-auto-schedule').disabled = true;
+          document.querySelectorAll('input[name="auto-days"]').forEach(cb => { cb.checked = false; });
+          autoPreviewItems = [];
+          needLookups = true;
+          loadWeeklySchedules();
+          openModal('modal-auto-schedule');
+          focusFirstField('modal-auto-schedule', 'auto-class-id');
+        });
+        document.getElementById('btn-run-auto-preview').addEventListener('click', () => runAutoPreview(null));
+        document.getElementById('btn-recheck-auto-teacher').addEventListener('click', () => {
+          const tid = document.getElementById('auto-override-teacher-id').value;
+          runAutoPreview(tid || '');
+        });
+        document.getElementById('auto-preview-tbody').addEventListener('click', (e) => {
+          const pickBtn = e.target.closest('[data-auto-pick-teacher]');
+          if (pickBtn) {
+            const tid = pickBtn.getAttribute('data-auto-pick-teacher');
+            document.getElementById('auto-override-teacher-id').value = tid;
+            runAutoPreview(tid);
+          }
+        });
+        document.getElementById('auto-preview-tbody').addEventListener('change', (e) => {
+          const slotSel = e.target.closest('[data-auto-row-slot]');
+          if (slotSel) {
+            const idx = Number(slotSel.getAttribute('data-auto-row-slot'));
+            if (autoPreviewItems[idx]) autoPreviewItems[idx].timeSlotId = parseInt(slotSel.value, 10) || autoPreviewItems[idx].timeSlotId;
+            return;
+          }
+          const roomSel = e.target.closest('[data-auto-row-room]');
+          if (roomSel) {
+            const idx = Number(roomSel.getAttribute('data-auto-row-room'));
+            if (autoPreviewItems[idx]) autoPreviewItems[idx].classroomId = parseInt(roomSel.value, 10) || autoPreviewItems[idx].classroomId;
+          }
+        });
+        document.getElementById('btn-apply-auto-schedule').addEventListener('click', applyAutoSchedule);
 
         document.getElementById('btn-open-manage-timeslots').addEventListener('click', () => {
           resetTimeSlotForm();
@@ -1022,6 +2833,7 @@
         });
 
         document.getElementById('btn-cancel-edit-timeslot').addEventListener('click', resetTimeSlotForm);
+        document.getElementById('btn-seed-default-timeslots')?.addEventListener('click', (e) => seedDefaultTimeSlots(e.currentTarget));
         document.getElementById('timeslot-form').addEventListener('submit', submitTimeSlotForm);
 
         document.getElementById('timeslots-tbody').addEventListener('click', (e) => {
@@ -1033,6 +2845,11 @@
           const toggleBtn = e.target.closest('[data-toggle-timeslot]');
           if (toggleBtn) {
             toggleTimeSlotStatus(Number(toggleBtn.getAttribute('data-toggle-timeslot')), toggleBtn);
+            return;
+          }
+          const delBtn = e.target.closest('[data-delete-timeslot]');
+          if (delBtn) {
+            deleteTimeSlot(Number(delBtn.getAttribute('data-delete-timeslot')), delBtn);
             return;
           }
           if (e.target.closest('[data-retry-timeslots]')) {

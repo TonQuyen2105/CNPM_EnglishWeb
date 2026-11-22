@@ -51,6 +51,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpGet("/Admin/api/Enrollments/List")]
         public async Task<IActionResult> List(
             string? status,
+            string? paymentStatus,
             int? classId,
             string? search,
             int page = 1,
@@ -60,11 +61,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         {
             try
             {
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+
                 if (page < 1) page = 1;
                 if (pageSize < 1) pageSize = 15;
                 if (pageSize > 50) pageSize = 50;
 
-                var query = BuildFilteredEnrollmentsQuery(status, classId, search);
+                var query = BuildFilteredEnrollmentsQuery(status, paymentStatus, classId, search);
 
                 var totalItems = await query.CountAsync(cancellationToken);
                 var totalPages = totalItems > 0 ? (int)Math.Ceiling(totalItems / (double)pageSize) : 1;
@@ -96,10 +99,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         classStatus = x.ClassStatus,
                         enrolledAt = x.EnrolledAt,
                         status = x.Status,
+                        paymentId = pay?.Id,
                         paymentStatus = pay?.Status,
                         paymentMethod = pay?.PaymentMethod,
                         paidAmount = pay?.Amount,
-                        transactionCode = pay?.TransactionCode
+                        transactionCode = pay?.TransactionCode,
+                        paidAt = pay?.PaidAt ?? pay?.CreatedAt,
+                        paymentNote = pay?.Note
                     };
                 }).ToList();
 
@@ -111,9 +117,48 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     totalPages
                 };
 
+                var completedStats = await _context.Payments
+                    .AsNoTracking()
+                    .Where(p => p.Status == "completed")
+                    .GroupBy(_ => 1)
+                    .Select(g => new
+                    {
+                        Count = g.Count(),
+                        StudentCount = g.Select(p => p.UserId).Distinct().Count(),
+                        TotalAmount = g.Sum(p => (decimal?)p.Amount) ?? 0m
+                    })
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                var pendingPaymentCount = await _context.Payments
+                    .AsNoTracking()
+                    .CountAsync(p => p.Status == "pending", cancellationToken);
+
+                var paidEnrollmentCount = await _context.Enrollments
+                    .AsNoTracking()
+                    .CountAsync(e => _context.Payments.Any(p =>
+                        (p.EnrollmentId == e.Id || (p.EnrollmentId == null && p.UserId == e.UserId && p.ClassId == e.ClassId))
+                        && p.Status == "completed"), cancellationToken);
+
+                var unpaidEnrollmentCount = await _context.Enrollments
+                    .AsNoTracking()
+                    .CountAsync(e => (e.Status == "active" || e.Status == "completed")
+                        && !_context.Payments.Any(p =>
+                            (p.EnrollmentId == e.Id || (p.EnrollmentId == null && p.UserId == e.UserId && p.ClassId == e.ClassId))
+                            && p.Status == "completed"), cancellationToken);
+
+                var paymentStats = new
+                {
+                    totalPaidStudents = completedStats?.StudentCount ?? 0,
+                    totalPaidTransactions = completedStats?.Count ?? 0,
+                    totalPaidEnrollments = paidEnrollmentCount,
+                    totalCollectedAmount = completedStats?.TotalAmount ?? 0m,
+                    pendingPaymentCount,
+                    unpaidEnrollmentCount
+                };
+
                 if (!lookups)
                 {
-                    return Ok(new { success = true, items, pagination });
+                    return Ok(new { success = true, items, pagination, paymentStats });
                 }
 
                 var students = await _context.Users
@@ -164,7 +209,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     maxStudents = cc.MaxStudents
                 }).ToList();
 
-                return Ok(new { success = true, items, pagination, students, classes });
+                return Ok(new { success = true, items, pagination, paymentStats, students, classes });
             }
             catch (OperationCanceledException)
             {
@@ -180,13 +225,14 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         [HttpGet("/Admin/api/Enrollments/ExportCsv")]
         public async Task<IActionResult> ExportCsv(
             string? status,
+            string? paymentStatus,
             int? classId,
             string? search,
             CancellationToken cancellationToken = default)
         {
             try
             {
-                var rows = await BuildFilteredEnrollmentsQuery(status, classId, search)
+                var rows = await BuildFilteredEnrollmentsQuery(status, paymentStatus, classId, search)
                     .OrderByDescending(x => x.EnrolledAt)
                     .ThenByDescending(x => x.Id)
                     .ToListAsync(cancellationToken);
@@ -270,6 +316,19 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     return this.ApiBadRequest("Số tiền thanh toán không được nhỏ hơn 0.");
                 }
+            }
+
+            try
+            {
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Không thể đồng bộ lớp hết hạn trước khi ghi danh.");
             }
 
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
@@ -361,6 +420,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         try
                         {
                             await _context.SaveChangesAsync(cancellationToken);
+                            await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
                         }
                         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                         {
@@ -439,6 +499,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 try
                 {
                     await _context.SaveChangesAsync(cancellationToken);
+                    await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
                 }
                 catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
@@ -527,6 +588,19 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             {
                 _logger.LogError(ex, "Không thể tra cứu ghi danh {EnrollmentId}.", id);
                 return this.ApiServerError("Không thể cập nhật trạng thái ghi danh.");
+            }
+
+            try
+            {
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Không thể đồng bộ lớp hết hạn trước khi ghi danh.");
             }
 
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
@@ -630,6 +704,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     }
                 }
                 await _context.SaveChangesAsync(cancellationToken);
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new { success = true, message = "Cập nhật trạng thái ghi danh thành công.", status = enrollment.Status });
@@ -643,6 +718,135 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 _logger.LogError(ex, "Không thể cập nhật trạng thái ghi danh {EnrollmentId}.", id);
                 await transaction.RollbackAsync(CancellationToken.None);
                 return this.ApiServerError("Không thể cập nhật trạng thái ghi danh.");
+            }
+        }
+
+        [HttpGet("/Admin/api/Enrollments/PaymentDetail/{id}")]
+        public async Task<IActionResult> PaymentDetail(int id, CancellationToken cancellationToken)
+        {
+            if (id <= 0)
+            {
+                return this.ApiBadRequest("Mã ghi danh không hợp lệ.");
+            }
+
+            try
+            {
+                var enrollmentInfo = await (
+                    from e in _context.Enrollments.AsNoTracking()
+                    join u in _context.Users.AsNoTracking() on e.UserId equals u.Id
+                    join cc in _context.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                    join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id
+                    where e.Id == id
+                    select new
+                    {
+                        enrollmentId = e.Id,
+                        enrolledAt = e.EnrolledAt,
+                        enrollmentStatus = e.Status,
+                        userId = u.Id,
+                        fullName = u.FullName,
+                        email = u.Email,
+                        isUserActive = u.IsActive,
+                        userCreatedAt = u.CreatedAt,
+                        classId = cc.Id,
+                        classCode = cc.ClassCode,
+                        className = cc.ClassName,
+                        classStatus = cc.Status,
+                        tuitionFee = cc.Price,
+                        courseId = c.Id,
+                        courseTitle = c.Title
+                    }
+                ).FirstOrDefaultAsync(cancellationToken);
+
+                if (enrollmentInfo == null)
+                {
+                    return this.ApiNotFound("Không tìm thấy hồ sơ ghi danh.");
+                }
+
+                var enrollmentPayments = await _context.Payments
+                    .AsNoTracking()
+                    .Where(p => p.EnrollmentId == id
+                                || (p.EnrollmentId == null && p.UserId == enrollmentInfo.userId && p.ClassId == enrollmentInfo.classId))
+                    .OrderByDescending(p => p.Id)
+                    .Select(p => new
+                    {
+                        id = p.Id,
+                        transactionCode = p.TransactionCode,
+                        amount = p.Amount,
+                        paymentMethod = p.PaymentMethod,
+                        status = p.Status,
+                        paidAt = p.PaidAt,
+                        note = p.Note,
+                        createdAt = p.CreatedAt,
+                        updatedAt = p.UpdatedAt
+                    })
+                    .ToListAsync(cancellationToken);
+
+                var studentPaymentHistory = await (
+                    from p in _context.Payments.AsNoTracking()
+                    join cc in _context.CourseClasses.AsNoTracking() on p.ClassId equals cc.Id
+                    join c in _context.Courses.AsNoTracking() on cc.CourseId equals c.Id
+                    where p.UserId == enrollmentInfo.userId
+                    orderby p.PaidAt ?? p.CreatedAt descending, p.Id descending
+                    select new
+                    {
+                        id = p.Id,
+                        enrollmentId = p.EnrollmentId,
+                        classId = cc.Id,
+                        classCode = cc.ClassCode,
+                        className = cc.ClassName,
+                        courseTitle = c.Title,
+                        transactionCode = p.TransactionCode,
+                        amount = p.Amount,
+                        paymentMethod = p.PaymentMethod,
+                        status = p.Status,
+                        paidAt = p.PaidAt,
+                        createdAt = p.CreatedAt,
+                        note = p.Note
+                    }
+                ).ToListAsync(cancellationToken);
+
+                var totalStudentPaid = studentPaymentHistory
+                    .Where(p => string.Equals(p.status, "completed", StringComparison.OrdinalIgnoreCase))
+                    .Sum(p => p.amount);
+
+                return Ok(new
+                {
+                    success = true,
+                    student = new
+                    {
+                        id = enrollmentInfo.userId,
+                        fullName = enrollmentInfo.fullName,
+                        email = enrollmentInfo.email,
+                        isActive = enrollmentInfo.isUserActive,
+                        createdAt = enrollmentInfo.userCreatedAt,
+                        totalStudentPaid
+                    },
+                    enrollment = new
+                    {
+                        id = enrollmentInfo.enrollmentId,
+                        enrolledAt = enrollmentInfo.enrolledAt,
+                        status = enrollmentInfo.enrollmentStatus,
+                        classId = enrollmentInfo.classId,
+                        classCode = enrollmentInfo.classCode,
+                        className = enrollmentInfo.className,
+                        classStatus = enrollmentInfo.classStatus,
+                        courseId = enrollmentInfo.courseId,
+                        courseTitle = enrollmentInfo.courseTitle,
+                        tuitionFee = enrollmentInfo.tuitionFee
+                    },
+                    currentPayment = enrollmentPayments.FirstOrDefault(),
+                    enrollmentPayments,
+                    studentPaymentHistory
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể tải chi tiết thanh toán cho ghi danh {EnrollmentId}.", id);
+                return this.ApiServerError("Không thể tải chi tiết thanh toán của học viên.");
             }
         }
 
@@ -669,6 +873,19 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             if (dto.Amount.HasValue && dto.Amount.Value < 0)
             {
                 return this.ApiBadRequest("Số tiền thanh toán không được nhỏ hơn 0.");
+            }
+
+            try
+            {
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return this.ApiCancelled();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Không thể đồng bộ lớp hết hạn trước khi ghi danh.");
             }
 
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
@@ -777,7 +994,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 .Where(p => (p.EnrollmentId != null && enrollmentIds.Contains(p.EnrollmentId.Value))
                             || (userIds.Contains(p.UserId) && classIds.Contains(p.ClassId)))
                 .OrderByDescending(p => p.Id)
-                .Select(p => new PaymentSummaryRow(p.EnrollmentId, p.UserId, p.ClassId, p.Status, p.PaymentMethod, p.Amount, p.TransactionCode))
+                .Select(p => new PaymentSummaryRow(p.Id, p.EnrollmentId, p.UserId, p.ClassId, p.Status, p.PaymentMethod, p.Amount, p.TransactionCode, p.PaidAt, p.CreatedAt, p.Note))
                 .ToListAsync(cancellationToken);
 
             var byEnrollment = rawPayments
@@ -824,19 +1041,23 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         };
 
         private sealed record PaymentSummaryRow(
+            int Id,
             int? EnrollmentId,
             int UserId,
             int ClassId,
             string Status,
             string PaymentMethod,
             decimal Amount,
-            string TransactionCode);
+            string TransactionCode,
+            DateTime? PaidAt,
+            DateTime? CreatedAt,
+            string? Note);
 
         private sealed record PaymentLookup(
             Dictionary<int, PaymentSummaryRow> ByEnrollment,
             Dictionary<(int UserId, int ClassId), PaymentSummaryRow> ByPair);
 
-        private IQueryable<EnrollmentListRow> BuildFilteredEnrollmentsQuery(string? status, int? classId, string? search)
+        private IQueryable<EnrollmentListRow> BuildFilteredEnrollmentsQuery(string? status, string? paymentStatus, int? classId, string? search)
         {
             var query =
                 from e in _context.Enrollments.AsNoTracking()
@@ -869,6 +1090,31 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             {
                 var normalizedStatus = status.Trim().ToLowerInvariant();
                 query = query.Where(x => x.Status == normalizedStatus);
+            }
+
+            if (!string.IsNullOrWhiteSpace(paymentStatus) && !paymentStatus.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                var normPay = paymentStatus.Trim().ToLowerInvariant();
+                if (normPay is "paid" or "completed")
+                {
+                    query = query.Where(x => _context.Payments.Any(p =>
+                        (p.EnrollmentId == x.Id || (p.EnrollmentId == null && p.UserId == x.UserId && p.ClassId == x.ClassId))
+                        && p.Status == "completed"));
+                }
+                else if (normPay == "unpaid")
+                {
+                    query = query.Where(x => !_context.Payments.Any(p =>
+                        (p.EnrollmentId == x.Id || (p.EnrollmentId == null && p.UserId == x.UserId && p.ClassId == x.ClassId))
+                        && p.Status == "completed"));
+                }
+                else if (ValidPaymentStatuses.Contains(normPay))
+                {
+                    query = query.Where(x => _context.Payments
+                        .Where(p => p.EnrollmentId == x.Id || (p.EnrollmentId == null && p.UserId == x.UserId && p.ClassId == x.ClassId))
+                        .OrderByDescending(p => p.Id)
+                        .Select(p => p.Status)
+                        .FirstOrDefault() == normPay);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(search))

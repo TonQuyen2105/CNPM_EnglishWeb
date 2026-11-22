@@ -8,8 +8,8 @@
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -211,16 +211,19 @@
         
   <div class="page-header">
     <div>
-      <h1 class="page-header-title">Quản lý chương trình khóa học</h1>
-      <p class="page-header-subtitle" id="courses-subtitle">Đang tải danh sách khóa học từ hệ thống...</p>
+      <h1 class="page-header-title">Quản lý Môn học &amp; Tổng tiền Khóa học (Course)</h1>
+      <p class="page-header-subtitle" id="courses-subtitle">Đang tải danh sách môn học và tổng học phí theo chủ đề...</p>
     </div>
     <div class="page-header-actions">
       <button type="button" class="btn btn-primary" id="btn-open-create-course" data-modal-target="modal-create-course">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Tạo khóa học mới
+        Tạo môn học mới
       </button>
     </div>
   </div>
+
+  <!-- Bảng tổng hợp Khóa học theo Chủ đề (Subject) + Tổng tiền các môn học -->
+  <div id="subject-totals-summary" style="margin-bottom: 1.5rem;"></div>
 
   <!-- Thanh lọc & tìm kiếm -->
   <div class="card" style="margin-bottom: 1.5rem;">
@@ -300,14 +303,10 @@
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí (VNĐ) <span style="color:red;">*</span></label>
               <input type="number" id="create-price" class="form-control" min="0" max="99999999.99" step="1000" value="0" placeholder="Ví dụ: 3500000" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số bài học khởi tạo</label>
-              <input type="number" id="create-lesson-count" class="form-control" min="0" max="100" value="0" placeholder="0 - 100">
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái phát hành</label>
@@ -318,8 +317,11 @@
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mô tả &amp; mục tiêu khóa học</label>
-            <textarea id="create-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả tóm tắt nội dung bài học, kết quả đầu ra cam kết..."></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin: 0;">Mô tả chung khóa học</label>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-suggest-create-desc">Gợi ý mô tả phù hợp</button>
+            </div>
+            <textarea id="create-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả tóm tắt nội dung và đối tượng phù hợp của khóa học..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -488,14 +490,62 @@
         gridEl.innerHTML = card.repeat(3);
       }
 
+      let subjectsSummaryCache = [];
+
+      function renderSubjectTotalsSummary(subjects) {
+        const container = document.getElementById('subject-totals-summary');
+        if (!container) return;
+        const list = Array.isArray(subjects) ? subjects : [];
+        if (list.length === 0) {
+          container.innerHTML = '';
+          return;
+        }
+        const selectedSubjId = subjectEl.value && subjectEl.value !== '0' ? Number(subjectEl.value) : 0;
+        const filtered = selectedSubjId > 0 ? list.filter(s => s.id === selectedSubjId) : list;
+
+        container.innerHTML = `
+          <div class="card" style="padding: 1rem 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <strong style="font-size: 0.9375rem; color: var(--text-primary);">Tổng hợp Khóa học theo Chủ đề (Subject) &amp; Tổng tiền các môn học</strong>
+              <a href="/Admin/subjects.html" style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">+ Quản lý Chủ đề (Subject) →</a>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              ${filtered.map(s => {
+                const cList = Array.isArray(s.courses) ? s.courses : [];
+                const detailsHtml = cList.length > 0
+                  ? cList.map(c => `<div style="display: flex; justify-content: space-between; font-size: 0.78rem; padding: 2px 0;"><span>&bull; ${escapeHtml(c.title)}</span><strong>${formatCurrency(c.price)}</strong></div>`).join('')
+                  : '<div style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Chưa có môn học nào trong chủ đề này</div>';
+                return `
+                  <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; background: var(--neutral-50, #F8FAFC); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                        <strong style="font-size: 0.92rem; color: var(--primary-700, #1D4ED8);">Khóa: ${escapeHtml(s.name)}</strong>
+                        <span class="badge badge-info">${cList.length} môn học</span>
+                      </div>
+                      <div style="margin-bottom: 0.5rem;">${detailsHtml}</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); padding-top: 0.45rem; font-weight: 700; font-size: 0.85rem; color: #047857;">
+                      <span>Tổng tiền khóa học:</span>
+                      <span>${formatCurrency(s.totalPrice)}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
       function populateSubjects(subjects) {
         if (!Array.isArray(subjects)) return;
+        subjectsSummaryCache = subjects;
+        renderSubjectTotalsSummary(subjectsSummaryCache);
         const urlSubjectId = new URLSearchParams(window.location.search).get('subjectId');
         const currentFilter = subjectEl.value !== '0' ? subjectEl.value : (pendingInitialSubjectId || '0');
         const currentCreate = createSubjectEl.value;
 
-        subjectEl.innerHTML = '<option value="0">Tất cả môn học</option>' +
-          subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
+        subjectEl.innerHTML = '<option value="0">Tất cả chủ đề / khóa học</option>' +
+          subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)} — Tổng: ${formatCurrency(s.totalPrice)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
         if (currentFilter && subjects.some(s => String(s.id) === String(currentFilter))) {
           subjectEl.value = String(currentFilter);
         } else if (urlSubjectId && !lookupsLoaded && subjects.some(s => String(s.id) === String(urlSubjectId))) {
@@ -503,7 +553,7 @@
         }
         pendingInitialSubjectId = null;
 
-        createSubjectEl.innerHTML = '<option value="">-- Chọn môn học --</option>' +
+        createSubjectEl.innerHTML = '<option value="">-- Chọn chủ đề (Subject) --</option>' +
           subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
         if (currentCreate) createSubjectEl.value = currentCreate;
 
@@ -547,7 +597,10 @@
                 <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.625rem; min-height: 2.5rem;">${shortDesc}</p>
                 <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
                   <span style="font-size: 0.8125rem; color: var(--text-muted);">${Number(c.lessonCount || 0)} bài học &bull; ${Number(c.classCount || 0)} lớp</span>
-                  <strong style="color: var(--primary-600);">${formatCurrency(c.price)}</strong>
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.78rem; color: var(--text-secondary);">Học phí môn: <strong>${formatCurrency(c.price)}</strong></div>
+                    <strong style="color: #047857; font-size: 0.85rem;">Tổng khóa ${escapeHtml(c.subjectName)}: ${formatCurrency(c.subjectTotalPrice ?? c.price)}</strong>
+                  </div>
                 </div>
               </div>
               <div class="card-footer" style="display: flex; flex-direction: column; gap: 6px;">
@@ -593,6 +646,8 @@
           const data = await fetchJson(`/Admin/api/Courses/List?${params.toString()}`, { signal: controller.signal });
           if (Array.isArray(data.subjects)) {
             populateSubjects(data.subjects);
+          } else {
+            renderSubjectTotalsSummary(subjectsSummaryCache);
           }
           const items = Array.isArray(data.items) ? data.items : [];
           const publishedCount = items.filter(x => x.isPublished).length;
@@ -622,7 +677,6 @@
       function openCreateMode() {
         createForm.reset();
         document.getElementById('create-price').value = '0';
-        document.getElementById('create-lesson-count').value = '0';
         document.getElementById('create-is-published').value = 'true';
         showFormError('');
         openModal('modal-create-course');
@@ -676,6 +730,14 @@
 
         openCreateBtn.addEventListener('click', openCreateMode);
 
+        document.getElementById('btn-suggest-create-desc').addEventListener('click', () => {
+          const title = document.getElementById('create-title').value.trim();
+          const subjectName = createSubjectEl.value ? (createSubjectEl.selectedOptions[0]?.textContent || '') : '';
+          const level = document.getElementById('create-level').value;
+          const suggestion = window.buildCourseDescriptionSuggestion(title, subjectName, level);
+          document.getElementById('create-description').value = suggestion.fullText;
+        });
+
         createForm.addEventListener('submit', async function (e) {
           e.preventDefault();
           showFormError('');
@@ -685,7 +747,6 @@
             title: document.getElementById('create-title').value.trim(),
             level: document.getElementById('create-level').value,
             price: Number(document.getElementById('create-price').value || 0),
-            lessonCount: Number(document.getElementById('create-lesson-count').value || 0),
             isPublished: document.getElementById('create-is-published').value === 'true',
             description: document.getElementById('create-description').value.trim()
           };

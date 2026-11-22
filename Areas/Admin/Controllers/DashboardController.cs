@@ -27,6 +27,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         {
             try
             {
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+
                 // 1. KPI học viên: 1 truy vấn GROUP BY thay cho 2 truy vấn COUNT riêng lẻ
                 var studentStats = await _context.Users.AsNoTracking()
                     .Where(u => u.Role == "student")

@@ -1,8 +1,13 @@
+using System.Data;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
@@ -11,27 +16,26 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     {
         private const int MaxTitleLength = 200;
         private const int MaxDescriptionLength = 4000;
-        private const int MaxLessonContentLength = 20000;
         private const decimal MaxPrice = 99_999_999.99m;
-        private const int MaxInitialLessons = 100;
+        private const string LessonMediaPrefix = "EL_LESSON_MEDIA_V1";
+        private const string DefaultSupabaseUrl = "https://wymdewnklhrnmirbvgxi.supabase.co";
+        private const string DefaultStorageBucket = "Lesson_media";
+        private static readonly HttpClient StorageHttpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
 
         private static readonly HashSet<string> ValidLevels = new(StringComparer.OrdinalIgnoreCase)
         {
             "beginner", "intermediate", "advanced"
         };
 
-        private static readonly HashSet<string> ValidLessonTypes = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "vocabulary", "grammar", "listening", "reading", "speaking", "writing", "quiz"
-        };
-
         private readonly ApplicationDbContext _context;
         private readonly ILogger<CoursesController> _logger;
+        private readonly IConfiguration? _configuration;
 
-        public CoursesController(ApplicationDbContext context, ILogger<CoursesController> logger)
+        public CoursesController(ApplicationDbContext context, ILogger<CoursesController> logger, IConfiguration? configuration = null)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
         }
 
         // GET: /Admin/Courses
@@ -120,22 +124,83 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         (x.description != null && x.description.ToLower().Contains(term)));
                 }
 
-                var items = await query
+                var rawItems = await query
                     .OrderByDescending(x => x.id)
                     .ToListAsync(cancellationToken);
 
-                var subjects = lookups
-                    ? await _context.Subjects
-                        .AsNoTracking()
-                        .OrderBy(s => s.Name)
-                        .Select(s => new
+                var allCoursesForTotals = await _context.Courses
+                    .AsNoTracking()
+                    .OrderBy(c => c.Id)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        c.SubjectId,
+                        c.Title,
+                        c.Price,
+                        c.Level,
+                        c.IsPublished
+                    })
+                    .ToListAsync(cancellationToken);
+
+                var coursesBySubject = allCoursesForTotals
+                    .GroupBy(c => c.SubjectId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                var items = rawItems.Select(x =>
+                {
+                    var subjCourses = coursesBySubject.TryGetValue(x.subjectId, out var cList) ? cList : [];
+                    var subjectTotalPrice = subjCourses.Sum(c => c.Price);
+                    return new
+                    {
+                        x.id,
+                        x.subjectId,
+                        x.subjectName,
+                        x.title,
+                        x.description,
+                        x.thumbnailUrl,
+                        x.level,
+                        x.price,
+                        subjectTotalPrice,
+                        subjectCourseCount = subjCourses.Count,
+                        x.isPublished,
+                        x.createdAt,
+                        x.updatedAt,
+                        x.lessonCount,
+                        x.classCount
+                    };
+                }).ToList();
+
+                var rawSubjects = await _context.Subjects
+                    .AsNoTracking()
+                    .OrderBy(s => s.Name)
+                    .Select(s => new
+                    {
+                        s.Id,
+                        s.Name,
+                        s.IsActive
+                    })
+                    .ToListAsync(cancellationToken);
+
+                var subjects = rawSubjects.Select(s =>
+                {
+                    var subjCourses = coursesBySubject.TryGetValue(s.Id, out var cList) ? cList : [];
+                    return new
+                    {
+                        id = s.Id,
+                        name = s.Name,
+                        isActive = s.IsActive,
+                        courseCount = subjCourses.Count,
+                        totalPrice = subjCourses.Sum(c => c.Price),
+                        courses = subjCourses.Select(c => new
                         {
-                            id = s.Id,
-                            name = s.Name,
-                            isActive = s.IsActive
-                        })
-                        .ToListAsync(cancellationToken)
-                    : null;
+                            id = c.Id,
+                            title = c.Title,
+                            price = c.Price,
+                            level = c.Level,
+                            isPublished = c.IsPublished
+                        }).ToList()
+                    };
+                }).ToList();
 
                 return Ok(new { success = true, items, subjects });
             }
@@ -159,11 +224,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return this.ApiBadRequest(error);
             }
 
-            var lessonCount = dto!.LessonCount ?? 0;
-            if (lessonCount < 0 || lessonCount > MaxInitialLessons)
-            {
-                return this.ApiBadRequest($"Số bài học khởi tạo phải từ 0 đến {MaxInitialLessons}.");
-            }
+            var targetDto = dto!;
 
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
@@ -172,7 +233,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 var subjectExists = await _context.Subjects
                     .AsNoTracking()
-                    .AnyAsync(s => s.Id == dto.SubjectId, cancellationToken);
+                    .AnyAsync(s => s.Id == targetDto.SubjectId, cancellationToken);
                 if (!subjectExists)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
@@ -181,7 +242,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 var duplicateTitle = await _context.Courses
                     .AsNoTracking()
-                    .AnyAsync(c => c.SubjectId == dto.SubjectId && c.Title.ToLower() == title.ToLower(), cancellationToken);
+                    .AnyAsync(c => c.SubjectId == targetDto.SubjectId && c.Title.ToLower() == title.ToLower(), cancellationToken);
                 if (duplicateTitle)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
@@ -191,13 +252,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var now = DateTime.UtcNow;
                 var course = new Course
                 {
-                    SubjectId = dto.SubjectId,
+                    SubjectId = targetDto.SubjectId,
                     Title = title,
                     Description = description,
                     ThumbnailUrl = thumbnailUrl,
                     Level = level,
-                    Price = dto.Price,
-                    IsPublished = dto.IsPublished ?? true,
+                    Price = targetDto.Price,
+                    IsPublished = targetDto.IsPublished ?? true,
                     CreatedAt = now,
                     UpdatedAt = now
                 };
@@ -216,33 +277,6 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
                     return this.ApiBadRequest("Môn học được chọn không tồn tại.");
-                }
-
-                if (lessonCount > 0)
-                {
-                    var initialLessons = Enumerable.Range(1, lessonCount)
-                        .Select(idx => new Lesson
-                        {
-                            CourseId = course.Id,
-                            Title = $"Bài {idx}: Chuyên đề bài học {idx}",
-                            OrderIndex = idx,
-                            ContentType = "vocabulary",
-                            Content = $"Nội dung bài {idx} thuộc khóa học {course.Title}.",
-                            CreatedAt = now,
-                            UpdatedAt = now
-                        })
-                        .ToList();
-
-                    _context.Lessons.AddRange(initialLessons);
-                    try
-                    {
-                        await _context.SaveChangesAsync(cancellationToken);
-                    }
-                    catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-                    {
-                        await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiBadRequest("Thứ tự bài học khởi tạo bị trùng lặp.");
-                    }
                 }
 
                 await transaction.CommitAsync(cancellationToken);
@@ -303,23 +337,67 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     return this.ApiNotFound("Không tìm thấy khóa học yêu cầu.");
                 }
 
-                var lessons = await _context.Lessons
+                var rawLessons = await _context.Lessons
                     .AsNoTracking()
                     .Where(l => l.CourseId == id)
                     .OrderBy(l => l.OrderIndex)
                     .ThenBy(l => l.Id)
                     .Select(l => new
                     {
-                        id = l.Id,
-                        courseId = l.CourseId,
-                        title = l.Title,
-                        orderIndex = l.OrderIndex,
-                        contentType = l.ContentType,
-                        content = l.Content,
-                        createdAt = l.CreatedAt,
-                        updatedAt = l.UpdatedAt
+                        l.Id,
+                        l.CourseId,
+                        l.Title,
+                        l.OrderIndex,
+                        l.ContentType,
+                        l.Content,
+                        l.CreatedAt,
+                        l.UpdatedAt
                     })
                     .ToListAsync(cancellationToken);
+
+                var parsedLessons = rawLessons
+                    .Select(l => new { Row = l, Media = ParseRawLessonMedia(l.Content) })
+                    .ToList();
+
+                var storageLookup = await ResolveStorageObjectsAsync(
+                    parsedLessons.Select(x => x.Media).ToList(),
+                    cancellationToken);
+
+                var supabaseBaseUrl = ResolveSupabaseBaseUrl();
+                var serviceRoleKey = ResolveServiceRoleKey();
+
+                var lessons = new List<object>(parsedLessons.Count);
+                foreach (var x in parsedLessons)
+                {
+                    var pdfUrl = await ResolveAccessibleMediaUrlAsync(
+                        x.Media.Pdf, storageLookup, supabaseBaseUrl, serviceRoleKey, cancellationToken);
+                    var videoUrl = await ResolveAccessibleMediaUrlAsync(
+                        x.Media.Video, storageLookup, supabaseBaseUrl, serviceRoleKey, cancellationToken);
+
+                    lessons.Add(new
+                    {
+                        id = x.Row.Id,
+                        courseId = x.Row.CourseId,
+                        title = x.Row.Title,
+                        orderIndex = x.Row.OrderIndex,
+                        contentType = x.Row.ContentType,
+                        content = x.Row.Content,
+                        media = new
+                        {
+                            isStructured = x.Media.IsStructured,
+                            text = x.Media.Text,
+                            pdfUrl = pdfUrl.Url,
+                            pdfName = x.Media.Pdf?.FileName,
+                            pdfBucket = pdfUrl.Bucket,
+                            videoUrl = videoUrl.Url,
+                            videoName = x.Media.Video?.FileName,
+                            videoBucket = videoUrl.Bucket,
+                            requiresPublicBucket = pdfUrl.RequiresPublicBucket || videoUrl.RequiresPublicBucket
+                        },
+                        createdAt = x.Row.CreatedAt,
+                        updatedAt = x.Row.UpdatedAt
+                    });
+                }
 
                 var openClassCount = await _context.CourseClasses
                     .AsNoTracking()
@@ -522,249 +600,26 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         }
 
         [HttpPost("/Admin/api/Courses/{courseId}/Lessons/Create")]
-        public async Task<IActionResult> CreateLesson(int courseId, [FromBody] LessonUpsertDto? dto, CancellationToken cancellationToken)
-        {
-            if (courseId <= 0)
-            {
-                return this.ApiBadRequest("Mã khóa học không hợp lệ.");
-            }
-
-            var error = ValidateLesson(dto, out var title, out var contentType, out var content);
-            if (error != null)
-            {
-                return this.ApiBadRequest(error);
-            }
-
-            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-            try
-            {
-                long lockKey = 400_000_000L + courseId;
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
-
-                var courseExists = await _context.Courses
-                    .AsNoTracking()
-                    .AnyAsync(c => c.Id == courseId, cancellationToken);
-                if (!courseExists)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiNotFound("Không tìm thấy khóa học.");
-                }
-
-                var nextOrder = dto!.OrderIndex.HasValue && dto.OrderIndex.Value > 0
-                    ? dto.OrderIndex.Value
-                    : ((await _context.Lessons.AsNoTracking()
-                        .Where(l => l.CourseId == courseId)
-                        .Select(l => (int?)l.OrderIndex)
-                        .MaxAsync(cancellationToken)) ?? 0) + 1;
-
-                if (nextOrder > 1000)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Thứ tự bài học phải từ 1 đến 1000.");
-                }
-
-                var duplicateOrder = await _context.Lessons
-                    .AsNoTracking()
-                    .AnyAsync(l => l.CourseId == courseId && l.OrderIndex == nextOrder, cancellationToken);
-                if (duplicateOrder)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest($"Thứ tự bài học số {nextOrder} đã tồn tại trong khóa học này.");
-                }
-
-                var now = DateTime.UtcNow;
-                var lesson = new Lesson
-                {
-                    CourseId = courseId,
-                    Title = title,
-                    OrderIndex = nextOrder,
-                    ContentType = contentType,
-                    Content = content,
-                    CreatedAt = now,
-                    UpdatedAt = now
-                };
-
-                _context.Lessons.Add(lesson);
-                try
-                {
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
-                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest($"Thứ tự bài học số {nextOrder} đã tồn tại trong khóa học này.");
-                }
-                await transaction.CommitAsync(cancellationToken);
-
-                return Ok(new { success = true, message = "Thêm bài học vào đề cương thành công.", id = lesson.Id });
-            }
-            catch (OperationCanceledException)
-            {
-                return this.ApiCancelled();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Không thể thêm bài học cho khóa {CourseId}.", courseId);
-                await transaction.RollbackAsync(CancellationToken.None);
-                return this.ApiServerError("Không thể thêm bài học vào đề cương.");
-            }
-        }
+        public IActionResult CreateLesson(int courseId, [FromBody] LessonUpsertDto? dto)
+            => AdminLessonReadOnlyForbidden();
 
         [HttpPost("/Admin/api/Courses/Lessons/Update/{lessonId}")]
         [HttpPut("/Admin/api/Courses/Lessons/Update/{lessonId}")]
-        public async Task<IActionResult> UpdateLesson(int lessonId, [FromBody] LessonUpsertDto? dto, CancellationToken cancellationToken)
-        {
-            if (lessonId <= 0)
-            {
-                return this.ApiBadRequest("Mã bài học không hợp lệ.");
-            }
-
-            var error = ValidateLesson(dto, out var title, out var contentType, out var content);
-            if (error != null)
-            {
-                return this.ApiBadRequest(error);
-            }
-
-            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-            try
-            {
-                var targetCourseId = await _context.Lessons
-                    .AsNoTracking()
-                    .Where(l => l.Id == lessonId)
-                    .Select(l => (int?)l.CourseId)
-                    .FirstOrDefaultAsync(cancellationToken);
-                if (!targetCourseId.HasValue)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiNotFound("Không tìm thấy bài học.");
-                }
-
-                long lockKey = 400_000_000L + targetCourseId.Value;
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
-
-                var lesson = await _context.Lessons.FirstOrDefaultAsync(l => l.Id == lessonId, cancellationToken);
-                if (lesson == null)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiNotFound("Không tìm thấy bài học.");
-                }
-
-                var newOrder = dto!.OrderIndex.HasValue && dto.OrderIndex.Value > 0
-                    ? dto.OrderIndex.Value
-                    : lesson.OrderIndex;
-
-                var duplicateOrder = await _context.Lessons
-                    .AsNoTracking()
-                    .AnyAsync(l => l.CourseId == lesson.CourseId && l.Id != lessonId && l.OrderIndex == newOrder, cancellationToken);
-                if (duplicateOrder)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest($"Thứ tự bài học số {newOrder} đã tồn tại trong khóa học này.");
-                }
-
-                lesson.Title = title;
-                lesson.OrderIndex = newOrder;
-                lesson.ContentType = contentType;
-                lesson.Content = content;
-                lesson.UpdatedAt = DateTime.UtcNow;
-
-                try
-                {
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
-                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest($"Thứ tự bài học số {newOrder} đã tồn tại trong khóa học này.");
-                }
-                await transaction.CommitAsync(cancellationToken);
-
-                return Ok(new { success = true, message = "Cập nhật bài học thành công.", id = lesson.Id });
-            }
-            catch (OperationCanceledException)
-            {
-                return this.ApiCancelled();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Không thể cập nhật bài học {LessonId}.", lessonId);
-                await transaction.RollbackAsync(CancellationToken.None);
-                return this.ApiServerError("Không thể cập nhật bài học.");
-            }
-        }
+        public IActionResult UpdateLesson(int lessonId, [FromBody] LessonUpsertDto? dto)
+            => AdminLessonReadOnlyForbidden();
 
         [HttpPost("/Admin/api/Courses/Lessons/Delete/{lessonId}")]
         [HttpDelete("/Admin/api/Courses/Lessons/Delete/{lessonId}")]
-        public async Task<IActionResult> DeleteLesson(int lessonId, CancellationToken cancellationToken)
+        public IActionResult DeleteLesson(int lessonId)
+            => AdminLessonReadOnlyForbidden();
+
+        private IActionResult AdminLessonReadOnlyForbidden()
         {
-            if (lessonId <= 0)
+            return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                return this.ApiBadRequest("Mã bài học không hợp lệ.");
-            }
-
-            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-            try
-            {
-                var targetCourseId = await _context.Lessons
-                    .AsNoTracking()
-                    .Where(l => l.Id == lessonId)
-                    .Select(l => (int?)l.CourseId)
-                    .FirstOrDefaultAsync(cancellationToken);
-                if (!targetCourseId.HasValue)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiNotFound("Không tìm thấy bài học.");
-                }
-
-                long lockKey = 400_000_000L + targetCourseId.Value;
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})", cancellationToken);
-
-                var lesson = await _context.Lessons.FirstOrDefaultAsync(l => l.Id == lessonId, cancellationToken);
-                if (lesson == null)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiNotFound("Không tìm thấy bài học.");
-                }
-
-                var inUse = await _context.ClassLessons.AsNoTracking().AnyAsync(cl => cl.LessonId == lessonId, cancellationToken)
-                    || await _context.Questions.AsNoTracking().AnyAsync(q => q.LessonId == lessonId, cancellationToken)
-                    || await _context.UserProgresses.AsNoTracking().AnyAsync(up => up.LessonId == lessonId, cancellationToken);
-
-                if (inUse)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Không thể xóa bài học đã gắn lịch dạy, câu hỏi hoặc tiến độ học viên.");
-                }
-
-                _context.Lessons.Remove(lesson);
-                try
-                {
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiNotFound("Bài học này đã được xóa trước đó.");
-                }
-                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
-                {
-                    await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Không thể xóa bài học vì đang có dữ liệu lịch dạy, câu hỏi hoặc tiến độ học viên tham chiếu.");
-                }
-
-                await transaction.CommitAsync(cancellationToken);
-                return Ok(new { success = true, message = "Đã xóa bài học khỏi đề cương." });
-            }
-            catch (OperationCanceledException)
-            {
-                return this.ApiCancelled();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Không thể xóa bài học {LessonId}.", lessonId);
-                await transaction.RollbackAsync(CancellationToken.None);
-                return this.ApiServerError("Không thể xóa bài học.");
-            }
+                success = false,
+                message = "Bài học thuộc khóa học do giảng viên tạo và cập nhật. Quản trị viên chỉ có quyền xem nội dung bài học."
+            });
         }
 
         private static string? NormalizeAndValidateCourse(
@@ -817,47 +672,352 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             return null;
         }
 
-        private static string? ValidateLesson(
-            LessonUpsertDto? dto,
-            out string title,
-            out string contentType,
-            out string? content)
+        private string ResolveSupabaseBaseUrl()
         {
-            title = string.Empty;
-            contentType = "vocabulary";
-            content = null;
-
-            if (dto == null)
+            var configuredUrl = _configuration?["Supabase:Url"];
+            if (!string.IsNullOrWhiteSpace(configuredUrl))
             {
-                return "Dữ liệu bài học không hợp lệ.";
+                return configuredUrl.Trim().TrimEnd('/');
             }
 
-            title = (dto.Title ?? string.Empty).Trim();
-            contentType = (dto.ContentType ?? "vocabulary").Trim().ToLowerInvariant();
-            content = string.IsNullOrWhiteSpace(dto.Content) ? null : dto.Content.Trim();
-
-            if (title.Length == 0 || title.Length > MaxTitleLength)
+            var connStr = _configuration?.GetConnectionString("DefaultConnection") ?? string.Empty;
+            const string marker = "Username=postgres.";
+            var idx = connStr.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
             {
-                return $"Tiêu đề bài học không hợp lệ (1 - {MaxTitleLength} ký tự).";
+                var start = idx + marker.Length;
+                var end = connStr.IndexOf(';', start);
+                var projectRef = (end >= 0 ? connStr[start..end] : connStr[start..]).Trim();
+                if (!string.IsNullOrEmpty(projectRef))
+                {
+                    return $"https://{projectRef}.supabase.co";
+                }
             }
 
-            if (!ValidLessonTypes.Contains(contentType))
+            return DefaultSupabaseUrl;
+        }
+
+        private string? ResolveServiceRoleKey()
+        {
+            var key = _configuration?["Supabase:ServiceRoleKey"]
+                ?? _configuration?["Supabase:ServiceKey"]
+                ?? _configuration?["Supabase:Key"]
+                ?? Environment.GetEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY");
+            return string.IsNullOrWhiteSpace(key) ? null : key.Trim();
+        }
+
+        private async Task<StorageLookupResult> ResolveStorageObjectsAsync(
+            List<ParsedLessonMedia> mediaItems,
+            CancellationToken cancellationToken)
+        {
+            var keys = mediaItems
+                .SelectMany(m => new[] { m.Pdf?.Key, m.Video?.Key })
+                .Where(k => !string.IsNullOrWhiteSpace(k))
+                .Select(k => k!.Trim().TrimStart('/'))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            var byKey = new Dictionary<string, (string Bucket, string Name)>(StringComparer.OrdinalIgnoreCase);
+            var bucketPublic = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+            string fallbackBucket = DefaultStorageBucket;
+
+            try
             {
-                return "Loại nội dung bài học không hợp lệ.";
+                var conn = _context.Database.GetDbConnection();
+                var shouldClose = conn.State != ConnectionState.Open;
+                if (shouldClose)
+                {
+                    await conn.OpenAsync(cancellationToken);
+                }
+
+                try
+                {
+                    if (conn is NpgsqlConnection npgsqlConn)
+                    {
+                        await using (var bucketCmd = new NpgsqlCommand(
+                            "SELECT id, COALESCE(public, false) FROM storage.buckets ORDER BY COALESCE(public, false) DESC, created_at ASC",
+                            npgsqlConn))
+                        await using (var bucketReader = await bucketCmd.ExecuteReaderAsync(cancellationToken))
+                        {
+                            string? firstBucket = null;
+                            while (await bucketReader.ReadAsync(cancellationToken))
+                            {
+                                var bId = bucketReader.IsDBNull(0) ? null : bucketReader.GetString(0)?.Trim();
+                                var isPub = !bucketReader.IsDBNull(1) && bucketReader.GetBoolean(1);
+                                if (!string.IsNullOrEmpty(bId))
+                                {
+                                    bucketPublic[bId] = isPub;
+                                    firstBucket ??= bId;
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(firstBucket))
+                            {
+                                fallbackBucket = firstBucket;
+                            }
+                        }
+
+                        if (keys.Length > 0)
+                        {
+                            await using var objCmd = new NpgsqlCommand(@"
+                                SELECT o.id::text, o.bucket_id, o.name
+                                FROM storage.objects o
+                                WHERE NOT COALESCE(o.is_delete_marker, false)
+                                  AND o.bucket_id IS NOT NULL
+                                  AND o.name IS NOT NULL
+                                  AND (o.name = ANY(@keys) OR o.id::text = ANY(@keys))", npgsqlConn);
+                            objCmd.Parameters.Add(new NpgsqlParameter("keys", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = keys });
+
+                            await using var reader = await objCmd.ExecuteReaderAsync(cancellationToken);
+                            while (await reader.ReadAsync(cancellationToken))
+                            {
+                                var objId = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
+                                var bucketId = reader.GetString(1);
+                                var objName = reader.GetString(2);
+                                if (!string.IsNullOrEmpty(objName))
+                                {
+                                    byKey.TryAdd(objName, (bucketId, objName));
+                                }
+                                if (!string.IsNullOrEmpty(objId))
+                                {
+                                    byKey.TryAdd(objId, (bucketId, objName));
+                                }
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (shouldClose)
+                    {
+                        await conn.CloseAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Không thể tra cứu trực tiếp schema storage; dùng metadata từ lessons.content.");
             }
 
-            if (dto.OrderIndex.HasValue && (dto.OrderIndex.Value < 1 || dto.OrderIndex.Value > 1000))
+            return new StorageLookupResult(fallbackBucket, bucketPublic, byKey);
+        }
+
+        private async Task<ResolvedMediaUrl> ResolveAccessibleMediaUrlAsync(
+            MediaRef? mediaRef,
+            StorageLookupResult storageLookup,
+            string supabaseBaseUrl,
+            string? serviceRoleKey,
+            CancellationToken cancellationToken)
+        {
+            if (mediaRef == null)
             {
-                return "Thứ tự bài học phải từ 1 đến 1000.";
+                return new ResolvedMediaUrl(null, null, false);
             }
 
-            if (content != null && content.Length > MaxLessonContentLength)
+            if (!string.IsNullOrWhiteSpace(mediaRef.Url))
             {
-                return $"Nội dung tóm tắt bài học không được vượt quá {MaxLessonContentLength} ký tự.";
+                return new ResolvedMediaUrl(mediaRef.Url, mediaRef.Bucket, false);
+            }
+
+            var rawKey = mediaRef.Key?.Trim().TrimStart('/');
+            if (string.IsNullOrEmpty(rawKey))
+            {
+                return new ResolvedMediaUrl(null, null, false);
+            }
+
+            if (rawKey.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                rawKey.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ResolvedMediaUrl(rawKey, mediaRef.Bucket, false);
+            }
+
+            string bucket;
+            string objectPath;
+            if (storageLookup.ByKey.TryGetValue(rawKey, out var found))
+            {
+                bucket = found.Bucket;
+                objectPath = found.Name;
+            }
+            else
+            {
+                bucket = !string.IsNullOrWhiteSpace(mediaRef.Bucket)
+                    ? mediaRef.Bucket.Trim()
+                    : storageLookup.DefaultBucket;
+                objectPath = rawKey.StartsWith(bucket + "/", StringComparison.OrdinalIgnoreCase)
+                    ? rawKey[(bucket.Length + 1)..]
+                    : rawKey;
+            }
+
+            var hasBucketInfo = storageLookup.BucketPublic.TryGetValue(bucket, out var isPublicBucket);
+            if (hasBucketInfo && !isPublicBucket)
+            {
+                if (!string.IsNullOrWhiteSpace(serviceRoleKey))
+                {
+                    var signedUrl = await TryCreateSignedStorageUrlAsync(
+                        supabaseBaseUrl, bucket, objectPath, serviceRoleKey, cancellationToken);
+                    if (!string.IsNullOrEmpty(signedUrl))
+                    {
+                        return new ResolvedMediaUrl(signedUrl, bucket, false);
+                    }
+                }
+
+                var fallbackPublicUrl = $"{supabaseBaseUrl}/storage/v1/object/public/{Uri.EscapeDataString(bucket)}/{EscapeStoragePath(objectPath)}";
+                return new ResolvedMediaUrl(fallbackPublicUrl, bucket, true);
+            }
+
+            var publicUrl = $"{supabaseBaseUrl}/storage/v1/object/public/{Uri.EscapeDataString(bucket)}/{EscapeStoragePath(objectPath)}";
+            return new ResolvedMediaUrl(publicUrl, bucket, false);
+        }
+
+        private async Task<string?> TryCreateSignedStorageUrlAsync(
+            string supabaseBaseUrl,
+            string bucket,
+            string objectPath,
+            string serviceRoleKey,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var endpoint = $"{supabaseBaseUrl}/storage/v1/object/sign/{Uri.EscapeDataString(bucket)}/{EscapeStoragePath(objectPath)}";
+                using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", serviceRoleKey);
+                req.Headers.Add("apikey", serviceRoleKey);
+                req.Content = new StringContent("{\"expiresIn\":3600}", Encoding.UTF8, "application/json");
+
+                using var res = await StorageHttpClient.SendAsync(req, cancellationToken);
+                if (!res.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                var body = await res.Content.ReadAsStringAsync(cancellationToken);
+                using var doc = JsonDocument.Parse(body);
+                var signedPath = GetJsonString(doc.RootElement, "signedURL", "signedUrl");
+                if (string.IsNullOrWhiteSpace(signedPath))
+                {
+                    return null;
+                }
+
+                if (signedPath.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                    signedPath.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    return signedPath;
+                }
+
+                return signedPath.StartsWith("/storage/v1", StringComparison.OrdinalIgnoreCase)
+                    ? $"{supabaseBaseUrl}{signedPath}"
+                    : $"{supabaseBaseUrl}/storage/v1{signedPath}";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Không thể tạo signed URL từ Supabase Storage.");
+                return null;
+            }
+        }
+
+        private static string EscapeStoragePath(string path)
+        {
+            return string.Join("/", path.Split('/', StringSplitOptions.RemoveEmptyEntries).Select(Uri.EscapeDataString));
+        }
+
+        private static ParsedLessonMedia ParseRawLessonMedia(string? rawContent)
+        {
+            var raw = (rawContent ?? string.Empty).Trim();
+            if (raw.Length == 0)
+            {
+                return new ParsedLessonMedia(false, string.Empty, null, null);
+            }
+
+            if (!raw.StartsWith(LessonMediaPrefix, StringComparison.Ordinal))
+            {
+                return new ParsedLessonMedia(false, raw, null, null);
+            }
+
+            var jsonPart = raw[LessonMediaPrefix.Length..].Trim();
+            if (jsonPart.Length == 0)
+            {
+                return new ParsedLessonMedia(true, string.Empty, null, null);
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(jsonPart);
+                if (doc.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    return new ParsedLessonMedia(false, raw, null, null);
+                }
+
+                var root = doc.RootElement;
+                var text = GetJsonString(root, "Text", "text")?.Trim() ?? string.Empty;
+                var pdf = ParseMediaRef(root, "Pdf", "pdf", "Tài liệu PDF");
+                var video = ParseMediaRef(root, "Video", "video", "Video bài giảng");
+                return new ParsedLessonMedia(true, text, pdf, video);
+            }
+            catch
+            {
+                return new ParsedLessonMedia(false, raw, null, null);
+            }
+        }
+
+        private static MediaRef? ParseMediaRef(JsonElement root, string primaryProp, string altProp, string fallbackName)
+        {
+            if (!TryGetProperty(root, primaryProp, altProp, out var el) || el.ValueKind == JsonValueKind.Null || el.ValueKind == JsonValueKind.Undefined)
+            {
+                return null;
+            }
+
+            if (el.ValueKind == JsonValueKind.String)
+            {
+                var str = el.GetString()?.Trim();
+                if (string.IsNullOrEmpty(str)) return null;
+                var fileName = Path.GetFileName(str);
+                return new MediaRef(str, null, null, string.IsNullOrEmpty(fileName) ? fallbackName : fileName);
+            }
+
+            if (el.ValueKind == JsonValueKind.Object)
+            {
+                var url = GetJsonString(el, "Url", "url");
+                var key = GetJsonString(el, "Key", "key") ?? GetJsonString(el, "Path", "path");
+                var bucket = GetJsonString(el, "Bucket", "bucket");
+                var name = GetJsonString(el, "FileName", "fileName") ?? GetJsonString(el, "Name", "name");
+                if (string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(key))
+                {
+                    name = Path.GetFileName(key);
+                }
+                if (string.IsNullOrWhiteSpace(url) && string.IsNullOrWhiteSpace(key))
+                {
+                    return null;
+                }
+                return new MediaRef(key, bucket, url, string.IsNullOrWhiteSpace(name) ? fallbackName : name.Trim());
             }
 
             return null;
         }
+
+        private static bool TryGetProperty(JsonElement obj, string prop1, string prop2, out JsonElement value)
+        {
+            if (obj.TryGetProperty(prop1, out value)) return true;
+            if (obj.TryGetProperty(prop2, out value)) return true;
+            value = default;
+            return false;
+        }
+
+        private static string? GetJsonString(JsonElement obj, string prop1, string prop2)
+        {
+            if (TryGetProperty(obj, prop1, prop2, out var el) && el.ValueKind == JsonValueKind.String)
+            {
+                return el.GetString();
+            }
+            return null;
+        }
+
+        private sealed record MediaRef(string? Key, string? Bucket, string? Url, string FileName);
+        private sealed record ParsedLessonMedia(bool IsStructured, string Text, MediaRef? Pdf, MediaRef? Video);
+        private sealed record StorageLookupResult(
+            string DefaultBucket,
+            Dictionary<string, bool> BucketPublic,
+            Dictionary<string, (string Bucket, string Name)> ByKey);
+        private sealed record ResolvedMediaUrl(string? Url, string? Bucket, bool RequiresPublicBucket);
 
         public class CourseUpsertDto
         {

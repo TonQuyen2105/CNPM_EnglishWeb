@@ -8,8 +8,8 @@
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -225,14 +225,14 @@
   <div class="grid grid-cols-12 gap-6">
     <div class="col-span-8">
       <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-        <h3 class="card-title">Mô tả và mục tiêu đầu ra</h3>
+        <h3 class="card-title">Mô tả chung khóa học</h3>
         <p id="cd-description" style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin-top: 0.5rem;">Đang tải mô tả khóa học...</p>
       </div>
 
       <div class="card" style="padding: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 8px; flex-wrap: wrap;">
           <h3 class="card-title" id="cd-syllabus-title" style="margin: 0;">Đề cương bài học</h3>
-          <button type="button" class="btn btn-sm btn-primary" id="btn-add-lesson" disabled>+ Thêm bài học</button>
+          <span class="badge badge-info">Chỉ xem (Bài học do giảng viên tạo &amp; cập nhật)</span>
         </div>
         <div id="cd-lessons-list" style="display: flex; flex-direction: column; gap: 8px;">
           <div style="color: var(--text-muted); font-size: 0.875rem;">Đang tải đề cương bài học...</div>
@@ -331,8 +331,11 @@
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mô tả & Mục tiêu đầu ra</label>
-            <textarea id="ec-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả chi tiết nội dung và chuẩn đầu ra của khóa học..."></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin: 0;">Mô tả chung</label>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-suggest-edit-desc">Gợi ý mô tả phù hợp</button>
+            </div>
+            <textarea id="ec-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả chung về nội dung khóa học..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -343,54 +346,47 @@
     </div>
   </div>
 
-  <!-- Modal Thêm / Sửa Bài Học Đề Cương -->
-  <div class="modal-backdrop" id="modal-lesson">
-    <div class="modal-dialog">
+  <!-- Modal Xem Chi Tiết Bài Học (Chỉ đọc) -->
+  <div class="modal-backdrop" id="modal-lesson-view">
+    <div class="modal-dialog modal-dialog-lg">
       <div class="modal-header">
-        <h3 class="modal-title" id="lesson-modal-title">Thêm bài học vào đề cương</h3>
+        <h3 class="modal-title" id="lv-modal-title">Nội dung bài học</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
-      <form id="lesson-form">
-        <input type="hidden" id="lesson-id" value="">
-        <div class="modal-body">
-          <div id="lesson-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
-          <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
-            <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thứ tự <span class="required" style="color:red;">*</span></label>
-              <input type="number" id="lesson-order" class="form-control" min="1" max="1000" value="1" required>
-            </div>
-            <div class="form-group col-span-2">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Kỹ năng / Loại bài học</label>
-              <select id="lesson-type" class="form-control">
-                <option value="vocabulary">Từ vựng (Vocabulary)</option>
-                <option value="grammar">Ngữ pháp (Grammar)</option>
-                <option value="listening">Nghe hiểu (Listening)</option>
-                <option value="reading">Đọc hiểu (Reading)</option>
-                <option value="speaking">Nói (Speaking)</option>
-                <option value="writing">Viết (Writing)</option>
-                <option value="quiz">Kiểm tra (Quiz)</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên bài học <span class="required" style="color:red;">*</span></label>
-            <input type="text" id="lesson-title" class="form-control" maxlength="200" placeholder="Ví dụ: Bảng ngữ âm IPA & Nguyên âm đơn" required>
-          </div>
-          <div class="form-group" style="margin-bottom: 0.5rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Nội dung tóm tắt</label>
-            <textarea id="lesson-content" class="form-control" rows="3" maxlength="20000" placeholder="Ghi chú nội dung giảng dạy của bài học..."></textarea>
-          </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+          <span class="badge badge-primary" id="lv-order-badge">Bài --</span>
+          <span class="badge badge-info" id="lv-type-badge">--</span>
+          <span style="font-size: 0.78rem; color: var(--text-muted);" id="lv-updated-at"></span>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" class="btn btn-primary" id="lesson-submit-btn">Lưu bài học</button>
+        <div style="margin-bottom: 0.75rem;">
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Tiêu đề bài học</div>
+          <strong id="lv-title" style="font-size: 1rem; color: var(--text-primary);">--</strong>
         </div>
-      </form>
+
+        <!-- Phần ghi chú / mô tả văn bản (nếu có) -->
+        <div id="lv-text-section" style="margin-bottom: 1rem; display: none;">
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Ghi chú bài giảng</div>
+          <div id="lv-content" style="padding: 0.75rem 1rem; border-radius: 8px; background: var(--neutral-50); border: 1px solid var(--border-color); font-size: 0.875rem; line-height: 1.6; white-space: pre-wrap;"></div>
+        </div>
+
+        <!-- Phần tài liệu PDF / Video từ Supabase Storage -->
+        <div id="lv-media-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Tài liệu bài giảng từ Storage</span>
+            <a id="lv-open-external" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="display: none;">Mở file ở tab mới</a>
+          </div>
+          <div id="lv-media-viewer" style="border-radius: 8px; border: 1px solid var(--border-color); background: var(--neutral-50); overflow: hidden;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+      </div>
     </div>
   </div>
 
   <!-- Shared Interactive Script -->
-  <script src="../../../wwwroot/js/site.js"></script>
+  <script src="../../../wwwroot/js/site.js?v=20261122c"></script>
   <script>
     (function () {
       function escapeHtml(str) {
@@ -550,7 +546,7 @@
           `Mã: ${courseData.code} • Môn: ${courseData.subjectName} • Cấp độ: ${levelLabel(courseData.level)}`;
         document.getElementById('cd-description').innerHTML = courseData.description
           ? escapeHtml(courseData.description).replace(/\n/g, '<br>')
-          : '<span style="color: var(--text-muted); font-style: italic;">Chưa có mô tả và mục tiêu đầu ra cho khóa học này.</span>';
+          : '<span style="color: var(--text-muted); font-style: italic;">Chưa có mô tả chung cho khóa học này.</span>';
 
         document.getElementById('cd-price').textContent = formatCurrency(courseData.price);
         document.getElementById('cd-subject').textContent = courseData.subjectName || '--';
@@ -565,7 +561,6 @@
         document.getElementById('cd-updated-at').textContent = formatDate(courseData.updatedAt || courseData.createdAt);
 
         document.getElementById('btn-edit-course').disabled = false;
-        document.getElementById('btn-add-lesson').disabled = false;
         const objLink = document.getElementById('cd-objectives-link');
         if (objLink && courseData.id) objLink.href = `/Admin/course-objectives.html?id=${encodeURIComponent(courseData.id)}`;
         const openClsLink = document.getElementById('cd-open-class-link');
@@ -574,25 +569,13 @@
         document.getElementById('cd-syllabus-title').textContent = `Đề cương bài học (${lessonsCache.length} bài)`;
         const listEl = document.getElementById('cd-lessons-list');
         if (lessonsCache.length === 0) {
-          listEl.innerHTML = '<div style="padding: 1.5rem; text-align: center; background: var(--neutral-50); border-radius: 8px; color: var(--text-muted); font-size: 0.875rem;">Chưa có bài học nào trong đề cương. Hãy bấm "+ Thêm bài học".</div>';
+          listEl.innerHTML = '<div style="padding: 1.5rem; text-align: center; background: var(--neutral-50); border-radius: 8px; color: var(--text-muted); font-size: 0.875rem;">Giảng viên chưa đăng tải bài học nào cho khóa học này.</div>';
           return;
         }
 
-        listEl.innerHTML = lessonsCache.map(l => `
-          <div style="padding: 10px 12px; background: var(--neutral-50); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
-            <div style="min-width: 0;">
-              <div>
-                <strong>Bài ${l.orderIndex}:</strong> ${escapeHtml(l.title)}
-                <span class="badge badge-info" style="margin-left: 6px;">${escapeHtml(lessonTypeLabel(l.contentType))}</span>
-              </div>
-              ${l.content ? `<div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">${escapeHtml(l.content)}</div>` : ''}
-            </div>
-            <div style="display: inline-flex; gap: 6px; flex-shrink: 0;">
-              <button type="button" class="btn btn-sm btn-secondary" data-edit-lesson="${l.id}">Sửa</button>
-              <button type="button" class="btn btn-sm btn-danger" data-delete-lesson="${l.id}">Xóa</button>
-            </div>
-          </div>
-        `).join('');
+        listEl.innerHTML = lessonsCache
+          .map(l => window.renderLessonReadOnlyItem(l, lessonTypeLabel(l.contentType)))
+          .join('');
       }
 
       async function loadCourseDetail() {
@@ -654,66 +637,39 @@
         openModal('modal-edit-course');
       }
 
-      function openCreateLessonModal() {
-        document.getElementById('lesson-id').value = '';
-        const nextOrder = lessonsCache.length > 0 ? Math.max(...lessonsCache.map(l => l.orderIndex || 0)) + 1 : 1;
-        document.getElementById('lesson-order').value = String(nextOrder);
-        document.getElementById('lesson-type').value = 'vocabulary';
-        document.getElementById('lesson-title').value = '';
-        document.getElementById('lesson-content').value = '';
-        document.getElementById('lesson-modal-title').textContent = 'Thêm bài học vào đề cương';
-        document.getElementById('lesson-submit-btn').textContent = 'Lưu bài học';
-        showBoxError('lesson-form-error', '');
-        openModal('modal-lesson');
-      }
-
-      function openEditLessonModal(lessonId) {
+      function openViewLessonModal(lessonId) {
         const lesson = lessonsCache.find(l => l.id === lessonId);
         if (!lesson) return;
-        document.getElementById('lesson-id').value = lesson.id;
-        document.getElementById('lesson-order').value = String(lesson.orderIndex || 1);
-        document.getElementById('lesson-type').value = lesson.contentType || 'vocabulary';
-        document.getElementById('lesson-title').value = lesson.title || '';
-        document.getElementById('lesson-content').value = lesson.content || '';
-        document.getElementById('lesson-modal-title').textContent = `Cập nhật Bài ${lesson.orderIndex}`;
-        document.getElementById('lesson-submit-btn').textContent = 'Cập nhật bài học';
-        showBoxError('lesson-form-error', '');
-        openModal('modal-lesson');
-      }
-
-      async function deleteLesson(lessonId, btn) {
-        if (!confirm('Bạn có chắc muốn xóa bài học này khỏi đề cương?')) return;
-        if (btn) btn.disabled = true;
-        try {
-          const data = await postJson(`/Admin/api/Courses/Lessons/Delete/${lessonId}`);
-          showToast(data.message || 'Đã xóa bài học.');
-          await loadCourseDetail();
-        } catch (err) {
-          console.error(err);
-          showToast(err.message, 'error');
-          if (btn) btn.disabled = false;
-        }
+        window.openLessonMediaModal(
+          lesson,
+          lessonTypeLabel(lesson.contentType),
+          `Cập nhật: ${formatDate(lesson.updatedAt || lesson.createdAt)}`,
+          openModal
+        );
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         loadCourseDetail();
 
         document.getElementById('btn-edit-course').addEventListener('click', openEditCourseModal);
-        document.getElementById('btn-add-lesson').addEventListener('click', openCreateLessonModal);
+
+        document.getElementById('btn-suggest-edit-desc').addEventListener('click', () => {
+          const title = document.getElementById('ec-title').value.trim() || courseData?.title || '';
+          const subjSel = document.getElementById('ec-subject-id');
+          const subjectName = subjSel.selectedOptions[0]?.textContent || courseData?.subjectName || '';
+          const level = document.getElementById('ec-level').value || courseData?.level || 'beginner';
+          const suggestion = window.buildCourseDescriptionSuggestion(title, subjectName, level);
+          document.getElementById('ec-description').value = suggestion.fullText;
+        });
 
         document.getElementById('cd-lessons-list').addEventListener('click', (e) => {
           if (e.target.closest('[data-retry-load]')) {
             loadCourseDetail();
             return;
           }
-          const editBtn = e.target.closest('[data-edit-lesson]');
-          if (editBtn) {
-            openEditLessonModal(Number(editBtn.getAttribute('data-edit-lesson')));
-            return;
-          }
-          const delBtn = e.target.closest('[data-delete-lesson]');
-          if (delBtn) {
-            deleteLesson(Number(delBtn.getAttribute('data-delete-lesson')), delBtn);
+          const viewBtn = e.target.closest('[data-view-lesson]');
+          if (viewBtn) {
+            openViewLessonModal(Number(viewBtn.getAttribute('data-view-lesson')));
           }
         });
 
@@ -741,40 +697,6 @@
           } catch (err) {
             console.error(err);
             showBoxError('edit-course-error', err.message);
-            showToast(err.message, 'error');
-          } finally {
-            setBusy(btn, false);
-          }
-        });
-
-        document.getElementById('lesson-form').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          if (!currentCourseId) return;
-          showBoxError('lesson-form-error', '');
-
-          const lessonId = document.getElementById('lesson-id').value;
-          const isEdit = Boolean(lessonId);
-          const rawOrder = document.getElementById('lesson-order').value.trim();
-          const payload = {
-            orderIndex: rawOrder ? Number(rawOrder) : null,
-            contentType: document.getElementById('lesson-type').value,
-            title: document.getElementById('lesson-title').value.trim(),
-            content: document.getElementById('lesson-content').value.trim()
-          };
-
-          const btn = document.getElementById('lesson-submit-btn');
-          setBusy(btn, true);
-          try {
-            const url = isEdit
-              ? `/Admin/api/Courses/Lessons/Update/${encodeURIComponent(lessonId)}`
-              : `/Admin/api/Courses/${encodeURIComponent(currentCourseId)}/Lessons/Create`;
-            const data = await postJson(url, payload);
-            closeModal('modal-lesson');
-            showToast(data.message || 'Lưu bài học thành công.');
-            await loadCourseDetail();
-          } catch (err) {
-            console.error(err);
-            showBoxError('lesson-form-error', err.message);
             showToast(err.message, 'error');
           } finally {
             setBusy(btn, false);

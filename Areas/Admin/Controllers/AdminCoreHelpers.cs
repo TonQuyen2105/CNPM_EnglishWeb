@@ -151,6 +151,371 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
             return null;
         }
+
+        public static int[] ParseScheduleDays(string? scheduleDays) => (scheduleDays ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "t246" => [1, 3, 5],
+            "t357" => [2, 4, 6],
+            "all" => [1, 2, 3, 4, 5, 6],
+            _ => []
+        };
+
+        public static string? FormatScheduleDaysLabel(string? scheduleDays) => (scheduleDays ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "t246" => "Thứ 2 - Thứ 4 - Thứ 6",
+            "t357" => "Thứ 3 - Thứ 5 - Thứ 7",
+            "all" => "Cả tuần (Thứ 2 - Thứ 7)",
+            _ => null
+        };
+
+        /// <summary>
+        /// Tính số ca/tuần theo danh sách thứ (ví dụ T2-4-6 = 3 ca/tuần), tổng số tuần phòng/lớp mở
+        /// và tổng số ca (buổi học) trong khoảng [startDate, endDate].
+        /// </summary>
+        public static SessionStatsInfo CalculateSessionStats(IEnumerable<int> daysOfWeek, DateTime? startDate, DateTime? endDate)
+        {
+            var distinctDays = daysOfWeek
+                .Where(d => d >= 1 && d <= 7)
+                .Distinct()
+                .ToHashSet();
+
+            var sessionsPerWeek = distinctDays.Count;
+            if (sessionsPerWeek == 0 || !startDate.HasValue || !endDate.HasValue)
+            {
+                return new SessionStatsInfo(sessionsPerWeek, 0, 0);
+            }
+
+            var start = startDate.Value.Date;
+            var end = endDate.Value.Date;
+            if (end < start)
+            {
+                return new SessionStatsInfo(sessionsPerWeek, 0, 0);
+            }
+
+            var totalDays = (end - start).Days + 1;
+            var totalWeeks = (int)Math.Ceiling(totalDays / 7.0);
+            var fullWeeks = totalDays / 7;
+            var remainder = totalDays % 7;
+
+            var totalSessions = fullWeeks * sessionsPerWeek;
+            for (var i = 0; i < remainder; i++)
+            {
+                var dow = start.AddDays(i).DayOfWeek;
+                var isoDay = dow == DayOfWeek.Sunday ? 7 : (int)dow;
+                if (distinctDays.Contains(isoDay))
+                {
+                    totalSessions++;
+                }
+            }
+
+            return new SessionStatsInfo(sessionsPerWeek, totalWeeks, totalSessions);
+        }
+
+        public static DateTime GetTodayVnDate() =>
+            DateTime.SpecifyKind(DateTime.UtcNow.AddHours(7).Date, DateTimeKind.Unspecified);
+
+        private static int _legacyColumnsCleaned;
+
+        /// <summary>
+        /// Xóa các cột dư từng thêm vào bảng classrooms và course_classes để database gọn đúng model chuẩn.
+        /// Chỉ chạy 1 lần khi ứng dụng khởi động / truy vấn đầu tiên.
+        /// </summary>
+        public static async Task EnsureCleanDatabaseSchemaAsync(
+            ApplicationDbContext context,
+            CancellationToken cancellationToken)
+        {
+            if (System.Threading.Interlocked.Exchange(ref _legacyColumnsCleaned, 1) == 1)
+            {
+                return;
+            }
+
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(@"
+                    ALTER TABLE public.classrooms
+                        DROP COLUMN IF EXISTS default_teacher_id,
+                        DROP COLUMN IF EXISTS default_course_id,
+                        DROP COLUMN IF EXISTS schedule_days,
+                        DROP COLUMN IF EXISTS default_time_slot_id,
+                        DROP COLUMN IF EXISTS open_date,
+                        DROP COLUMN IF EXISTS close_date;
+                    ALTER TABLE public.course_classes
+                        DROP COLUMN IF EXISTS classroom_id;
+                ", cancellationToken);
+            }
+            catch
+            {
+                // Bỏ qua nếu quyền DDL hạn chế hoặc cột đã được xóa
+            }
+        }
+
+        /// <summary>
+        /// Tự động chuyển trạng thái các lớp sắp diễn ra / đang diễn ra sang đã kết thúc (completed)
+        /// khi đã đến hoặc qua ngày kết thúc (EndDate <= hôm nay theo giờ Việt Nam UTC+7),
+        /// tự động chuyển sang đang diễn ra (ongoing) khi tới ngày bắt đầu hoặc có học viên đăng ký,
+        /// đồng thời dọn sạch lịch học (ClassSchedules) còn sót của các lớp đã hủy (cancelled).
+        /// </summary>
+        public static async Task<int> SyncExpiredClassesAsync(
+            ApplicationDbContext context,
+            CancellationToken cancellationToken)
+        {
+            await EnsureCleanDatabaseSchemaAsync(context, cancellationToken);
+
+            var tomorrowVn = DateTime.SpecifyKind(GetTodayVnDate().AddDays(1), DateTimeKind.Unspecified);
+            var nowUtc = DateTime.UtcNow;
+            var expiredCount = await context.CourseClasses
+                .Where(c => (c.Status == "upcoming" || c.Status == "ongoing") && c.EndDate < tomorrowVn)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(c => c.Status, "completed")
+                    .SetProperty(c => c.UpdatedAt, nowUtc),
+                    cancellationToken);
+
+            // Tự động chuyển lớp Sắp khai giảng (upcoming) sang Đang diễn ra (ongoing) KHI VÀ CHỈ KHI đủ thông tin:
+            // 1) Đã tới ngày bắt đầu (StartDate <= todayVn), VÀ
+            // 2) Đã có giảng viên phụ trách (ClassTeachers), VÀ
+            // 3) Đã có phòng học & lịch học (ClassSchedules), VÀ
+            // 4) Đã có ít nhất 1 học viên đăng ký đang học (Enrollments.Status == "active").
+            await context.CourseClasses
+                .Where(c => c.Status == "upcoming"
+                            && c.EndDate >= tomorrowVn
+                            && c.StartDate < tomorrowVn
+                            && context.ClassTeachers.Any(ct => ct.ClassId == c.Id)
+                            && context.ClassSchedules.Any(cs => cs.ClassId == c.Id)
+                            && context.Enrollments.Any(e => e.ClassId == c.Id && e.Status == "active"))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(c => c.Status, "ongoing")
+                    .SetProperty(c => c.UpdatedAt, nowUtc),
+                    cancellationToken);
+
+            // Nếu lớp đang ở trạng thái Đang diễn ra (ongoing) nhưng chưa đủ thông tin
+            // (chưa tới ngày khai giảng, chưa có giảng viên, chưa có lịch/phòng hoặc chưa có học viên đăng ký)
+            // thì tự động đưa về Sắp khai giảng (upcoming) để Admin có thể sửa hoặc hủy lớp.
+            await context.CourseClasses
+                .Where(c => c.Status == "ongoing"
+                            && c.EndDate >= tomorrowVn
+                            && (c.StartDate >= tomorrowVn
+                                || !context.ClassTeachers.Any(ct => ct.ClassId == c.Id)
+                                || !context.ClassSchedules.Any(cs => cs.ClassId == c.Id)
+                                || !context.Enrollments.Any(e => e.ClassId == c.Id && e.Status == "active")))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(c => c.Status, "upcoming")
+                    .SetProperty(c => c.UpdatedAt, nowUtc),
+                    cancellationToken);
+
+            var cancelledScheduleIds = await (
+                from cs in context.ClassSchedules.AsNoTracking()
+                join cc in context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                where cc.Status == "cancelled"
+                select cs.Id
+            ).ToListAsync(cancellationToken);
+
+            if (cancelledScheduleIds.Count > 0)
+            {
+                await context.ClassLessons
+                    .Where(cl => cl.ScheduleId.HasValue && cancelledScheduleIds.Contains(cl.ScheduleId.Value))
+                    .ExecuteUpdateAsync(s => s.SetProperty(cl => cl.ScheduleId, (int?)null), cancellationToken);
+
+                await context.ClassSchedules
+                    .Where(cs => cancelledScheduleIds.Contains(cs.Id))
+                    .ExecuteDeleteAsync(cancellationToken);
+            }
+
+            return expiredCount;
+        }
+
+        /// <summary>
+        /// Đồng bộ trạng thái hết hạn và quét lịch lớp đang hoạt động (upcoming / ongoing).
+        /// Thời khóa biểu chỉ hiển thị từ lớp học phần đang mở trong bảng class_schedules.
+        /// </summary>
+        public static async Task<SystemScheduleState> DetectSystemScheduleStateAsync(
+            ApplicationDbContext context,
+            CancellationToken cancellationToken)
+        {
+            await SyncExpiredClassesAsync(context, cancellationToken);
+
+            var activeClassSchedules = await (
+                from cs in context.ClassSchedules.AsNoTracking()
+                join cc in context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                join r in context.Classrooms.AsNoTracking() on cs.ClassroomId equals r.Id
+                join ts in context.TimeSlots.AsNoTracking() on cs.TimeSlotId equals ts.Id
+                where cc.Status == "upcoming" || cc.Status == "ongoing"
+                select new ActiveClassScheduleSnapshot
+                {
+                    ScheduleId = cs.Id,
+                    ClassId = cc.Id,
+                    ClassCode = cc.ClassCode,
+                    ClassName = cc.ClassName,
+                    StartDate = cc.StartDate,
+                    EndDate = cc.EndDate,
+                    ClassroomId = r.Id,
+                    ClassroomName = r.Name,
+                    TimeSlotId = ts.Id,
+                    SlotName = ts.Name,
+                    StartTime = ts.StartTime,
+                    EndTime = ts.EndTime,
+                    DayOfWeek = cs.DayOfWeek
+                }
+            ).ToListAsync(cancellationToken);
+
+            var classIds = activeClassSchedules.Select(s => s.ClassId).Distinct().ToList();
+            var classTeachers = classIds.Count == 0
+                ? []
+                : await (
+                    from ct in context.ClassTeachers.AsNoTracking()
+                    join t in context.Teachers.AsNoTracking() on ct.TeacherId equals t.Id
+                    join u in context.Users.AsNoTracking() on t.UserId equals u.Id
+                    where classIds.Contains(ct.ClassId)
+                    select new ClassTeacherLink(ct.ClassId, t.Id, u.FullName, ct.Role)
+                ).ToListAsync(cancellationToken);
+
+            var teachersByClass = classTeachers
+                .GroupBy(x => x.ClassId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var configuredRooms = new List<ConfiguredRoomSchedule>();
+            var conflicts = new List<SystemConflictDetail>();
+
+            // 1. Xung đột giữa các ClassSchedule (lớp vs lớp)
+            for (int i = 0; i < activeClassSchedules.Count; i++)
+            {
+                var a = activeClassSchedules[i];
+                var aRange = FormatTimeRange(a.StartTime, a.EndTime);
+                var aKey = $"cs-{a.ScheduleId}";
+                teachersByClass.TryGetValue(a.ClassId, out var aTeachers);
+
+                for (int j = i + 1; j < activeClassSchedules.Count; j++)
+                {
+                    var b = activeClassSchedules[j];
+                    if (a.DayOfWeek != b.DayOfWeek) continue;
+                    if (!(a.StartTime < b.EndTime && b.StartTime < a.EndTime)) continue;
+
+                    var bKey = $"cs-{b.ScheduleId}";
+                    var dayLabel = FormatDayFull(a.DayOfWeek);
+                    var bRange = FormatTimeRange(b.StartTime, b.EndTime);
+
+                    if (a.ClassId == b.ClassId)
+                    {
+                        conflicts.Add(new SystemConflictDetail(
+                            aKey, bKey, "class", "class",
+                            a.ScheduleId, b.ScheduleId, "class",
+                            a.ClassId, a.ClassCode, a.ClassName,
+                            b.ClassId, b.ClassCode, b.ClassName,
+                            null, null, a.ClassroomId, a.ClassroomName, b.ClassroomId,
+                            a.DayOfWeek, a.TimeSlotId, a.SlotName, aRange,
+                            $"Lớp {a.ClassCode} có 2 ca giao giờ vào {dayLabel}: {a.SlotName} ({aRange}) và {b.SlotName} ({bRange})."));
+                        continue;
+                    }
+
+                    if (!(a.StartDate <= b.EndDate && b.StartDate <= a.EndDate)) continue;
+
+                    if (a.ClassroomId == b.ClassroomId)
+                    {
+                        conflicts.Add(new SystemConflictDetail(
+                            aKey, bKey, "class", "class",
+                            a.ScheduleId, b.ScheduleId, "room",
+                            a.ClassId, a.ClassCode, a.ClassName,
+                            b.ClassId, b.ClassCode, b.ClassName,
+                            null, null, a.ClassroomId, a.ClassroomName, b.ClassroomId,
+                            a.DayOfWeek, a.TimeSlotId, a.SlotName, aRange,
+                            $"Trùng phòng {a.ClassroomName} ({dayLabel}, {a.SlotName} {aRange}): Lớp {a.ClassCode} trùng với {b.ClassCode}."));
+                    }
+
+                    if (aTeachers != null && teachersByClass.TryGetValue(b.ClassId, out var bTeachers))
+                    {
+                        var shared = aTeachers.FirstOrDefault(at => bTeachers.Any(bt => bt.TeacherId == at.TeacherId));
+                        if (shared != null)
+                        {
+                            conflicts.Add(new SystemConflictDetail(
+                                aKey, bKey, "class", "class",
+                                a.ScheduleId, b.ScheduleId, "teacher",
+                                a.ClassId, a.ClassCode, a.ClassName,
+                                b.ClassId, b.ClassCode, b.ClassName,
+                                shared.TeacherId, shared.TeacherName, a.ClassroomId, a.ClassroomName, b.ClassroomId,
+                                a.DayOfWeek, a.TimeSlotId, a.SlotName, aRange,
+                                $"Trùng lịch GV {shared.TeacherName} ({dayLabel}, {a.SlotName} {aRange}): Lớp {a.ClassCode} trùng với {b.ClassCode} ({b.SlotName} {bRange})."));
+                        }
+                    }
+                }
+            }
+
+            return new SystemScheduleState(activeClassSchedules, configuredRooms, conflicts);
+        }
+
+        internal sealed record SessionStatsInfo(int SessionsPerWeek, int TotalWeeks, int TotalSessions);
+
+        internal sealed record ClassTeacherLink(int ClassId, int TeacherId, string TeacherName, string Role);
+
+        internal sealed class ActiveClassScheduleSnapshot
+        {
+            public int ScheduleId { get; set; }
+            public int ClassId { get; set; }
+            public string ClassCode { get; set; } = string.Empty;
+            public string ClassName { get; set; } = string.Empty;
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+            public int ClassroomId { get; set; }
+            public string ClassroomName { get; set; } = string.Empty;
+            public int TimeSlotId { get; set; }
+            public string SlotName { get; set; } = string.Empty;
+            public TimeSpan StartTime { get; set; }
+            public TimeSpan EndTime { get; set; }
+            public int DayOfWeek { get; set; }
+        }
+
+        internal sealed class ConfiguredRoomSchedule
+        {
+            public int ClassroomId { get; set; }
+            public string ClassroomName { get; set; } = string.Empty;
+            public string? Location { get; set; }
+            public int Capacity { get; set; }
+            public string? Description { get; set; }
+            public bool IsActive { get; set; }
+            public int? DefaultTeacherId { get; set; }
+            public string? DefaultTeacherName { get; set; }
+            public int? DefaultCourseId { get; set; }
+            public string? DefaultCourseTitle { get; set; }
+            public string ScheduleDays { get; set; } = string.Empty;
+            public string ScheduleDaysLabel { get; set; } = string.Empty;
+            public int[] Days { get; set; } = [];
+            public int TimeSlotId { get; set; }
+            public string SlotName { get; set; } = string.Empty;
+            public TimeSpan StartTime { get; set; }
+            public TimeSpan EndTime { get; set; }
+            public string TimeRange { get; set; } = string.Empty;
+            public DateTime? OpenDate { get; set; }
+            public DateTime? CloseDate { get; set; }
+            public SessionStatsInfo Stats { get; set; } = new(0, 0, 0);
+        }
+
+        internal sealed record SystemConflictDetail(
+            string EntryKey,
+            string OtherEntryKey,
+            string SourceType,
+            string OtherSourceType,
+            int? ScheduleId,
+            int? OtherScheduleId,
+            string ConflictType,
+            int? ClassId,
+            string CodeLabel,
+            string TitleLabel,
+            int? OtherClassId,
+            string OtherCodeLabel,
+            string OtherTitleLabel,
+            int? TeacherId,
+            string? TeacherName,
+            int ClassroomId,
+            string ClassroomName,
+            int OtherClassroomId,
+            int DayOfWeek,
+            int TimeSlotId,
+            string TimeSlotName,
+            string TimeRange,
+            string Message);
+
+        internal sealed record SystemScheduleState(
+            List<ActiveClassScheduleSnapshot> ActiveClassSchedules,
+            List<ConfiguredRoomSchedule> ConfiguredRooms,
+            List<SystemConflictDetail> Conflicts);
     }
 }
 

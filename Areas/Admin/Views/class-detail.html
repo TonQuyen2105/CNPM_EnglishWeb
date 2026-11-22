@@ -8,8 +8,8 @@
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -355,6 +355,7 @@
       <form id="edit-class-form">
         <div class="modal-body">
           <div id="edit-class-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+          <div id="ec-edit-mode-note" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; font-size: 0.84rem; margin-bottom: 1rem;"></div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mã lớp học <span style="color:red;">*</span></label>
@@ -780,11 +781,12 @@
         }
       }
 
-      function renderTeachersAssigned(teachersAssigned) {
+      function renderTeachersAssigned(teachersAssigned, classStatus) {
         const container = document.getElementById('detail-teachers-container');
         const list = Array.isArray(teachersAssigned) ? teachersAssigned : [];
         const mainTeacher = list.find(t => (t.role || '').toLowerCase() === 'main');
         const assistants = list.filter(t => (t.role || '').toLowerCase() !== 'main');
+        const canModifyTeachers = (classStatus || '').toLowerCase() === 'upcoming';
 
         const mainHtml = mainTeacher
           ? `
@@ -800,10 +802,10 @@
               </div>
               <div style="display: flex; gap: 6px;">
                 <a href="/Admin/schedules.html?teacherId=${encodeURIComponent(mainTeacher.teacherId)}" class="btn btn-sm btn-secondary">Lịch dạy</a>
-                <button type="button" class="btn btn-sm btn-danger-soft" data-remove-teacher="${mainTeacher.teacherId}" data-teacher-name="${escapeHtml(mainTeacher.fullName)}" data-teacher-role="main">Gỡ</button>
+                ${canModifyTeachers ? `<button type="button" class="btn btn-sm btn-danger-soft" data-remove-teacher="${mainTeacher.teacherId}" data-teacher-name="${escapeHtml(mainTeacher.fullName)}" data-teacher-role="main">Gỡ</button>` : ''}
               </div>
             </div>`
-          : `<div style="padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--neutral-50); border: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.875rem;">Lớp học hiện chưa có giảng viên chính. Nhấn "Đổi giảng viên chính" để phân công.</div>`;
+          : `<div style="padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--neutral-50); border: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.875rem;">Lớp học hiện chưa có giảng viên chính.${canModifyTeachers ? ' Nhấn "Đổi giảng viên chính" để phân công.' : ''}</div>`;
 
         const assistantsHtml = assistants.length > 0
           ? `
@@ -817,7 +819,7 @@
                       <span class="badge badge-neutral" style="margin-left: 4px;">Trợ giảng</span>
                       <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(a.email || '--')}</div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-danger-soft" data-remove-teacher="${a.teacherId}" data-teacher-name="${escapeHtml(a.fullName)}" data-teacher-role="assistant">Gỡ trợ giảng</button>
+                    ${canModifyTeachers ? `<button type="button" class="btn btn-sm btn-danger-soft" data-remove-teacher="${a.teacherId}" data-teacher-name="${escapeHtml(a.fullName)}" data-teacher-role="assistant">Gỡ trợ giảng</button>` : ''}
                   </div>
                 `).join('')}
               </div>
@@ -889,7 +891,12 @@
       async function updateClassQuickStatus(newStatus) {
         if (!currentClassId) return;
         const quickSel = document.getElementById('detail-quick-status');
-        const prevStatus = currentDetail?.classInfo?.status || 'upcoming';
+        const prevStatus = (currentDetail?.classInfo?.status || 'upcoming').toLowerCase();
+        if (prevStatus === 'ongoing') {
+          quickSel.value = prevStatus;
+          showToast('Lớp đang diễn ra không được phép chỉnh sửa trạng thái hoặc hủy.', 'error');
+          return;
+        }
         quickSel.disabled = true;
         try {
           const data = await postJson(`/Admin/api/Classes/UpdateStatus/${encodeURIComponent(currentClassId)}`, {
@@ -906,10 +913,127 @@
         }
       }
 
+      function setEditModalFieldsDisabled(disabled) {
+        ['ec-code', 'ec-name', 'ec-course-id', 'ec-main-teacher-id', 'ec-start-date', 'ec-end-date', 'ec-max-students', 'ec-price']
+          .forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = disabled;
+          });
+      }
+
+      function syncDetailEditStatusByStartDate() {
+        const info = currentDetail?.classInfo;
+        const currentStatus = (info?.status || '').toLowerCase();
+        if (currentStatus === 'completed') return;
+        const sel = document.getElementById('ec-status');
+        const startEl = document.getElementById('ec-start-date');
+        if (!sel || !startEl) return;
+        const upcomingOpt = sel.querySelector('option[value="upcoming"]');
+        const ongoingOpt = sel.querySelector('option[value="ongoing"]');
+        if (!ongoingOpt) return;
+        const startVal = startEl.value;
+        const todayIso = toDateInputValue(new Date());
+        const hasTeacher = Boolean(document.getElementById('ec-main-teacher-id')?.value) || (Array.isArray(currentDetail?.teachersAssigned) && currentDetail.teachersAssigned.length > 0);
+        const hasSchedule = Array.isArray(currentDetail?.schedules) && currentDetail.schedules.length > 0;
+        const hasStudent = (Number(info?.activeStudents) || 0) > 0;
+        const canBeOngoing = Boolean(startVal) && startVal <= todayIso && hasTeacher && hasSchedule && hasStudent;
+        if (!canBeOngoing) {
+          if (upcomingOpt) {
+            upcomingOpt.disabled = false;
+            upcomingOpt.textContent = 'Sắp khai giảng';
+          }
+          ongoingOpt.disabled = true;
+          ongoingOpt.textContent = 'Đang diễn ra (Cần đủ GV, phòng/lịch, tới ngày mở & có học viên ĐK)';
+          sel.value = 'upcoming';
+        } else {
+          if (upcomingOpt) {
+            upcomingOpt.disabled = false;
+            upcomingOpt.textContent = 'Sắp khai giảng';
+          }
+          ongoingOpt.disabled = false;
+          ongoingOpt.textContent = 'Đang diễn ra';
+          sel.value = 'ongoing';
+        }
+      }
+
+      function populateStatusSelectOptions(selectEl, currentStatus, mode = 'quick', startDateValue = null) {
+        if (!selectEl) return;
+        const st = (currentStatus || 'upcoming').toLowerCase();
+        if (mode === 'edit') {
+          if (st === 'completed') {
+            selectEl.innerHTML =
+              '<option value="completed" disabled>Đã kết thúc (Hiện tại)</option>' +
+              '<option value="cancelled">Đã hủy (Cancelled)</option>';
+            selectEl.value = 'cancelled';
+            return;
+          }
+          // Chỉnh sửa lớp sắp diễn ra: chỉ list Sắp khai giảng hoặc Đang diễn ra
+          selectEl.innerHTML =
+            '<option value="upcoming">Sắp khai giảng</option>' +
+            '<option value="ongoing">Đang diễn ra</option>';
+          selectEl.value = st === 'ongoing' ? 'ongoing' : 'upcoming';
+          return;
+        }
+
+        if (st === 'ongoing') {
+          selectEl.innerHTML = '<option value="ongoing">Đang diễn ra (Ongoing)</option>';
+          selectEl.value = 'ongoing';
+          selectEl.disabled = true;
+          selectEl.title = 'Lớp đang diễn ra không được chỉnh sửa trạng thái hoặc hủy';
+          return;
+        }
+        if (st === 'completed') {
+          selectEl.innerHTML =
+            '<option value="completed">Đã kết thúc (Completed)</option>' +
+            '<option value="cancelled">Đã hủy (Cancelled)</option>';
+          selectEl.value = 'completed';
+          selectEl.disabled = false;
+          selectEl.title = 'Lớp đã kết thúc chỉ được đổi sang Đã hủy';
+          return;
+        }
+        if (st === 'cancelled') {
+          selectEl.innerHTML = '<option value="cancelled">Đã hủy (Cancelled)</option>';
+          selectEl.value = 'cancelled';
+          selectEl.disabled = true;
+          selectEl.title = 'Lớp đã hủy không thể đổi trạng thái';
+          return;
+        }
+
+        const startIso = toDateInputValue(startDateValue);
+        const todayIso = toDateInputValue(new Date());
+        const canBeOngoing = Boolean(startIso) && startIso <= todayIso;
+        selectEl.innerHTML =
+          '<option value="upcoming">Sắp khai giảng (Upcoming)</option>' +
+          `<option value="ongoing" ${canBeOngoing ? '' : 'disabled'}>${canBeOngoing ? 'Đang diễn ra (Ongoing)' : 'Đang diễn ra (Chưa tới ngày khai giảng)'}</option>` +
+          '<option value="cancelled">Đã hủy (Cancelled)</option>';
+        selectEl.value = 'upcoming';
+        selectEl.disabled = false;
+        selectEl.title = 'Đổi nhanh trạng thái lớp';
+      }
+
       function openEditClassModal() {
         if (!currentDetail || !currentDetail.classInfo) return;
         const info = currentDetail.classInfo;
-        document.getElementById('edit-class-modal-title').textContent = `Chỉnh sửa lớp học: ${info.classCode}`;
+        const st = (info.status || '').toLowerCase();
+        if (st === 'ongoing' || st === 'cancelled') return;
+
+        const isCompletedOnlyStatus = st === 'completed';
+        setEditModalFieldsDisabled(isCompletedOnlyStatus);
+        const noteBox = document.getElementById('ec-edit-mode-note');
+        if (noteBox) {
+          if (isCompletedOnlyStatus) {
+            noteBox.textContent = 'Lớp đã kết thúc không được chỉnh sửa thông tin lớp học, chỉ được phép đổi trạng thái sang Đã hủy.';
+            noteBox.style.display = 'block';
+          } else {
+            noteBox.textContent = '';
+            noteBox.style.display = 'none';
+          }
+        }
+
+        document.getElementById('edit-class-modal-title').textContent = isCompletedOnlyStatus
+          ? `Đổi trạng thái lớp: ${info.classCode}`
+          : `Chỉnh sửa thông tin lớp học: ${info.classCode}`;
+        document.getElementById('ec-submit-btn').textContent = isCompletedOnlyStatus ? 'Đổi sang Đã hủy' : 'Lưu thay đổi';
         document.getElementById('ec-code').value = info.classCode || '';
         document.getElementById('ec-name').value = info.className || '';
         document.getElementById('ec-course-id').value = String(info.courseId || '');
@@ -917,7 +1041,8 @@
         document.getElementById('ec-end-date').value = toDateInputValue(info.endDate);
         document.getElementById('ec-max-students').value = String(info.maxStudents ?? 20);
         document.getElementById('ec-price').value = String(info.price ?? 0);
-        document.getElementById('ec-status').value = (info.status || 'upcoming').toLowerCase();
+        populateStatusSelectOptions(document.getElementById('ec-status'), st, 'edit');
+        syncDetailEditStatusByStartDate();
 
         const mainSel = document.getElementById('ec-main-teacher-id');
         mainSel.querySelectorAll('option[data-temp-teacher="true"]').forEach(opt => opt.remove());
@@ -1020,12 +1145,28 @@
         document.getElementById('detail-class-status-badge').innerHTML = renderClassStatusBadge(info.status);
 
         const quickSel = document.getElementById('detail-quick-status');
-        quickSel.value = (info.status || 'upcoming').toLowerCase();
-        quickSel.disabled = false;
+        populateStatusSelectOptions(quickSel, info.status, 'quick', info.startDate);
 
-        document.getElementById('btn-open-edit-class').disabled = false;
-        document.getElementById('btn-open-change-main-teacher').disabled = false;
-        document.getElementById('btn-open-add-assistant').disabled = false;
+        const stLower = (info.status || '').toLowerCase();
+        const editClassBtn = document.getElementById('btn-open-edit-class');
+        const canEditClass = stLower === 'upcoming' || stLower === 'completed';
+        editClassBtn.disabled = !canEditClass;
+        editClassBtn.style.display = canEditClass ? '' : 'none';
+        editClassBtn.textContent = stLower === 'completed' ? 'Đổi trạng thái' : 'Chỉnh sửa lớp';
+        editClassBtn.title = stLower === 'ongoing'
+          ? 'Lớp đang diễn ra không được chỉnh sửa'
+          : (stLower === 'cancelled'
+              ? 'Lớp đã hủy không thể chỉnh sửa'
+              : (stLower === 'completed' ? 'Chỉ được đổi trạng thái sang Đã hủy' : 'Chỉnh sửa thông tin lớp học'));
+        const canModifyTeachers = stLower === 'upcoming';
+        const changeMainBtn = document.getElementById('btn-open-change-main-teacher');
+        const addAssistBtn = document.getElementById('btn-open-add-assistant');
+        changeMainBtn.disabled = !canModifyTeachers;
+        addAssistBtn.disabled = !canModifyTeachers;
+        changeMainBtn.style.display = canModifyTeachers ? '' : 'none';
+        addAssistBtn.style.display = canModifyTeachers ? '' : 'none';
+        changeMainBtn.title = canModifyTeachers ? 'Đổi giảng viên chính' : 'Chỉ được thay đổi giảng viên khi lớp đang Sắp khai giảng';
+        addAssistBtn.title = canModifyTeachers ? 'Thêm trợ giảng cho lớp' : 'Chỉ được thêm trợ giảng khi lớp đang Sắp khai giảng';
 
         const enrollBtn = document.getElementById('btn-open-enroll-student');
         const canEnroll = info.status === 'upcoming' || info.status === 'ongoing';
@@ -1048,7 +1189,7 @@
             : 'Chưa có';
 
         populateLookupDropdowns(data.courses, data.teachers, data.availableStudents);
-        renderTeachersAssigned(data.teachersAssigned);
+        renderTeachersAssigned(data.teachersAssigned, info.status);
 
         // Lịch học trong tuần
         const schedules = Array.isArray(data.schedules) ? data.schedules : [];
@@ -1154,6 +1295,8 @@
         });
 
         document.getElementById('btn-open-edit-class').addEventListener('click', openEditClassModal);
+        document.getElementById('ec-start-date').addEventListener('change', syncDetailEditStatusByStartDate);
+        document.getElementById('ec-start-date').addEventListener('input', syncDetailEditStatusByStartDate);
         document.getElementById('btn-open-change-main-teacher').addEventListener('click', () => openAssignTeacherModal('main'));
         document.getElementById('btn-open-add-assistant').addEventListener('click', () => openAssignTeacherModal('assistant'));
         document.getElementById('btn-open-enroll-student').addEventListener('click', openQuickEnrollModal);
@@ -1183,6 +1326,36 @@
           showBoxError('edit-class-error', '');
           if (!currentClassId) return;
 
+          const currentStatus = (currentDetail?.classInfo?.status || '').toLowerCase();
+          if (currentStatus === 'ongoing' || currentStatus === 'cancelled') {
+            showBoxError('edit-class-error', 'Lớp đang diễn ra hoặc đã hủy không được phép chỉnh sửa.');
+            return;
+          }
+          if (currentStatus === 'completed') {
+            const nextStatus = (document.getElementById('ec-status').value || '').toLowerCase();
+            if (nextStatus !== 'cancelled') {
+              showBoxError('edit-class-error', 'Lớp đã kết thúc chỉ được phép đổi trạng thái sang Đã hủy.');
+              return;
+            }
+            const btn = document.getElementById('ec-submit-btn');
+            setBusy(btn, true);
+            setModalBusy('modal-edit-class', true);
+            try {
+              const res = await postJson(`/Admin/api/Classes/UpdateStatus/${encodeURIComponent(currentClassId)}`, { status: 'cancelled' }, 'POST');
+              setModalBusy('modal-edit-class', false);
+              closeModal('modal-edit-class');
+              showToast(res.message || 'Đã chuyển trạng thái lớp sang Đã hủy.');
+              await loadClassDetail();
+            } catch (err) {
+              console.error(err);
+              showBoxError('edit-class-error', err.message);
+            } finally {
+              setModalBusy('modal-edit-class', false);
+              setBusy(btn, false);
+            }
+            return;
+          }
+
           const teacherVal = document.getElementById('ec-main-teacher-id').value;
           const parsedPrice = parseFloat(document.getElementById('ec-price').value);
           const payload = {
@@ -1211,6 +1384,11 @@
           }
           if (!payload.startDate || !payload.endDate || new Date(payload.endDate) <= new Date(payload.startDate)) {
             showBoxError('edit-class-error', 'Ngày kết thúc phải sau ngày khai giảng.');
+            return;
+          }
+          const todayIso = toDateInputValue(new Date());
+          if (payload.status === 'ongoing' && payload.startDate > todayIso) {
+            showBoxError('edit-class-error', 'Chưa tới ngày khai giảng nên không thể đặt trạng thái Đang diễn ra.');
             return;
           }
           if (payload.maxStudents <= 0 || payload.maxStudents > 1000) {
