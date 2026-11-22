@@ -186,3 +186,250 @@ summary { cursor:pointer; font-size:12px; color:#4f46e5; font-weight:600; paddin
 .exam-form .teacher-stack .teacher-copy { margin-top:0; }
 #teacher-data > .card + .exam-error, #teacher-data > .exam-actions + .card { margin-top:24px; }
 @media(max-width:600px) { .exam-toolbar .btn { width:100%; } .exam-actions .btn { flex:1; } }
+
+.question-choice-correct { display:flex; align-items:center; gap:8px; margin:12px 0; cursor:pointer; }
+.question-choice-correct input { width:20px; height:20px; accent-color:var(--primary-600); }
+
+/* Compact actions in the grading roster; keep mobile touch targets at 44px. */
+.teacher-grading-row-actions { display:flex; align-items:center; flex-wrap:nowrap; gap:8px; width:max-content; }
+.teacher-grading-row-actions .teacher-grading-icon { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; min-width:44px; min-height:44px; padding:0; flex:0 0 44px; }
+.teacher-grading-icon svg { width:20px; height:20px; pointer-events:none; }
+.teacher-grading-icon:disabled { opacity:.5; cursor:wait; }
+.teacher-grading-no-action { white-space:nowrap; }
+
+.lesson-video { display:block; width:100%; max-height:520px; background:#111d35; border-radius:12px; margin:16px 0; }
+.lesson-upload-form { margin:16px 0; }
+
+/* Keep each exam on one line inside its own scrollable table. */
+.exam-list-table { min-width: 0; max-width: 100%; }
+.exam-list-table .teacher-table-scroll { padding: 0; }
+.exam-list-table .table { table-layout: auto; }
+.exam-list-table .table :is(th, td) {
+  padding: 12px clamp(8px, 0.8vw, 14px);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.exam-list-table .exam-list-name {
+  display: block;
+  max-width: clamp(10rem, 18vw, 22rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exam-list-table td:nth-child(2) .exam-list-name { max-width: clamp(9rem, 13vw, 16rem); }
+.exam-list-table .exam-actions { flex-wrap: nowrap; gap: 6px; margin: 0; }
+.exam-list-table .exam-actions .btn { flex: none; padding-inline: 10px; }
+
+/* ==========================================================================
+   GRADEBOOK TABLE (SỔ ĐIỂM HỌC VIÊN)
+   ========================================================================== */
+.gradebook-table-wrap {
+  width: 100%;
+  margin-top: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.gradebook-table-wrap .teacher-table-scroll {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  overflow-x: auto;
+}
+
+.gradebook-table-wrap .table {
+  width: 100%;
+  min-width: 1060px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13.5px;
+}
+
+/* Header Cells */
+.gradebook-table-wrap .table th {
+  padding: 14px 14px;
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Body Cells */
+.gradebook-table-wrap .table td {
+  padding: 14px 14px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.gradebook-table-wrap .table tbody tr {
+  transition: background-color 0.12s ease;
+}
+
+.gradebook-table-wrap .table tbody tr:hover td {
+  background-color: #f8faff;
+}
+
+/* Specific Column Widths & Alignments */
+/* 1. Học viên: Tên nằm trọn vẹn trên 1 dòng, in đậm */
+.gradebook-table-wrap .table th:nth-child(1),
+.gradebook-table-wrap .table td:nth-child(1) {
+  width: 16%;
+  min-width: 160px;
+  text-align: left;
+}
+
+/* 2. Email: Không lấn chiếm quá mức, hiển thị gọn */
+.gradebook-table-wrap .table th:nth-child(2),
+.gradebook-table-wrap .table td:nth-child(2) {
+  width: 22%;
+  min-width: 210px;
+  text-align: left;
+}
+
+/* 3. Lượt nộp: Căn giữa đều đặn */
+.gradebook-table-wrap .table th:nth-child(3),
+.gradebook-table-wrap .table td:nth-child(3) {
+  width: 8%;
+  min-width: 75px;
+  text-align: center;
+}
+
+/* 4. Nộp lúc: Căn giữa, ngày giờ 2 tầng thanh thoát */
+.gradebook-table-wrap .table th:nth-child(4),
+.gradebook-table-wrap .table td:nth-child(4) {
+  width: 11%;
+  min-width: 115px;
+  text-align: center;
+}
+
+/* 5. Điểm tự động: Căn giữa */
+.gradebook-table-wrap .table th:nth-child(5),
+.gradebook-table-wrap .table td:nth-child(5) {
+  width: 9%;
+  min-width: 95px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 6. Điểm tự luận: Căn giữa */
+.gradebook-table-wrap .table th:nth-child(6),
+.gradebook-table-wrap .table td:nth-child(6) {
+  width: 9%;
+  min-width: 95px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 7. Tổng điểm: Căn giữa, in đậm nổi bật */
+.gradebook-table-wrap .table th:nth-child(7),
+.gradebook-table-wrap .table td:nth-child(7) {
+  width: 9%;
+  min-width: 95px;
+  text-align: center;
+  font-weight: 700;
+  color: #1e3a8a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 8. Trạng thái: Căn giữa */
+.gradebook-table-wrap .table th:nth-child(8),
+.gradebook-table-wrap .table td:nth-child(8) {
+  width: 9%;
+  min-width: 110px;
+  text-align: center;
+}
+
+/* 9. Thao tác: Căn giữa, nút bấm gọn gàng */
+.gradebook-table-wrap .table th:nth-child(9),
+.gradebook-table-wrap .table td:nth-child(9) {
+  width: 7%;
+  min-width: 85px;
+  text-align: center;
+}
+
+/* Typography & Sub-elements */
+.gradebook-student-name {
+  display: block;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gradebook-student-email {
+  display: block;
+  color: #64748b;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gradebook-time-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.25;
+}
+
+.gradebook-time-val {
+  font-weight: 500;
+  color: #1e293b;
+  font-size: 12px;
+}
+
+.gradebook-date-val {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.gradebook-table-wrap .teacher-grading-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gradebook-table-wrap .teacher-grading-row-actions .btn {
+  padding: 6px 8px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+}
+
+/* History table modal / detail wrap */
+.gradebook-history-table-wrap {
+  margin-top: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gradebook-history-table-wrap .table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gradebook-history-table-wrap .table :is(th, td) {
+  padding: 12px 14px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.gradebook-history-table-wrap .table :is(th, td):first-child {
+  width: 60px;
+}

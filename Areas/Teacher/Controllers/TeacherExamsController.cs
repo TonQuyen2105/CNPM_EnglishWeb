@@ -1,3 +1,4 @@
+using CNPM_EnglishLearning.Services.Implementations;
 using System.Security.Claims;
 using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
@@ -36,12 +37,12 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         var courses = await AssignedCourses().OrderBy(c => c.Title).Select(c => new { c.Id, c.Title }).ToListAsync(ct);
         if (courseId != null && !courses.Any(c => c.Id == courseId)) return NotFound();
         var exams = await OwnExams().Where(e => courseId == null || e.CourseId == courseId).OrderByDescending(e => e.Id)
-            .Select(e => new { e.Id, e.CourseId, e.Title, e.DurationMinutes, e.IsPublished, e.PassScore, e.MaxAttempts, e.UpdatedAt,
+            .Select(e => new { e.Id, e.CourseId, e.Title, e.DurationMinutes, e.IsPublished, e.ReviewStatus, e.PassScore, e.MaxAttempts, e.UpdatedAt,
                 Questions = db.ExamQuestions.Count(q => q.ExamId == e.Id),
                 TotalPoints = db.ExamQuestions.Where(q => q.ExamId == e.Id).Sum(q => (decimal?)q.Points) ?? 0,
                 Submissions = db.UserExams.Count(a => a.ExamId == e.Id && a.SubmittedAt != null),
                 HasAttempts = db.UserExams.Any(a => a.ExamId == e.Id),
-                EssayOnly = !db.ExamQuestions.Any(eq => eq.ExamId == e.Id && db.Questions.Any(q => q.Id == eq.QuestionId && q.QuestionType != "essay"))
+                Supported = !db.ExamQuestions.Any(eq => eq.ExamId == e.Id && db.Questions.Any(q => q.Id == eq.QuestionId && q.QuestionType != "essay" && q.QuestionType != "multiple_choice" && q.QuestionType != "fill_blank"))
             }).ToListAsync(ct);
         return Ok(new { Courses = courses, Exams = exams, Token = Token() });
     }
@@ -52,8 +53,10 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         if (!await AssignedCourses().AnyAsync(c => c.Id == courseId, ct)) return NotFound();
         var lessons = await db.Lessons.Where(l => l.CourseId == courseId).OrderBy(l => l.OrderIndex).ThenBy(l => l.Id)
             .Select(l => new { l.Id, l.Title, l.OrderIndex }).ToListAsync(ct);
-        var questions = await db.Questions.Where(q => q.QuestionType == "essay" && db.Lessons.Any(l => l.Id == q.LessonId && l.CourseId == courseId))
-            .OrderBy(q => q.Id).Select(q => new { q.Id, q.LessonId, q.QuestionText, q.DefaultPoints, q.UpdatedAt }).ToListAsync(ct);
+        var questions = await db.Questions.Where(q => (q.QuestionType == "essay" || q.QuestionType == "multiple_choice" || q.QuestionType == "fill_blank") && db.Lessons.Any(l => l.Id == q.LessonId && l.CourseId == courseId))
+            .OrderBy(q => q.Id).Select(q => new { q.Id, q.LessonId, q.QuestionText, q.QuestionType, q.DefaultPoints, q.UpdatedAt,
+                Options = db.QuestionOptions.Where(o => o.QuestionId == q.Id).OrderBy(o => o.Id).Select(o => new { o.OptionText, o.IsCorrect }).ToList(),
+                Answers = db.QuestionAnswers.Where(a => a.QuestionId == q.Id).OrderBy(a => a.Id).Select(a => new { a.AnswerText, a.IsCaseSensitive }).ToList() }).ToListAsync(ct);
         return Ok(new { Lessons = lessons, Questions = questions, Token = Token() });
     }
 
@@ -61,11 +64,13 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
     public async Task<IActionResult> Detail(int id, CancellationToken ct)
     {
         var exam = await OwnExams().Where(e => e.Id == id).Select(e => new { e.Id, e.CourseId, e.Title, e.Description,
-            e.DurationMinutes, e.PassScore, e.MaxAttempts, e.IsPublished, e.CreatedAt, e.UpdatedAt }).SingleOrDefaultAsync(ct);
+            e.DurationMinutes, e.PassScore, e.MaxAttempts, e.IsPublished, e.ReviewStatus, e.CreatedAt, e.UpdatedAt }).SingleOrDefaultAsync(ct);
         if (exam == null) return NotFound();
         var questions = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
             where eq.ExamId == id orderby eq.OrderIndex, eq.Id
-            select new { q.Id, q.LessonId, q.QuestionText, q.QuestionType, q.UpdatedAt, eq.Points, eq.OrderIndex }).ToListAsync(ct);
+            select new { q.Id, q.LessonId, q.QuestionText, q.QuestionType, q.UpdatedAt, eq.Points, eq.OrderIndex,
+                Options = db.QuestionOptions.Where(o => o.QuestionId == q.Id).OrderBy(o => o.Id).Select(o => new { o.OptionText, o.IsCorrect }).ToList(),
+                Answers = db.QuestionAnswers.Where(a => a.QuestionId == q.Id).OrderBy(a => a.Id).Select(a => new { a.AnswerText, a.IsCaseSensitive }).ToList() }).ToListAsync(ct);
         var userId = UserId;
         var classes = await db.CourseClasses.Where(c => c.CourseId == exam.CourseId && db.ClassTeachers.Any(t => t.ClassId == c.Id
             && db.Teachers.Any(teacher => teacher.Id == t.TeacherId && teacher.UserId == userId)))
@@ -92,10 +97,11 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
             await LockExam(id.Value, ct);
             exam = await OwnExams().SingleOrDefaultAsync(e => e.Id == id, ct);
             if (exam == null) return NotFound();
+            if (exam.ReviewStatus == "pending") return ConflictMessage("Đề đang chờ quản trị viên duyệt.");
             if (exam.IsPublished || await db.UserExams.AnyAsync(a => a.ExamId == id, ct))
                 return ConflictMessage("Đề đã công bố hoặc đã có lượt làm. Hãy sao chép thành đề mới để chỉnh sửa.");
-            if (await db.ExamQuestions.AnyAsync(eq => eq.ExamId == id && db.Questions.Any(q => q.Id == eq.QuestionId && q.QuestionType != "essay"), ct))
-                return ConflictMessage("Đề hỗn hợp hiện chỉ được xem. Hãy tạo đề tự luận mới.");
+            if (await db.ExamQuestions.AnyAsync(eq => eq.ExamId == id && db.Questions.Any(q => q.Id == eq.QuestionId && q.QuestionType != "essay" && q.QuestionType != "multiple_choice" && q.QuestionType != "fill_blank"), ct))
+                return ConflictMessage("Đề có loại câu hỏi chưa hỗ trợ, hiện chỉ được xem.");
             if (exam.UpdatedAt != input.ExpectedUpdatedAt) return ConflictMessage("Đề đã thay đổi ở phiên khác. Mở lại đề trước khi lưu.");
             if (exam.CourseId != input.CourseId) return BadRequest(new { message = "Không đổi khóa học của đề đã tạo. Hãy tạo đề mới trong khóa phù hợp." });
         }
@@ -103,9 +109,9 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         foreach (var item in input.Questions.OrderBy(q => q.QuestionId))
         {
             await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM questions WHERE id = {item.QuestionId} FOR UPDATE", ct);
-            var question = await db.Questions.SingleOrDefaultAsync(q => q.Id == item.QuestionId && q.QuestionType == "essay"
+            var question = await db.Questions.SingleOrDefaultAsync(q => q.Id == item.QuestionId && (q.QuestionType == "essay" || q.QuestionType == "multiple_choice" || q.QuestionType == "fill_blank")
                 && db.Lessons.Any(l => l.Id == q.LessonId && l.CourseId == input.CourseId), ct);
-            if (question == null) return BadRequest(new { message = "Có câu hỏi không còn tồn tại hoặc không phải câu tự luận của khóa đã chọn." });
+            if (question == null) return BadRequest(new { message = "Có câu hỏi không còn tồn tại hoặc không thuộc loại hỗ trợ của khóa đã chọn." });
             if (question.UpdatedAt != item.ExpectedUpdatedAt)
                 return ConflictMessage("Nội dung câu #" + item.QuestionId + " vừa thay đổi. Mở lại trình soạn đề để kiểm tra nội dung mới.");
         }
@@ -122,6 +128,7 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         var links = await db.ExamQuestions.Where(q => q.ExamId == exam.Id).ToListAsync(ct);
         db.ExamQuestions.RemoveRange(links);
         await db.SaveChangesAsync(ct); // Release old order/uniqueness entries before rebuilding.
+        exam.ReviewStatus = null;
         exam.Title = input.Title.Trim(); exam.Description = input.Description?.Trim();
         exam.DurationMinutes = input.DurationMinutes; exam.PassScore = input.PassScore; exam.MaxAttempts = input.MaxAttempts;
         exam.UpdatedAt = DateTime.UtcNow;
@@ -132,8 +139,8 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
     }
     private Task<int> LockExam(int id, CancellationToken ct) => db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM exams WHERE id = {id} FOR UPDATE", ct);
 
-    [HttpPost("{id:int}/publish"), ValidateAntiForgeryToken]
-    public async Task<IActionResult> Publish(int id, [FromBody] TeacherExamVersion input, CancellationToken ct)
+    [HttpPost("{id:int}/submit"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> Submit(int id, [FromBody] TeacherExamVersion input, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest();
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
@@ -141,6 +148,7 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         await LockExam(id, ct);
         var exam = await OwnExams().SingleOrDefaultAsync(e => e.Id == id, ct);
         if (exam == null) return NotFound();
+        if (exam.ReviewStatus == "pending") return ConflictMessage("Đề đang chờ quản trị viên duyệt.");
         if (exam.IsPublished || exam.UpdatedAt != input.ExpectedUpdatedAt || await db.UserExams.AnyAsync(a => a.ExamId == id, ct))
             return ConflictMessage("Đề đã thay đổi, đã công bố hoặc có lượt làm. Vui lòng mở lại để kiểm tra.");
         var questions = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
@@ -148,14 +156,24 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         var validInput = new TeacherExamInput { CourseId = exam.CourseId ?? 0, Title = exam.Title, Description = exam.Description,
             DurationMinutes = exam.DurationMinutes, PassScore = exam.PassScore, MaxAttempts = exam.MaxAttempts,
             Questions = questions.Select(q => new TeacherExamQuestionInput(q.Id, q.Points, null)).ToList() };
-        if (!validInput.CanPublish() || questions.Any(q => q.QuestionType != "essay"))
-            return BadRequest(new { message = "Đề cần ít nhất một câu tự luận, cấu hình hợp lệ và điểm đạt không vượt tổng điểm." });
+        if (!validInput.CanPublish() || questions.Any(q => q.QuestionType != "essay" && q.QuestionType != "multiple_choice" && q.QuestionType != "fill_blank"))
+            return BadRequest(new { message = "Đề cần ít nhất một câu thuộc loại hỗ trợ, cấu hình hợp lệ và điểm đạt không vượt tổng điểm." });
         foreach (var q in questions)
             if (!await db.Lessons.AnyAsync(l => l.Id == q.LessonId && l.CourseId == exam.CourseId, ct))
                 return BadRequest(new { message = "Có câu hỏi không thuộc khóa học của đề." });
-        exam.IsPublished = true; exam.UpdatedAt = DateTime.UtcNow;
+        foreach (var q in questions.Where(q => q.QuestionType != "essay"))
+        {
+            try
+            {
+                ExamScoring.GradeObjective(new ScoringQuestion(q.Id, q.QuestionType, q.Points), new UserExamAnswer { QuestionId = q.Id },
+                    await db.QuestionOptions.Where(o => o.QuestionId == q.Id).ToListAsync(ct),
+                    await db.QuestionAnswers.Where(a => a.QuestionId == q.Id).ToListAsync(ct));
+            }
+            catch (GradingValidationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+        exam.ReviewStatus = "pending"; exam.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
-        return Ok(new { exam.Id, message = "Đã công bố đề thi." });
+        return Ok(new { exam.Id, message = "Đã gửi đề thi cho quản trị viên duyệt." });
     }
 
     [HttpPost("{id:int}/copy"), ValidateAntiForgeryToken]
@@ -169,8 +187,8 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         if (original == null) return NotFound();
         if (original.UpdatedAt != input.ExpectedUpdatedAt) return ConflictMessage("Đề vừa thay đổi. Mở lại trước khi sao chép.");
         var links = await db.ExamQuestions.Where(eq => eq.ExamId == id).OrderBy(eq => eq.OrderIndex).ToListAsync(ct);
-        if (await db.ExamQuestions.AnyAsync(eq => eq.ExamId == id && db.Questions.Any(q => q.Id == eq.QuestionId && q.QuestionType != "essay"), ct))
-            return BadRequest(new { message = "Phiên bản này chỉ sao chép đề tự luận. Đề hỗn hợp hiện chỉ được xem." });
+        if (await db.ExamQuestions.AnyAsync(eq => eq.ExamId == id && db.Questions.Any(q => q.Id == eq.QuestionId && q.QuestionType != "essay" && q.QuestionType != "multiple_choice" && q.QuestionType != "fill_blank"), ct))
+            return BadRequest(new { message = "Đề có loại câu chưa hỗ trợ. Chỉ hỗ trợ tự luận, trắc nghiệm, điền từ." });
         var title = "Bản sao · " + original.Title;
         var copy = new Exam { CourseId = original.CourseId, CreatedByTeacherId = original.CreatedByTeacherId,
             Title = title.Length > 200 ? title[..200] : title, Description = original.Description, DurationMinutes = original.DurationMinutes,
@@ -190,6 +208,7 @@ public class TeacherExamsController(ApplicationDbContext db, IAntiforgery antifo
         await LockExam(id, ct);
         var exam = await OwnExams().SingleOrDefaultAsync(e => e.Id == id, ct);
         if (exam == null) return NotFound();
+        if (exam.ReviewStatus == "pending") return ConflictMessage("Đề đang chờ quản trị viên duyệt.");
         if (exam.IsPublished || await db.UserExams.AnyAsync(a => a.ExamId == id, ct))
             return ConflictMessage("Chỉ xóa được đề nháp chưa có lượt làm.");
         if (exam.UpdatedAt != input.ExpectedUpdatedAt) return ConflictMessage("Đề vừa thay đổi. Mở lại trước khi xóa.");

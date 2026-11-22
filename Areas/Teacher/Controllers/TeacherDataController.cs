@@ -61,7 +61,7 @@ public class TeacherDataController(ApplicationDbContext db) : ControllerBase
                     ActiveClasses = await classes.CountAsync(c => c.Status == "ongoing", cancellationToken),
                     Students = await db.Enrollments.Where(e => e.Status == "active"
                         && classes.Any(c => c.Id == e.ClassId)).Select(e => e.UserId).Distinct().CountAsync(cancellationToken),
-                    Pending = await db.UserExamAnswers.CountAsync(a => a.GradingStatus == "pending_review"
+                    Pending = await db.UserExamAnswers.CountAsync(a => (a.GradingStatus == "pending_review" || a.ScoreEarned == null)
                         && attempts.Any(t => t.Id == a.UserExamId), cancellationToken),
                     Today = await schedule.Where(s => s.DayOfWeek == day && s.Status != "cancelled"
                         && s.StartDate <= date && s.EndDate >= date).ToListAsync(cancellationToken)
@@ -77,7 +77,7 @@ public class TeacherDataController(ApplicationDbContext db) : ControllerBase
             case "class-detail":
                 var detail = await classes.Where(c => c.Id == id).Select(c => new
                 {
-                    c.ClassCode, c.ClassName, c.StartDate, c.EndDate, c.Status
+                    c.Id, c.ClassCode, c.ClassName, c.StartDate, c.EndDate, c.Status
                 }).SingleOrDefaultAsync(cancellationToken);
                 if (detail is null)
                     return NotFound();
@@ -96,7 +96,7 @@ public class TeacherDataController(ApplicationDbContext db) : ControllerBase
                 data = await schedule.ToListAsync(cancellationToken);
                 break;
             case "lessons":
-                data = Array.Empty<object>(); // Loaded by the course-scoped lessons workspace.
+                data = Array.Empty<object>(); // Loaded by the class-scoped lessons workspace.
                 break;
             case "questions":
                 data = Array.Empty<object>(); // The essay bank loads by assigned course.

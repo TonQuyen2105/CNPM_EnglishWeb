@@ -452,13 +452,13 @@ function addPageActions(page, data) {
   const destinations = {
     dashboard: ['Xem lịch giảng dạy', 'schedule'],
     classes: ['Xem lịch tuần', 'schedule'],
-    'class-detail': ['Danh sách lớp', 'classes'],
+    'class-detail': ['Bài giảng của lớp', 'lessons'],
     exams: ['Xem bài chờ chấm', 'grading'],
     profile: ['Lớp đang phụ trách', 'classes']
   };
   if (destinations[page]) {
     const [label, target] = destinations[page];
-    const action = link(label, '/Teacher/' + target + '.html');
+    const action = link(label, '/Teacher/' + target + '.html' + (page === 'class-detail' ? '?classId=' + data.class.id : ''));
     action.className = 'btn btn-primary teacher-primary-action';
     header.append(action);
   } else {
@@ -552,6 +552,24 @@ function gradingButton(label, action, primary = false) {
   return button;
 }
 
+function gradingActionIcon(button, icon, label) {
+  button.classList.add('teacher-grading-icon');
+  button.setAttribute('aria-label', label);
+  button.title = label;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  for (const [name, value] of Object.entries({ viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.8', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false' })) svg.setAttribute(name, value);
+  const paths = {
+    edit: ['M12 20H4v-8', 'M16 3a2.1 2.1 0 0 1 3 3L9 16l-4 1 1-4Z'],
+    view: ['M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z', 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0'],
+    auto: ['M13 2 4 14h7l-1 8 10-12h-7Z'],
+    history: ['M3 3v5h5', 'M3 8a9 9 0 1 1-1 7', 'M12 7v5l3 2'],
+    retry: ['M20 7v5h-5', 'M20 12a8 8 0 1 0-2 5', 'M20 7v5']
+  };
+  for (const d of paths[icon]) { const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', d); svg.append(path); }
+  button.replaceChildren(svg);
+  return button;
+}
+
 async function gradingView(load) {
   teacherContent.replaceChildren(element('p', 'Đang tải dữ liệu…', 'teacher-empty'));
   teacherContent.setAttribute('aria-busy', 'true');
@@ -586,14 +604,14 @@ function openGradingRoster(classId, examId, success) {
     const toolbar = element('div', null, 'teacher-toolbar');
     toolbar.append(gradingButton('← Danh sách lớp', openGradingClasses));
     const heading = element('h2', data.class.classCode + ' · ' + data.class.className);
-    const note = element('p', 'Đề thi dùng chung theo khóa học. Trạng thái hiển thị theo lượt làm mới nhất của học viên.', 'teacher-muted');
+    const note = element('p', 'Đề thi dùng chung theo khóa học. Trạng thái theo lượt làm mới nhất. Hệ thống tự chấm trắc nghiệm và điền từ sau khi học viên nộp bài.', 'teacher-muted');
     teacherContent.replaceChildren(toolbar, heading, note);
     if (success) {
       const notice = element('p', success, 'teacher-save-success');
       notice.setAttribute('role', 'status'); teacherContent.append(notice);
     }
     if (!data.exams.length) {
-      teacherContent.append(element('p', 'Khóa học chưa có đề đã công bố chứa câu tự luận do bạn tạo.', 'card teacher-empty')); return;
+      teacherContent.append(element('p', 'Khóa học chưa có đề đã công bố thuộc loại câu hỏi hỗ trợ do bạn tạo.', 'card teacher-empty')); return;
     }
     const label = element('label', 'Đề thi cần chấm', 'teacher-field');
     const select = element('select', null, 'teacher-search');
@@ -603,22 +621,41 @@ function openGradingRoster(classId, examId, success) {
     select.value = data.examId;
     select.addEventListener('change', () => openGradingRoster(classId, select.value));
     label.append(select); teacherContent.append(label);
-    const labels = { not_submitted: 'Chưa nộp bài', in_progress: 'Chưa nộp', pending_review: 'Chờ chấm', graded: 'Đã chấm' };
-    const counts = element('p', `${data.students.length} học viên · ${data.students.filter(s => s.submittedAt).length} đã nộp · ${data.students.filter(s => s.status === 'pending_review').length} chờ chấm`, 'teacher-muted');
+    const labels = {
+      not_submitted: 'Chưa nộp bài',
+      in_progress: 'Chưa nộp',
+      pending_review: 'Chờ chấm',
+      graded: 'Đã chấm',
+      passed: 'Đã chấm',
+      failed: 'Đã chấm'
+    };
+    const error = element('p', null, 'lesson-form-error'); error.setAttribute('role', 'alert'); teacherContent.append(error);
+    function studentActions(student) {
+      if (!student.submittedAt) return element('span', 'Chưa nộp', 'teacher-grading-no-action teacher-muted');
+      const actions = element('div', null, 'teacher-grading-row-actions');
+      const isPendingEssay = student.status === 'pending_review';
+      const detailLabel = (isPendingEssay ? 'Chấm tự luận' : 'Xem kết quả') + ' · ' + student.fullName;
+      actions.append(gradingActionIcon(gradingButton(detailLabel, () => openGradingAttempt(classId, data.examId, student.attemptId)), isPendingEssay ? 'edit' : 'view', detailLabel));
+      return actions;
+    }
+    const counts = element('p', `${data.students.length} học viên · ${data.students.filter(s => s.submittedAt).length} đã nộp · ${data.students.filter(s => s.status === 'pending_review').length} chờ chấm tự luận`, 'teacher-muted');
     teacherContent.append(counts, table(['Học viên', 'Email', 'Trạng thái', 'Nộp lúc', 'Thao tác'], data.students.map(student => [
-      student.fullName, student.email, badge(labels[student.status], student.status === 'graded' ? 'success' : student.status === 'pending_review' ? 'warning' : 'neutral'),
+      student.fullName, student.email, badge(labels[student.status] || 'Đã chấm', ['graded', 'passed', 'failed'].includes(student.status) ? 'success' : student.status === 'pending_review' ? 'warning' : 'neutral'),
       student.submittedAt ? new Date(student.submittedAt).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) : '—',
-      student.submittedAt ? gradingButton(student.status === 'graded' ? 'Xem / sửa điểm' : 'Chấm bài', () => openGradingAttempt(classId, data.examId, student.attemptId), student.status !== 'graded') : 'Chưa có bài để chấm'
+      studentActions(student)
     ]), 'Lớp chưa có học viên.'));
   });
 }
 
-function openGradingAttempt(classId, examId, attemptId) {
+function openGradingAttempt(classId, examId, attemptId, success, editing = false) {
   return gradingView(async () => {
     const data = await gradingRequest('/attempts/' + attemptId + '?classId=' + classId);
     const form = element('form', null, 'teacher-stack');
-    const alreadyGraded = data.answers.length > 0 && data.answers.every(a => a.gradingStatus === 'graded');
-    let readonly = alreadyGraded;
+    const essays = data.answers.filter(a => a.questionType === 'essay');
+    const objectives = data.answers.filter(a => a.questionType !== 'essay');
+    const alreadyGraded = essays.length > 0 && essays.every(a => a.gradingStatus === 'graded');
+    const fromGradebook = new URLSearchParams(window.location.search).get('from') === 'results';
+    let readonly = !editing && (fromGradebook || alreadyGraded || !essays.length);
     let dirty = false;
     const protect = event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } };
     window.addEventListener('beforeunload', protect);
@@ -628,17 +665,18 @@ function openGradingAttempt(classId, examId, attemptId) {
       openGradingRoster(classId, examId);
     };
     const header = panel(data.attempt.fullName);
+    if (success) { const notice = element('p', success, 'teacher-save-success'); notice.setAttribute('role', 'status'); header.append(notice); }
     header.append(element('p', data.attempt.title + ' · Lượt ' + data.attempt.attemptNumber, 'teacher-muted'), gradingButton('← Danh sách học viên', leave));
     if (new URLSearchParams(window.location.search).get('from') === 'results') {
       const back = gradingButton('← Sổ điểm', () => {
-        if (dirty && !window.confirm('Rời bài chấm và bỏ thay đổi chưa lưu?')) return;
+          if (dirty && !window.confirm('Rời bài chấm và bỏ thay đổi chưa lưu?')) return;
         dirty = false; window.removeEventListener('beforeunload', protect);
         window.location.href = '/Teacher/results.html?classId=' + classId + '&examId=' + examId;
       });
       header.append(back);
     }
     const fields = [];
-    for (const [index, answer] of data.answers.entries()) {
+    for (const [index, answer] of essays.entries()) {
       const card = panel('Câu ' + (index + 1) + ' · Tối đa ' + answer.points + ' điểm');
       card.append(element('p', answer.questionText, 'teacher-copy'), element('p', answer.textAnswer || 'Học viên không nhập câu trả lời.', 'teacher-row teacher-copy'));
       const scoreLabel = element('label', 'Điểm', 'teacher-field');
@@ -657,9 +695,9 @@ function openGradingAttempt(classId, examId, attemptId) {
     const saveLabel = alreadyGraded ? 'Lưu thay đổi điểm' : 'Lưu điểm và nhận xét';
     const save = element('button', saveLabel, 'btn btn-primary'); save.type = 'submit';
     actions.append(message, save);
-    if (data.answers.length) form.append(actions);
+    if (essays.length) form.append(actions);
     actions.hidden = readonly;
-    if (alreadyGraded) {
+    if (essays.length) {
       const edit = gradingButton('Sửa điểm', () => setEditing(true), true);
       const cancel = gradingButton('Hủy chỉnh sửa', () => {
         if (dirty && !window.confirm('Bỏ các thay đổi điểm và nhận xét chưa lưu?')) return;
@@ -667,16 +705,25 @@ function openGradingAttempt(classId, examId, attemptId) {
         dirty = false; message.textContent = ''; setEditing(false);
       });
       function setEditing(editing) {
+        if (save.disabled) return;
         readonly = !editing;
         fields.forEach(f => { f.score.disabled = readonly; f.feedback.disabled = readonly; });
-        actions.hidden = readonly; edit.hidden = editing; cancel.hidden = readonly;
+        actions.hidden = readonly || !essays.length; edit.hidden = editing; cancel.hidden = readonly;
         if (editing) fields[0].score.focus();
         else edit.focus();
       }
-      cancel.hidden = true;
+      edit.hidden = !readonly; cancel.hidden = readonly;
       header.append(edit, cancel);
     }
-    if (!data.answers.length) form.append(element('p', 'Bài nộp không có câu trả lời tự luận để chấm.', 'teacher-empty'));
+    for (const answer of objectives) {
+      const card = panel(typeLabel(answer.questionType) + ' · Tối đa ' + answer.points + ' điểm');
+      const response = answer.questionType === 'multiple_choice'
+        ? answer.selectedOption || (answer.selectedOptionId ? 'Lựa chọn không hợp lệ' : 'Bỏ trống') : answer.textAnswer || 'Bỏ trống';
+      card.append(element('p', answer.questionText, 'teacher-copy'), element('p', 'Câu trả lời: ' + response, 'teacher-copy'),
+        badge('Đã chấm tự động', 'success'),
+        element('p', 'Điểm: ' + (answer.scoreEarned ?? 0) + ' / ' + answer.points));
+      form.append(card);
+    }
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (readonly || save.disabled || !form.reportValidity() || !window.confirm((alreadyGraded ? 'Xác nhận sửa điểm và cập nhật kết quả của ' : 'Xác nhận lưu điểm và nhận xét cho bài nộp của ') + data.attempt.fullName + '?')) return;

@@ -1,3 +1,5 @@
+using CNPM_EnglishLearning.Services.Implementations;
+using CNPM_EnglishLearning.Services.Interfaces;
 using System.Security.Claims;
 using CNPM_EnglishLearning.Data;
 using Microsoft.AspNetCore.Antiforgery;
@@ -10,7 +12,7 @@ namespace CNPM_EnglishLearning.Areas.Teacher.Controllers;
 [Authorize(Roles = "teacher")]
 [TypeFilter(typeof(TeacherGradingExceptionFilter))]
 [Route("api/teacher/grading-workspace")]
-public class TeacherGradingController(ApplicationDbContext db, IAntiforgery antiforgery) : ControllerBase
+public class TeacherGradingController(ApplicationDbContext db, IAntiforgery antiforgery, IAutomaticGradingService autoGrading) : ControllerBase
 {
     private async Task<int?> TeacherId()
     {
@@ -32,7 +34,7 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
         var selected = await classes.SingleOrDefaultAsync(c => c.Id == classId);
         if (selected == null) return NotFound();
         var exams = await db.Exams.Where(e => e.CourseId == selected.CourseId && e.CreatedByTeacherId == teacherId && e.IsPublished
-            && db.ExamQuestions.Any(eq => eq.ExamId == e.Id && db.Questions.Any(q => q.Id == eq.QuestionId && q.QuestionType == "essay")))
+            && db.ExamQuestions.Any(eq => eq.ExamId == e.Id && db.Questions.Any(q => q.Id == eq.QuestionId && (q.QuestionType == "essay" || q.QuestionType == "multiple_choice" || q.QuestionType == "fill_blank"))))
             .OrderBy(e => e.Title).Select(e => new { e.Id, e.Title }).ToListAsync();
         var chosen = examId ?? exams.FirstOrDefault()?.Id;
         if (chosen != null && !exams.Any(e => e.Id == chosen)) return NotFound();
@@ -40,16 +42,38 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
             .OrderBy(u => u.FullName).Select(u => new { u.Id, u.FullName, u.Email }).ToListAsync();
         // Explicit LINQ overload avoids the span-based array overload in expression trees.
         var ids = users.Select(u => u.Id).ToArray();
+
+        // Tự động chấm ngay các câu trắc nghiệm & điền từ cho các bài nộp còn chưa chấm
+        if (chosen != null)
+        {
+            var pendingAttemptIds = await db.UserExams.Where(a => a.ExamId == chosen && Enumerable.Contains(ids, a.UserId)
+                && a.SubmittedAt != null && a.Status == "submitted"
+                && db.UserExamAnswers.Any(ans => ans.UserExamId == a.Id
+                    && (ans.ScoreEarned == null || ans.GradingStatus != "auto_graded")
+                    && db.Questions.Any(q => q.Id == ans.QuestionId && (q.QuestionType == "multiple_choice" || q.QuestionType == "fill_blank"))))
+                .Select(a => a.Id).ToListAsync();
+
+            foreach (var pId in pendingAttemptIds)
+            {
+                try { await autoGrading.GradeAsync(pId); } catch { /* Bỏ qua nếu có lỗi validation */ }
+            }
+        }
+
         var attempts = await db.UserExams.Where(a => a.ExamId == chosen && Enumerable.Contains(ids, a.UserId))
             .OrderByDescending(a => a.AttemptNumber).ThenByDescending(a => a.Id).ToListAsync();
         var attemptIds = attempts.Select(a => a.Id).ToArray();
-        var pending = await db.UserExamAnswers.Where(a => Enumerable.Contains(attemptIds, a.UserExamId) && a.GradingStatus == "pending_review")
-            .Select(a => a.UserExamId).Distinct().ToListAsync();
+        var answers = await db.UserExamAnswers.AsNoTracking().Where(a => Enumerable.Contains(attemptIds, a.UserExamId)).ToListAsync();
+        var questions = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
+            where eq.ExamId == chosen select new ScoringQuestion(q.Id, q.QuestionType, eq.Points)).ToListAsync();
+        var passScore = await db.Exams.Where(e => e.Id == chosen).Select(e => (decimal?)e.PassScore).SingleOrDefaultAsync() ?? 0;
         return Ok(new { Class = new { selected.Id, selected.ClassCode, selected.ClassName }, Exams = exams, ExamId = chosen,
+            HasAutomatic = questions.Any(q => q.Type is "multiple_choice" or "fill_blank"),
+            HasEssay = questions.Any(q => q.Type == "essay"), Token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken,
             Students = users.Select(u => {
                 var a = attempts.FirstOrDefault(a => a.UserId == u.Id);
+                var score = a == null ? null : ExamScoring.Summarize(questions, answers.Where(x => x.UserExamId == a.Id).ToList(), passScore);
                 return new { u.Id, u.FullName, u.Email, AttemptId = a?.Id, a?.AttemptNumber, a?.SubmittedAt,
-                    Status = a == null ? "not_submitted" : a.SubmittedAt == null ? "in_progress" : pending.Contains(a.Id) ? "pending_review" : "graded" };
+                    Status = a == null ? "not_submitted" : a.SubmittedAt == null ? "in_progress" : score!.Status };
             }) });
     }
 
@@ -67,13 +91,17 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
         var teacherId = await TeacherId();
         if (teacherId == null) return Forbid();
         if (!await Allowed(classId, id, teacherId.Value)) return NotFound();
+        try { await autoGrading.GradeAsync(id); } catch { /* Bỏ qua nếu đã chấm */ }
         var attempt = await (from a in db.UserExams join u in db.Users on a.UserId equals u.Id join e in db.Exams on a.ExamId equals e.Id
             where a.Id == id select new { a.Id, a.AttemptNumber, a.SubmittedAt, u.FullName, e.Title }).SingleAsync();
-        var answers = await (from a in db.UserExamAnswers join t in db.UserExams on a.UserExamId equals t.Id
+        var rawAnswers = await (from a in db.UserExamAnswers join t in db.UserExams on a.UserExamId equals t.Id
             join q in db.Questions on a.QuestionId equals q.Id
             join eq in db.ExamQuestions on new { t.ExamId, a.QuestionId } equals new { eq.ExamId, eq.QuestionId }
-            where t.Id == id && q.QuestionType == "essay" orderby eq.OrderIndex
-            select new { a.Id, q.QuestionText, a.TextAnswer, a.ScoreEarned, a.Feedback, a.GradingStatus, a.GradedAt, eq.Points }).ToListAsync();
+            where t.Id == id orderby eq.OrderIndex
+            select new { a.Id, QuestionId = q.Id, q.QuestionText, q.QuestionType, a.SelectedOptionId,
+                SelectedOption = db.QuestionOptions.Where(o => o.Id == a.SelectedOptionId && o.QuestionId == q.Id).Select(o => o.OptionText).FirstOrDefault(),
+                a.TextAnswer, a.ScoreEarned, a.Feedback, a.GradingStatus, a.GradedAt, eq.Points }).ToListAsync();
+        var answers = rawAnswers.GroupBy(a => a.QuestionId).Select(g => g.First()).ToList();
         return Ok(new { Attempt = attempt, Answers = answers, Token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
     }
 
@@ -114,18 +142,12 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
             answer.GradedByTeacherId = teacherId;
             answer.GradedAt = DateTime.UtcNow;
         }
-        var expected = await db.ExamQuestions.CountAsync(q => q.ExamId == attempt.ExamId);
-        if (answers.Select(a => a.QuestionId).Distinct().Count() == expected && answers.All(a => a.ScoreEarned != null && a.GradingStatus != "pending_review"))
-        {
-            attempt.TotalScore = answers.Sum(a => a.ScoreEarned ?? 0);
-            var passScore = await db.Exams.Where(e => e.Id == attempt.ExamId).Select(e => e.PassScore).SingleAsync();
-            attempt.Status = attempt.TotalScore >= passScore ? "passed" : "failed";
-        }
-        else
-        {
-            attempt.TotalScore = null;
-            attempt.Status = "submitted";
-        }
+        var questions = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
+            where eq.ExamId == attempt.ExamId select new ScoringQuestion(q.Id, q.QuestionType, eq.Points)).ToListAsync();
+        var passScore = await db.Exams.Where(e => e.Id == attempt.ExamId).Select(e => e.PassScore).SingleAsync();
+        var result = ExamScoring.Summarize(questions, answers, passScore);
+        attempt.TotalScore = result.Score;
+        attempt.Status = result.Score == null ? "submitted" : result.Status;
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
         return Ok(new { message = isRevision ? "Đã cập nhật điểm và nhận xét." : "Đã lưu điểm và nhận xét.", attempt.TotalScore });

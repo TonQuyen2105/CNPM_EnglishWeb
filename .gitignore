@@ -29,3 +29,6 @@ obj/
 .local/
 .nuget/
 Library/
+
+# Uploaded lesson videos and PDFs (back up separately)
+App_Data/lesson-media/

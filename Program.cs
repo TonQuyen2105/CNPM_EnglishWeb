@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
+var migrateExamReview = args.Contains("--migrate-exam-review", StringComparer.Ordinal);
+var migrateLessonClasses = args.Contains("--migrate-lesson-classes", StringComparer.Ordinal);
 var seedTeacherDemo = args.Contains("--seed-teacher-demo", StringComparer.Ordinal);
 var seedTeacherTest = args.Contains("--seed-teacher-test", StringComparer.Ordinal);
 var inspectDatabase = args.Contains("--inspect-database", StringComparer.Ordinal);
@@ -13,20 +15,24 @@ var seedAll = args.Contains("--seed-all", StringComparer.Ordinal);
 var resetTeacherPassword = args.Contains("--reset-teacher-password", StringComparer.Ordinal);
 var builder = WebApplication.CreateBuilder(args.Where(arg => arg != "--seed-teacher-demo"
     && arg != "--seed-teacher-test" && arg != "--inspect-database"
-    && arg != "--seed-all" && arg != "--reset-teacher-password").ToArray());
+    && arg != "--seed-all" && arg != "--reset-teacher-password" && arg != "--migrate-lesson-classes" && arg != "--migrate-exam-review").ToArray());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add MVC services to the container
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<CNPM_EnglishLearning.Services.Lessons.LessonFileStore>();
+builder.Services.AddScoped<CNPM_EnglishLearning.Services.Lessons.SupabaseLessonStorage>();
+builder.Services.AddHttpClient("LessonStorage", client => client.Timeout = TimeSpan.FromMinutes(10))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/login.html";
         options.Events.OnRedirectToLogin = context =>
         {
-            if (context.Request.Path.StartsWithSegments("/api/teacher"))
+            if (context.Request.Path.StartsWithSegments("/api"))
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             else
                 context.Response.Redirect(context.RedirectUri);
@@ -35,7 +41,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
         options.Events.OnRedirectToAccessDenied = context =>
         {
-            if (context.Request.Path.StartsWithSegments("/api/teacher"))
+            if (context.Request.Path.StartsWithSegments("/api"))
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
             else
                 context.Response.Redirect(context.RedirectUri);
@@ -54,8 +60,30 @@ builder.Services.Configure<MvcViewOptions>(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IExamService, ExamService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAutomaticGradingService, AutomaticGradingService>();
+builder.Services.AddHostedService<AutomaticGradingWorker>();
 
 var app = builder.Build();
+
+if (migrateLessonClasses || migrateExamReview)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        var filename = migrateExamReview ? "20261122_exam_review.sql" : "20261122_lesson_class_scope.sql";
+        var sql = await File.ReadAllTextAsync(Path.Combine(app.Environment.ContentRootPath, "Database", filename));
+        await db.Database.ExecuteSqlRawAsync(sql);
+        Console.WriteLine(migrateExamReview ? "Đã cập nhật trạng thái duyệt đề thi." : "Đã chuyển liên kết bài giảng và lớp sang class_lessons.");
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine("Không cập nhật được schema: " + ex.GetType().Name + ". Kiểm tra kết nối hoặc chạy file SQL trong Supabase SQL Editor.");
+        Environment.ExitCode = 1;
+    }
+    return;
+}
 
 if (seedTeacherTest || inspectDatabase)
 {
@@ -142,6 +170,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Uploaded files must only be served through the authorized, range-enabled media endpoint.
+app.Use(async (context, next) => {
+    if (context.Request.Path.StartsWithSegments("/App_Data", StringComparison.OrdinalIgnoreCase))
+    { context.Response.StatusCode = 404; return; }
+    await next(context);
+});
 
 // Keep Teacher entry links canonical before legacy static Views can be served.
 app.Use(async (context, next) =>
