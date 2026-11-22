@@ -1,9 +1,103 @@
 /**
  * site.js - Tương tác giao diện dùng chung cho tất cả các trang HTML
- * Hỗ trợ mở/đóng Sidebar mobile, Dropdown thông báo/avatar, Modal, Tabs
+ * Hỗ trợ mở/đóng Sidebar mobile, Dropdown thông báo/avatar, Modal, Tabs, Đồng bộ Profile
  */
 
+// Đồng bộ thông tin học sinh ngay lập tức khi file JS được nạp (chống giật layout)
+function syncStudentUserSession() {
+  try {
+    const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user') || localStorage.getItem('user');
+    let name = 'Trần Hoàng';
+    let email = 'student@englishlearning.example';
+    let userId = null;
+    let role = 'Học viên chính thức';
+
+    if (raw) {
+      const u = JSON.parse(raw);
+      if (u.full_name || u.name) name = u.full_name || u.name;
+      if (u.email) email = u.email;
+      if (u.id) userId = u.id;
+      if (u.role_label) role = u.role_label;
+      else if (u.role === 'student') role = 'Học viên chính thức';
+    }
+
+    const parts = name.trim().split(/\s+/);
+    const initials = parts.length === 1 
+      ? parts[0].slice(0, 2).toUpperCase() 
+      : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+
+    const av = document.getElementById('user-avatar-topbar');
+    const nm = document.getElementById('user-name-topbar');
+    const em = document.getElementById('user-email-topbar');
+    const dn = document.getElementById('user-name-dropdown');
+    const de = document.getElementById('user-email-dropdown');
+    const rb = document.getElementById('user-role-badge');
+
+    if (av) av.textContent = initials;
+    if (nm) nm.textContent = name;
+    if (em) { em.textContent = email; em.title = email; }
+    if (dn) dn.textContent = name;
+    if (de) de.textContent = email;
+    if (rb) rb.textContent = role;
+
+    // Đảm bảo mục "Tiến độ học tập" luôn luôn có mặt trong Dropdown
+    const menu = document.getElementById('avatar-dropdown-menu');
+    if (menu && !menu.querySelector('a[href*="progress.html"]')) {
+      const divider = menu.querySelector('.dropdown-divider');
+      const a = document.createElement('a');
+      a.href = 'progress.html';
+      a.className = 'dropdown-item';
+      a.id = 'menu-item-progress';
+      a.innerHTML = '<span>Tiến độ học tập</span>';
+      if (divider) {
+        menu.insertBefore(a, divider);
+      } else {
+        menu.appendChild(a);
+      }
+    }
+
+    // Nếu có userId, fetch backend /api/v1/student/profile để cập nhật dữ liệu mới nhất (streak, name, role)
+    if (userId) {
+      fetch(`/api/v1/student/profile?user_id=${userId}`, {
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(res => res.ok ? res.json() : null)
+      .then(json => {
+        if (json && json.success && json.data) {
+          const d = json.data;
+          const freshName = d.full_name || name;
+          const freshEmail = d.email || email;
+          const freshParts = freshName.trim().split(/\s+/);
+          const freshInitials = freshParts.length === 1 
+            ? freshParts[0].slice(0, 2).toUpperCase() 
+            : (freshParts[0][0] + freshParts[freshParts.length - 1][0]).toUpperCase();
+
+          if (av) av.textContent = freshInitials;
+          if (nm) nm.textContent = freshName;
+          if (em) { em.textContent = freshEmail; em.title = freshEmail; }
+          if (dn) dn.textContent = freshName;
+          if (de) de.textContent = freshEmail;
+
+          const streakEl = document.getElementById('nav-streak-text');
+          if (streakEl && d.streak_days != null) {
+            streakEl.textContent = `${d.streak_days} ngày`;
+          }
+        }
+      })
+      .catch(() => {});
+    }
+  } catch (_) {}
+}
+
+// Chạy đồng bộ session ngay khi script load
+if (typeof window !== 'undefined') {
+  syncStudentUserSession();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Đồng bộ lại sau khi DOM đã sẵn sàng
+  syncStudentUserSession();
+
   // 1. Sidebar Mobile Toggle
   const sidebarToggleBtn = document.getElementById('btn-sidebar-toggle');
   const sidebar = document.getElementById('app-sidebar');
@@ -22,35 +116,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. Dropdown Avatar & Notifications
-  const avatarBtn = document.getElementById('avatar-dropdown-btn');
-  const avatarMenu = document.getElementById('avatar-dropdown-menu');
-  const notifBtn = document.getElementById('notifications-btn');
-  const notifMenu = document.getElementById('notifications-dropdown');
+  // 2. Dropdown Avatar & Notifications - Quản lý tập trung bằng Event Delegation
+  document.addEventListener('click', (e) => {
+    const avatarTrigger = e.target.closest('#avatar-dropdown-btn, .user-profile-trigger');
+    const notifTrigger = e.target.closest('#notifications-btn, .notification-wrapper > button');
+    const avatarMenu = document.getElementById('avatar-dropdown-menu');
+    const notifMenu = document.getElementById('notifications-dropdown');
 
-  if (avatarBtn && avatarMenu) {
-    avatarBtn.addEventListener('click', (e) => {
+    if (avatarTrigger) {
+      e.preventDefault();
       e.stopPropagation();
       if (notifMenu) notifMenu.classList.remove('show');
-      avatarMenu.classList.toggle('show');
-    });
-  }
+      if (avatarMenu) avatarMenu.classList.toggle('show');
+      return;
+    }
 
-  if (notifBtn && notifMenu) {
-    notifBtn.addEventListener('click', (e) => {
+    if (notifTrigger) {
+      e.preventDefault();
       e.stopPropagation();
       if (avatarMenu) avatarMenu.classList.remove('show');
-      notifMenu.classList.toggle('show');
-    });
-  }
+      if (notifMenu) notifMenu.classList.toggle('show');
+      return;
+    }
 
-  // Đóng dropdown khi click ra ngoài
-  document.addEventListener('click', (e) => {
-    if (avatarMenu && !avatarMenu.contains(e.target) && avatarBtn && !avatarBtn.contains(e.target)) {
+    // Đóng dropdown khi click ra ngoài menu
+    if (avatarMenu && !avatarMenu.contains(e.target)) {
       avatarMenu.classList.remove('show');
     }
-    if (notifMenu && !notifMenu.contains(e.target) && notifBtn && !notifBtn.contains(e.target)) {
+    if (notifMenu && !notifMenu.contains(e.target)) {
       notifMenu.classList.remove('show');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const avatarMenu = document.getElementById('avatar-dropdown-menu');
+      const notifMenu = document.getElementById('notifications-dropdown');
+      if (avatarMenu) avatarMenu.classList.remove('show');
+      if (notifMenu) notifMenu.classList.remove('show');
     }
   });
 

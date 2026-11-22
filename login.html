@@ -325,20 +325,27 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
             </svg>
-            <span>Tài khoản Demo (1-Click Login)</span>
+            <span>Tài khoản Demo Cổng Học Sinh (1-Click Fill)</span>
           </div>
-          <div class="demo-pills">
-            <button type="button" class="demo-pill-btn" data-email="admin@el.com" data-role="Admin">
-              <strong>Admin</strong>
-              <span>Quản trị viên</span>
+          <div class="demo-pills" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 8px;">
+            <button type="button" class="demo-pill-btn" data-email="student@englishlearning.example" data-role="Học sinh chính">
+              <strong>🎓 Học sinh (Trần Hoàng Nam)</strong>
+              <span>student@englishlearning.example</span>
             </button>
-            <button type="button" class="demo-pill-btn" data-email="teacher@el.com" data-role="Giáo viên">
-              <strong>Teacher</strong>
-              <span>Giảng viên</span>
+            <button type="button" class="demo-pill-btn" data-email="learner.practice.v1.01@englishlearning.example" data-role="Học sinh thực hành">
+              <strong>📖 Học sinh 01 (Thực hành)</strong>
+              <span>learner.practice.v1.01@...</span>
             </button>
-            <button type="button" class="demo-pill-btn" data-email="student@el.com" data-role="Học sinh">
-              <strong>Student</strong>
-              <span>Học viên</span>
+          </div>
+          <div style="font-size: 0.725rem; color: var(--text-muted); margin-bottom: 6px;">Thử tài khoản khác để kiểm tra cơ chế chặn role không phải Học sinh:</div>
+          <div class="demo-pills" style="grid-template-columns: repeat(2, 1fr);">
+            <button type="button" class="demo-pill-btn" style="border-color: #FCA5A5; background: #FEF2F2;" data-email="admin@englishlearning.example" data-role="Admin">
+              <strong style="color: #DC2626;">👑 Thử Admin (Sẽ bị chặn)</strong>
+              <span style="color: #991B1B;">admin@englishlearning.example</span>
+            </button>
+            <button type="button" class="demo-pill-btn" style="border-color: #FCD34D; background: #FFFBEB;" data-email="teacher@englishlearning.example" data-role="Giảng viên">
+              <strong style="color: #D97706;">👨‍🏫 Thử Teacher (Sẽ bị chặn)</strong>
+              <span style="color: #B45309;">teacher@englishlearning.example</span>
             </button>
           </div>
         </div>
@@ -416,6 +423,11 @@
           </button>
         </form>
 
+        <!-- Navigation to Register -->
+        <div style="margin-top: 1.25rem; text-align: center; font-size: 0.9375rem; color: var(--text-secondary);">
+          Chưa có tài khoản học viên? <a href="register.html" style="font-weight: 700; color: var(--primary-600); text-decoration: none;">Đăng ký ngay &rarr;</a>
+        </div>
+
         <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color); text-align: center;">
           <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.75rem;">
             Truy cập trực tiếp giao diện HTML (Static Preview):
@@ -436,15 +448,14 @@
 
   <!-- Interactive Script (Tương thích 100% khi mở file:// và khi chạy qua Server) -->
   <script>
-    // 1. Danh sách tài khoản mẫu mặc định
+    // 1. Danh sách tài khoản mẫu (Đồng bộ với Supabase PostgreSQL)
     const MOCK_USERS = [
-      { id: 1, email: 'admin@el.com', password: '123456', full_name: 'Nguyễn Quản Trị', role: 'admin', is_active: true },
-      { id: 2, email: 'teacher@el.com', password: '123456', full_name: 'Lê Thị Mai', role: 'teacher', is_active: true },
-      { id: 3, email: 'hung.nguyen@el.com', password: '123456', full_name: 'Nguyễn Văn Hùng', role: 'teacher', is_active: true },
-      { id: 4, email: 'huy.pham@el.com', password: '123456', full_name: 'Phạm Quang Huy', role: 'teacher', is_active: true },
-      { id: 5, email: 'student@el.com', password: '123456', full_name: 'Nguyễn Hoàng Anh', role: 'student', is_active: true },
-      { id: 6, email: 'nam.tran@el.com', password: '123456', full_name: 'Trần Phương Nam', role: 'student', is_active: true },
-      { id: 7, email: 'ngan.le@el.com', password: '123456', full_name: 'Lê Thị Kim Ngân', role: 'student', is_active: false }
+      { id: 8, email: 'student@englishlearning.example', password: '123456', full_name: 'Trần Hoàng Nam', role: 'student', is_active: true, phone_number: '0901234567' },
+      { id: 9, email: 'learner.practice.v1.01@englishlearning.example', password: '123456', full_name: 'Học viên Thực hành 01', role: 'student', is_active: true, phone_number: '0912345678' },
+      { id: 6, email: 'admin@englishlearning.example', password: '123456', full_name: 'Quản Trị Viên Hệ Thống', role: 'admin', is_active: true },
+      { id: 7, email: 'teacher@englishlearning.example', password: '123456', full_name: 'Giảng Viên Mẫu', role: 'teacher', is_active: true },
+      { id: 5, email: 'student@el.com', password: '123456', full_name: 'Nguyễn Hoàng Anh', role: 'student', is_active: true, phone_number: '0987654321' },
+      { id: 99, email: 'inactive.student@englishlearning.example', password: '123456', full_name: 'Học viên Tạm Khóa', role: 'student', is_active: false }
     ];
 
     // 2. Hệ thống Toast thông báo độc lập
@@ -593,7 +604,7 @@
     }
 
     if (loginForm) {
-      loginForm.addEventListener('submit', (e) => {
+      loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearErrors();
 
@@ -629,8 +640,86 @@
           btnSubmit.disabled = true;
         }
 
-        // Tìm người dùng trong MOCK_USERS hoặc localStorage
-        let user = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+        function getApiEndpoint(path) {
+          if (window.location.protocol === 'file:' || (window.location.port !== '5000' && window.location.port !== '5001')) {
+            return 'http://localhost:5000' + path;
+          }
+          return path;
+        }
+
+        // 1. Thử gọi API Backend ASP.NET Core / Supabase trước tiên
+        try {
+          const apiUrl = getApiEndpoint('/api/v1/student/auth/login');
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+          });
+
+          const result = await response.json().catch(() => null);
+
+          if (response.ok && result && result.success && result.data) {
+            const userData = result.data.user;
+            
+            // Lưu thông tin phiên đăng nhập vào cả session_user và student_user
+            const userPayload = {
+              id: userData.id,
+              email: userData.email,
+              full_name: userData.full_name,
+              role: userData.role,
+              phone_number: userData.phone_number || '',
+              avatar_url: userData.avatar_url || ''
+            };
+            localStorage.setItem('session_user', JSON.stringify(userPayload));
+            localStorage.setItem('student_user', JSON.stringify(userPayload));
+
+            toast.success(result.message || `Đăng nhập thành công! Xin chào ${userData.full_name}.`, 'Đăng nhập thành công');
+
+            setTimeout(() => {
+              window.location.href = result.data.redirect_url || 'Areas/Student/Views/dashboard.html';
+            }, 600);
+            return;
+          }
+
+          // Xử lý các mã lỗi cụ thể từ Server API
+          if (result && result.message) {
+            const errorMsg = result.message;
+            if (response.status === 403) {
+              if (errorMsg.includes('role') || errorMsg.includes('vai trò') || errorMsg.includes('Học sinh')) {
+                if (groupEmail) groupEmail.classList.add('has-error');
+                if (emailInput) emailInput.classList.add('is-invalid');
+                if (errorEmail) errorEmail.textContent = errorMsg;
+              } else {
+                if (groupEmail) groupEmail.classList.add('has-error');
+                if (emailInput) emailInput.classList.add('is-invalid');
+                if (errorEmail) errorEmail.textContent = errorMsg;
+              }
+              toast.error(errorMsg, 'Truy cập bị từ chối');
+            } else if (response.status === 401) {
+              if (groupPassword) groupPassword.classList.add('has-error');
+              if (passwordInput) passwordInput.classList.add('is-invalid');
+              if (errorPassword) errorPassword.textContent = errorMsg;
+              toast.error(errorMsg, 'Xác thực thất bại');
+            } else {
+              toast.error(errorMsg, 'Lỗi đăng nhập');
+            }
+
+            if (btnSubmit) {
+              btnSubmit.classList.remove('loading');
+              btnSubmit.disabled = false;
+            }
+            return;
+          }
+        } catch (fetchErr) {
+          console.warn('Backend API chưa sẵn sàng hoặc đang mở qua giao thức file://, chuyển sang kiểm tra tài khoản offline:', fetchErr);
+        }
+
+        // 2. Chế độ Fallback ngoại tuyến (Offline preview):
+        // Vẫn kiểm tra đầy đủ 3 điều kiện: Đúng email/pass, role == 'student', is_active == true
+        let user = MOCK_USERS.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
         try {
           const storedUsers = JSON.parse(localStorage.getItem('table_users') || '[]');
           if (Array.isArray(storedUsers) && storedUsers.length > 0) {
@@ -639,55 +728,57 @@
           }
         } catch (_) {}
 
-        if (!user) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
-          if (groupEmail) groupEmail.classList.add('has-error');
-          if (emailInput) emailInput.classList.add('is-invalid');
-          if (errorEmail) errorEmail.textContent = 'Email hoặc mật khẩu không chính xác.';
-          toast.error('Email hoặc mật khẩu không chính xác.');
-          return;
+        if (btnSubmit) {
+          btnSubmit.classList.remove('loading');
+          btnSubmit.disabled = false;
         }
 
-        if (user.password !== password) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
+        // Chấp nhận đúng mật khẩu của tài khoản
+        const isPasswordValid = user && (user.password === password);
+
+        if (!user || !isPasswordValid) {
           if (groupPassword) groupPassword.classList.add('has-error');
           if (passwordInput) passwordInput.classList.add('is-invalid');
-          if (errorPassword) errorPassword.textContent = 'Mật khẩu không chính xác.';
-          toast.error('Mật khẩu không chính xác.');
+          if (errorPassword) errorPassword.textContent = 'Email hoặc mật khẩu không chính xác.';
+          toast.error('Email hoặc mật khẩu không chính xác.', 'Xác thực thất bại');
           return;
         }
 
-        if (user.is_active === 0 || user.is_active === false) {
-          if (btnSubmit) {
-            btnSubmit.classList.remove('loading');
-            btnSubmit.disabled = false;
-          }
-          toast.error('Tài khoản này hiện đang bị khóa. Vui lòng liên hệ quản trị viên.');
+        if (!user.is_active) {
+          if (groupEmail) groupEmail.classList.add('has-error');
+          if (emailInput) emailInput.classList.add('is-invalid');
+          if (errorEmail) errorEmail.textContent = 'Tài khoản học sinh này hiện đang bị khóa.';
+          toast.error('Tài khoản học sinh này hiện đang bị khóa. Vui lòng liên hệ quản trị viên.', 'Truy cập bị từ chối');
+          return;
+        }
+
+        if ((user.role || '').toLowerCase() !== 'student') {
+          if (groupEmail) groupEmail.classList.add('has-error');
+          if (emailInput) emailInput.classList.add('is-invalid');
+          const roleMsg = `Cổng đăng nhập này chỉ dành riêng cho Học sinh. Tài khoản của bạn có vai trò '${user.role}' không có quyền truy cập.`;
+          if (errorEmail) errorEmail.textContent = roleMsg;
+          toast.error(roleMsg, 'Truy cập bị từ chối');
           return;
         }
 
         // Lưu thông tin phiên đăng nhập
         try {
-          localStorage.setItem('session_user', JSON.stringify({
+          const userPayload = {
             id: user.id,
             email: user.email,
             full_name: user.full_name,
             role: user.role,
+            phone_number: user.phone_number || '',
             avatar_url: user.avatar_url || ''
-          }));
+          };
+          localStorage.setItem('session_user', JSON.stringify(userPayload));
+          localStorage.setItem('student_user', JSON.stringify(userPayload));
         } catch (_) {}
 
         toast.success(`Đăng nhập thành công! Xin chào ${user.full_name}.`, 'Đăng nhập thành công');
 
         setTimeout(() => {
-          const targetUrl = getPortalUrl(user.role);
-          window.location.href = targetUrl;
+          window.location.href = 'Areas/Student/Views/dashboard.html';
         }, 500);
       });
     }

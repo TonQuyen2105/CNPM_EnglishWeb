@@ -158,7 +158,8 @@ function setupDropdownsAndLogout(portal) {
   // Avatar dropdown
   const avatarBtn = document.getElementById('avatar-dropdown-btn') || document.getElementById('student-avatar-btn');
   const avatarMenu = document.getElementById('avatar-dropdown-menu') || document.getElementById('student-avatar-menu');
-  if (avatarBtn && avatarMenu) {
+  if (avatarBtn && avatarMenu && !avatarBtn.dataset.hasListener) {
+    avatarBtn.dataset.hasListener = 'true';
     avatarBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = avatarMenu.classList.contains('show');
