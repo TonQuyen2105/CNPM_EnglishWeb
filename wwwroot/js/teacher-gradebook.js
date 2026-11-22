@@ -65,6 +65,7 @@ function openGradebookRoster(classId, examId) {
     const top = element('div', null, 'teacher-toolbar');
     top.append(gradingButton('← Danh sách lớp', openGradebookClasses), gradingButton('Làm mới điểm', () => openGradebookRoster(classId, data.examId)));
     teacherContent.replaceChildren(top, element('h2', data.class.classCode + ' · ' + data.class.className));
+    if (data.class.status === 'cancelled') teacherContent.append(element('p', 'Lớp đã hủy — sổ điểm chỉ được xem, không được chấm hoặc sửa điểm.', 'teacher-muted'));
     const note = element('p', 'Đề thi dùng chung theo khóa học. Bảng lấy lượt đã nộp mới nhất; bài đang làm lại không thay thế điểm đã có.', 'teacher-muted');
     teacherContent.append(note);
     if (!data.exams.length) {
@@ -105,6 +106,7 @@ function openGradebookRoster(classId, examId) {
     function showHistory(student) {
       const card = panel('Lịch sử bài nộp · ' + student.fullName);
       card.tabIndex = -1;
+      card.append(element('p', 'Chỉ lượt đã nộp mới nhất được sửa điểm. Các lượt cũ chỉ được xem.', 'teacher-muted'));
       const historyTableWrap = element('div', null, 'gradebook-history-table-wrap');
       historyTableWrap.append(table(['Lượt', 'Nộp lúc', 'Điểm tự động', 'Điểm tự luận', 'Tổng điểm', 'Trạng thái', 'Thao tác'], student.history.map(a => [
         a.attemptNumber,
@@ -113,7 +115,7 @@ function openGradebookRoster(classId, examId) {
         gradebookScore(a.essayScore, data.essayMaxScore),
         gradebookScore(a.score, data.maxScore),
         gradebookBadge(a.status),
-        attemptLink(a, 'Xem chi tiết')
+        attemptLink(a, a.attemptId === student.latest?.attemptId ? 'Xem lượt mới nhất' : 'Xem lượt cũ · chỉ xem')
       ]), 'Chưa có lượt nộp.'));
       card.append(gradingButton('Đóng lịch sử', () => { detail.replaceChildren(); search.focus(); }), historyTableWrap);
       detail.replaceChildren(card); card.focus();

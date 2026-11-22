@@ -7,15 +7,23 @@ namespace CNPM_EnglishLearning.Services.Implementations;
 
 public sealed class AutomaticGradingService(ApplicationDbContext db) : IAutomaticGradingService
 {
-    public async Task<AutomaticGradingResult> GradeAsync(int userExamId, CancellationToken cancellationToken = default)
+    public async Task<AutomaticGradingResult> GradeAsync(int userExamId, CancellationToken cancellationToken = default, int? classId = null)
     {
         // Same lock as manual grading: repeated/concurrent requests cannot double-count points.
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        if (classId != null)
+        {
+            await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM course_classes WHERE id = {classId.Value} FOR UPDATE", cancellationToken);
+            if (!await db.CourseClasses.AnyAsync(c => c.Id == classId && c.Status != "cancelled", cancellationToken))
+                throw new GradingValidationException("Lớp đã hủy: không được chấm tự động.");
+        }
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM user_exams WHERE id = {userExamId} FOR UPDATE", cancellationToken);
         var attempt = await db.UserExams.SingleOrDefaultAsync(a => a.Id == userExamId, cancellationToken)
             ?? throw new GradingValidationException("Không tìm thấy lượt làm bài.");
         if (attempt.SubmittedAt == null || attempt.Status == "in_progress")
             throw new GradingValidationException("Chỉ chấm bài đã nộp. Học viên vẫn đang làm bài này.");
+        if (!await db.UserExams.LatestSubmitted().AnyAsync(a => a.Id == userExamId, cancellationToken))
+            throw new GradingValidationException("Lượt nộp cũ chỉ được xem, không được chấm hoặc sửa điểm.");
         var exam = await db.Exams.SingleAsync(e => e.Id == attempt.ExamId, cancellationToken);
         var questions = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
             where eq.ExamId == exam.Id select new ScoringQuestion(q.Id, q.QuestionType, eq.Points)).ToListAsync(cancellationToken);

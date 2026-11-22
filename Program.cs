@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
+var migrateGradeHistory = args.Contains("--migrate-grade-history", StringComparer.Ordinal);
 var migrateExamReview = args.Contains("--migrate-exam-review", StringComparer.Ordinal);
 var migrateLessonClasses = args.Contains("--migrate-lesson-classes", StringComparer.Ordinal);
 var seedTeacherDemo = args.Contains("--seed-teacher-demo", StringComparer.Ordinal);
@@ -15,7 +16,7 @@ var seedAll = args.Contains("--seed-all", StringComparer.Ordinal);
 var resetTeacherPassword = args.Contains("--reset-teacher-password", StringComparer.Ordinal);
 var builder = WebApplication.CreateBuilder(args.Where(arg => arg != "--seed-teacher-demo"
     && arg != "--seed-teacher-test" && arg != "--inspect-database"
-    && arg != "--seed-all" && arg != "--reset-teacher-password" && arg != "--migrate-lesson-classes" && arg != "--migrate-exam-review").ToArray());
+    && arg != "--seed-all" && arg != "--reset-teacher-password" && arg != "--migrate-lesson-classes" && arg != "--migrate-exam-review" && arg != "--migrate-grade-history").ToArray());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -66,16 +67,16 @@ builder.Services.AddHostedService<AutomaticGradingWorker>();
 
 var app = builder.Build();
 
-if (migrateLessonClasses || migrateExamReview)
+if (migrateLessonClasses || migrateExamReview || migrateGradeHistory)
 {
     await using var scope = app.Services.CreateAsyncScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
-        var filename = migrateExamReview ? "20261122_exam_review.sql" : "20261122_lesson_class_scope.sql";
+        var filename = migrateGradeHistory ? "20261122_grade_changes.sql" : migrateExamReview ? "20261122_exam_review.sql" : "20261122_lesson_class_scope.sql";
         var sql = await File.ReadAllTextAsync(Path.Combine(app.Environment.ContentRootPath, "Database", filename));
         await db.Database.ExecuteSqlRawAsync(sql);
-        Console.WriteLine(migrateExamReview ? "Đã cập nhật trạng thái duyệt đề thi." : "Đã chuyển liên kết bài giảng và lớp sang class_lessons.");
+        Console.WriteLine(migrateGradeHistory ? "Đã tạo lịch sử chấm và sửa điểm." : migrateExamReview ? "Đã cập nhật trạng thái duyệt đề thi." : "Đã chuyển liên kết bài giảng và lớp sang class_lessons.");
     }
     catch (Exception ex)
     {

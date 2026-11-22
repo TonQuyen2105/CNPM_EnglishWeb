@@ -2,6 +2,7 @@ using CNPM_EnglishLearning.Services.Implementations;
 using CNPM_EnglishLearning.Services.Interfaces;
 using System.Security.Claims;
 using CNPM_EnglishLearning.Data;
+using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,9 +45,9 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
         var ids = users.Select(u => u.Id).ToArray();
 
         // Tự động chấm ngay các câu trắc nghiệm & điền từ cho các bài nộp còn chưa chấm
-        if (chosen != null)
+        if (chosen != null && selected.Status != "cancelled")
         {
-            var pendingAttemptIds = await db.UserExams.Where(a => a.ExamId == chosen && Enumerable.Contains(ids, a.UserId)
+            var pendingAttemptIds = await db.UserExams.LatestSubmitted().Where(a => a.ExamId == chosen && Enumerable.Contains(ids, a.UserId)
                 && a.SubmittedAt != null && a.Status == "submitted"
                 && db.UserExamAnswers.Any(ans => ans.UserExamId == a.Id
                     && (ans.ScoreEarned == null || ans.GradingStatus != "auto_graded")
@@ -55,7 +56,7 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
 
             foreach (var pId in pendingAttemptIds)
             {
-                try { await autoGrading.GradeAsync(pId); } catch { /* Bỏ qua nếu có lỗi validation */ }
+                try { await autoGrading.GradeAsync(pId, classId: selected.Id); } catch { /* Bỏ qua nếu có lỗi validation */ }
             }
         }
 
@@ -66,7 +67,7 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
         var questions = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
             where eq.ExamId == chosen select new ScoringQuestion(q.Id, q.QuestionType, eq.Points)).ToListAsync();
         var passScore = await db.Exams.Where(e => e.Id == chosen).Select(e => (decimal?)e.PassScore).SingleOrDefaultAsync() ?? 0;
-        return Ok(new { Class = new { selected.Id, selected.ClassCode, selected.ClassName }, Exams = exams, ExamId = chosen,
+        return Ok(new { Class = new { selected.Id, selected.ClassCode, selected.ClassName, selected.Status }, Exams = exams, ExamId = chosen,
             HasAutomatic = questions.Any(q => q.Type is "multiple_choice" or "fill_blank"),
             HasEssay = questions.Any(q => q.Type == "essay"), Token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken,
             Students = users.Select(u => {
@@ -91,7 +92,14 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
         var teacherId = await TeacherId();
         if (teacherId == null) return Forbid();
         if (!await Allowed(classId, id, teacherId.Value)) return NotFound();
-        try { await autoGrading.GradeAsync(id); } catch { /* Bỏ qua nếu đã chấm */ }
+        var isLatest = await db.UserExams.LatestSubmitted().AnyAsync(a => a.Id == id);
+        var cancelled = await db.CourseClasses.AnyAsync(c => c.Id == classId && c.Status == "cancelled");
+        var canEdit = isLatest && !cancelled;
+        if (canEdit) { try { await autoGrading.GradeAsync(id, classId: classId); } catch { /* Keep viewing available on validation failure. */ } }
+        isLatest = await db.UserExams.LatestSubmitted().AnyAsync(a => a.Id == id);
+        cancelled = await db.CourseClasses.AnyAsync(c => c.Id == classId && c.Status == "cancelled");
+        canEdit = isLatest && !cancelled;
+        var readOnlyReason = cancelled ? "Lớp đã hủy — chỉ được xem kết quả." : !isLatest ? "Lượt nộp cũ — chỉ được xem. Chỉ lượt đã nộp mới nhất được chấm hoặc sửa điểm." : null;
         var attempt = await (from a in db.UserExams join u in db.Users on a.UserId equals u.Id join e in db.Exams on a.ExamId equals e.Id
             where a.Id == id select new { a.Id, a.AttemptNumber, a.SubmittedAt, u.FullName, e.Title }).SingleAsync();
         var rawAnswers = await (from a in db.UserExamAnswers join t in db.UserExams on a.UserExamId equals t.Id
@@ -102,10 +110,25 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
                 SelectedOption = db.QuestionOptions.Where(o => o.Id == a.SelectedOptionId && o.QuestionId == q.Id).Select(o => o.OptionText).FirstOrDefault(),
                 a.TextAnswer, a.ScoreEarned, a.Feedback, a.GradingStatus, a.GradedAt, eq.Points }).ToListAsync();
         var answers = rawAnswers.GroupBy(a => a.QuestionId).Select(g => g.First()).ToList();
-        return Ok(new { Attempt = attempt, Answers = answers, Token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
+        return Ok(new { Attempt = attempt, Answers = answers, CanEdit = canEdit, ReadOnlyReason = readOnlyReason, Token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
     }
 
-    public record GradeInput(int ClassId, List<AnswerGrade>? Answers);
+    [HttpGet("attempts/{id:int}/history")]
+    public async Task<IActionResult> History(int id, int classId, long? beforeId, CancellationToken ct)
+    {
+        var teacherId = await TeacherId();
+        if (teacherId == null) return Forbid();
+        if (!await Allowed(classId, id, teacherId.Value)) return NotFound();
+        var rows = await db.GradeChanges.AsNoTracking()
+            .Where(h => h.UserExamId == id && (beforeId == null || h.Id < beforeId))
+            .OrderByDescending(h => h.Id).Take(51).ToListAsync(ct);
+        var hasMore = rows.Count > 50;
+        var items = rows.Take(50).ToList();
+        Response.Headers.CacheControl = "no-store";
+        return Ok(new { Items = items, NextBeforeId = hasMore ? (long?)items[^1].Id : null });
+    }
+
+    public record GradeInput(int ClassId, List<AnswerGrade>? Answers, string? Reason = null);
     public record AnswerGrade(int Id, decimal? Score, string? Feedback, DateTime? ExpectedGradedAt);
 
     [HttpPost("attempts/{id:int}")]
@@ -117,7 +140,12 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
         if (teacherId == null) return Forbid();
         await using var transaction = await db.Database.BeginTransactionAsync();
         if (!await Allowed(input.ClassId, id, teacherId.Value)) return NotFound();
+        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM course_classes WHERE id = {input.ClassId} FOR UPDATE");
+        if (await db.CourseClasses.AnyAsync(c => c.Id == input.ClassId && c.Status == "cancelled"))
+            return Conflict(new { message = "Lớp đã hủy: chỉ được xem kết quả, không được chấm hoặc sửa điểm." });
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM user_exams WHERE id = {id} FOR UPDATE");
+        if (!await db.UserExams.LatestSubmitted().AnyAsync(a => a.Id == id))
+            return Conflict(new { message = "Đã có lượt nộp mới hơn. Lượt nộp cũ chỉ được xem, không được chấm hoặc sửa điểm." });
         var attempt = await db.UserExams.SingleAsync(a => a.Id == id);
         var answers = await db.UserExamAnswers.Where(a => a.UserExamId == id).ToListAsync();
         var essayPoints = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
@@ -130,17 +158,37 @@ public class TeacherGradingController(ApplicationDbContext db, IAntiforgery anti
         // This also prevents a stale tab from overwriting another grading session.
         if (input.Answers.Any(g => essays.Single(a => a.Id == g.Id).GradedAt != g.ExpectedGradedAt))
             return Conflict(new { message = "Điểm đã được cập nhật ở phiên khác. Hãy mở lại bài để xem điểm mới trước khi sửa." });
-        var isRevision = essays.Any(a => a.GradingStatus == "graded");
-        foreach (var grade in input.Answers)
+        var changed = input.Answers.Where(g => {
+            var a = essays.Single(a => a.Id == g.Id);
+            return a.GradingStatus != "graded" || a.ScoreEarned != g.Score || (a.Feedback ?? "") != (g.Feedback?.Trim() ?? "");
+        }).ToList();
+        if (changed.Count == 0) return Ok(new { message = "Không có thay đổi điểm hoặc nhận xét.", attempt.TotalScore });
+        var isRevision = changed.Any(g => essays.Single(a => a.Id == g.Id).GradingStatus == "graded");
+        if (input.Reason?.Length > 1000 || (isRevision && string.IsNullOrWhiteSpace(input.Reason)))
+            return BadRequest(new { message = "Vui lòng nhập lý do sửa điểm/nhận xét (tối đa 1.000 ký tự)." });
+        var teacherName = await (from t in db.Teachers join u in db.Users on t.UserId equals u.Id
+            where t.Id == teacherId select u.FullName).SingleAsync();
+        var questionText = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
+            where eq.ExamId == attempt.ExamId && q.QuestionType == "essay" select new { q.Id, q.QuestionText }).ToDictionaryAsync(q => q.Id, q => q.QuestionText);
+        var changedAt = DateTime.UtcNow;
+        foreach (var grade in changed)
         {
             var answer = essays.Single(a => a.Id == grade.Id);
             if (grade.Score == null || grade.Score < 0 || grade.Score > essayPoints[answer.QuestionId] || decimal.Round(grade.Score.Value, 2) != grade.Score.Value || grade.Feedback?.Length > 4000)
                 return BadRequest(new { message = "Điểm phải nằm trong thang điểm của câu, tối đa 2 chữ số thập phân; nhận xét không quá 4.000 ký tự." });
+            db.GradeChanges.Add(new GradeChange {
+                UserExamId = id, AnswerId = answer.Id, ClassId = input.ClassId,
+                TeacherId = teacherId.Value, TeacherName = teacherName,
+                QuestionText = questionText[answer.QuestionId], MaxScore = essayPoints[answer.QuestionId],
+                OldScore = answer.ScoreEarned, NewScore = grade.Score.Value,
+                OldFeedback = answer.Feedback, NewFeedback = grade.Feedback?.Trim(),
+                IsRevision = answer.GradingStatus == "graded", Reason = input.Reason?.Trim(), ChangedAt = changedAt
+            });
             answer.ScoreEarned = grade.Score;
             answer.Feedback = grade.Feedback?.Trim();
             answer.GradingStatus = "graded";
             answer.GradedByTeacherId = teacherId;
-            answer.GradedAt = DateTime.UtcNow;
+            answer.GradedAt = changedAt;
         }
         var questions = await (from eq in db.ExamQuestions join q in db.Questions on eq.QuestionId equals q.Id
             where eq.ExamId == attempt.ExamId select new ScoringQuestion(q.Id, q.QuestionType, eq.Points)).ToListAsync();

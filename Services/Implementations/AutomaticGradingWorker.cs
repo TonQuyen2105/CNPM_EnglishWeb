@@ -27,7 +27,7 @@ public sealed class AutomaticGradingWorker(IServiceScopeFactory scopes, ILogger<
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         while (!ct.IsCancellationRequested)
         {
-            var ids = await db.UserExams.Where(t => t.Id > afterId && t.SubmittedAt != null && t.Status == "submitted"
+            var ids = await db.UserExams.LatestSubmitted().Where(t => t.Id > afterId && t.SubmittedAt != null && t.Status == "submitted"
                 && db.UserExamAnswers.Any(a => a.UserExamId == t.Id
                     && (a.ScoreEarned == null || a.GradingStatus != "auto_graded")
                     && db.Questions.Any(q => q.Id == a.QuestionId && (q.QuestionType == "multiple_choice" || q.QuestionType == "fill_blank"))))

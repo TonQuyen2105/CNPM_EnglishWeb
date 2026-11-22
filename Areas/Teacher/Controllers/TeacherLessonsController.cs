@@ -22,6 +22,10 @@ public class TeacherLessonsController(ApplicationDbContext db, IAntiforgery anti
                 && db.Users.Any(u => u.Id == userId && u.IsActive && u.Role == "teacher"))));
     }
 
+    private Task<bool> HasCancelledClass(int lessonId, CancellationToken ct) => db.ClassLessons
+        .AnyAsync(a => a.LessonId == lessonId && db.CourseClasses.Any(c => c.Id == a.ClassId && c.Status == "cancelled"), ct);
+    private IActionResult Cancelled() => Conflict(new { message = "Lớp đã hủy: chỉ được xem bài giảng, không được thêm, gán, sửa hoặc thay tài liệu. Bài dùng chung với lớp đã hủy cũng được khóa." });
+
     private IQueryable<Lesson> AvailableLessons(int classId, int courseId)
     {
         var assigned = AssignedClasses();
@@ -40,10 +44,11 @@ public class TeacherLessonsController(ApplicationDbContext db, IAntiforgery anti
             Course = db.Courses.Where(course => course.Id == c.CourseId).Select(course => course.Title).FirstOrDefault(),
             Lessons = db.ClassLessons.Where(a => a.ClassId == c.Id).Select(a => a.LessonId).Distinct().Count()
         }).ToListAsync(cancellationToken));
-        var classroom = await classes.Where(c => c.Id == classId).Select(c => new { c.Id, c.CourseId, c.ClassName, c.ClassCode }).SingleOrDefaultAsync(cancellationToken);
+        var classroom = await classes.Where(c => c.Id == classId).Select(c => new { c.Id, c.CourseId, c.ClassName, c.ClassCode, c.Status }).SingleOrDefaultAsync(cancellationToken);
         if (classroom == null) return NotFound();
         var lessons = await db.LessonsByClass().Where(l => l.ClassId == classId).OrderBy(l => l.OrderIndex).ThenBy(l => l.Lesson.Id)
-            .Select(l => new { l.Lesson.Id, l.Lesson.Title, l.OrderIndex, l.Lesson.ContentType, l.Lesson.UpdatedAt, l.Lesson.CreatedAt }).ToListAsync(cancellationToken);
+            .Select(l => new { l.Lesson.Id, l.Lesson.Title, l.OrderIndex, l.Lesson.ContentType, l.Lesson.UpdatedAt, l.Lesson.CreatedAt,
+                CanEdit = !db.ClassLessons.Any(a => a.LessonId == l.Lesson.Id && db.CourseClasses.Any(c => c.Id == a.ClassId && c.Status == "cancelled")) }).ToListAsync(cancellationToken);
         var available = await AvailableLessons(classroom.Id, classroom.CourseId)
             .OrderBy(l => l.OrderIndex).Select(l => new { l.Id, l.Title }).ToListAsync(cancellationToken);
         return Ok(new { Class = classroom, Lessons = lessons, Available = available, Token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
@@ -57,6 +62,7 @@ public class TeacherLessonsController(ApplicationDbContext db, IAntiforgery anti
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM course_classes WHERE id = {classId} FOR UPDATE", ct);
         var classroom = await AssignedClasses().SingleOrDefaultAsync(c => c.Id == classId, ct);
         if (classroom == null) return NotFound();
+        if (classroom.Status == "cancelled") return Cancelled();
         var order = (await db.LessonsByClass().Where(l => l.ClassId == classId).MaxAsync(l => (int?)l.OrderIndex, ct) ?? 0) + 1;
         if (await db.ClassLessons.AnyAsync(a => a.ClassId == classId && a.LessonId == id, ct))
             return Ok(new { id, message = "Bài giảng đã có trong lớp." });
@@ -77,9 +83,10 @@ public class TeacherLessonsController(ApplicationDbContext db, IAntiforgery anti
             .Select(a => new { a.Lesson.Id, a.ClassId, a.Lesson.CourseId, a.Lesson.Title, a.OrderIndex,
                 a.Lesson.ContentType, a.Lesson.Content, a.Lesson.CreatedAt, a.Lesson.UpdatedAt }).FirstOrDefaultAsync(cancellationToken);
         if (lesson == null) return NotFound();
+        var canEdit = !await HasCancelledClass(id, cancellationToken);
         var document = LessonDocument.Read(lesson.Content);
         return Ok(new { Lesson = new { lesson.Id, lesson.ClassId, lesson.CourseId, lesson.Title, lesson.OrderIndex, lesson.ContentType,
-            Content = document.Text, lesson.CreatedAt, lesson.UpdatedAt,
+            Content = document.Text, CanEdit = canEdit, lesson.CreatedAt, lesson.UpdatedAt,
             Video = LessonDocument.View(id, document.Video, "video"), Pdf = LessonDocument.View(id, document.Pdf, "pdf") },
             Token = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
     }
@@ -119,6 +126,8 @@ public class TeacherLessonsController(ApplicationDbContext db, IAntiforgery anti
     {
         if (!ModelState.IsValid) return BadRequest(new { message = "Kiểm tra thông tin bài giảng trước khi lưu." });
         if (!await AssignedClasses().AnyAsync(c => c.Id == input.ClassId, ct)) return NotFound();
+        if (await AssignedClasses().AnyAsync(c => c.Id == input.ClassId && c.Status == "cancelled", ct)
+            || (id != null && await HasCancelledClass(id.Value, ct))) return Cancelled();
         LessonAttachment? uploadedVideo = null, uploadedPdf = null;
         bool saved = false;
         try
@@ -147,9 +156,11 @@ public class TeacherLessonsController(ApplicationDbContext db, IAntiforgery anti
         if (!await AssignedClasses().AnyAsync(c => c.Id == input.ClassId, ct)) return NotFound();
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         // Serialize ordering checks within this class; recheck assignment after acquiring the lock.
-        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM course_classes WHERE id = {input.ClassId} FOR UPDATE", ct);
+        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM course_classes WHERE id = {input.ClassId} OR id IN (SELECT class_id FROM class_lessons WHERE lesson_id = {id}) ORDER BY id FOR UPDATE", ct);
         var classroom = await AssignedClasses().SingleOrDefaultAsync(c => c.Id == input.ClassId, ct);
         if (classroom == null) return NotFound();
+        if (classroom.Status == "cancelled") return Cancelled();
+        if (id != null && await HasCancelledClass(id.Value, ct)) return Cancelled();
         Lesson? lesson = null;
         if (id != null)
         {
@@ -201,12 +212,15 @@ public class TeacherLessonsController(ApplicationDbContext db, IAntiforgery anti
         var accessible = db.Lessons.Where(l => l.Id == id && db.ClassLessons.Any(a =>
             a.LessonId == l.Id && classes.Any(c => c.Id == a.ClassId)));
         if (!await accessible.AnyAsync(ct)) return NotFound();
+        if (await HasCancelledClass(id, ct)) return Cancelled();
         LessonAttachment? uploaded = null; bool committed = false;
         try
         {
             uploaded = await files.SaveAsync(file, kind, ct);
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM course_classes WHERE id IN (SELECT class_id FROM class_lessons WHERE lesson_id = {id}) ORDER BY id FOR UPDATE", ct);
             await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM lessons WHERE id = {id} FOR UPDATE", ct);
+            if (await HasCancelledClass(id, ct)) return Cancelled();
             var lesson = await accessible.SingleOrDefaultAsync(ct);
             if (lesson == null) return NotFound();
             if (lesson.UpdatedAt != expectedUpdatedAt) return Conflict(new { message = "Bài giảng vừa thay đổi. Tải lại bài rồi chọn file để tải lên lại." });

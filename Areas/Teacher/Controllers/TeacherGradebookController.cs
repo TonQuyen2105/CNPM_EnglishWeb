@@ -24,7 +24,7 @@ public class TeacherGradebookController(ApplicationDbContext db) : ControllerBas
             c.Id, c.ClassCode, c.ClassName, c.Status,
             Students = db.Enrollments.Count(e => e.ClassId == c.Id && e.Status != "cancelled")
         }).ToListAsync(cancellationToken));
-        var selected = await classes.Where(c => c.Id == classId).Select(c => new { c.Id, c.CourseId, c.ClassCode, c.ClassName }).SingleOrDefaultAsync(cancellationToken);
+        var selected = await classes.Where(c => c.Id == classId).Select(c => new { c.Id, c.CourseId, c.ClassCode, c.ClassName, c.Status }).SingleOrDefaultAsync(cancellationToken);
         if (selected == null) return NotFound();
         var exams = await db.Exams.Where(e => e.CourseId == selected.CourseId && e.CreatedByTeacherId == teacherId && e.IsPublished
             && db.ExamQuestions.Any(eq => eq.ExamId == e.Id && db.Questions.Any(q => q.Id == eq.QuestionId && (q.QuestionType == "essay" || q.QuestionType == "multiple_choice" || q.QuestionType == "fill_blank"))))

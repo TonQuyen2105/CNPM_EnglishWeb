@@ -4,5 +4,5 @@ public record AutomaticGradingResult(int AttemptId, int GradedQuestions, decimal
 
 public interface IAutomaticGradingService
 {
-    Task<AutomaticGradingResult> GradeAsync(int userExamId, CancellationToken cancellationToken = default);
+    Task<AutomaticGradingResult> GradeAsync(int userExamId, CancellationToken cancellationToken = default, int? classId = null);
 }

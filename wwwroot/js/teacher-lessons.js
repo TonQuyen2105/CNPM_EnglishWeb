@@ -43,8 +43,10 @@ function openLessonClass(classId, success) {
     const data = await lessonRequest('?classId=' + classId);
     history.replaceState(null, '', '/Teacher/lessons.html?classId=' + classId);
     const bar = element('div', null, 'teacher-toolbar lesson-toolbar');
-    bar.append(gradingButton('← Danh sách lớp', openLessonClasses), gradingButton('Thêm bài giảng', () => showLessonForm(data), true));
+    bar.append(gradingButton('← Danh sách lớp', openLessonClasses));
+    if (data.class.status !== 'cancelled') bar.append(gradingButton('Thêm bài giảng', () => showLessonForm(data), true));
     teacherContent.replaceChildren(bar, element('h2', data.class.classCode + ' · ' + data.class.className), element('p', 'Danh sách bài giảng đã gán cho lớp.', 'teacher-muted'));
+    if (data.class.status === 'cancelled') teacherContent.append(element('p', 'Lớp đã hủy — chỉ được xem bài giảng.', 'teacher-muted'));
     if (success) teacherContent.append(lessonNotice(success));
     const filters = element('div', null, 'teacher-toolbar lesson-toolbar');
     const search = element('input', null, 'teacher-search'); search.type = 'search'; search.placeholder = 'Tìm tiêu đề bài giảng'; search.setAttribute('aria-label', 'Tìm tiêu đề bài giảng');
@@ -62,13 +64,14 @@ function openLessonClass(classId, success) {
       for (const lesson of rows) {
         const card = panel('Bài ' + lesson.orderIndex + ' · ' + lesson.title);
         const buttons = element('div', null, 'lesson-actions');
-        buttons.append(gradingButton('Xem chi tiết', () => openLessonDetail(data, lesson.id)), gradingButton('Sửa bài', () => editLesson(data, lesson.id)));
+        buttons.append(gradingButton('Xem chi tiết', () => openLessonDetail(data, lesson.id)));
+        if (data.class.status !== 'cancelled' && lesson.canEdit !== false) buttons.append(gradingButton('Sửa bài', () => editLesson(data, lesson.id)));
         card.append(badge(lessonTypes[lesson.contentType] || lesson.contentType), element('p', 'Cập nhật: ' + lessonDate(lesson.updatedAt || lesson.createdAt), 'teacher-muted'), buttons);
         list.append(card);
       }
-      if (!rows.length) list.append(element('p', data.lessons.length ? 'Không có bài phù hợp với bộ lọc.' : 'Lớp chưa có bài giảng. Chọn “Thêm bài giảng” để bắt đầu.', 'card teacher-empty'));
+      if (!rows.length) list.append(element('p', data.lessons.length ? 'Không có bài phù hợp với bộ lọc.' : (data.class.status === 'cancelled' ? 'Lớp chưa có bài giảng.' : 'Lớp chưa có bài giảng. Chọn “Thêm bài giảng” để bắt đầu.'), 'card teacher-empty'));
     }
-    if (data.available?.length) {
+    if (data.class.status !== 'cancelled' && data.available?.length) {
       const legacy = panel('Bài giảng có thể gán cho lớp');
       legacy.append(element('p', 'Chọn bài cùng khóa học để dùng chung nội dung, video và PDF.', 'teacher-muted'));
       for (const old of data.available) {
@@ -94,18 +97,21 @@ function openLessonDetail(data, id, success) {
     const response = await lessonRequest('/' + id + '?classId=' + data.class.id), lesson = response.lesson;
     const card = panel('Bài ' + lesson.orderIndex + ' · ' + lesson.title);
     const buttons = element('div', null, 'teacher-toolbar lesson-toolbar');
-    buttons.append(gradingButton('← Danh sách bài', () => openLessonClass(data.class.id)), gradingButton('Sửa bài giảng', () => showLessonForm({ ...data, token: response.token }, lesson), true));
+    buttons.append(gradingButton('← Danh sách bài', () => openLessonClass(data.class.id)));
+    if (data.class.status !== 'cancelled' && lesson.canEdit !== false) buttons.append(gradingButton('Sửa bài giảng', () => showLessonForm({ ...data, token: response.token }, lesson), true));
+    else card.append(element('p', 'Chỉ được xem: lớp này hoặc lớp dùng chung bài đã hủy.', 'teacher-muted'));
     card.append(badge(lessonTypes[lesson.contentType] || lesson.contentType), element('p', data.class.classCode + ' · ' + data.class.className, 'teacher-muted'),
       element('p', 'Ngày tạo: ' + lessonDate(lesson.createdAt) + ' · Cập nhật: ' + lessonDate(lesson.updatedAt), 'teacher-muted'),
       element('div', lesson.content || 'Bài giảng chưa có nội dung.', 'teacher-copy lesson-content'));
     teacherContent.replaceChildren(buttons);
+    if (data.class.status === 'cancelled') teacherContent.append(element('p', 'Lớp đã hủy — chỉ được xem bài giảng.', 'teacher-muted'));
     if (success) teacherContent.append(lessonNotice(success));
     teacherContent.append(card, lessonMediaPanel(lesson));
   });
 }
 function lessonMediaPanel(lesson) {
   const section = panel('Video và tài liệu PDF');
-  section.append(element('p', 'Nhấn “Sửa bài giảng” để thay video hoặc PDF.', 'teacher-muted'));
+  section.append(element('p', lesson.canEdit === false ? 'Tài liệu chỉ được xem.' : 'Nhấn “Sửa bài giảng” để thay video hoặc PDF.', 'teacher-muted'));
   const studentLink = link('Xem trang học', '/Student/learn.html?lessonId=' + lesson.id + '&classId=' + lesson.classId); studentLink.target = '_blank'; studentLink.rel = 'noopener'; section.append(studentLink);
   for (const kind of ['video', 'pdf']) {
     const asset = lesson[kind];
@@ -124,6 +130,7 @@ function editLesson(data, id) {
   return gradingView(async () => { const response = await lessonRequest('/' + id + '?classId=' + data.class.id); showLessonForm({ ...data, token: response.token }, response.lesson); });
 }
 function showLessonForm(data, lesson = null) {
+  if (data.class.status === 'cancelled' || lesson?.canEdit === false) return openLessonClass(data.class.id);
   let dirty = false, saving = false;
   const form = element('form', null, 'card lesson-form');
   form.append(element('h2', lesson ? 'Sửa bài giảng' : 'Thêm bài giảng'), element('p', data.class.classCode + ' · ' + data.class.className, 'teacher-muted'),
