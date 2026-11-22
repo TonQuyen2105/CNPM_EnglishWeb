@@ -263,6 +263,8 @@
       <thead>
         <tr style="background-color: #F8FAFC;">
           <th>Tên bài thi</th>
+          <th>Khóa học</th>
+          <th>Lớp học</th>
           <th>Ngày thi</th>
           <th>Thời gian làm</th>
           <th>Số câu đúng</th>
@@ -273,7 +275,7 @@
       </thead>
       <tbody id="results-history-tbody">
         <tr>
-          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+          <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
             Đang tải dữ liệu kết quả thi...
           </td>
         </tr>
@@ -307,7 +309,7 @@
         const json = await res.json();
 
         if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Chưa có lịch sử bài thi nào được ghi nhận. Hãy hoàn thành một bài thi tại Phòng Luyện thi.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">Chưa có lịch sử bài thi nào được ghi nhận. Hãy hoàn thành một bài thi tại Phòng Luyện thi.</td></tr>`;
           return;
         }
 
@@ -320,14 +322,30 @@
           const s = (h.duration_seconds || 0) % 60;
           const durStr = `${m} phút ${s}s`;
 
-          let correctStr = `${h.correct_answers_count} / ${h.total_questions}`;
-          if (h.total_questions === 0) correctStr = '-';
+          // Xử lý thông tin Khóa học và Lớp học
+          const courseTitle = h.course_title || 'Đánh giá chung';
+          let classDisplay = '<span style="color: #94A3B8;">-</span>';
+          if (h.class_name) {
+            classDisplay = `
+              <div style="font-weight: 600; color: #0F172A; font-size: 0.8125rem;">${escapeHtml(h.class_name)}</div>
+              ${h.class_code ? `<div style="font-size: 0.75rem; color: #2563EB; font-weight: 500;">[${escapeHtml(h.class_code)}]</div>` : ''}
+            `;
+          }
 
-          let scoreDisplay = '-';
-          if (h.total_score != null) {
-            scoreDisplay = `<strong style="color: var(--primary-600); font-size: 1.125rem;">${h.total_score}</strong> / 10`;
-          } else {
-            scoreDisplay = `<span style="color: #92400E; font-weight: 700;">Chờ chấm</span>`;
+          // Xử lý hiển thị theo trạng thái bài thi:
+          // Nếu status là 'submitted' (đang chờ chấm): KHÔNG hiện điểm số và KHÔNG hiện nút thao tác xem bài giải.
+          // Khi status là 'passed' hoặc 'failed': MỚI hiển thị điểm số và nút xem bài giải.
+          const isGraded = (h.status === 'passed' || h.status === 'failed');
+
+          let correctStr = '<span style="color: #94A3B8;">-</span>';
+          let scoreDisplay = '<span style="color: #94A3B8; font-weight: 600;">-</span>';
+          let actionBtnHtml = '<span style="color: #94A3B8; font-size: 0.8125rem;">-</span>';
+
+          if (isGraded) {
+            correctStr = (h.total_questions > 0) ? `${h.correct_answers_count} / ${h.total_questions}` : '-';
+            const scoreVal = (h.total_score != null) ? h.total_score : 0;
+            scoreDisplay = `<strong style="color: var(--primary-600); font-size: 1.125rem;">${scoreVal}</strong> / 10`;
+            actionBtnHtml = `<a href="result-detail.html?userExamId=${h.user_exam_id}" class="btn btn-sm btn-secondary">Xem bài giải</a>`;
           }
 
           let badgeHtml = '';
@@ -335,8 +353,10 @@
             badgeHtml = `<span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">Chờ chấm bài</span>`;
           } else if (h.status === 'passed') {
             badgeHtml = `<span class="badge badge-success">Đạt chuẩn</span>`;
-          } else {
+          } else if (h.status === 'failed') {
             badgeHtml = `<span class="badge badge-danger">Chưa đạt</span>`;
+          } else {
+            badgeHtml = `<span class="badge badge-secondary">${escapeHtml(h.status || 'Chưa rõ')}</span>`;
           }
 
           return `
@@ -345,19 +365,25 @@
                 <strong>${escapeHtml(h.exam_title)}</strong>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">Lần làm bài: #${h.attempt_number}</div>
               </td>
+              <td>
+                <span style="font-weight: 600; color: #1E293B; font-size: 0.8125rem;">${escapeHtml(courseTitle)}</span>
+              </td>
+              <td>
+                ${classDisplay}
+              </td>
               <td>${dateStr}</td>
               <td>${durStr}</td>
               <td>${correctStr}</td>
               <td>${scoreDisplay}</td>
               <td>${badgeHtml}</td>
               <td style="text-align: right;">
-                <a href="result-detail.html?userExamId=${h.user_exam_id}" class="btn btn-sm btn-secondary">Xem bài giải</a>
+                ${actionBtnHtml}
               </td>
             </tr>
           `;
         }).join('');
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--danger-500); padding: 2rem;">Lỗi tải dữ liệu lịch sử thi.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--danger-500); padding: 2rem;">Lỗi tải dữ liệu lịch sử thi.</td></tr>`;
       }
     })();
   </script>

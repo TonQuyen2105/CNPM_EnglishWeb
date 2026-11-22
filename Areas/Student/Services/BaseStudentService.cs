@@ -125,6 +125,82 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
         }
 
         /// <summary>
+        /// Phân giải và lọc trường Text, tài liệu PDF và Video bài giảng từ cột content (hỗ trợ định dạng JSON/EL_LESSON_MEDIA_V1 của Supabase Storage).
+        /// Đảm bảo nội dung bài học (Text), tệp PDF và Video luôn được tách bạch, sạch sẽ.
+        /// </summary>
+        protected static (string? TextContent, string? PdfUrl, string? PdfName, string? VideoUrl, string? VideoName) ParseLessonContent(string? rawContent)
+        {
+            if (string.IsNullOrWhiteSpace(rawContent))
+            {
+                return (null, null, null, null, null);
+            }
+
+            var trimmed = rawContent.Trim();
+            var jsonStr = trimmed;
+            if (trimmed.StartsWith("EL_LESSON_MEDIA_V1", StringComparison.OrdinalIgnoreCase))
+            {
+                jsonStr = trimmed.Substring("EL_LESSON_MEDIA_V1".Length).Trim();
+            }
+
+            if (jsonStr.StartsWith("{") && jsonStr.EndsWith("}"))
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(jsonStr);
+                    var root = doc.RootElement;
+
+                    string? parsedText = null;
+                    if (root.TryGetProperty("Text", out var textEl) && textEl.ValueKind == System.Text.Json.JsonValueKind.String)
+                    {
+                        parsedText = textEl.GetString();
+                    }
+
+                    string? pdfUrl = null;
+                    string? pdfName = null;
+                    if (root.TryGetProperty("Pdf", out var pdfEl) && pdfEl.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        var key = pdfEl.TryGetProperty("Key", out var k) ? k.GetString() : null;
+                        var name = pdfEl.TryGetProperty("Name", out var n) ? n.GetString() : null;
+                        var bucket = pdfEl.TryGetProperty("Bucket", out var b) ? b.GetString() : "Lesson_media";
+                        if (string.IsNullOrWhiteSpace(bucket)) bucket = "Lesson_media";
+
+                        if (!string.IsNullOrWhiteSpace(key))
+                        {
+                            pdfUrl = $"https://wymdewnklhrnmirbvgxi.supabase.co/storage/v1/object/public/{bucket}/{key}";
+                            pdfName = name ?? key;
+                        }
+                    }
+
+                    string? videoUrl = null;
+                    string? videoName = null;
+                    if (root.TryGetProperty("Video", out var videoEl) && videoEl.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        var vKey = videoEl.TryGetProperty("Key", out var vk) ? vk.GetString() : null;
+                        var vName = videoEl.TryGetProperty("Name", out var vn) ? vn.GetString() : null;
+                        var vBucket = videoEl.TryGetProperty("Bucket", out var vb) ? vb.GetString() : "Lesson_media";
+                        if (string.IsNullOrWhiteSpace(vBucket)) vBucket = "Lesson_media";
+
+                        if (!string.IsNullOrWhiteSpace(vKey))
+                        {
+                            videoUrl = $"https://wymdewnklhrnmirbvgxi.supabase.co/storage/v1/object/public/{vBucket}/{vKey}";
+                            videoName = vName ?? vKey;
+                        }
+                    }
+
+                    return (parsedText, pdfUrl, pdfName, videoUrl, videoName);
+                }
+                catch
+                {
+                    // Fallback trả về nguyên bản chuỗi trimmed nếu parse thất bại
+                    return (trimmed, null, null, null, null);
+                }
+            }
+
+            // Nếu không phải định dạng JSON (nội dung văn bản thông thường)
+            return (trimmed, null, null, null, null);
+        }
+
+        /// <summary>
         /// Truy vấn gộp (Batch Query) tổng số bài học và số bài học đã hoàn thành theo danh sách CourseId cho 1 học sinh.
         /// Giúp loại bỏ hoàn toàn lỗi N+1 Query tại Dashboard, MyClasses và Syllabus.
         /// </summary>

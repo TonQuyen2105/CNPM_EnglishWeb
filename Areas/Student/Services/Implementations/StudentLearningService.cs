@@ -140,6 +140,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 Options = optionsByQuestion.GetValueOrDefault(q.Id, new List<QuestionOptionSafeDto>())
             }).ToList();
 
+            // Phân giải và lọc trường Text, Key tài liệu PDF & Video từ cột content (hỗ trợ định dạng JSON/EL_LESSON_MEDIA_V1 của Supabase Storage)
+            var (parsedText, mediaPdfUrl, mediaPdfName, mediaVideoUrl, mediaVideoName) = ParseLessonContent(lesson.Content);
+
             var detailDto = new LessonDetailDto
             {
                 Id = lesson.Id,
@@ -148,7 +151,12 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 Title = lesson.Title,
                 OrderIndex = lesson.OrderIndex,
                 ContentType = lesson.ContentType,
-                Content = lesson.Content,
+                Content = parsedText ?? string.Empty, // Đã lọc trường Text, loại bỏ hoàn toàn JSON/EL_LESSON_MEDIA_V1
+                MediaPdfUrl = mediaPdfUrl,
+                MediaPdfName = mediaPdfName,
+                MediaVideoUrl = mediaVideoUrl,
+                MediaVideoName = mediaVideoName,
+                ParsedTextContent = parsedText ?? string.Empty,
                 IsCompleted = progress?.IsCompleted ?? false,
                 Score = progress?.Score,
                 CompletedAt = progress?.CompletedAt,

@@ -806,6 +806,21 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         [JsonPropertyName("content")]
         public string? Content { get; set; }
 
+        [JsonPropertyName("media_pdf_url")]
+        public string? MediaPdfUrl { get; set; }
+
+        [JsonPropertyName("media_pdf_name")]
+        public string? MediaPdfName { get; set; }
+
+        [JsonPropertyName("media_video_url")]
+        public string? MediaVideoUrl { get; set; }
+
+        [JsonPropertyName("media_video_name")]
+        public string? MediaVideoName { get; set; }
+
+        [JsonPropertyName("parsed_text_content")]
+        public string? ParsedTextContent { get; set; }
+
         [JsonPropertyName("is_completed")]
         public bool IsCompleted { get; set; }
 
@@ -1160,6 +1175,21 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         [JsonPropertyName("exam_title")]
         public string ExamTitle { get; set; } = string.Empty;
 
+        [JsonPropertyName("course_id")]
+        public int? CourseId { get; set; }
+
+        [JsonPropertyName("course_title")]
+        public string? CourseTitle { get; set; }
+
+        [JsonPropertyName("class_id")]
+        public int? ClassId { get; set; }
+
+        [JsonPropertyName("class_name")]
+        public string? ClassName { get; set; }
+
+        [JsonPropertyName("class_code")]
+        public string? ClassCode { get; set; }
+
         [JsonPropertyName("attempt_number")]
         public int AttemptNumber { get; set; }
 
@@ -1198,6 +1228,21 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("exam_title")]
         public string ExamTitle { get; set; } = string.Empty;
+
+        [JsonPropertyName("course_id")]
+        public int? CourseId { get; set; }
+
+        [JsonPropertyName("course_title")]
+        public string? CourseTitle { get; set; }
+
+        [JsonPropertyName("class_id")]
+        public int? ClassId { get; set; }
+
+        [JsonPropertyName("class_name")]
+        public string? ClassName { get; set; }
+
+        [JsonPropertyName("class_code")]
+        public string? ClassCode { get; set; }
 
         [JsonPropertyName("attempt_number")]
         public int AttemptNumber { get; set; }

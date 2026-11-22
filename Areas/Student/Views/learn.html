@@ -493,7 +493,23 @@
       <div class="col-span-8 learning-main-column" style="grid-column: span 8 / span 8;">
         
         <!-- Video Bài giảng Container -->
-        <div class="card video-player-card" style="padding: 0;">
+        <div class="card video-player-card" style="padding: 0; overflow: hidden; background: #000; border-radius: var(--radius-lg); position: relative;">
+          <!-- HTML5 Video Player Thực Tế (Khi bài học có video upload từ Supabase Storage) -->
+          <div id="video-real-container" style="display: none; width: 100%; background: #000;">
+            <video id="lesson-video-player" controls playsinline controlsList="nodownload" style="width: 100%; max-height: 480px; display: block; outline: none; margin: 0 auto; background: #000;">
+              Trình duyệt của bạn không hỗ trợ thẻ video HTML5.
+            </video>
+            <div id="video-real-info-bar" style="padding: 8px 16px; background: #0F172A; color: #94A3B8; font-size: 0.8125rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1E293B;">
+              <span id="video-real-filename" style="font-weight: 600; color: #E2E8F0; display: flex; align-items: center; gap: 6px;">
+                <span style="color: #38BDF8;">🎬</span> Video bài giảng
+              </span>
+              <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 2px 8px; border-radius: 9999px; font-weight: 600;">
+                Supabase Storage MP4
+              </span>
+            </div>
+          </div>
+
+          <!-- Video Giả Lập / Placeholder (Khi bài học chưa có video upload) -->
           <div class="video-player-body" id="video-wrapper">
             <div class="video-play-btn" id="btn-main-play" title="Phát bài giảng">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
@@ -518,6 +534,67 @@
                 <span style="cursor: pointer;">⛶</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Khung xem tài liệu PDF bài giảng (Sử dụng tiện ích PDF có sẵn của trình duyệt) -->
+        <div class="card pdf-viewer-card" id="pdf-viewer-card" style="padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-lg); background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 38px; height: 38px; border-radius: 9px; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8125rem; flex-shrink: 0; box-shadow: 0 1px 3px rgba(220, 38, 38, 0.2);">
+                PDF
+              </div>
+              <div>
+                <h3 class="card-title" style="margin: 0; font-size: 1.0625rem; font-weight: 700; color: #0F172A;" id="pdf-card-title">
+                  Tài liệu bài giảng (PDF)
+                </h3>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;" id="pdf-card-filename">
+                  Xem trực tiếp tài liệu học tập và bài giảng từ giảng viên
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <a href="#" target="_blank" class="btn btn-sm btn-secondary" id="btn-open-pdf-newtab" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.8125rem;" title="Mở tệp PDF trong tab mới">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                <span>Mở tab mới</span>
+              </a>
+              <a href="#" download class="btn btn-sm btn-primary" id="btn-download-pdf" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.8125rem;" title="Tải tệp PDF về máy">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Tải về</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Khung nhúng PDF sử dụng trình đọc PDF tích hợp sẵn của trình duyệt -->
+          <div class="pdf-iframe-wrapper" id="pdf-iframe-wrapper" style="position: relative; width: 100%; height: 680px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden;">
+            <iframe id="pdf-native-viewer"
+                    src=""
+                    type="application/pdf"
+                    width="100%"
+                    height="100%"
+                    style="width: 100%; height: 100%; border: none; display: block;"
+                    title="Trình đọc tài liệu PDF">
+              <p style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                Trình duyệt của bạn không hỗ trợ xem trực tiếp tệp PDF. 
+                <a id="pdf-fallback-link" href="#" target="_blank" style="color: var(--primary-600); font-weight: 600;">Bấm vào đây để mở hoặc tải tệp PDF về máy.</a>
+              </p>
+            </iframe>
+          </div>
+
+          <!-- Placeholder hiển thị khi bài học chưa có tệp PDF đính kèm -->
+          <div id="pdf-empty-placeholder" style="display: none; padding: 2rem 1.5rem; text-align: center; background: #F8FAFC; border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+            <div style="font-weight: 700; font-size: 0.9375rem; color: #1E293B; margin-bottom: 4px;">Chưa có tài liệu PDF đính kèm cho bài này</div>
+            <div style="font-size: 0.8125rem; color: #64748B;">Giảng viên sẽ sớm cập nhật slide và tài liệu giáo trình. Bạn có thể theo dõi video và tóm tắt bài giảng bên dưới.</div>
           </div>
         </div>
 
@@ -907,6 +984,16 @@
         }
       }
 
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
       // 9. Hiển thị nội dung bài học lên cột bên trái
       function renderLessonView(detail) {
         // Cập nhật tiêu đề trang và header
@@ -926,23 +1013,137 @@
 
         if (videoTitle) videoTitle.textContent = `Video bài giảng: ${detail.title} (22:45)`;
 
-        // Nội dung bài giảng từ database
-        if (contentBody) {
-          if (detail.content && detail.content.trim()) {
-            contentBody.innerHTML = `
-              <p style="margin: 0 0 1rem 0; font-size: 1rem; color: #1E293B;">${detail.content}</p>
-              <div style="background: var(--neutral-50); border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1rem;">
-                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: #0F172A; font-weight: 700;">📌 Hướng dẫn tự học & thực hành bài này:</h4>
-                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.8125rem; color: #475569; line-height: 1.6;">
-                  <li>Xem kỹ video bài giảng và lặp lại phát âm theo giáo viên ít nhất 2 lần.</li>
-                  <li>Ghi nhớ các từ vựng và cấu trúc ngữ pháp trọng tâm được giới thiệu trong bài.</li>
-                  <li>Sau khi nắm vững kiến thức, bấm nút <em>"✓ Đánh dấu hoàn thành bài này"</em> ở phía trên để lưu tiến độ học tập.</li>
-                </ul>
-              </div>
-            `;
-          } else {
-            contentBody.innerHTML = `<p style="color: #64748B;">Bài học hướng dẫn thực hành trực tiếp cùng giáo viên trên lớp và tự luyện tập theo video bài giảng.</p>`;
+        // Phân giải và lọc phần Text trong key (cột content), đồng thời trích xuất URL PDF/Media từ Supabase Storage
+        let pdfUrl = detail.media_pdf_url || null;
+        let pdfName = detail.media_pdf_name || null;
+        let videoUrl = detail.media_video_url || null;
+        let videoName = detail.media_video_name || null;
+        let textContent = detail.parsed_text_content ?? detail.content ?? '';
+
+        // Fallback bóc tách trên client nếu chuỗi còn chứa cấu trúc EL_LESSON_MEDIA_V1 hoặc JSON
+        if (typeof textContent === 'string' && textContent.trim()) {
+          const raw = textContent.trim();
+          let jsonStr = raw;
+          if (raw.startsWith('EL_LESSON_MEDIA_V1')) {
+            jsonStr = raw.replace(/^EL_LESSON_MEDIA_V1\s*/i, '').trim();
           }
+          if (jsonStr.startsWith('{') && jsonStr.endsWith('}')) {
+            try {
+              const parsed = JSON.parse(jsonStr);
+              if (parsed.Text !== undefined && parsed.Text !== null) {
+                textContent = parsed.Text;
+              }
+              if (!pdfUrl && parsed.Pdf && parsed.Pdf.Key) {
+                const bucket = parsed.Pdf.Bucket || 'Lesson_media';
+                pdfUrl = `https://wymdewnklhrnmirbvgxi.supabase.co/storage/v1/object/public/${bucket}/${parsed.Pdf.Key}`;
+                pdfName = parsed.Pdf.Name || parsed.Pdf.Key;
+              }
+              if (!videoUrl && parsed.Video && parsed.Video.Key) {
+                const vBucket = parsed.Video.Bucket || 'Lesson_media';
+                videoUrl = `https://wymdewnklhrnmirbvgxi.supabase.co/storage/v1/object/public/${vBucket}/${parsed.Video.Key}`;
+                videoName = parsed.Video.Name || parsed.Video.Key;
+              }
+            } catch (e) {
+              console.warn('Lỗi parse JSON media trong content:', e);
+            }
+          }
+        }
+
+        // Cập nhật Video Player: Hỗ trợ phát video MP4 trực tiếp từ Supabase Storage
+        const videoRealContainer = document.getElementById('video-real-container');
+        const videoRealPlayer = document.getElementById('lesson-video-player');
+        const videoRealFilename = document.getElementById('video-real-filename');
+        const videoWrapper = document.getElementById('video-wrapper');
+
+        if (videoUrl) {
+          if (videoRealContainer) videoRealContainer.style.display = 'block';
+          if (videoWrapper) videoWrapper.style.display = 'none';
+          if (videoRealPlayer) {
+            videoRealPlayer.src = videoUrl;
+            videoRealPlayer.load();
+          }
+          if (videoRealFilename) {
+            videoRealFilename.innerHTML = `<span style="color: #38BDF8;">🎬</span> Video bài giảng: <strong style="color: #F8FAFC; margin-left: 4px;">${escapeHtml(videoName || detail.title || 'Bài giảng')}</strong>`;
+          }
+        } else {
+          if (videoRealContainer) videoRealContainer.style.display = 'none';
+          if (videoRealPlayer) {
+            videoRealPlayer.pause();
+            videoRealPlayer.removeAttribute('src');
+            videoRealPlayer.load();
+          }
+          if (videoWrapper) videoWrapper.style.display = 'flex';
+          if (videoTitle) videoTitle.textContent = `Video bài giảng: ${detail.title} (Giả lập bài giảng)`;
+        }
+
+        // Cập nhật khung hiển thị PDF (Sử dụng tiện ích xem PDF tích hợp sẵn của trình duyệt)
+        const pdfIframeWrapper = document.getElementById('pdf-iframe-wrapper');
+        const pdfEmptyPlaceholder = document.getElementById('pdf-empty-placeholder');
+        const pdfViewer = document.getElementById('pdf-native-viewer');
+        const pdfFilenameText = document.getElementById('pdf-card-filename');
+        const btnOpenPdf = document.getElementById('btn-open-pdf-newtab');
+        const btnDownloadPdf = document.getElementById('btn-download-pdf');
+        const pdfFallbackLink = document.getElementById('pdf-fallback-link');
+
+        if (pdfUrl) {
+          if (pdfIframeWrapper) pdfIframeWrapper.style.display = 'block';
+          if (pdfEmptyPlaceholder) pdfEmptyPlaceholder.style.display = 'none';
+          if (pdfViewer) {
+            // Nhúng PDF vào iframe - trình duyệt tự động kích hoạt bộ đọc PDF native (PDFium)
+            pdfViewer.src = pdfUrl + '#toolbar=1&navpanes=0&view=FitH';
+          }
+          if (pdfFilenameText) {
+            pdfFilenameText.textContent = `Tệp: ${pdfName || 'Tai_lieu_giao_trinh.pdf'}`;
+          }
+          if (btnOpenPdf) {
+            btnOpenPdf.href = pdfUrl;
+            btnOpenPdf.style.display = 'inline-flex';
+          }
+          if (btnDownloadPdf) {
+            btnDownloadPdf.href = pdfUrl;
+            btnDownloadPdf.setAttribute('download', pdfName || 'document.pdf');
+            btnDownloadPdf.style.display = 'inline-flex';
+          }
+          if (pdfFallbackLink) {
+            pdfFallbackLink.href = pdfUrl;
+          }
+        } else {
+          // Trường hợp bài học chưa có file PDF tải lên từ giảng viên
+          if (pdfIframeWrapper) pdfIframeWrapper.style.display = 'none';
+          if (pdfEmptyPlaceholder) pdfEmptyPlaceholder.style.display = 'block';
+          if (pdfViewer) pdfViewer.src = '';
+          if (pdfFilenameText) {
+            pdfFilenameText.textContent = 'Chưa có tệp PDF đính kèm';
+          }
+          if (btnOpenPdf) btnOpenPdf.style.display = 'none';
+          if (btnDownloadPdf) btnDownloadPdf.style.display = 'none';
+        }
+
+        // Hiển thị nội dung bài học: Luôn hiển thị phần Text đã lọc ra, bất kể có hay không có PDF/media
+        if (contentBody) {
+          const safeText = (typeof textContent === 'string' && textContent.trim()) 
+            ? textContent.trim() 
+            : 'Bài học chưa có ghi chú nội dung thêm.';
+
+          contentBody.innerHTML = `
+            <div style="margin-bottom: 1.25rem;">
+              <div style="font-size: 0.8125rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">
+                Chi tiết nội dung:
+              </div>
+              <div style="font-size: 1rem; color: #1E293B; line-height: 1.8; background: #F8FAFC; border-left: 4px solid var(--primary-600); padding: 1rem 1.25rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; white-space: pre-line;">
+                ${escapeHtml(safeText)}
+              </div>
+            </div>
+
+            <div style="background: var(--neutral-50); border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 1.25rem;">
+              <h4 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: #0F172A; font-weight: 700;">📌 Hướng dẫn học tập & thực hành:</h4>
+              <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.8125rem; color: #475569; line-height: 1.6;">
+                <li>Theo dõi tài liệu giáo trình (PDF) và video bài giảng đi kèm nếu có.</li>
+                <li>Ghi nhớ các từ vựng, cấu trúc câu và các điểm ngữ pháp trọng tâm được giới thiệu trong bài.</li>
+                <li>Sau khi hoàn thành, bấm nút <em>"✓ Đánh dấu hoàn thành bài này"</em> ở phía trên để lưu tiến độ học tập.</li>
+              </ul>
+            </div>
+          `;
         }
 
         // Cập nhật nút Đánh dấu hoàn thành

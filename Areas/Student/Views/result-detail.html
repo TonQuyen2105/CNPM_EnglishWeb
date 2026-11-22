@@ -451,8 +451,19 @@
         }).join('');
 
       } catch (err) {
+        if (titleEl) titleEl.textContent = 'Chi tiết bài thi';
+        if (subtitleEl) subtitleEl.textContent = 'Thông tin kết quả bài kiểm tra';
         if (containerEl) {
-          containerEl.innerHTML = `<div class="card" style="padding: 2rem; text-align: center; color: var(--danger-500);">Lỗi tải chi tiết bài giải: ${escapeHtml(err.message)}</div>`;
+          containerEl.innerHTML = `
+            <div class="card" style="padding: 3rem 2rem; text-align: center; border-radius: var(--radius-lg); max-width: 520px; margin: 2rem auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+              <h3 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 700; color: #0F172A;">Bài thi đang chờ chấm điểm</h3>
+              <a href="results.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <span>Quay lại Lịch sử bài thi</span>
+              </a>
+            </div>
+          `;
         }
       }
     })();

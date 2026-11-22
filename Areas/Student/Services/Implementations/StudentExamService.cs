@@ -584,6 +584,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             var rawHistory = await (
                 from ue in Db.UserExams.AsNoTracking()
                 join ex in Db.Exams.AsNoTracking() on ue.ExamId equals ex.Id
+                join c in Db.Courses.AsNoTracking() on ex.CourseId equals c.Id into cGroup
+                from c in cGroup.DefaultIfEmpty()
                 where ue.UserId == studentId && ue.Status != ExamInProgress
                 orderby ue.SubmittedAt ?? ue.StartedAt descending, ue.Id descending
                 select new
@@ -591,6 +593,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     ue.Id,
                     ue.ExamId,
                     ExamTitle = ex.Title,
+                    ex.CourseId,
+                    CourseTitle = c != null ? c.Title : "Bài thi chung",
                     ue.AttemptNumber,
                     ue.StartedAt,
                     ue.SubmittedAt,
@@ -602,6 +606,24 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             var userExamIds = rawHistory.Select(x => x.Id).ToList();
             var examIds = rawHistory.Select(x => x.ExamId).Distinct().ToList();
+
+            // Batch-load các lớp học mà học sinh đang tham gia theo CourseId
+            var studentClasses = await (
+                from e in Db.Enrollments.AsNoTracking()
+                join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                where e.UserId == studentId && e.Status != EnrollmentCancelled
+                select new
+                {
+                    cc.Id,
+                    cc.CourseId,
+                    cc.ClassName,
+                    cc.ClassCode
+                }
+            ).ToListAsync();
+
+            var classByCourse = studentClasses
+                .GroupBy(x => x.CourseId)
+                .ToDictionary(g => g.Key, g => g.First());
 
             // Batch-load tổng số câu hỏi của từng đề thi
             var totalQuestionsByExam = examIds.Count == 0
@@ -627,19 +649,29 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             {
                 var endTime = item.SubmittedAt ?? item.StartedAt;
                 var durationSec = (int)Math.Max(0, (endTime - item.StartedAt).TotalSeconds);
+                var isGraded = (item.Status == ExamPassed || item.Status == ExamFailed);
+
+                var enrolledClass = item.CourseId.HasValue 
+                    ? classByCourse.GetValueOrDefault(item.CourseId.Value) 
+                    : null;
 
                 return new UserExamHistoryItemDto
                 {
                     UserExamId = item.Id,
                     ExamId = item.ExamId,
                     ExamTitle = item.ExamTitle,
+                    CourseId = item.CourseId,
+                    CourseTitle = item.CourseTitle,
+                    ClassId = enrolledClass?.Id,
+                    ClassName = enrolledClass?.ClassName,
+                    ClassCode = enrolledClass?.ClassCode,
                     AttemptNumber = item.AttemptNumber,
                     StartedAt = item.StartedAt,
                     SubmittedAt = item.SubmittedAt,
                     DurationSeconds = durationSec,
-                    CorrectAnswersCount = correctCountByUserExam.GetValueOrDefault(item.Id, 0),
+                    CorrectAnswersCount = isGraded ? correctCountByUserExam.GetValueOrDefault(item.Id, 0) : 0,
                     TotalQuestions = totalQuestionsByExam.GetValueOrDefault(item.ExamId, 0),
-                    TotalScore = item.TotalScore,
+                    TotalScore = isGraded ? item.TotalScore : null,
                     PassScore = item.PassScore,
                     Status = item.Status
                 };
@@ -656,11 +688,14 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             var headerInfo = await (
                 from ue in Db.UserExams.AsNoTracking()
                 join ex in Db.Exams.AsNoTracking() on ue.ExamId equals ex.Id
+                join c in Db.Courses.AsNoTracking() on ex.CourseId equals c.Id into cGroup
+                from c in cGroup.DefaultIfEmpty()
                 where ue.Id == userExamId
                 select new
                 {
                     UserExam = ue,
-                    Exam = ex
+                    Exam = ex,
+                    CourseTitle = c != null ? c.Title : "Bài thi chung"
                 }
             ).FirstOrDefaultAsync();
 
@@ -681,6 +716,11 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             {
                 return ServiceResult<UserExamReviewDetailDto>.BadRequest(
                     "Phiên thi đang trong quá trình làm bài (in_progress). Bạn chỉ có thể xem lại đáp án sau khi đã nộp bài.");
+            }
+
+            if (userExam.Status == ExamSubmitted)
+            {
+                return ServiceResult<UserExamReviewDetailDto>.BadRequest("Bài thi đang chờ chấm điểm.");
             }
 
             // 1. Lấy danh sách câu hỏi của đề thi
@@ -778,11 +818,27 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             var endTime = userExam.SubmittedAt ?? userExam.StartedAt;
             var durationSeconds = (int)Math.Max(0, (endTime - userExam.StartedAt).TotalSeconds);
 
+            CourseClass? enrolledClass = null;
+            if (exam.CourseId.HasValue)
+            {
+                enrolledClass = await (
+                    from e in Db.Enrollments.AsNoTracking()
+                    join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
+                    where e.UserId == studentId && cc.CourseId == exam.CourseId.Value && e.Status != EnrollmentCancelled
+                    select cc
+                ).FirstOrDefaultAsync();
+            }
+
             var reviewDto = new UserExamReviewDetailDto
             {
                 UserExamId = userExam.Id,
                 ExamId = exam.Id,
                 ExamTitle = exam.Title,
+                CourseId = exam.CourseId,
+                CourseTitle = headerInfo.CourseTitle,
+                ClassId = enrolledClass?.Id,
+                ClassName = enrolledClass?.ClassName,
+                ClassCode = enrolledClass?.ClassCode,
                 AttemptNumber = userExam.AttemptNumber,
                 StartedAt = userExam.StartedAt,
                 SubmittedAt = userExam.SubmittedAt,
