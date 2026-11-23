@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -245,11 +245,32 @@
     // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
     (function syncTopbarUser() {
       try {
-        const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
+        const sessionRaw = localStorage.getItem('session_user');
+        let u = null;
+        if (sessionRaw) {
+          const parsed = JSON.parse(sessionRaw);
+          if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+            localStorage.removeItem('student_user');
+            window.location.replace('/login.html?reason=role_changed');
+            return;
+          }
+          u = parsed;
+        } else {
+          const studentRaw = localStorage.getItem('student_user');
+          if (studentRaw) {
+            const parsed = JSON.parse(studentRaw);
+            const r = parsed && parsed.role ? String(parsed.role).toLowerCase() : '';
+            if (r && r !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return;
+            }
+            if (r === 'student') u = parsed;
+          }
+        }
         let name = 'Trần Hoàng';
         let email = 'student@englishlearning.example';
-        if (raw) {
-          const u = JSON.parse(raw);
+        if (u) {
           if (u.full_name || u.name) name = u.full_name || u.name;
           if (u.email) email = u.email;
         }
@@ -698,9 +719,27 @@
       function getStoredUser() {
         let user = null;
         try {
-          const raw = localStorage.getItem('session_user') || localStorage.getItem('student_user');
-          if (raw) {
-            user = JSON.parse(raw);
+          const sessionRaw = localStorage.getItem('session_user');
+          if (sessionRaw) {
+            const parsed = JSON.parse(sessionRaw);
+            if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return null;
+            }
+            user = parsed;
+          } else {
+            const studentRaw = localStorage.getItem('student_user');
+            if (studentRaw) {
+              const parsed = JSON.parse(studentRaw);
+              if (parsed && String(parsed.role || '').toLowerCase() === 'student') {
+                user = parsed;
+              } else if (parsed && parsed.role) {
+                localStorage.removeItem('student_user');
+                window.location.replace('/login.html?reason=role_changed');
+                return null;
+              }
+            }
           }
         } catch (e) {
           console.warn('Lỗi đọc session học sinh:', e);
@@ -709,10 +748,12 @@
         if (!user || user.full_name === 'Học viên Demo' || user.id === 8 || !user.full_name) {
           user = Object.assign({
             id: 8,
+            role: 'student',
             full_name: 'Trần Hoàng',
             email: 'student@englishlearning.example',
             streak_days: 5
           }, user || {});
+          user.role = 'student';
           user.full_name = 'Trần Hoàng';
         }
         return user;
@@ -741,9 +782,13 @@
         if (streakText) streakText.textContent = `${user.streak_days || 5} ngày`;
       }
 
+      if (!studentUser) return;
       updateTopbarProfile(studentUser);
-      localStorage.setItem('session_user', JSON.stringify(studentUser));
-      localStorage.setItem('student_user', JSON.stringify(studentUser));
+      if (localStorage.getItem('session_user')) {
+        studentUser.role = 'student';
+        localStorage.setItem('session_user', JSON.stringify(studentUser));
+        localStorage.setItem('student_user', JSON.stringify(studentUser));
+      }
 
       // Đồng bộ profile học viên từ Database
       async function syncUserProfile() {
@@ -764,8 +809,13 @@
               studentUser.email = p.email || studentUser.email;
               studentUser.avatar_url = p.avatar_url || '';
               updateTopbarProfile(studentUser);
-              localStorage.setItem('session_user', JSON.stringify(studentUser));
-              localStorage.setItem('student_user', JSON.stringify(studentUser));
+              if (typeof window.getStrictPortalUser !== 'function' || window.getStrictPortalUser('student')) {
+                studentUser.role = 'student';
+                if (localStorage.getItem('session_user')) {
+                  localStorage.setItem('session_user', JSON.stringify(studentUser));
+                }
+                localStorage.setItem('student_user', JSON.stringify(studentUser));
+              }
             }
           }
         } catch (e) {

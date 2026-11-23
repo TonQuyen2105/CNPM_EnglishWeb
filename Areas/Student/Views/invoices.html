@@ -287,11 +287,32 @@
   <script>
     (function syncTopbarUser() {
       try {
-        const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
+        const sessionRaw = localStorage.getItem('session_user');
+        let u = null;
+        if (sessionRaw) {
+          const parsed = JSON.parse(sessionRaw);
+          if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+            localStorage.removeItem('student_user');
+            window.location.replace('/login.html?reason=role_changed');
+            return;
+          }
+          u = parsed;
+        } else {
+          const studentRaw = localStorage.getItem('student_user');
+          if (studentRaw) {
+            const parsed = JSON.parse(studentRaw);
+            const r = parsed && parsed.role ? String(parsed.role).toLowerCase() : '';
+            if (r && r !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return;
+            }
+            if (r === 'student') u = parsed;
+          }
+        }
         let name = 'Trần Hoàng';
         let email = 'student@englishlearning.example';
-        if (raw) {
-          const u = JSON.parse(raw);
+        if (u) {
           if (u.full_name || u.name) name = u.full_name || u.name;
           if (u.email) email = u.email;
         }
@@ -310,6 +331,30 @@
         if (de) de.textContent = email;
       } catch (e) {}
     })();
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === null) {
+        window.location.replace('/login.html?reason=session_changed');
+        return;
+      }
+      if (e.key === 'session_user') {
+        if (!e.newValue) {
+          localStorage.removeItem('student_user');
+          window.location.replace('/login.html?reason=session_changed');
+          return;
+        }
+        try {
+          const u = JSON.parse(e.newValue);
+          if (!u || String(u.role || '').toLowerCase() !== 'student') {
+            localStorage.removeItem('student_user');
+            window.location.replace('/login.html?reason=session_changed');
+          }
+        } catch (_) {
+          localStorage.removeItem('student_user');
+          window.location.replace('/login.html?reason=session_changed');
+        }
+      }
+    });
 
     // Dropdown toggles
     document.addEventListener('DOMContentLoaded', function () {
@@ -811,16 +856,31 @@
       function openInvoiceModal(p) {
         if (!modal) return;
 
-        const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
         let studentName = 'Trần Hoàng';
         let studentEmail = 'student@englishlearning.example';
-        if (raw) {
-          try {
-            const u = JSON.parse(raw);
+        try {
+          const sessionRaw = localStorage.getItem('session_user');
+          let u = null;
+          if (sessionRaw) {
+            const parsed = JSON.parse(sessionRaw);
+            if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return;
+            }
+            u = parsed;
+          } else {
+            const studentRaw = localStorage.getItem('student_user');
+            if (studentRaw) {
+              const parsed = JSON.parse(studentRaw);
+              if (parsed && String(parsed.role || '').toLowerCase() === 'student') u = parsed;
+            }
+          }
+          if (u) {
             if (u.full_name || u.name) studentName = u.full_name || u.name;
             if (u.email) studentEmail = u.email;
-          } catch(e) {}
-        }
+          }
+        } catch (e) {}
 
         const dateStr = formatDate(p.paid_at || p.created_at);
         const methodInfo = getPaymentMethodDisplay(p.payment_method);

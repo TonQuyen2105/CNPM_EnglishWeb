@@ -62,7 +62,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     : $"Nam-{report.SelectedYear}";
 
                 var sb = new StringBuilder();
-                sb.AppendLine("STT,Khoa hoc,Mon hoc,So lop,Luot ghi danh hop le,Da hoan thanh,Ty le hoan thanh (%),Diem danh gia TB,Doanh thu uoc tinh (VND)");
+                sb.AppendLine("STT,Mon hoc,Khoa hoc,So lop,Luot ghi danh hop le,Da hoan thanh,Ty le hoan thanh (%),Diem danh gia TB,Doanh thu uoc tinh (VND)");
 
                 for (var i = 0; i < report.CourseBreakdown.Count; i++)
                 {
@@ -80,8 +80,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 }
 
                 sb.AppendLine();
-                sb.AppendLine("THONG KE DOANH THU THEO MON HOC");
-                sb.AppendLine("STT,Mon hoc,So khoa,So lop,Luot ghi danh,Da hoan thanh,Ty le hoan thanh (%),Ty trong doanh thu (%),Doanh thu uoc tinh (VND)");
+                sb.AppendLine("THONG KE DOANH THU THEO KHOA HOC");
+                sb.AppendLine("STT,Khoa hoc,So mon,So lop,Luot ghi danh,Da hoan thanh,Ty le hoan thanh (%),Ty trong doanh thu (%),Doanh thu uoc tinh (VND)");
                 for (var i = 0; i < report.SubjectBreakdown.Count; i++)
                 {
                     var s = report.SubjectBreakdown[i];
@@ -191,7 +191,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     CourseId = c.Id,
                     CourseTitle = c.Title,
                     SubjectId = c.SubjectId,
-                    SubjectName = subj != null ? subj.Name : "Chưa phân môn"
+                    SubjectName = subj != null ? subj.Name : "Chưa phân khóa"
                 }
             ).ToListAsync(cancellationToken);
 
@@ -338,7 +338,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     c.Id,
                     c.Title,
                     c.SubjectId,
-                    SubjectName = subj != null ? subj.Name : "Chưa phân môn"
+                    SubjectName = subj != null ? subj.Name : "Chưa phân khóa"
                 }
             ).ToListAsync(cancellationToken);
 
@@ -375,7 +375,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 .ThenBy(x => x.courseTitle)
                 .ToList();
 
-            // 1. Thống kê doanh thu theo Môn học (100% khớp periodRevenue)
+            // 1. Thống kê doanh thu theo Khóa học (100% khớp periodRevenue)
             var allSubjects = await _context.Subjects
                 .AsNoTracking()
                 .Select(s => new { s.Id, s.Name, s.IsActive })

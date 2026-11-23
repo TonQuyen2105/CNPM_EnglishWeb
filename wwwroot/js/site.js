@@ -3,28 +3,140 @@
  * Hỗ trợ mở/đóng Sidebar mobile, Dropdown thông báo/avatar, Modal, Tabs, Đồng bộ Profile
  */
 
+// Xác định phân hệ hiện tại theo đường dẫn / cấu trúc trang
+function getCurrentPortalRole() {
+  try {
+    const pathname = (window.location && window.location.pathname) ? window.location.pathname : '';
+    if (/(^|\/)(areas\/)?admin(\/|$)/i.test(pathname)) return 'admin';
+    if (/(^|\/)(areas\/)?teacher(\/|$)/i.test(pathname)) return 'teacher';
+    if (/(^|\/)(areas\/)?student(\/|$)/i.test(pathname)
+      || !!document.querySelector('.student-navbar-wrapper')
+      || !!document.getElementById('user-avatar-topbar')) {
+      return 'student';
+    }
+  } catch (_) {}
+  return null;
+}
+
+function redirectToLoginWithReason(reason) {
+  try {
+    const pathname = (window.location && window.location.pathname) ? window.location.pathname : '';
+    if (/(^|\/)login\.html$/i.test(pathname)) return;
+    if (window.__portalSessionRedirecting) return;
+    window.__portalSessionRedirecting = true;
+    const safeReason = encodeURIComponent(reason || 'role_changed');
+    window.location.replace(`/login.html?reason=${safeReason}`);
+  } catch (_) {}
+}
+
+function readRawSessionUser() {
+  try {
+    const raw = localStorage.getItem('session_user');
+    if (!raw) return { exists: false, user: null, invalid: false };
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') {
+      return { exists: true, user: null, invalid: true };
+    }
+    return { exists: true, user: parsed, invalid: false };
+  } catch (_) {
+    return { exists: true, user: null, invalid: true };
+  }
+}
+
+/**
+ * Đọc thông tin user từ localStorage theo đúng vai trò cổng hiện tại.
+ * - Ưu tiên kiểm tra localStorage.getItem('session_user').
+ * - Chỉ fallback sang 'student_user' khi expectedRole === 'student' và không có 'session_user'.
+ * - Bắt buộc (u.role || '').toLowerCase() === expectedRole; nếu không tồn tại hoặc sai vai trò -> trả về null.
+ */
+function getStrictPortalUser(expectedRole) {
+  const targetRole = String(expectedRole || '').trim().toLowerCase();
+  if (!targetRole) return null;
+
+  const sessionState = readRawSessionUser();
+  if (sessionState.exists) {
+    if (sessionState.invalid || !sessionState.user) return null;
+    const actualRole = String(sessionState.user.role || '').trim().toLowerCase();
+    return actualRole === targetRole ? sessionState.user : null;
+  }
+
+  if (targetRole === 'student') {
+    try {
+      const studentRaw = localStorage.getItem('student_user');
+      if (!studentRaw) return null;
+      const parsed = JSON.parse(studentRaw);
+      if (parsed && typeof parsed === 'object' && String(parsed.role || '').trim().toLowerCase() === 'student') {
+        return parsed;
+      }
+    } catch (_) {}
+  }
+
+  return null;
+}
+
+function enforcePortalRoleGuard() {
+  try {
+    const portalRole = getCurrentPortalRole();
+    if (!portalRole) return true;
+
+    const sessionState = readRawSessionUser();
+    if (sessionState.exists) {
+      const actualRole = sessionState.user ? String(sessionState.user.role || '').trim().toLowerCase() : '';
+      if (sessionState.invalid || actualRole !== portalRole) {
+        if (portalRole === 'student') {
+          try { localStorage.removeItem('student_user'); } catch (_) {}
+        }
+        redirectToLoginWithReason('role_changed');
+        return false;
+      }
+      return true;
+    }
+
+    if (portalRole === 'student') {
+      try {
+        const studentRaw = localStorage.getItem('student_user');
+        if (studentRaw) {
+          const parsed = JSON.parse(studentRaw);
+          const studentRole = parsed && typeof parsed === 'object'
+            ? String(parsed.role || '').trim().toLowerCase()
+            : '';
+          if (studentRole && studentRole !== 'student') {
+            localStorage.removeItem('student_user');
+            redirectToLoginWithReason('role_changed');
+            return false;
+          }
+        }
+      } catch (_) {
+        try { localStorage.removeItem('student_user'); } catch (_) {}
+      }
+    }
+
+    return true;
+  } catch (_) {
+    return true;
+  }
+}
+
+let __lastSyncedStudentProfileId = null;
+
 // Đồng bộ thông tin học sinh ngay lập tức khi file JS được nạp (chỉ chạy trên cổng Học sinh, tránh ghi đè dropdown Admin/Teacher)
 function syncStudentUserSession() {
   try {
-    const pathname = (window.location && window.location.pathname) ? window.location.pathname.toLowerCase() : '';
-    const isStudentPage = /(^|\/)(areas\/)?student(\/|$)/i.test(pathname)
-      || !!document.querySelector('.student-navbar-wrapper')
-      || !!document.getElementById('user-avatar-topbar');
-    if (!isStudentPage) return;
+    if (getCurrentPortalRole() !== 'student') return;
+    if (!enforcePortalRoleGuard()) return;
 
-    const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user') || localStorage.getItem('user');
+    const u = getStrictPortalUser('student');
     let name = 'Trần Hoàng';
     let email = 'student@englishlearning.example';
     let userId = null;
     let role = 'Học viên chính thức';
 
-    if (raw) {
-      const u = JSON.parse(raw);
+    if (u) {
       if (u.full_name || u.name) name = u.full_name || u.name;
       if (u.email) email = u.email;
       if (u.id) userId = u.id;
       if (u.role_label) role = u.role_label;
-      else if (u.role === 'student') role = 'Học viên chính thức';
+      else if (String(u.role || '').toLowerCase() === 'student') role = 'Học viên chính thức';
     }
 
     const parts = name.trim().split(/\s+/);
@@ -62,13 +174,15 @@ function syncStudentUserSession() {
       }
     }
 
-    // Nếu có userId, fetch backend /api/v1/student/profile để cập nhật dữ liệu mới nhất (streak, name, role)
-    if (userId) {
-      fetch(`/api/v1/student/profile?user_id=${userId}`, {
+    // Chỉ gọi /api/v1/student/profile khi userId thuộc tài khoản role === 'student' hợp lệ
+    if (userId && __lastSyncedStudentProfileId !== String(userId)) {
+      __lastSyncedStudentProfileId = String(userId);
+      fetch(`/api/v1/student/profile?user_id=${encodeURIComponent(userId)}`, {
         headers: { 'Accept': 'application/json' }
       })
       .then(res => res.ok ? res.json() : null)
       .then(json => {
+        if (!getStrictPortalUser('student')) return;
         if (json && json.success && json.data) {
           const d = json.data;
           const freshName = d.full_name || name;
@@ -95,13 +209,77 @@ function syncStudentUserSession() {
   } catch (_) {}
 }
 
-// Chạy đồng bộ session ngay khi script load
+// Chạy kiểm tra vai trò cổng & đồng bộ session ngay khi script load
 if (typeof window !== 'undefined') {
-  syncStudentUserSession();
+  window.getStrictPortalUser = getStrictPortalUser;
+  if (enforcePortalRoleGuard()) {
+    syncStudentUserSession();
+  }
+
+  // Lắng nghe thay đổi session_user từ các tab khác để chống lẫn lộn tài khoản giữa các cổng
+  window.addEventListener('storage', (e) => {
+    try {
+      const portalRole = getCurrentPortalRole();
+      if (!portalRole) return;
+
+      if (e.key === null) {
+        redirectToLoginWithReason('session_changed');
+        return;
+      }
+
+      if (e.key === 'session_user') {
+        if (!e.newValue) {
+          if (portalRole === 'student') {
+            try { localStorage.removeItem('student_user'); } catch (_) {}
+          }
+          redirectToLoginWithReason('session_changed');
+          return;
+        }
+
+        let newUser = null;
+        let oldUser = null;
+        try { newUser = JSON.parse(e.newValue); } catch (_) {}
+        try { if (e.oldValue) oldUser = JSON.parse(e.oldValue); } catch (_) {}
+
+        const newRole = newUser && typeof newUser === 'object'
+          ? String(newUser.role || '').trim().toLowerCase()
+          : '';
+        const roleChanged = !newUser || newRole !== portalRole;
+        const userChanged = !!(oldUser && newUser && oldUser.id != null && newUser.id != null && String(oldUser.id) !== String(newUser.id));
+
+        if (roleChanged || userChanged) {
+          if (portalRole === 'student' && roleChanged) {
+            try { localStorage.removeItem('student_user'); } catch (_) {}
+          }
+          redirectToLoginWithReason('session_changed');
+        }
+        return;
+      }
+
+      if (e.key === 'student_user' && portalRole === 'student') {
+        if (!e.newValue) {
+          const validStudent = getStrictPortalUser('student');
+          if (!validStudent) {
+            redirectToLoginWithReason('session_changed');
+          }
+          return;
+        }
+        try {
+          const parsed = JSON.parse(e.newValue);
+          const roleVal = parsed && typeof parsed === 'object' ? String(parsed.role || '').trim().toLowerCase() : '';
+          if (roleVal && roleVal !== 'student') {
+            localStorage.removeItem('student_user');
+            redirectToLoginWithReason('session_changed');
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Đồng bộ lại sau khi DOM đã sẵn sàng
+  // Kiểm tra lại vai trò cổng & đồng bộ sau khi DOM đã sẵn sàng
+  if (!enforcePortalRoleGuard()) return;
   syncStudentUserSession();
 
   // 1. Sidebar Mobile Toggle
@@ -287,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Tạo gợi ý Mô tả chung riêng biệt, phù hợp với tên khóa học, môn học và cấp độ.
+ * Tạo gợi ý Mô tả chung riêng biệt, phù hợp với tên môn học, khóa học và cấp độ.
  */
 window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
   const cleanTitle = String(title || '').trim();
@@ -304,7 +482,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
   const rules = [
     {
       match: /ielts/,
-      knowledge: `Trang bị chiến lược làm bài IELTS cho khóa "${cleanTitle || 'Luyện thi IELTS'}", phát triển từ vựng học thuật, cấu trúc câu ghi điểm và luyện tập sát đề thi thật 4 kỹ năng.`,
+      knowledge: `Trang bị chiến lược làm bài IELTS cho môn "${cleanTitle || 'Luyện thi IELTS'}", phát triển từ vựng học thuật, cấu trúc câu ghi điểm và luyện tập sát đề thi thật 4 kỹ năng.`,
       audience: {
         beginner: 'Dành cho học viên làm quen định dạng IELTS, củng cố nền tảng từ band 4.0 - 5.5.',
         intermediate: 'Dành cho học viên hướng tới mục tiêu IELTS 6.0 - 7.0, tối ưu Listening, Reading, Writing Task 1-2 và Speaking.',
@@ -313,7 +491,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
     },
     {
       match: /toeic/,
-      knowledge: `Hệ thống hóa từ vựng thương mại, ngữ pháp trọng tâm và chiến thuật xử lý bẫy đề TOEIC trong khóa "${cleanTitle || 'Luyện thi TOEIC'}".`,
+      knowledge: `Hệ thống hóa từ vựng thương mại, ngữ pháp trọng tâm và chiến thuật xử lý bẫy đề TOEIC trong môn "${cleanTitle || 'Luyện thi TOEIC'}".`,
       audience: {
         beginner: 'Dành cho sinh viên và người đi làm bắt đầu luyện thi TOEIC mục tiêu 450 - 550+.',
         intermediate: 'Dành cho học viên cần tăng tốc điểm số TOEIC 650 - 750+ phục vụ tốt nghiệp và công việc.',
@@ -322,7 +500,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
     },
     {
       match: /thương mại|business|đàm phán|công sở/,
-      knowledge: `Cung cấp mẫu câu giao tiếp công sở, viết email, thuyết trình và đàm phán thực tế trong khóa "${cleanTitle || 'Tiếng Anh Thương Mại'}".`,
+      knowledge: `Cung cấp mẫu câu giao tiếp công sở, viết email, thuyết trình và đàm phán thực tế trong môn "${cleanTitle || 'Tiếng Anh Thương Mại'}".`,
       audience: {
         beginner: 'Dành cho nhân sự mới đi làm cần sử dụng tiếng Anh cơ bản trong giao tiếp văn phòng.',
         intermediate: 'Dành cho nhân viên văn phòng làm việc với đối tác, họp nhóm và trao đổi công việc bằng tiếng Anh.',
@@ -331,7 +509,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
     },
     {
       match: /giao tiếp|communication|phản xạ/,
-      knowledge: `Tập trung phát triển phản xạ nghe nói tự nhiên, mẫu câu ứng dụng theo tình huống thực tế của khóa "${cleanTitle || 'Tiếng Anh Giao Tiếp'}".`,
+      knowledge: `Tập trung phát triển phản xạ nghe nói tự nhiên, mẫu câu ứng dụng theo tình huống thực tế của môn "${cleanTitle || 'Tiếng Anh Giao Tiếp'}".`,
       audience: {
         beginner: 'Dành cho người mất gốc hoặc ngại nói muốn giao tiếp trôi chảy các chủ đề đời sống hàng ngày.',
         intermediate: 'Dành cho người học muốn mở rộng vốn diễn đạt, thảo luận và phản biện tự tin hơn.',
@@ -340,7 +518,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
     },
     {
       match: /phát âm|ipa|ngữ điệu|pronunciation/,
-      knowledge: `Chuẩn hóa bảng phiên âm quốc tế IPA, trọng âm, nối âm và ngữ điệu tự nhiên trong khóa "${cleanTitle || 'Phát âm chuẩn'}".`,
+      knowledge: `Chuẩn hóa bảng phiên âm quốc tế IPA, trọng âm, nối âm và ngữ điệu tự nhiên trong môn "${cleanTitle || 'Phát âm chuẩn'}".`,
       audience: {
         beginner: 'Dành cho người học muốn sửa lỗi phát âm sai, phát âm rõ âm cuối ngay từ đầu.',
         intermediate: 'Dành cho học viên muốn cải thiện ngữ điệu, nói có nhấn nhá và nghe hiểu người bản xứ tốt hơn.',
@@ -349,7 +527,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
     },
     {
       match: /ngữ pháp|grammar|viết|writing/,
-      knowledge: `Hệ thống hóa kiến thức ngữ pháp trọng tâm và cách vận dụng chính xác vào câu văn trong khóa "${cleanTitle || 'Ngữ pháp tiếng Anh'}".`,
+      knowledge: `Hệ thống hóa kiến thức ngữ pháp trọng tâm và cách vận dụng chính xác vào câu văn trong môn "${cleanTitle || 'Ngữ pháp tiếng Anh'}".`,
       audience: {
         beginner: 'Dành cho người học cần nắm vững các thì cơ bản, từ loại và cấu trúc câu đơn - câu ghép.',
         intermediate: 'Dành cho học viên cần củng cố ngữ pháp nâng cao phục vụ đọc hiểu và viết đoạn văn mạch lạc.',
@@ -358,7 +536,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
     },
     {
       match: /thiếu nhi|trẻ em|kids|starters|movers|flyers|cambridge/,
-      knowledge: `Thiết kế nội dung trực quan qua hình ảnh, bài hát và hoạt động tương tác sinh động cho khóa "${cleanTitle || 'Tiếng Anh Thiếu Nhi'}".`,
+      knowledge: `Thiết kế nội dung trực quan qua hình ảnh, bài hát và hoạt động tương tác sinh động cho môn "${cleanTitle || 'Tiếng Anh Thiếu Nhi'}".`,
       audience: {
         beginner: 'Dành cho các bé mới làm quen tiếng Anh (6 - 10 tuổi), khơi gợi hứng thú nghe nói tự nhiên.',
         intermediate: 'Dành cho học sinh tiểu học và THCS ôn luyện chứng chỉ Cambridge Movers / Flyers.',
@@ -370,7 +548,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
   const matched = rules.find(r => r.match.test(combined));
   const knowledge = matched
     ? matched.knowledge
-    : `Trang bị kiến thức và kỹ năng trọng tâm của khóa học "${cleanTitle || cleanSubject || 'Tiếng Anh'}"${cleanSubject ? ` thuộc môn ${cleanSubject}` : ''}.`;
+    : `Trang bị kiến thức và kỹ năng trọng tâm của môn học "${cleanTitle || cleanSubject || 'Tiếng Anh'}"${cleanSubject ? ` thuộc khóa học ${cleanSubject}` : ''}.`;
   const audience = matched
     ? (matched.audience[normLevel] || matched.audience.beginner)
     : (audienceByLevel[normLevel] || audienceByLevel.beginner);

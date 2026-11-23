@@ -269,7 +269,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var paymentLookup = await LoadLatestPaymentsAsync(rows, cancellationToken);
 
                 var sb = new StringBuilder();
-                sb.AppendLine("STT,Học viên,Email,Mã lớp,Tên lớp,Khóa học,Ngày ghi danh,Học phí (VND),Trạng thái,Thanh toán,Phương thức,Mã giao dịch");
+                sb.AppendLine("STT,Học viên,Email,Mã lớp,Tên lớp,Môn học,Ngày ghi danh,Học phí (VND),Trạng thái,Thanh toán,Phương thức,Mã giao dịch");
 
                 for (var i = 0; i < rows.Count; i++)
                 {

@@ -197,11 +197,32 @@
     // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
     (function syncTopbarUser() {
       try {
-        const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
+        const sessionRaw = localStorage.getItem('session_user');
+        let u = null;
+        if (sessionRaw) {
+          const parsed = JSON.parse(sessionRaw);
+          if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+            localStorage.removeItem('student_user');
+            window.location.replace('/login.html?reason=role_changed');
+            return;
+          }
+          u = parsed;
+        } else {
+          const studentRaw = localStorage.getItem('student_user');
+          if (studentRaw) {
+            const parsed = JSON.parse(studentRaw);
+            const r = parsed && parsed.role ? String(parsed.role).toLowerCase() : '';
+            if (r && r !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return;
+            }
+            if (r === 'student') u = parsed;
+          }
+        }
         let name = 'Trần Hoàng';
         let email = 'student@englishlearning.example';
-        if (raw) {
-          const u = JSON.parse(raw);
+        if (u) {
           if (u.full_name || u.name) name = u.full_name || u.name;
           if (u.email) email = u.email;
         }
@@ -444,18 +465,40 @@
   <!-- Script Lọc, Tìm Kiếm & Đăng Ký Khóa Học Tương Tác Đồng Bộ API -->
   <script>
     (async function initCoursesInteractive() {
+      function readStrictStudentUser() {
+        try {
+          const sessionRaw = localStorage.getItem('session_user');
+          if (sessionRaw) {
+            const parsed = JSON.parse(sessionRaw);
+            if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return null;
+            }
+            return parsed;
+          }
+          if (typeof window.getStrictPortalUser === 'function') {
+            return window.getStrictPortalUser('student');
+          }
+          const studentRaw = localStorage.getItem('student_user');
+          if (studentRaw) {
+            const parsed = JSON.parse(studentRaw);
+            if (parsed && String(parsed.role || '').toLowerCase() === 'student') return parsed;
+          }
+        } catch (e) {}
+        return null;
+      }
+
       // 1. Helper lấy Token xác thực chuẩn
       function getAuthToken() {
         const token = localStorage.getItem('access_token') || localStorage.getItem('token');
         if (token) return token;
         try {
-          const userRaw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
-          if (userRaw) {
-            const u = JSON.parse(userRaw);
+          const u = readStrictStudentUser();
+          if (u && String(u.role || '').toLowerCase() === 'student') {
             const id = u.id || 8;
             const email = u.email || 'tranhoang@gmail.com';
-            const role = u.role || 'student';
-            return btoa(`${id}:${email}:${role}`);
+            return btoa(`${id}:${email}:student`);
           }
         } catch (e) {}
         return btoa('8:tranhoang@gmail.com:student');
@@ -471,9 +514,8 @@
       // 2. Đồng bộ tên học sinh & số điện thoại vào Modal
       function syncUserInfo() {
         try {
-          const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
-          if (raw) {
-            const u = JSON.parse(raw);
+          const u = readStrictStudentUser();
+          if (u && String(u.role || '').toLowerCase() === 'student') {
             const studentName = u.full_name || u.name || 'Trần Hoàng';
             const nameInput = document.getElementById('enroll-student-name');
             if (nameInput) nameInput.value = studentName;

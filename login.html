@@ -443,7 +443,7 @@
   <script>
     // 1. Hệ thống Toast thông báo độc lập
     const toast = {
-      show(message, type = 'info', title = 'Thông báo') {
+      show(message, type = 'info', title = 'Thông báo', duration = 3200) {
         let container = document.querySelector('.toast-container');
         if (!container) {
           container = document.createElement('div');
@@ -464,12 +464,27 @@
           item.style.transform = 'translateY(-8px)';
           item.style.transition = 'all 0.3s ease';
           setTimeout(() => item.remove(), 300);
-        }, 3200);
+        }, duration);
       },
-      success(msg, title = 'Thành công') { this.show(msg, 'success', title); },
-      error(msg, title = 'Lỗi') { this.show(msg, 'error', title); },
-      info(msg, title = 'Thông báo') { this.show(msg, 'info', title); }
+      success(msg, title = 'Thành công', duration = 3200) { this.show(msg, 'success', title, duration); },
+      error(msg, title = 'Lỗi', duration = 3200) { this.show(msg, 'error', title, duration); },
+      info(msg, title = 'Thông báo', duration = 3200) { this.show(msg, 'info', title, duration); }
     };
+
+    // 2. Thông báo nhẹ khi chuyển hướng từ tab/cổng khác do thay đổi phiên đăng nhập
+    (function showSessionReasonNotice() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const reason = (params.get('reason') || '').toLowerCase();
+        if (reason === 'role_changed' || reason === 'session_changed') {
+          toast.info(
+            'Phiên đăng nhập đã thay đổi ở tab khác. Vui lòng đăng nhập lại (hoặc dùng cửa sổ ẩn danh nếu muốn mở nhiều vai trò cùng lúc).',
+            'Thông báo phiên đăng nhập',
+            6000
+          );
+        }
+      } catch (_) {}
+    })();
 
     // 3. Modal Dialog "Quên mật khẩu"
     const modal = {

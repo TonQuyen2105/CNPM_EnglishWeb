@@ -59,7 +59,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         }
 
         /// <param name="lookups">
-        /// true: trả kèm danh sách khóa học + giảng viên (dropdown lọc & modal tạo/sửa lớp).
+        /// true: trả kèm danh sách môn học + giảng viên (dropdown lọc & modal tạo/sửa lớp).
         /// Frontend chỉ yêu cầu ở lần tải đầu tiên; các lần lọc/tìm kiếm sau gửi false.
         /// </param>
         [HttpGet("/Admin/api/Classes/List")]
@@ -141,9 +141,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     c => c.Id,
                     c =>
                     {
-                        var subjectName = !string.IsNullOrWhiteSpace(c.SubjectName) ? c.SubjectName : "Chưa phân môn";
+                        var subjectName = !string.IsNullOrWhiteSpace(c.SubjectName) ? c.SubjectName : "Chưa phân khóa";
                         var displayTitle = !string.IsNullOrWhiteSpace(c.SubjectName)
-                            ? $"{c.Title} (Môn: {c.SubjectName})"
+                            ? $"{c.Title} (Khóa: {c.SubjectName})"
                             : c.Title;
                         return new
                         {
@@ -421,7 +421,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             if (dto.CourseId <= 0)
             {
-                return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
+                return this.ApiBadRequest("Môn học được chọn không tồn tại.");
             }
 
             try
@@ -489,7 +489,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 if (!await _context.Courses.AsNoTracking().AnyAsync(c => c.Id == dto.CourseId, cancellationToken))
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
+                    return this.ApiBadRequest("Môn học được chọn không tồn tại.");
                 }
 
                 var codePattern = AdminCoreHelpers.EscapeLikePattern(classCode);
@@ -640,7 +640,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
             {
                 await transaction.RollbackAsync(CancellationToken.None);
-                return this.ApiBadRequest("Khóa học hoặc giảng viên được chọn không còn tồn tại trong hệ thống.");
+                return this.ApiBadRequest("Môn học hoặc giảng viên được chọn không còn tồn tại trong hệ thống.");
             }
             catch (Exception ex)
             {
@@ -742,7 +742,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             {
                 if (dto.CourseId <= 0 || !await _context.Courses.AsNoTracking().AnyAsync(c => c.Id == dto.CourseId, cancellationToken))
                 {
-                    return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
+                    return this.ApiBadRequest("Môn học được chọn không tồn tại.");
                 }
 
                 await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
@@ -753,7 +753,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể kiểm tra khóa học khi cập nhật lớp {ClassId}.", id);
+                _logger.LogError(ex, "Không thể kiểm tra môn học khi cập nhật lớp {ClassId}.", id);
                 return this.ApiServerError("Không thể cập nhật lớp học.");
             }
 
@@ -789,7 +789,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     return this.ApiBadRequest($"Sĩ số tối đa ({dto.MaxStudents}) không được nhỏ hơn số học viên đang học ({activeStudentCount}).");
                 }
 
-                // Chặn thay đổi khóa học trực thuộc nếu lớp đã có ghi danh hoặc nhật ký buổi dạy
+                // Chặn thay đổi môn học trực thuộc nếu lớp đã có ghi danh hoặc nhật ký buổi dạy
                 if (dto.CourseId != courseClass.CourseId)
                 {
                     var hasClassData = await _context.Enrollments.AsNoTracking().AnyAsync(e => e.ClassId == id, cancellationToken)
@@ -797,7 +797,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     if (hasClassData)
                     {
                         await transaction.RollbackAsync(CancellationToken.None);
-                        return this.ApiBadRequest("Không thể đổi khóa học trực thuộc vì lớp đã có bản ghi ghi danh hoặc nhật ký buổi dạy.");
+                        return this.ApiBadRequest("Không thể đổi môn học trực thuộc vì lớp đã có bản ghi ghi danh hoặc nhật ký buổi dạy.");
                     }
                 }
 
@@ -1951,9 +1951,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     c => c.Id,
                     c =>
                     {
-                        var subjectName = !string.IsNullOrWhiteSpace(c.SubjectName) ? c.SubjectName : "Chưa phân môn";
+                        var subjectName = !string.IsNullOrWhiteSpace(c.SubjectName) ? c.SubjectName : "Chưa phân khóa";
                         var displayTitle = !string.IsNullOrWhiteSpace(c.SubjectName)
-                            ? $"{c.Title} (Môn: {c.SubjectName})"
+                            ? $"{c.Title} (Khóa: {c.SubjectName})"
                             : c.Title;
                         return new
                         {

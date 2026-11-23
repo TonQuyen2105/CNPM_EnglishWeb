@@ -181,12 +181,12 @@
         <div class="nav-section-title">Quản lý đào tạo</div>
         <a href="/Admin/subjects.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-          <span>Môn học</span>
+          <span>Khóa học</span>
         </a>
 
         <a href="/Admin/courses.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-          <span>Khóa học</span>
+          <span>Môn học</span>
         </a>
 
         <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -228,7 +228,7 @@
 
         <a href="/Admin/reviews.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-          <span>Đánh giá khóa học</span>
+          <span>Đánh giá môn học</span>
         </a>
 
         <div class="nav-section-title">Cơ sở &amp; Báo cáo</div>
@@ -418,7 +418,7 @@
                 <span class="input-icon">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 </span>
-                <input type="text" id="enrollments-search-input" class="form-control" placeholder="Tên học viên, email, mã lớp hoặc khóa học...">
+                <input type="text" id="enrollments-search-input" class="form-control" placeholder="Tên học viên, email, mã lớp hoặc môn học...">
               </div>
             </div>
 
@@ -478,7 +478,7 @@
                   <th>Mã ĐK</th>
                   <th>Học viên</th>
                   <th>Lớp học</th>
-                  <th>Khóa học</th>
+                  <th>Môn học</th>
                   <th>Học phí</th>
                   <th>Ngày ghi danh</th>
                   <th>Trạng thái</th>
@@ -535,7 +535,7 @@
               <div style="font-weight: 700; font-size: 0.875rem; margin-bottom: 0.625rem; color: var(--text-primary);">Lớp học &amp; Ghi danh</div>
               <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8125rem;">
                 <div><span class="text-muted">Lớp học:</span> <strong id="pd-class-info">--</strong></div>
-                <div><span class="text-muted">Khóa học:</span> <span id="pd-course-title">--</span></div>
+                <div><span class="text-muted">Môn học:</span> <span id="pd-course-title">--</span></div>
                 <div><span class="text-muted">Học phí lớp:</span> <strong id="pd-tuition-fee">--</strong></div>
                 <div><span class="text-muted">Ghi danh:</span> <span id="pd-enrollment-status">--</span> <span class="text-muted" id="pd-enrolled-at"></span></div>
               </div>
@@ -557,7 +557,7 @@
                 <thead>
                   <tr>
                     <th>Mã giao dịch</th>
-                    <th>Lớp / Khóa học</th>
+                    <th>Lớp / Môn học</th>
                     <th>Số tiền</th>
                     <th>Hình thức</th>
                     <th>Trạng thái</th>
@@ -1016,7 +1016,7 @@
                 <div style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.studentEmail)}</div>
               </div>
 
-              <!-- Cột 2: Lớp & Khóa học -->
+              <!-- Cột 2: Lớp & Môn học -->
               <div class="enr-row-class">
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <a href="/Admin/class-detail.html?id=${encodeURIComponent(e.classId)}" style="text-decoration: none; flex-shrink: 0;">

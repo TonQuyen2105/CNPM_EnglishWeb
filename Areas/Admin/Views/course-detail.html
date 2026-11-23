@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chi tiết khóa học - EnglishAdmin</title>
+  <title>Chi tiết môn học - EnglishAdmin</title>
   
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
@@ -55,12 +55,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item active">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -99,7 +99,7 @@
     
       <a href="/Admin/reviews.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-        <span>Đánh giá khóa học</span>
+        <span>Đánh giá môn học</span>
       </a>
     <div class="nav-section-title">Cơ sở & Báo cáo</div>
       <a href="/Admin/facilities.html" class="nav-item ">
@@ -143,7 +143,7 @@
           <div class="breadcrumb" style="font-size: 0.875rem;">
             <span>Quản trị hệ thống</span>
             <span style="color: var(--text-muted); margin: 0 6px;">/</span>
-            <span style="font-weight: 600; color: var(--text-primary);">Chi tiết khóa học</span>
+            <span style="font-weight: 600; color: var(--text-primary);">Chi tiết môn học</span>
           </div>
         </div>
 
@@ -211,22 +211,22 @@
         
   <div class="page-header">
     <div>
-      <a href="/Admin/courses.html" style="font-size: 0.8125rem; color: var(--primary-600); text-decoration: none;">← Quay lại danh sách khóa học</a>
-      <h1 class="page-header-title" style="margin-top: 4px;" id="cd-title">Đang tải thông tin khóa học...</h1>
+      <a href="/Admin/courses.html" style="font-size: 0.8125rem; color: var(--primary-600); text-decoration: none;">← Quay lại danh sách môn học</a>
+      <h1 class="page-header-title" style="margin-top: 4px;" id="cd-title">Đang tải thông tin môn học...</h1>
       <p class="page-header-subtitle" id="cd-subtitle">Đang nạp dữ liệu từ hệ thống...</p>
     </div>
     <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
       <a href="/Admin/course-objectives.html" id="cd-objectives-link" class="btn btn-secondary">Mô tả &amp; Mục tiêu</a>
       <button type="button" class="btn btn-secondary" id="btn-edit-course" disabled>Chỉnh sửa</button>
-      <a href="/Admin/classes.html" id="cd-open-class-link" class="btn btn-primary">Mở lớp cho khóa này</a>
+      <a href="/Admin/classes.html" id="cd-open-class-link" class="btn btn-primary">Mở lớp cho môn này</a>
     </div>
   </div>
 
   <div class="grid grid-cols-12 gap-6">
     <div class="col-span-8">
       <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-        <h3 class="card-title">Mô tả chung khóa học</h3>
-        <p id="cd-description" style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin-top: 0.5rem;">Đang tải mô tả khóa học...</p>
+        <h3 class="card-title">Mô tả chung môn học</h3>
+        <p id="cd-description" style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin-top: 0.5rem;">Đang tải mô tả môn học...</p>
       </div>
 
       <div class="card" style="padding: 1.5rem;">
@@ -242,14 +242,14 @@
 
     <div class="col-span-4">
       <div class="card" style="padding: 1.5rem;">
-        <h3 class="card-title">Thông số khóa học</h3>
+        <h3 class="card-title">Thông số môn học</h3>
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 1rem; font-size: 0.875rem;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span class="text-muted">Học phí:</span>
             <strong id="cd-price" style="color: var(--primary-600); font-size: 1.125rem;">--</strong>
           </div>
           <div style="display: flex; justify-content: space-between;">
-            <span class="text-muted">Môn học:</span>
+            <span class="text-muted">Khóa học:</span>
             <strong id="cd-subject">--</strong>
           </div>
           <div style="display: flex; justify-content: space-between;">
@@ -269,7 +269,7 @@
             <strong id="cd-student-count">--</strong>
           </div>
           <div style="display: flex; justify-content: space-between;">
-            <span class="text-muted">Đề thi thuộc khóa:</span>
+            <span class="text-muted">Đề thi thuộc môn:</span>
             <strong id="cd-exam-count">--</strong>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -289,23 +289,23 @@
     </div>
   </div>
 
-  <!-- Modal Chỉnh Sửa Khóa Học -->
+  <!-- Modal Chỉnh Sửa Môn Học -->
   <div class="modal-backdrop" id="modal-edit-course">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Chỉnh sửa thông tin khóa học</h3>
+        <h3 class="modal-title">Chỉnh sửa thông tin môn học</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
       <form id="edit-course-form">
         <div class="modal-body">
           <div id="edit-course-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
           <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên khóa học <span class="required" style="color:red;">*</span></label>
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên môn học <span class="required" style="color:red;">*</span></label>
             <input type="text" id="ec-title" class="form-control" maxlength="200" required>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học <span class="required" style="color:red;">*</span></label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học <span class="required" style="color:red;">*</span></label>
               <select id="ec-subject-id" class="form-control" required></select>
             </div>
             <div class="form-group">
@@ -335,7 +335,7 @@
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin: 0;">Mô tả chung</label>
               <button type="button" class="btn btn-sm btn-secondary" id="btn-suggest-edit-desc">Gợi ý mô tả phù hợp</button>
             </div>
-            <textarea id="ec-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả chung về nội dung khóa học..."></textarea>
+            <textarea id="ec-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả chung về nội dung môn học..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -543,10 +543,10 @@
 
         document.getElementById('cd-title').textContent = courseData.title || '--';
         document.getElementById('cd-subtitle').textContent =
-          `Mã: ${courseData.code} • Môn: ${courseData.subjectName} • Cấp độ: ${levelLabel(courseData.level)}`;
+          `Mã: ${courseData.code} • Khóa: ${courseData.subjectName} • Cấp độ: ${levelLabel(courseData.level)}`;
         document.getElementById('cd-description').innerHTML = courseData.description
           ? escapeHtml(courseData.description).replace(/\n/g, '<br>')
-          : '<span style="color: var(--text-muted); font-style: italic;">Chưa có mô tả chung cho khóa học này.</span>';
+          : '<span style="color: var(--text-muted); font-style: italic;">Chưa có mô tả chung cho môn học này.</span>';
 
         document.getElementById('cd-price').textContent = formatCurrency(courseData.price);
         document.getElementById('cd-subject').textContent = courseData.subjectName || '--';
@@ -569,7 +569,7 @@
         document.getElementById('cd-syllabus-title').textContent = `Đề cương bài học (${lessonsCache.length} bài)`;
         const listEl = document.getElementById('cd-lessons-list');
         if (lessonsCache.length === 0) {
-          listEl.innerHTML = '<div style="padding: 1.5rem; text-align: center; background: var(--neutral-50); border-radius: 8px; color: var(--text-muted); font-size: 0.875rem;">Giảng viên chưa đăng tải bài học nào cho khóa học này.</div>';
+          listEl.innerHTML = '<div style="padding: 1.5rem; text-align: center; background: var(--neutral-50); border-radius: 8px; color: var(--text-muted); font-size: 0.875rem;">Giảng viên chưa đăng tải bài học nào cho môn học này.</div>';
           return;
         }
 
@@ -590,9 +590,9 @@
         }
 
         if (!currentCourseId) {
-          document.getElementById('cd-title').textContent = 'Không tìm thấy khóa học';
-          document.getElementById('cd-subtitle').textContent = 'Hệ thống chưa có khóa học nào hoặc thiếu tham số id.';
-          document.getElementById('cd-description').textContent = 'Vui lòng quay lại danh sách khóa học để chọn hoặc tạo mới.';
+          document.getElementById('cd-title').textContent = 'Không tìm thấy môn học';
+          document.getElementById('cd-subtitle').textContent = 'Hệ thống chưa có môn học nào hoặc thiếu tham số id.';
+          document.getElementById('cd-description').textContent = 'Vui lòng quay lại danh sách môn học để chọn hoặc tạo mới.';
           document.getElementById('cd-lessons-list').innerHTML = '';
           return;
         }
@@ -606,12 +606,12 @@
           renderDetail(data);
         } catch (err) {
           if (isAbortError(err)) return;
-          console.error('Lỗi tải chi tiết khóa học:', err);
-          document.getElementById('cd-title').textContent = 'Không thể tải khóa học';
+          console.error('Lỗi tải chi tiết môn học:', err);
+          document.getElementById('cd-title').textContent = 'Không thể tải môn học';
           document.getElementById('cd-subtitle').textContent = err.message;
           document.getElementById('cd-lessons-list').innerHTML =
             '<div class="empty-state" style="padding: 1.5rem 1rem;">' +
-            '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu khóa học</div>' +
+            '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu môn học</div>' +
             `<div class="empty-state-text">${escapeHtml(err.message)}</div>` +
             '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
             '</div>';
@@ -692,7 +692,7 @@
           try {
             const data = await postJson(`/Admin/api/Courses/Update/${encodeURIComponent(currentCourseId)}`, payload);
             closeModal('modal-edit-course');
-            showToast(data.message || 'Cập nhật khóa học thành công.');
+            showToast(data.message || 'Cập nhật môn học thành công.');
             await loadCourseDetail();
           } catch (err) {
             console.error(err);

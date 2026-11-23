@@ -140,8 +140,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể tải danh sách đánh giá khóa học.");
-                return this.ApiServerError("Không thể tải danh sách đánh giá khóa học.");
+                _logger.LogError(ex, "Không thể tải danh sách đánh giá môn học.");
+                return this.ApiServerError("Không thể tải danh sách đánh giá môn học.");
             }
         }
 

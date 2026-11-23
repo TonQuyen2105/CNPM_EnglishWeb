@@ -124,11 +124,32 @@
     // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
     (function syncTopbarUser() {
       try {
-        const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
+        const sessionRaw = localStorage.getItem('session_user');
+        let u = null;
+        if (sessionRaw) {
+          const parsed = JSON.parse(sessionRaw);
+          if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+            localStorage.removeItem('student_user');
+            window.location.replace('/login.html?reason=role_changed');
+            return;
+          }
+          u = parsed;
+        } else {
+          const studentRaw = localStorage.getItem('student_user');
+          if (studentRaw) {
+            const parsed = JSON.parse(studentRaw);
+            const r = parsed && parsed.role ? String(parsed.role).toLowerCase() : '';
+            if (r && r !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return;
+            }
+            if (r === 'student') u = parsed;
+          }
+        }
         let name = 'Trần Hoàng';
         let email = 'student@englishlearning.example';
-        if (raw) {
-          const u = JSON.parse(raw);
+        if (u) {
           if (u.full_name || u.name) name = u.full_name || u.name;
           if (u.email) email = u.email;
         }
@@ -490,8 +511,24 @@
       // 3. User Helpers
       function getCurrentUserSession() {
         try {
-          const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
-          if (raw) return JSON.parse(raw);
+          const sessionRaw = localStorage.getItem('session_user');
+          if (sessionRaw) {
+            const parsed = JSON.parse(sessionRaw);
+            if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return null;
+            }
+            return parsed;
+          }
+          if (typeof window.getStrictPortalUser === 'function') {
+            return window.getStrictPortalUser('student');
+          }
+          const studentRaw = localStorage.getItem('student_user');
+          if (studentRaw) {
+            const parsed = JSON.parse(studentRaw);
+            if (parsed && String(parsed.role || '').toLowerCase() === 'student') return parsed;
+          }
         } catch (_) {}
         return null;
       }
@@ -567,6 +604,7 @@
       // 5. Fetch Profile from Backend API
       async function loadStudentProfile() {
         const user = getCurrentUserSession();
+        if (window.__portalSessionRedirecting) return;
         const userId = user && user.id ? user.id : 8;
         const url = `/api/v1/student/profile?user_id=${userId}`;
 
@@ -655,13 +693,16 @@
               const updatedData = json.data || payload;
               initialProfileData = updatedData;
 
-              // Đồng bộ session storage
-              const stored = getCurrentUserSession() || {};
-              stored.full_name = fullName;
-              stored.phone_number = phoneNumber;
-              stored.avatar_url = avatarUrl;
-              localStorage.setItem('student_user', JSON.stringify(stored));
-              localStorage.setItem('session_user', JSON.stringify(stored));
+              // Đồng bộ session storage (chỉ lưu khi vẫn là phiên học viên)
+              const stored = getCurrentUserSession();
+              if (stored) {
+                stored.role = 'student';
+                stored.full_name = fullName;
+                stored.phone_number = phoneNumber;
+                stored.avatar_url = avatarUrl;
+                localStorage.setItem('student_user', JSON.stringify(stored));
+                localStorage.setItem('session_user', JSON.stringify(stored));
+              }
 
               populateProfileUI(updatedData);
               showToast('Cập nhật thông tin hồ sơ cá nhân thành công!', 'success');
@@ -671,13 +712,16 @@
             }
           } catch (err) {
             console.error('Lỗi cập nhật hồ sơ:', err);
-            // Lưu cục bộ nếu lỗi mạng
-            const stored = getCurrentUserSession() || {};
-            stored.full_name = fullName;
-            stored.phone_number = phoneNumber;
-            stored.avatar_url = avatarUrl;
-            localStorage.setItem('student_user', JSON.stringify(stored));
-            localStorage.setItem('session_user', JSON.stringify(stored));
+            // Lưu cục bộ nếu lỗi mạng (chỉ lưu khi vẫn là phiên học viên)
+            const stored = getCurrentUserSession();
+            if (stored) {
+              stored.role = 'student';
+              stored.full_name = fullName;
+              stored.phone_number = phoneNumber;
+              stored.avatar_url = avatarUrl;
+              localStorage.setItem('student_user', JSON.stringify(stored));
+              localStorage.setItem('session_user', JSON.stringify(stored));
+            }
             populateProfileUI(payload);
             showToast('Đã lưu thông tin hồ sơ trên trình duyệt của bạn!', 'success');
           } finally {

@@ -59,12 +59,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -103,7 +103,7 @@
     
       <a href="/Admin/reviews.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-        <span>Đánh giá khóa học</span>
+        <span>Đánh giá môn học</span>
       </a>
     <div class="nav-section-title">Cơ sở & Báo cáo</div>
       <a href="/Admin/facilities.html" class="nav-item ">
@@ -233,7 +233,7 @@
   <!-- Thanh tìm kiếm & lọc -->
   <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
     <div id="classes-course-filter-banner" style="display: none; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: #EFF6FF; border: 1px solid #BFDBFE; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8125rem;">
-      <span id="classes-course-filter-label" style="color: #1E3A8A; font-weight: 600;">Đang lọc theo khóa học</span>
+      <span id="classes-course-filter-label" style="color: #1E3A8A; font-weight: 600;">Đang lọc theo môn học</span>
       <button type="button" class="btn btn-sm btn-secondary" id="btn-clear-course-filter">Xem tất cả lớp</button>
     </div>
     <div style="display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
@@ -241,11 +241,11 @@
         <span class="input-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </span>
-        <input type="text" id="classes-search-input" class="form-control" placeholder="Tìm theo mã lớp, tên lớp hoặc khóa học...">
+        <input type="text" id="classes-search-input" class="form-control" placeholder="Tìm theo mã lớp, tên lớp hoặc môn học...">
       </div>
       <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap; align-items: center; flex: 0 1 auto; overflow-x: auto;">
         <select id="classes-course-filter" class="form-control" style="width: 185px; flex: 0 0 auto;">
-          <option value="0">Tất cả khóa học</option>
+          <option value="0">Tất cả môn học</option>
         </select>
         <select id="classes-teacher-filter" class="form-control" style="width: 175px; flex: 0 0 auto;">
           <option value="0">Tất cả giảng viên</option>
@@ -269,7 +269,7 @@
         <thead>
           <tr>
             <th>Mã lớp</th>
-            <th>Tên lớp & Khóa học</th>
+            <th>Tên lớp & Môn học</th>
             <th>Giảng viên chính</th>
             <th>Phòng & Lịch học</th>
             <th>Sĩ số</th>
@@ -314,9 +314,9 @@
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học trực thuộc <span class="required" style="color:red;">*</span></label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học trực thuộc <span class="required" style="color:red;">*</span></label>
               <select id="cls-course-id" class="form-control" required>
-                <option value="">-- Đang tải khóa học --</option>
+                <option value="">-- Đang tải môn học --</option>
               </select>
             </div>
             <div class="form-group">
@@ -670,7 +670,7 @@
         if (!banner || !label) return;
         if (activeCourseFilter && activeCourseFilter !== '0') {
           const matched = coursesList.find(c => String(c.id) === String(activeCourseFilter));
-          label.textContent = `Đang lọc lớp thuộc khóa: ${matched?.title || ('#' + activeCourseFilter)}`;
+          label.textContent = `Đang lọc lớp thuộc môn: ${matched?.title || ('#' + activeCourseFilter)}`;
           banner.style.display = 'flex';
         } else {
           banner.style.display = 'none';
@@ -1099,10 +1099,10 @@
         const teacherFilterEl = document.getElementById('classes-teacher-filter');
 
         courseSelect.innerHTML = coursesList.length === 0
-          ? '<option value="">-- Chưa có khóa học --</option>'
+          ? '<option value="">-- Chưa có môn học --</option>'
           : coursesList.map(c => `<option value="${c.id}" data-price="${c.price}">${escapeHtml(c.title)} (${formatCurrency(c.price)})</option>`).join('');
 
-        courseFilterEl.innerHTML = '<option value="0">Tất cả khóa học</option>' +
+        courseFilterEl.innerHTML = '<option value="0">Tất cả môn học</option>' +
           coursesList.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
 
         if (activeCourseFilter && coursesList.some(c => String(c.id) === String(activeCourseFilter))) {
@@ -1333,7 +1333,7 @@
           return;
         }
         if (common.courseId <= 0) {
-          showFormError('Vui lòng chọn khóa học trực thuộc.');
+          showFormError('Vui lòng chọn môn học trực thuộc.');
           return;
         }
         if (!common.startDate || !common.endDate || new Date(common.endDate) <= new Date(common.startDate)) {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -197,11 +197,32 @@
     // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
     (function syncTopbarUser() {
       try {
-        const raw = localStorage.getItem('student_user') || localStorage.getItem('session_user');
+        const sessionRaw = localStorage.getItem('session_user');
+        let u = null;
+        if (sessionRaw) {
+          const parsed = JSON.parse(sessionRaw);
+          if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+            localStorage.removeItem('student_user');
+            window.location.replace('/login.html?reason=role_changed');
+            return;
+          }
+          u = parsed;
+        } else {
+          const studentRaw = localStorage.getItem('student_user');
+          if (studentRaw) {
+            const parsed = JSON.parse(studentRaw);
+            const r = parsed && parsed.role ? String(parsed.role).toLowerCase() : '';
+            if (r && r !== 'student') {
+              localStorage.removeItem('student_user');
+              window.location.replace('/login.html?reason=role_changed');
+              return;
+            }
+            if (r === 'student') u = parsed;
+          }
+        }
         let name = 'Trần Hoàng';
         let email = 'student@englishlearning.example';
-        if (raw) {
-          const u = JSON.parse(raw);
+        if (u) {
           if (u.full_name || u.name) name = u.full_name || u.name;
           if (u.email) email = u.email;
         }

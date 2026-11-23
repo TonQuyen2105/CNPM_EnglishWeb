@@ -139,8 +139,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể tải danh sách môn học.");
-                return this.ApiServerError("Không thể tải danh sách môn học.");
+                _logger.LogError(ex, "Không thể tải danh sách khóa học.");
+                return this.ApiServerError("Không thể tải danh sách khóa học.");
             }
         }
 
@@ -166,13 +166,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 if (existing.Any(s => string.Equals(s.Name.Trim(), name, StringComparison.OrdinalIgnoreCase)))
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Tên môn học đã tồn tại trong hệ thống.");
+                    return this.ApiBadRequest("Tên khóa học đã tồn tại trong hệ thống.");
                 }
 
                 if (existing.Any(s => string.Equals(ExtractSubjectCode(s.Id, s.Description, out _), code, StringComparison.OrdinalIgnoreCase)))
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest($"Mã môn học '{code}' đã tồn tại trong hệ thống.");
+                    return this.ApiBadRequest($"Mã khóa học '{code}' đã tồn tại trong hệ thống.");
                 }
 
                 var now = DateTime.UtcNow;
@@ -193,7 +193,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Tên hoặc mã môn học đã tồn tại trong hệ thống.");
+                    return this.ApiBadRequest("Tên hoặc mã khóa học đã tồn tại trong hệ thống.");
                 }
 
                 await transaction.CommitAsync(cancellationToken);
@@ -201,7 +201,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = "Thêm môn học mới thành công.",
+                    message = "Thêm khóa học mới thành công.",
                     item = new
                     {
                         id = subject.Id,
@@ -219,9 +219,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể thêm môn học mới.");
+                _logger.LogError(ex, "Không thể thêm khóa học mới.");
                 await transaction.RollbackAsync(CancellationToken.None);
-                return this.ApiServerError("Không thể thêm môn học mới.");
+                return this.ApiServerError("Không thể thêm khóa học mới.");
             }
         }
 
@@ -231,7 +231,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         {
             if (id <= 0)
             {
-                return this.ApiBadRequest("Mã định danh môn học không hợp lệ.");
+                return this.ApiBadRequest("Mã định danh khóa học không hợp lệ.");
             }
 
             var error = NormalizeAndValidate(dto, out var name, out var code, out var description);
@@ -249,7 +249,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 if (subject == null)
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiNotFound("Không tìm thấy môn học.");
+                    return this.ApiNotFound("Không tìm thấy khóa học.");
                 }
 
                 var others = await _context.Subjects
@@ -261,13 +261,13 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 if (others.Any(s => string.Equals(s.Name.Trim(), name, StringComparison.OrdinalIgnoreCase)))
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Tên môn học đã tồn tại trong hệ thống.");
+                    return this.ApiBadRequest("Tên khóa học đã tồn tại trong hệ thống.");
                 }
 
                 if (others.Any(s => string.Equals(ExtractSubjectCode(s.Id, s.Description, out _), code, StringComparison.OrdinalIgnoreCase)))
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest($"Mã môn học '{code}' đã được sử dụng bởi môn học khác.");
+                    return this.ApiBadRequest($"Mã khóa học '{code}' đã được sử dụng bởi khóa học khác.");
                 }
 
                 subject.Name = name;
@@ -285,7 +285,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Tên hoặc mã môn học đã tồn tại trong hệ thống.");
+                    return this.ApiBadRequest("Tên hoặc mã khóa học đã tồn tại trong hệ thống.");
                 }
 
                 await transaction.CommitAsync(cancellationToken);
@@ -293,7 +293,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = "Cập nhật môn học thành công.",
+                    message = "Cập nhật khóa học thành công.",
                     id = subject.Id
                 });
             }
@@ -303,9 +303,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể cập nhật môn học {SubjectId}.", id);
+                _logger.LogError(ex, "Không thể cập nhật khóa học {SubjectId}.", id);
                 await transaction.RollbackAsync(CancellationToken.None);
-                return this.ApiServerError("Không thể cập nhật môn học.");
+                return this.ApiServerError("Không thể cập nhật khóa học.");
             }
         }
 
@@ -314,7 +314,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         {
             if (id <= 0)
             {
-                return this.ApiBadRequest("Mã định danh môn học không hợp lệ.");
+                return this.ApiBadRequest("Mã định danh khóa học không hợp lệ.");
             }
 
             try
@@ -322,7 +322,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
                 if (subject == null)
                 {
-                    return this.ApiNotFound("Không tìm thấy môn học.");
+                    return this.ApiNotFound("Không tìm thấy khóa học.");
                 }
 
                 subject.IsActive = !subject.IsActive;
@@ -332,7 +332,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = subject.IsActive ? "Đã kích hoạt môn học." : "Đã tạm dừng môn học.",
+                    message = subject.IsActive ? "Đã kích hoạt khóa học." : "Đã tạm dừng khóa học.",
                     id = subject.Id,
                     isActive = subject.IsActive
                 });
@@ -343,8 +343,8 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể thay đổi trạng thái môn học {SubjectId}.", id);
-                return this.ApiServerError("Không thể thay đổi trạng thái môn học.");
+                _logger.LogError(ex, "Không thể thay đổi trạng thái khóa học {SubjectId}.", id);
+                return this.ApiServerError("Không thể thay đổi trạng thái khóa học.");
             }
         }
 
@@ -394,17 +394,17 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
             if (name.Length == 0 || name.Length > MaxNameLength)
             {
-                return $"Tên môn học không hợp lệ (1 - {MaxNameLength} ký tự).";
+                return $"Tên khóa học không hợp lệ (1 - {MaxNameLength} ký tự).";
             }
 
             if (code.Length == 0 || code.Length > MaxCodeLength || !ValidCodeRegex.IsMatch(code))
             {
-                return "Mã môn học phải dài 2 - 20 ký tự, chỉ gồm chữ cái, số, '-' hoặc '_'.";
+                return "Mã khóa học phải dài 2 - 20 ký tự, chỉ gồm chữ cái, số, '-' hoặc '_'.";
             }
 
             if (description != null && description.Length > MaxDescriptionLength)
             {
-                return $"Mô tả môn học không được vượt quá {MaxDescriptionLength} ký tự.";
+                return $"Mô tả khóa học không được vượt quá {MaxDescriptionLength} ký tự.";
             }
 
             return null;

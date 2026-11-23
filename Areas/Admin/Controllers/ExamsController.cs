@@ -136,7 +136,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         teacherNames = tNames,
                         teacherSummary = tNames.Count > 0
                             ? string.Join(", ", tNames)
-                            : "Chưa phân công giảng viên cho lớp thuộc khóa",
+                            : "Chưa phân công giảng viên cho lớp thuộc môn",
                         x.durationMinutes,
                         x.passScore,
                         x.maxAttempts,
@@ -241,7 +241,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             {
                 if (!dto!.CourseId.HasValue || dto.CourseId.Value <= 0)
                 {
-                    return this.ApiBadRequest("Vui lòng chọn khóa học để mở phòng thi.");
+                    return this.ApiBadRequest("Vui lòng chọn môn học để mở phòng thi.");
                 }
 
                 var courseExists = await _context.Courses
@@ -249,7 +249,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     .AnyAsync(c => c.Id == dto.CourseId.Value, cancellationToken);
                 if (!courseExists)
                 {
-                    return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
+                    return this.ApiBadRequest("Môn học được chọn không tồn tại.");
                 }
 
                 var nowUtc = DateTime.UtcNow;
@@ -261,7 +261,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 var representativeTeacherId = await ResolveRepresentativeTeacherIdAsync(dto.CourseId.Value, cancellationToken);
                 if (representativeTeacherId <= 0)
                 {
-                    return this.ApiBadRequest("Hệ thống chưa có hồ sơ giảng viên hoạt động nào để liên kết khóa học.");
+                    return this.ApiBadRequest("Hệ thống chưa có hồ sơ giảng viên hoạt động nào để liên kết môn học.");
                 }
 
                 var openAtDb = await ResolveDbTimestampAsync(openAtUtc ?? nowUtc, cancellationToken);
@@ -290,7 +290,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 {
                     await _context.SaveChangesAsync(cancellationToken);
 
-                    // Đảm bảo review_status = NULL khi Admin mở phòng thi cho khóa học để giảng viên thêm đề
+                    // Đảm bảo review_status = NULL khi Admin mở phòng thi cho môn học để giảng viên thêm đề
                     await _context.Database.ExecuteSqlInterpolatedAsync(
                         $"UPDATE exams SET review_status = NULL WHERE id = {exam.Id}",
                         cancellationToken);
@@ -300,7 +300,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
                 {
                     await transaction.RollbackAsync(CancellationToken.None);
-                    return this.ApiBadRequest("Khóa học được chọn không còn tồn tại.");
+                    return this.ApiBadRequest("Môn học được chọn không còn tồn tại.");
                 }
 
                 return Ok(new
@@ -353,7 +353,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 
                 if (!dto!.CourseId.HasValue || dto.CourseId.Value <= 0)
                 {
-                    return this.ApiBadRequest("Vui lòng chọn khóa học cho phòng thi.");
+                    return this.ApiBadRequest("Vui lòng chọn môn học cho phòng thi.");
                 }
 
                 var courseExists = await _context.Courses
@@ -361,7 +361,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     .AnyAsync(c => c.Id == dto.CourseId.Value, cancellationToken);
                 if (!courseExists)
                 {
-                    return this.ApiBadRequest("Khóa học được chọn không tồn tại.");
+                    return this.ApiBadRequest("Môn học được chọn không tồn tại.");
                 }
 
                 var nowUtc = DateTime.UtcNow;
@@ -379,7 +379,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         .AnyAsync(eq => eq.ExamId == id, cancellationToken);
                     if (!hasQuestions)
                     {
-                        return this.ApiBadRequest("Giảng viên của khóa học chưa tạo câu hỏi cho phòng thi này nên chưa thể mở thi.");
+                        return this.ApiBadRequest("Giảng viên của môn học chưa tạo câu hỏi cho phòng thi này nên chưa thể mở thi.");
                     }
                 }
 
@@ -488,7 +488,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         .AnyAsync(eq => eq.ExamId == id, cancellationToken);
                     if (!hasQuestions)
                     {
-                        return this.ApiBadRequest("Giảng viên của khóa học chưa tạo câu hỏi trong phòng thi này nên chưa thể mở công bố.");
+                        return this.ApiBadRequest("Giảng viên của môn học chưa tạo câu hỏi trong phòng thi này nên chưa thể mở công bố.");
                     }
                 }
 
@@ -1132,7 +1132,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             return StatusCode(StatusCodes.Status403Forbidden, new
             {
                 success = false,
-                message = "Câu hỏi, thời lượng và điểm qua đề thi do đội ngũ giảng viên của khóa học thiết lập. Quản trị viên chỉ mở phòng thi theo khóa học và xem thống kê."
+                message = "Câu hỏi, thời lượng và điểm qua đề thi do đội ngũ giảng viên của môn học thiết lập. Quản trị viên chỉ mở phòng thi theo môn học và xem thống kê."
             });
         }
 

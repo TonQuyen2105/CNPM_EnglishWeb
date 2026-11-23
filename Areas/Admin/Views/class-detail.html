@@ -55,12 +55,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -99,7 +99,7 @@
     
       <a href="/Admin/reviews.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-        <span>Đánh giá khóa học</span>
+        <span>Đánh giá môn học</span>
       </a>
     <div class="nav-section-title">Cơ sở & Báo cáo</div>
       <a href="/Admin/facilities.html" class="nav-item ">
@@ -367,9 +367,9 @@
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học trực thuộc <span style="color:red;">*</span></label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học trực thuộc <span style="color:red;">*</span></label>
               <select id="ec-course-id" class="form-control" required>
-                <option value="">-- Đang tải khóa học --</option>
+                <option value="">-- Đang tải môn học --</option>
               </select>
             </div>
             <div class="form-group">
@@ -721,7 +721,7 @@
           coursesCache = courses;
           const courseSel = document.getElementById('ec-course-id');
           courseSel.innerHTML = coursesCache.length === 0
-            ? '<option value="">-- Chưa có khóa học --</option>'
+            ? '<option value="">-- Chưa có môn học --</option>'
             : coursesCache.map(c => `<option value="${c.id}" data-price="${c.price}">${escapeHtml(c.title)} (${formatCurrency(c.price)})</option>`).join('');
         }
 
@@ -1077,7 +1077,7 @@
         const info = data.classInfo || {};
         document.getElementById('detail-class-title').textContent = `Lớp ${info.classCode}: ${info.className}`;
         document.getElementById('detail-class-subtitle').textContent =
-          `Khóa học: ${info.courseTitle} • Giảng viên chính: ${info.teacherName} • Học phí: ${formatCurrency(info.price)} • Thời gian: ${formatDate(info.startDate)} - ${formatDate(info.endDate)}`;
+          `Môn học: ${info.courseTitle} • Giảng viên chính: ${info.teacherName} • Học phí: ${formatCurrency(info.price)} • Thời gian: ${formatDate(info.startDate)} - ${formatDate(info.endDate)}`;
         document.getElementById('detail-class-status-badge').innerHTML = renderClassStatusBadge(info.status);
 
         const quickSel = document.getElementById('detail-quick-status');
@@ -1307,7 +1307,7 @@
             return;
           }
           if (payload.courseId <= 0) {
-            showBoxError('edit-class-error', 'Vui lòng chọn khóa học trực thuộc.');
+            showBoxError('edit-class-error', 'Vui lòng chọn môn học trực thuộc.');
             return;
           }
           if (!payload.startDate || !payload.endDate || new Date(payload.endDate) <= new Date(payload.startDate)) {
