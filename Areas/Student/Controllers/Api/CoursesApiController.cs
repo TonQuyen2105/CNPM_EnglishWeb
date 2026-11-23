@@ -137,5 +137,17 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
             var result = await Services.Courses.SubmitCourseReviewAsync(studentId, courseId, request);
             return ToActionResult(result);
         }
+
+        /// <summary>
+        /// 2.8. Lấy danh sách các chủ đề (Subjects) kèm số lượng khóa học đang phát hành.
+        /// Endpoint: GET /api/v1/student/subjects
+        /// </summary>
+        [HttpGet("subjects")]
+        [HttpGet("courses/subjects")]
+        public async Task<IActionResult> GetSubjects()
+        {
+            var result = await Services.Courses.GetActiveSubjectsAsync();
+            return ToActionResult(result);
+        }
     }
 }

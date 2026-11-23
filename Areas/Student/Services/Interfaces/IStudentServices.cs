@@ -18,6 +18,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Interfaces
     public interface IStudentCourseService
     {
         Task<ServiceResult<List<CourseListItemDto>>> GetPublishedCoursesAsync(CourseFilterQueryDto query);
+        Task<ServiceResult<List<StudentSubjectListItemDto>>> GetActiveSubjectsAsync();
         Task<ServiceResult<CourseDetailDto>> GetCourseDetailAsync(int courseId, int? studentId);
         Task<ServiceResult<EnrollmentResultDto>> EnrollClassAsync(int studentId, CreateEnrollmentRequestDto request);
         Task<ServiceResult<BatchEnrollmentResultDto>> EnrollCourseAsync(int studentId, int courseId, CreateCourseEnrollmentRequestDto request);

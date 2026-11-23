@@ -233,11 +233,15 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             // Tái sử dụng phương thức lấy lịch học theo danh sách ClassId từ BaseStudentService
             var schedulesByClass = await GetSchedulesByClassIdsAsync(classIds);
+            var teachersByClass = await GetTeachersByClassIdsAsync(classIds);
 
             var availableClassesDto = openClasses.Select(cc =>
             {
                 var enrolledCount = enrollmentCountsByClass.GetValueOrDefault(cc.Id, 0);
                 var availableSlots = Math.Max(0, cc.MaxStudents - enrolledCount);
+                var teachers = teachersByClass.GetValueOrDefault(cc.Id, new List<ClassTeacherInfoDto>());
+                var mainTeacher = teachers.FirstOrDefault(t => t.Role == "main") ?? teachers.FirstOrDefault();
+
                 return new CourseOpenClassDto
                 {
                     ClassId = cc.Id,
@@ -251,7 +255,9 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     EnrolledStudents = enrolledCount,
                     AvailableSlots = availableSlots,
                     IsEnrolled = studentEnrolledClassIds.Contains(cc.Id),
-                    Schedules = schedulesByClass.GetValueOrDefault(cc.Id, new List<ClassScheduleItemDto>())
+                    Schedules = schedulesByClass.GetValueOrDefault(cc.Id, new List<ClassScheduleItemDto>()),
+                    TeacherName = mainTeacher?.FullName,
+                    Teachers = teachers
                 };
             }).ToList();
 
@@ -1007,20 +1013,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 return ServiceResult<CourseReviewItemDto>.NotFound($"Không tìm thấy khóa học có ID = {courseId}.");
             }
 
-            // Kiểm tra học sinh đã từng đăng ký lớp thuộc khóa học này chưa
-            var hasEnrolledInCourse = await (
-                from e in Db.Enrollments.AsNoTracking()
-                join cc in Db.CourseClasses.AsNoTracking() on e.ClassId equals cc.Id
-                where e.UserId == studentId && cc.CourseId == courseId && e.Status != EnrollmentCancelled
-                select e.Id
-            ).AnyAsync();
-
-            if (!hasEnrolledInCourse)
-            {
-                return ServiceResult<CourseReviewItemDto>.Forbidden(
-                    "Bạn cần đăng ký tham gia ít nhất một lớp học thuộc khóa học này trước khi gửi đánh giá.");
-            }
-
             // Nếu học sinh đã đánh giá khóa học này trước đó thì cập nhật, ngược lại tạo mới
             var reviewEntity = await Db.CourseReviews
                 .FirstOrDefaultAsync(r => r.UserId == studentId && r.CourseId == courseId);
@@ -1066,6 +1058,26 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             };
 
             return ServiceResult<CourseReviewItemDto>.Created(dto, "Gửi đánh giá khóa học thành công.");
+        }
+
+        /// <summary>
+        /// 2.8. Lấy danh sách các chủ đề (Subjects) đang hoạt động kèm số lượng khóa học công khai.
+        /// </summary>
+        public async Task<ServiceResult<List<StudentSubjectListItemDto>>> GetActiveSubjectsAsync()
+        {
+            var subjects = await Db.Subjects.AsNoTracking()
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.Id)
+                .Select(s => new StudentSubjectListItemDto
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Description = s.Description,
+                    CoursesCount = Db.Courses.Count(c => c.SubjectId == s.Id && c.IsPublished)
+                })
+                .ToListAsync();
+
+            return ServiceResult<List<StudentSubjectListItemDto>>.Ok(subjects, "Lấy danh sách chủ đề thành công.");
         }
     }
 }

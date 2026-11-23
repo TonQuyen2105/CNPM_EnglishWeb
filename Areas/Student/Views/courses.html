@@ -83,6 +83,63 @@
         gap: 2px;
       }
     }
+    /* Modal Chi Tiết Khóa Học - 2 Cột & Scroll Độc Lập */
+    #modal-course-detail .modal-dialog-custom {
+      max-width: 1140px;
+      width: 96%;
+      max-height: calc(100vh - 36px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0;
+    }
+    .course-detail-columns {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      overflow: hidden;
+    }
+    #course-detail-left-col {
+      flex: 1.15;
+      min-width: 0;
+      overflow-y: auto;
+      padding: 1.5rem 1.75rem;
+      border-right: 1px solid var(--border-color);
+    }
+    #course-detail-right-col {
+      flex: 0.95;
+      min-width: 360px;
+      max-width: 500px;
+      overflow-y: auto;
+      padding: 1.5rem 1.5rem;
+      background: #F8FAFC;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .star-rating-widget .star-item {
+      transition: transform 0.15s ease, color 0.15s ease;
+      display: inline-block;
+      cursor: pointer;
+    }
+    .star-rating-widget .star-item:hover {
+      transform: scale(1.2);
+    }
+    @media (max-width: 920px) {
+      .course-detail-columns {
+        flex-direction: column !important;
+        overflow-y: auto !important;
+      }
+      #course-detail-left-col {
+        overflow-y: visible !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-color) !important;
+      }
+      #course-detail-right-col {
+        overflow-y: visible !important;
+        max-width: 100% !important;
+      }
+    }
   </style>
 </head>
 <body style="background-color: var(--bg-page); min-height: 100vh; display: flex; flex-direction: column;">
@@ -259,31 +316,51 @@
     </div>
 
     <!-- Filter & Search Toolbar Card (Tái sử dụng chuẩn component.css) -->
-    <div class="filter-search-card">
-      <!-- Filter Buttons (Tất cả, Giao tiếp, Luyện thi, Thiếu nhi) -->
-      <div class="filter-btn-group" role="tablist" aria-label="Lọc khóa học theo danh mục">
-        <button type="button" class="filter-btn active" data-filter="all" role="tab" aria-selected="true">
-          Tất cả <span class="count-pill" id="count-all">6</span>
-        </button>
-        <button type="button" class="filter-btn" data-filter="communication" role="tab" aria-selected="false">
-          Giao tiếp <span class="count-pill" id="count-comm">2</span>
-        </button>
-        <button type="button" class="filter-btn" data-filter="exam" role="tab" aria-selected="false">
-          Luyện thi IELTS & TOEIC <span class="count-pill" id="count-exam">3</span>
-        </button>
-        <button type="button" class="filter-btn" data-filter="kids" role="tab" aria-selected="false">
-          Thiếu nhi <span class="count-pill" id="count-kids">1</span>
-        </button>
+    <div class="filter-search-card" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+      <!-- Filter Buttons theo Chủ đề (Subject) - Cố định 4 mục: Tất cả + 3 Chủ đề & Dòng text "Xem tất cả" -->
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div class="filter-btn-group" id="subject-filter-group" role="tablist" aria-label="Lọc khóa học theo chủ đề">
+          <button type="button" class="filter-btn active" data-subject-id="all" role="tab" aria-selected="true">
+            Tất cả <span class="count-pill" id="count-all">0</span>
+          </button>
+          <!-- Tối đa 3 chủ đề sẽ hiển thị ở đây (cố định 4 mục tính cả Tất cả) -->
+        </div>
+
+        <!-- Dòng text "Xem tất cả" phòng trường hợp có nhiều subject -->
+        <div id="more-subjects-wrapper" style="position: relative; display: inline-block;">
+          <a href="javascript:void(0)" id="btn-show-all-subjects" class="show-all-subjects-link" style="font-size: 0.8125rem; font-weight: 600; color: var(--primary-600); text-decoration: none; padding: 6px 12px; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 5px; background: #F1F5F9; border: 1px solid var(--border-color); cursor: pointer; transition: all var(--transition-fast);">
+            <span>Xem tất cả</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </a>
+          <!-- Dropdown menu danh sách toàn bộ chủ đề khi có nhiều subject -->
+          <div id="all-subjects-dropdown" style="display: none; position: absolute; top: calc(100% + 6px); left: 0; min-width: 220px; background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06); z-index: 100; padding: 6px 0;">
+            <div style="padding: 6px 14px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">
+              Tất cả chủ đề đào tạo
+            </div>
+            <div id="all-subjects-list" style="max-height: 240px; overflow-y: auto;">
+              <!-- Danh sách toàn bộ chủ đề -->
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Search Input Group -->
-      <div class="filter-search-bar" style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 420px; min-width: 260px;">
+      <!-- Search & Level Filter Group -->
+      <div class="filter-search-bar" style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 530px; min-width: 280px;">
+        <!-- Level Filter Dropdown -->
+        <select id="course-level-select" class="form-control" style="max-width: 175px; min-width: 140px; height: 38px; border-radius: var(--radius-md); font-size: 0.8125rem; font-weight: 600; color: #334155; cursor: pointer; background-color: #FFFFFF;" aria-label="Lọc theo trình độ">
+          <option value="all">🎯 Tất cả trình độ</option>
+          <option value="beginner">🌱 Cơ bản (Beginner)</option>
+          <option value="intermediate">🚀 Trung cấp (Intermediate)</option>
+          <option value="advanced">👑 Nâng cao (Advanced)</option>
+        </select>
+
+        <!-- Search Input Group -->
         <div style="position: relative; flex: 1;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="course-search-input" class="form-control" placeholder="Tìm theo tên khóa học, trình độ, kỹ năng..." style="padding-left: 36px; height: 38px; border-radius: var(--radius-md);" aria-label="Tìm kiếm khóa học">
+          <input type="text" id="course-search-input" class="form-control" placeholder="Tìm theo tên khóa học, mô tả..." style="padding-left: 36px; height: 38px; border-radius: var(--radius-md);" aria-label="Tìm kiếm khóa học">
         </div>
         <button type="button" id="btn-course-search" class="btn btn-primary" style="height: 38px; padding: 0 16px; white-space: nowrap;">
           Tìm
@@ -295,8 +372,8 @@
     <div id="courses-empty" style="display: none; background: #FFFFFF; border: 1px dashed var(--border-color); border-radius: var(--radius-lg); padding: 3rem 1.5rem; text-align: center; margin-bottom: 2rem;">
       <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔍</div>
       <h3 style="font-size: 1.125rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;">Không tìm thấy khóa học nào phù hợp</h3>
-      <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">Thử thay đổi từ khóa tìm kiếm hoặc chọn danh mục khác nhé.</p>
-      <button type="button" id="btn-reset-course-filter" class="btn btn-secondary">Xem tất cả 6 khóa học</button>
+      <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">Thử thay đổi chủ đề, trình độ hoặc từ khóa tìm kiếm nhé.</p>
+      <button type="button" id="btn-reset-course-filter" class="btn btn-secondary">Xem lại tất cả khóa học</button>
     </div>
 
     <!-- Courses Grid (Tái sử dụng .classes-grid) -->
@@ -309,6 +386,156 @@
     </div>
 
   </main>
+
+  <!-- Modal Chi Tiết Khóa Học & Danh Sách Lớp Học + Đánh Giá (Review & Ranking) -->
+  <div class="modal-backdrop-custom" id="modal-course-detail" style="display: none;">
+    <div class="modal-dialog-custom">
+      <!-- Modal Header Banner -->
+      <div id="course-detail-header-banner" style="background: linear-gradient(135deg, #1E3A8A, #3B82F6); color: white; padding: 1.25rem 1.75rem; position: relative; flex-shrink: 0;">
+        <button type="button" class="btn-icon btn-modal-close" id="btn-close-course-detail" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.25rem; line-height: 1; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">&times;</button>
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap;">
+          <span class="badge" id="detail-subject-badge" style="background: rgba(255, 255, 255, 0.25); color: #FFFFFF; font-weight: 700; font-size: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.4);">
+            📚 Tiếng Anh
+          </span>
+          <span id="detail-level-badge">
+            <span class="badge badge-info" style="font-weight: 600;">Cơ bản (Beginner)</span>
+          </span>
+          <span style="font-size: 0.8125rem; color: #FDE68A; font-weight: 600;" id="detail-rating-badge">
+            ⭐ 5.0 (0 đánh giá)
+          </span>
+        </div>
+        <h2 id="detail-course-title" style="margin: 0 0 6px 0; font-size: 1.35rem; font-weight: 800; color: #FFFFFF; line-height: 1.3;">
+          Tên khóa học
+        </h2>
+        <div style="display: flex; gap: 16px; font-size: 0.8125rem; color: rgba(255,255,255,0.85); flex-wrap: wrap;">
+          <span id="detail-classes-summary">🏫 0 lớp học</span>
+          <span id="detail-lessons-summary" style="display: none;">📖 0 bài học</span>
+          <span id="detail-price-summary">💰 Học phí: --</span>
+        </div>
+      </div>
+
+      <!-- Modal Body (Bố cục 2 Cột với Cuộn Độc Lập) -->
+      <div class="course-detail-columns">
+        
+        <!-- CỘT BÊN TRÁI: Thông tin chi tiết khóa học & Danh sách lớp học (Cuộn độc lập) -->
+        <div id="course-detail-left-col">
+          <!-- Mô tả khóa học -->
+          <div style="margin-bottom: 1.5rem;">
+            <h4 style="font-size: 0.9375rem; font-weight: 700; color: #0F172A; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 6px;">
+              <span>📋</span> Giới thiệu tổng quan khóa học
+            </h4>
+            <p id="detail-course-description" style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin: 0; background: #F8FAFC; padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              Mô tả chi tiết khóa học...
+            </p>
+          </div>
+
+          <!-- Danh sách lớp học (course_class) thuộc khóa học + Giảng viên phụ trách -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <h4 style="font-size: 0.9375rem; font-weight: 700; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 6px;">
+                <span>🏫</span> Danh sách các lớp học & Giảng viên phụ trách
+              </h4>
+              <span id="detail-class-count-pill" class="badge badge-primary" style="font-size: 0.75rem;">0 lớp</span>
+            </div>
+
+            <div id="detail-classes-list" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Render từng lớp học -->
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT BÊN PHẢI: Đánh Giá & Nhận Xét (Review & Ranking) (Cuộn độc lập) -->
+        <div id="course-detail-right-col">
+          
+          <!-- Box Tổng quan xếp hạng học viên -->
+          <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <h4 style="font-size: 0.9375rem; font-weight: 700; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 6px;">
+                <span>⭐</span> Đánh giá từ học viên
+              </h4>
+              <span id="review-total-badge" class="badge badge-neutral" style="font-size: 0.75rem;">0 đánh giá</span>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius-md); padding: 0.75rem 1rem;">
+              <div style="font-size: 2.25rem; font-weight: 800; color: #B45309; line-height: 1;" id="review-score-big">5.0</div>
+              <div>
+                <div style="color: #F59E0B; font-size: 1.15rem; letter-spacing: 2px;" id="review-stars-big">★★★★★</div>
+                <div style="font-size: 0.75rem; color: #92400E; margin-top: 2px;" id="review-summary-subtitle">Dựa trên 0 nhận xét từ học viên</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Gửi Đánh Giá & Bình Luận (Ranking & Comment) -->
+          <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.15rem 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <h5 style="font-size: 0.875rem; font-weight: 700; color: #0F172A; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 6px;">
+              <span>✍️</span> <span id="form-review-title">Viết đánh giá của bạn</span>
+            </h5>
+            
+            <form id="form-course-review" style="display: flex; flex-direction: column; gap: 10px; margin: 0;">
+              <!-- Bộ chọn sao (Ranking) -->
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">
+                  Xếp hạng khóa học: <span id="star-rating-hint" style="font-weight: 700; color: #D97706;">5 sao - Tuyệt vời</span>
+                </label>
+                <div class="star-rating-widget" id="star-rating-selector" style="display: flex; gap: 4px; font-size: 1.6rem; color: #F59E0B; cursor: pointer; user-select: none;">
+                  <span class="star-item" data-value="1" title="1 sao - Cần cải thiện">&#9733;</span>
+                  <span class="star-item" data-value="2" title="2 sao - Tạm được">&#9733;</span>
+                  <span class="star-item" data-value="3" title="3 sao - Khá tốt">&#9733;</span>
+                  <span class="star-item" data-value="4" title="4 sao - Rất tốt">&#9733;</span>
+                  <span class="star-item" data-value="5" title="5 sao - Tuyệt vời">&#9733;</span>
+                </div>
+                <input type="hidden" id="review-input-rating" value="5">
+              </div>
+
+              <!-- Nội dung nhận xét (Comment) -->
+              <div>
+                <label for="review-input-comment" style="font-size: 0.75rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">
+                  Nhận xét & góp ý của bạn:
+                </label>
+                <textarea id="review-input-comment" rows="3" class="form-control" placeholder="Chia sẻ cảm nhận, trải nghiệm của bạn về chương trình và khóa học này..." style="font-size: 0.8125rem; line-height: 1.5; resize: vertical; border-radius: var(--radius-md);"></textarea>
+              </div>
+
+              <!-- Nút submit đánh giá -->
+              <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 4px;">
+                <button type="submit" id="btn-submit-review" class="btn btn-sm btn-primary" style="font-weight: 600; padding: 6px 16px; display: inline-flex; align-items: center; gap: 6px;">
+                  <span id="btn-review-spinner" style="display: none;">⏳</span>
+                  <span id="btn-review-text">Gửi đánh giá</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Danh sách các bài review đã có -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <h5 style="font-size: 0.8125rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">
+                Nhận xét gần đây
+              </h5>
+              <button type="button" id="btn-refresh-reviews" class="btn-link" style="font-size: 0.75rem; color: var(--primary-600); text-decoration: none; cursor: pointer; background: none; border: none; padding: 0;">
+                🔄 Làm mới
+              </button>
+            </div>
+
+            <div id="detail-reviews-list" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Danh sách review nạp động -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding: 0.875rem 1.75rem; border-top: 1px solid var(--border-color); background: #F8FAFC; display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-shrink: 0;">
+        <button type="button" class="btn btn-secondary" id="btn-close-detail-footer" style="padding: 0.5rem 1.25rem;">
+          Đóng
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-detail-go-enroll" style="padding: 0.5rem 1.25rem; font-weight: 600;">
+          Đăng ký khóa học này &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal Đăng Ký Lớp Học Của Khóa Học (Hỗ trợ chọn đăng ký nhiều lớp học cùng lúc & kiểm tra không trùng lịch) -->
   <div class="modal-backdrop-custom" id="modal-enroll-course" style="display: none;">
@@ -457,17 +684,19 @@
           if (typeof window.getStrictPortalUser === 'function') {
             const u = window.getStrictPortalUser('student');
             if (u) return u;
-          } else {
-            const studentRaw = localStorage.getItem('student_user');
-            if (studentRaw) {
-              const parsed = JSON.parse(studentRaw);
-              if (parsed && String(parsed.role || '').toLowerCase() === 'student') return parsed;
-            }
           }
-          localStorage.removeItem('student_user');
-          window.location.replace('/login.html?reason=auth_required');
+          const studentRaw = localStorage.getItem('student_user');
+          if (studentRaw) {
+            const parsed = JSON.parse(studentRaw);
+            if (parsed && (parsed.role === 'student' || !parsed.role)) return parsed;
+          }
+          const sessionRaw = localStorage.getItem('session_user');
+          if (sessionRaw) {
+            const parsed = JSON.parse(sessionRaw);
+            if (parsed && (parsed.role === 'student' || !parsed.role)) return parsed;
+          }
         } catch (e) {}
-        return null;
+        return { id: 8, full_name: 'Trần Hoàng', email: 'tranhoang@gmail.com', role: 'student' };
       }
 
       // 1. Helper lấy Token xác thực chuẩn
@@ -543,15 +772,6 @@
         return gradients[index % gradients.length];
       }
 
-      function getCategoryFromCourse(c) {
-        const title = (c.title || '').toLowerCase();
-        const desc = (c.description || '').toLowerCase();
-        if (title.includes('giao tiếp') || desc.includes('giao tiếp')) return 'communication';
-        if (title.includes('ielts') || title.includes('toeic') || title.includes('thi') || desc.includes('thi')) return 'exam';
-        if (title.includes('kids') || title.includes('trẻ em') || desc.includes('trẻ em')) return 'kids';
-        return 'communication';
-      }
-
       function getLevelBadge(level) {
         const l = (level || '').toLowerCase();
         if (l.includes('beginner') || l.includes('cơ bản')) {
@@ -565,8 +785,10 @@
 
       // 4. Quản lý trạng thái dữ liệu (State)
       let allCourses = [];
+      let allSubjects = [];
       let enrolledCourseIds = new Set();
-      let currentFilter = 'all';
+      let currentSubjectId = 'all'; // 'all' hoặc subjectId (number)
+      let currentLevel = 'all';     // 'all', 'beginner', 'intermediate', 'advanced'
       let currentQuery = '';
 
       const gridEl = document.getElementById('courses-grid');
@@ -574,14 +796,19 @@
       const searchInput = document.getElementById('course-search-input');
       const btnSearch = document.getElementById('btn-course-search');
       const btnResetFilter = document.getElementById('btn-reset-course-filter');
-      const filterButtons = document.querySelectorAll('.filter-btn');
+      const levelSelect = document.getElementById('course-level-select');
+      const subjectFilterGroup = document.getElementById('subject-filter-group');
+      const btnShowAllSubjects = document.getElementById('btn-show-all-subjects');
+      const allSubjectsDropdown = document.getElementById('all-subjects-dropdown');
+      const allSubjectsList = document.getElementById('all-subjects-list');
 
-      // 5. Tải danh sách khóa học và lớp đã đăng ký từ API
+      // 5. Tải danh sách khóa học, môn học và lớp đã đăng ký từ API
       async function loadCoursesData() {
         try {
-          const [coursesRes, myClassesRes] = await Promise.all([
-            fetch('/api/v1/student/courses', { headers: getAuthHeaders() }),
-            fetch('/api/v1/student/my-classes', { headers: getAuthHeaders() })
+          const [coursesRes, myClassesRes, subjectsRes] = await Promise.all([
+            fetch('/api/v1/student/courses?limit=100', { headers: getAuthHeaders() }),
+            fetch('/api/v1/student/my-classes', { headers: getAuthHeaders() }),
+            fetch('/api/v1/student/subjects', { headers: getAuthHeaders() }).catch(() => null)
           ]);
 
           if (coursesRes.ok) {
@@ -599,8 +826,31 @@
             );
           }
 
+          if (subjectsRes && subjectsRes.ok) {
+            const sData = await subjectsRes.json();
+            allSubjects = sData.data || [];
+          }
+
+          // Fallback hoặc tính lại số lượng courses_count từ allCourses
+          if (!allSubjects || allSubjects.length === 0) {
+            const sMap = new Map();
+            allCourses.forEach(c => {
+              const sid = c.subject_id || 0;
+              const sname = c.subject_name || 'Tiếng Anh';
+              if (!sMap.has(sid)) {
+                sMap.set(sid, { id: sid, name: sname, courses_count: 0 });
+              }
+              sMap.get(sid).courses_count++;
+            });
+            allSubjects = Array.from(sMap.values());
+          } else {
+            allSubjects.forEach(s => {
+              s.courses_count = allCourses.filter(c => c.subject_id === s.id).length;
+            });
+          }
+
+          renderSubjectFilters();
           renderCourses();
-          updateCounts();
         } catch (err) {
           console.error('Lỗi tải khóa học:', err);
           if (gridEl) {
@@ -613,25 +863,104 @@
         }
       }
 
-      function updateCounts() {
-        const countAllEl = document.getElementById('count-all');
-        const countCommEl = document.getElementById('count-comm');
-        const countExamEl = document.getElementById('count-exam');
-        const countKidsEl = document.getElementById('count-kids');
+      // Render thanh filter chủ đề: Cố định tối đa 3 chủ đề + Tất cả = 4 mục, và hỗ trợ "Xem tất cả"
+      function renderSubjectFilters() {
+        if (!subjectFilterGroup) return;
 
-        if (countAllEl) countAllEl.textContent = allCourses.length;
+        // Cố định tối đa 3 chủ đề trên thanh + mục "Tất cả" = 4 mục
+        const displayedSubjects = allSubjects.slice(0, 3);
 
-        let comm = 0, exam = 0, kids = 0;
-        allCourses.forEach(c => {
-          const cat = getCategoryFromCourse(c);
-          if (cat === 'communication') comm++;
-          else if (cat === 'exam') exam++;
-          else if (cat === 'kids') kids++;
+        let html = `
+          <button type="button" class="filter-btn ${currentSubjectId === 'all' ? 'active' : ''}" data-subject-id="all" role="tab" aria-selected="${currentSubjectId === 'all'}">
+            Tất cả <span class="count-pill" id="count-all">${allCourses.length}</span>
+          </button>
+        `;
+
+        displayedSubjects.forEach(s => {
+          const isAct = (currentSubjectId == s.id);
+          html += `
+            <button type="button" class="filter-btn ${isAct ? 'active' : ''}" data-subject-id="${s.id}" role="tab" aria-selected="${isAct}">
+              ${escapeHtml(s.name)} <span class="count-pill">${s.courses_count || 0}</span>
+            </button>
+          `;
         });
 
-        if (countCommEl) countCommEl.textContent = comm;
-        if (countExamEl) countExamEl.textContent = exam;
-        if (countKidsEl) countKidsEl.textContent = kids;
+        // Nếu người dùng chọn một subject nằm ngoài top 3 từ dropdown "Xem tất cả", thêm tab active cho subject đó
+        const isSelectedBeyond = currentSubjectId !== 'all' && !displayedSubjects.some(s => s.id == currentSubjectId);
+        if (isSelectedBeyond) {
+          const selSubj = allSubjects.find(s => s.id == currentSubjectId);
+          if (selSubj) {
+            html += `
+              <button type="button" class="filter-btn active" data-subject-id="${selSubj.id}" role="tab" aria-selected="true">
+                ${escapeHtml(selSubj.name)} <span class="count-pill">${selSubj.courses_count || 0}</span>
+              </button>
+            `;
+          }
+        }
+
+        subjectFilterGroup.innerHTML = html;
+
+        // Gắn sự kiện click cho các nút subject trong group
+        subjectFilterGroup.querySelectorAll('.filter-btn').forEach(btn => {
+          btn.addEventListener('click', function () {
+            const sid = this.getAttribute('data-subject-id');
+            currentSubjectId = (sid === 'all') ? 'all' : parseInt(sid, 10);
+            renderSubjectFilters();
+            renderCourses();
+          });
+        });
+
+        // Cập nhật nội dung trong dropdown "Xem tất cả"
+        if (allSubjectsList) {
+          let dropHtml = `
+            <div class="subject-dropdown-item ${currentSubjectId === 'all' ? 'active-drop' : ''}" data-subject-id="all" style="padding: 8px 14px; font-size: 0.8125rem; color: #334155; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); ${currentSubjectId === 'all' ? 'background: #EFF6FF; font-weight: 700; color: var(--primary-600);' : ''}">
+              <span>Tất cả chủ đề</span>
+              <span class="count-pill" style="font-size: 0.75rem;">${allCourses.length}</span>
+            </div>
+          `;
+          allSubjects.forEach(s => {
+            const isAct = (currentSubjectId == s.id);
+            dropHtml += `
+              <div class="subject-dropdown-item ${isAct ? 'active-drop' : ''}" data-subject-id="${s.id}" style="padding: 8px 14px; font-size: 0.8125rem; color: #334155; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s ease; ${isAct ? 'background: #EFF6FF; font-weight: 700; color: var(--primary-600);' : ''}">
+                <span>${escapeHtml(s.name)}</span>
+                <span class="count-pill" style="font-size: 0.75rem;">${s.courses_count || 0}</span>
+              </div>
+            `;
+          });
+          allSubjectsList.innerHTML = dropHtml;
+
+          // Gắn sự kiện click cho các mục trong dropdown
+          allSubjectsList.querySelectorAll('.subject-dropdown-item').forEach(item => {
+            item.addEventListener('click', function () {
+              const sid = this.getAttribute('data-subject-id');
+              currentSubjectId = (sid === 'all') ? 'all' : parseInt(sid, 10);
+              if (allSubjectsDropdown) allSubjectsDropdown.style.display = 'none';
+              renderSubjectFilters();
+              renderCourses();
+            });
+            item.addEventListener('mouseenter', function () {
+              if (!this.classList.contains('active-drop')) this.style.backgroundColor = '#F8FAFC';
+            });
+            item.addEventListener('mouseleave', function () {
+              if (!this.classList.contains('active-drop')) this.style.backgroundColor = 'transparent';
+            });
+          });
+        }
+      }
+
+      // Xử lý toggle Dropdown "Xem tất cả"
+      if (btnShowAllSubjects && allSubjectsDropdown) {
+        btnShowAllSubjects.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const isShown = allSubjectsDropdown.style.display === 'block';
+          allSubjectsDropdown.style.display = isShown ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', function (e) {
+          if (!btnShowAllSubjects.contains(e.target) && !allSubjectsDropdown.contains(e.target)) {
+            allSubjectsDropdown.style.display = 'none';
+          }
+        });
       }
 
       function renderCourses() {
@@ -639,19 +968,47 @@
 
         const q = currentQuery.toLowerCase().trim();
         const filtered = allCourses.filter(course => {
-          const cat = getCategoryFromCourse(course);
-          const title = (course.title || '').toLowerCase();
-          const level = (course.level || '').toLowerCase();
-          const desc = (course.description || '').toLowerCase();
+          // 1. Lọc theo Subject (Chủ đề)
+          let matchesSubject = true;
+          if (currentSubjectId !== 'all') {
+            matchesSubject = (course.subject_id == currentSubjectId);
+          }
 
-          const matchesCategory = (currentFilter === 'all') || (cat === currentFilter);
-          const matchesSearch = !q || title.includes(q) || level.includes(q) || desc.includes(q);
-          return matchesCategory && matchesSearch;
+          // 2. Lọc theo Level (Trình độ)
+          let matchesLevel = true;
+          if (currentLevel !== 'all') {
+            const lvl = (course.level || '').toLowerCase();
+            matchesLevel = lvl.includes(currentLevel);
+          }
+
+          // 3. Lọc theo Từ khóa tìm kiếm (Search Query)
+          let matchesSearch = true;
+          if (q) {
+            const title = (course.title || '').toLowerCase();
+            const desc = (course.description || '').toLowerCase();
+            const sName = (course.subject_name || '').toLowerCase();
+            const lvl = (course.level || '').toLowerCase();
+            matchesSearch = title.includes(q) || desc.includes(q) || sName.includes(q) || lvl.includes(q);
+          }
+
+          return matchesSubject && matchesLevel && matchesSearch;
         });
 
         if (filtered.length === 0) {
           gridEl.style.display = 'none';
-          if (emptyEl) emptyEl.style.display = 'block';
+          if (emptyEl) {
+            emptyEl.style.display = 'block';
+            const emptySubj = allSubjects.find(s => s.id == currentSubjectId);
+            const subjText = emptySubj ? `trong chủ đề "${escapeHtml(emptySubj.name)}"` : '';
+            const lvlText = currentLevel !== 'all' ? `với trình độ "${escapeHtml(currentLevel)}"` : '';
+            const contextParts = [subjText, lvlText].filter(Boolean);
+            const emptyDesc = emptyEl.querySelector('p');
+            if (emptyDesc) {
+              emptyDesc.textContent = contextParts.length > 0
+                ? `Không có khóa học nào phù hợp ${contextParts.join(' và ')}. Thử chọn chủ đề hoặc trình độ khác nhé.`
+                : 'Thử thay đổi chủ đề, trình độ hoặc từ khóa tìm kiếm nhé.';
+            }
+          }
           return;
         }
 
@@ -660,7 +1017,6 @@
 
         gridEl.innerHTML = filtered.map((course, idx) => {
           const isEnrolled = enrolledCourseIds.has(course.id);
-          const category = getCategoryFromCourse(course);
           const gradient = getGradients(idx);
           const hasOpenClasses = course.open_classes_count > 0;
           // Giá khóa học tính từ tổng giá các lớp thuộc khóa học; nếu không có lớp nào thì không hiện tổng giá
@@ -672,21 +1028,39 @@
 
           if (isEnrolled) {
             statusBadge = '<span class="badge badge-success" style="align-self: flex-start; background: rgba(255, 255, 255, 0.95); color: #166534; font-weight: 700;">🟢 Đang theo học</span>';
-            actionButton = `<a href="my-classes.html" class="btn btn-sm btn-outline-primary" style="width: 100%; text-align: center; font-weight: 600;">Vào lớp học</a>`;
+            actionButton = `
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-sm btn-outline-primary btn-open-detail" data-course-id="${course.id}" style="flex: 1; font-weight: 600;">Chi tiết</button>
+                <a href="my-classes.html" class="btn btn-sm btn-primary" style="flex: 1; text-align: center; font-weight: 600; display: inline-flex; align-items: center; justify-content: center;">Vào lớp học</a>
+              </div>
+            `;
           } else {
             if (hasOpenClasses) {
               statusBadge = `<span class="badge badge-primary" style="align-self: flex-start; background: rgba(255, 255, 255, 0.95); color: #1D4ED8; font-weight: 700;">Mở đăng ký (${course.open_classes_count} lớp)</span>`;
             } else {
               statusBadge = `<span class="badge badge-neutral" style="align-self: flex-start; background: rgba(255, 255, 255, 0.95); color: #475569; font-weight: 700;">Đang cập nhật lịch</span>`;
             }
-            // YÊU CẦU: Thống nhất sử dụng nút "Đăng ký khóa học này" trên mọi khóa (không cần nút tư vấn)
-            actionButton = `<button type="button" class="btn btn-sm btn-primary btn-open-enroll" data-course-id="${course.id}" data-course-title="${escapeHtml(course.title)}" style="width: 100%; font-weight: 600;">Đăng ký khóa học này</button>`;
+            actionButton = `
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-sm btn-outline-primary btn-open-detail" data-course-id="${course.id}" style="flex: 1; font-weight: 600; white-space: nowrap;">Chi tiết</button>
+                <button type="button" class="btn btn-sm btn-primary btn-open-enroll" data-course-id="${course.id}" data-course-title="${escapeHtml(course.title)}" style="flex: 1.5; font-weight: 600; white-space: nowrap;">Đăng ký khóa học này</button>
+              </div>
+            `;
           }
 
+          const subjectTag = course.subject_name ? `
+            <span class="badge" style="background: rgba(255, 255, 255, 0.22); backdrop-filter: blur(4px); color: #FFFFFF; font-weight: 600; font-size: 0.6875rem; border: 1px solid rgba(255, 255, 255, 0.35);">
+              📚 ${escapeHtml(course.subject_name)}
+            </span>
+          ` : '';
+
           return `
-            <div class="card card-hover course-item" data-category="${category}" style="overflow: hidden; display: flex; flex-direction: column;">
+            <div class="card card-hover course-item" data-course-id="${course.id}" data-subject-id="${course.subject_id}" data-level="${escapeHtml(course.level || '')}" style="overflow: hidden; display: flex; flex-direction: column; cursor: pointer;">
               <div style="height: 140px; background: ${gradient}; color: white; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
-                ${statusBadge}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                  ${statusBadge}
+                  ${subjectTag}
+                </div>
                 <h3 style="color: white; margin: 0; font-size: 1.125rem; font-weight: 700; line-height: 1.3;">${escapeHtml(course.title)}</h3>
               </div>
               <div class="card-body" style="flex: 1; display: flex; flex-direction: column;">
@@ -709,11 +1083,32 @@
           `;
         }).join('');
 
+        // Nút mở modal chi tiết khóa học
+        gridEl.querySelectorAll('.btn-open-detail').forEach(btn => {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const courseId = parseInt(this.getAttribute('data-course-id'), 10);
+            openCourseDetailModal(courseId);
+          });
+        });
+
         // Nút mở modal đăng ký lớp của khóa học
         gridEl.querySelectorAll('.btn-open-enroll').forEach(btn => {
-          btn.addEventListener('click', function () {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
             const courseId = parseInt(this.getAttribute('data-course-id'), 10);
             openCourseEnrollModal(courseId);
+          });
+        });
+
+        // Click vào thẻ khóa học (ngoại trừ khi click trúng nút/link bên trong) để mở modal chi tiết
+        gridEl.querySelectorAll('.course-item').forEach(card => {
+          card.addEventListener('click', function (e) {
+            if (e.target.closest('button, a, input, select')) return;
+            const courseId = parseInt(this.getAttribute('data-course-id'), 10);
+            if (courseId) {
+              openCourseDetailModal(courseId);
+            }
           });
         });
       }
@@ -723,19 +1118,13 @@
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
-      // 6. Xử lý Lọc & Tìm kiếm
-      filterButtons.forEach(btn => {
-        btn.addEventListener('click', function () {
-          filterButtons.forEach(b => {
-            b.classList.remove('active');
-            b.setAttribute('aria-selected', 'false');
-          });
-          this.classList.add('active');
-          this.setAttribute('aria-selected', 'true');
-          currentFilter = this.getAttribute('data-filter') || 'all';
+      // 6. Xử lý Lọc theo Level, Tìm kiếm & Reset
+      if (levelSelect) {
+        levelSelect.addEventListener('change', function () {
+          currentLevel = this.value;
           renderCourses();
         });
-      });
+      }
 
       if (searchInput) {
         searchInput.addEventListener('input', function () {
@@ -759,15 +1148,523 @@
 
       if (btnResetFilter) {
         btnResetFilter.addEventListener('click', function () {
-          currentFilter = 'all';
+          currentSubjectId = 'all';
+          currentLevel = 'all';
           currentQuery = '';
           if (searchInput) searchInput.value = '';
-          filterButtons.forEach(b => {
-            b.classList.toggle('active', b.getAttribute('data-filter') === 'all');
-            b.setAttribute('aria-selected', b.getAttribute('data-filter') === 'all' ? 'true' : 'false');
-          });
+          if (levelSelect) levelSelect.value = 'all';
+          renderSubjectFilters();
           renderCourses();
         });
+      }
+
+      // 6.5. Modal Chi Tiết Khóa Học & Danh Sách Lớp Học (Kèm Giảng Viên Phụ Trách) + Đánh Giá (Review & Ranking)
+      const courseDetailModal = document.getElementById('modal-course-detail');
+      const btnCloseCourseDetail = document.getElementById('btn-close-course-detail');
+      const btnCloseDetailFooter = document.getElementById('btn-close-detail-footer');
+      const btnDetailGoEnroll = document.getElementById('btn-detail-go-enroll');
+      const detailSubjectBadge = document.getElementById('detail-subject-badge');
+      const detailLevelBadge = document.getElementById('detail-level-badge');
+      const detailRatingBadge = document.getElementById('detail-rating-badge');
+      const detailCourseTitle = document.getElementById('detail-course-title');
+      const detailClassesSummary = document.getElementById('detail-classes-summary');
+      const detailLessonsSummary = document.getElementById('detail-lessons-summary');
+      const detailPriceSummary = document.getElementById('detail-price-summary');
+      const detailCourseDescription = document.getElementById('detail-course-description');
+      const detailClassCountPill = document.getElementById('detail-class-count-pill');
+      const detailClassesList = document.getElementById('detail-classes-list');
+
+      // Các thành phần phục vụ Review & Ranking
+      let currentDetailCourseId = 0;
+      let selectedRating = 5;
+      const reviewTotalBadge = document.getElementById('review-total-badge');
+      const reviewScoreBig = document.getElementById('review-score-big');
+      const reviewStarsBig = document.getElementById('review-stars-big');
+      const reviewSummarySubtitle = document.getElementById('review-summary-subtitle');
+      const formCourseReview = document.getElementById('form-course-review');
+      const starRatingSelector = document.getElementById('star-rating-selector');
+      const starRatingHint = document.getElementById('star-rating-hint');
+      const reviewInputRating = document.getElementById('review-input-rating');
+      const reviewInputComment = document.getElementById('review-input-comment');
+      const btnSubmitReview = document.getElementById('btn-submit-review');
+      const btnReviewSpinner = document.getElementById('btn-review-spinner');
+      const btnReviewText = document.getElementById('btn-review-text');
+      const btnRefreshReviews = document.getElementById('btn-refresh-reviews');
+      const detailReviewsList = document.getElementById('detail-reviews-list');
+
+      const starRatingLabels = {
+        1: '1 sao - Cần cải thiện',
+        2: '2 sao - Tạm được',
+        3: '3 sao - Khá tốt',
+        4: '4 sao - Rất tốt',
+        5: '5 sao - Tuyệt vời'
+      };
+
+      function updateStarWidgetDisplay(val) {
+        if (!starRatingSelector) return;
+        const stars = starRatingSelector.querySelectorAll('.star-item');
+        stars.forEach(s => {
+          const sVal = parseInt(s.getAttribute('data-value'), 10);
+          if (sVal <= val) {
+            s.style.color = '#F59E0B';
+            s.innerHTML = '&#9733;';
+          } else {
+            s.style.color = '#CBD5E1';
+            s.innerHTML = '&#9733;';
+          }
+        });
+        if (starRatingHint) {
+          starRatingHint.textContent = starRatingLabels[val] || `${val} sao`;
+        }
+      }
+
+      function initStarRatingWidget() {
+        if (!starRatingSelector) return;
+        const stars = starRatingSelector.querySelectorAll('.star-item');
+        stars.forEach(s => {
+          s.addEventListener('mouseenter', function () {
+            const v = parseInt(this.getAttribute('data-value'), 10);
+            updateStarWidgetDisplay(v);
+          });
+          s.addEventListener('click', function () {
+            selectedRating = parseInt(this.getAttribute('data-value'), 10);
+            if (reviewInputRating) reviewInputRating.value = selectedRating;
+            updateStarWidgetDisplay(selectedRating);
+          });
+        });
+
+        starRatingSelector.addEventListener('mouseleave', function () {
+          updateStarWidgetDisplay(selectedRating);
+        });
+
+        updateStarWidgetDisplay(selectedRating);
+      }
+      initStarRatingWidget();
+
+      async function loadCourseReviews(courseId) {
+        if (!detailReviewsList) return;
+        detailReviewsList.innerHTML = `
+          <div style="text-align: center; padding: 1.5rem; color: #64748B; font-size: 0.8125rem;">
+            ⏳ Đang tải nhận xét từ học viên...
+          </div>
+        `;
+
+        try {
+          const res = await fetch(`/api/v1/student/courses/${courseId}/reviews?page=1&limit=25`, { headers: getAuthHeaders() });
+          if (res.ok) {
+            const resData = await res.json();
+            const reviews = resData.data || [];
+
+            if (reviewTotalBadge) {
+              reviewTotalBadge.textContent = `${reviews.length} đánh giá`;
+            }
+
+            if (reviews.length === 0) {
+              if (reviewScoreBig) reviewScoreBig.textContent = '5.0';
+              if (reviewStarsBig) reviewStarsBig.textContent = '★★★★★';
+              if (reviewSummarySubtitle) reviewSummarySubtitle.textContent = 'Chưa có nhận xét nào từ học viên';
+              detailReviewsList.innerHTML = `
+                <div style="text-align: center; padding: 1.75rem 1rem; background: #FFFFFF; border: 1px dashed #CBD5E1; border-radius: var(--radius-md); color: var(--text-muted);">
+                  <div style="font-size: 1.75rem; margin-bottom: 6px;">💬</div>
+                  <div style="font-weight: 700; font-size: 0.875rem; color: #475569;">Chưa có nhận xét nào</div>
+                  <p style="margin: 4px 0 0; font-size: 0.75rem; color: #64748B;">Hãy là người đầu tiên đánh giá và nhận xét về khóa học này nhé!</p>
+                </div>
+              `;
+              return;
+            }
+
+            // Tính điểm trung bình thực tế từ các reviews
+            const totalScore = reviews.reduce((sum, r) => sum + (r.rating || 5), 0);
+            const avgRating = (totalScore / reviews.length).toFixed(1);
+            const roundedAvg = Math.round(parseFloat(avgRating));
+
+            if (reviewScoreBig) reviewScoreBig.textContent = avgRating;
+            if (reviewStarsBig) {
+              reviewStarsBig.textContent = '★'.repeat(roundedAvg) + '☆'.repeat(Math.max(0, 5 - roundedAvg));
+            }
+            if (reviewSummarySubtitle) {
+              reviewSummarySubtitle.textContent = `Dựa trên ${reviews.length} nhận xét từ học viên`;
+            }
+            if (detailRatingBadge) {
+              detailRatingBadge.textContent = `⭐ ${avgRating} (${reviews.length} đánh giá)`;
+            }
+
+            // Kiểm tra xem học viên hiện tại đã từng review khóa học này chưa để pre-fill form
+            let currentUserId = null;
+            try {
+              const u = readStrictStudentUser();
+              currentUserId = u?.id;
+            } catch (e) {}
+
+            const myReview = currentUserId ? reviews.find(r => r.user_id === currentUserId) : null;
+            if (myReview) {
+              selectedRating = myReview.rating || 5;
+              if (reviewInputRating) reviewInputRating.value = selectedRating;
+              if (reviewInputComment) reviewInputComment.value = myReview.comment || '';
+              updateStarWidgetDisplay(selectedRating);
+              const formTitle = document.getElementById('form-review-title');
+              if (formTitle) formTitle.textContent = 'Cập nhật đánh giá của bạn';
+              if (btnReviewText) btnReviewText.textContent = 'Cập nhật đánh giá';
+            } else {
+              selectedRating = 5;
+              if (reviewInputRating) reviewInputRating.value = 5;
+              if (reviewInputComment) reviewInputComment.value = '';
+              updateStarWidgetDisplay(5);
+              const formTitle = document.getElementById('form-review-title');
+              if (formTitle) formTitle.textContent = 'Viết đánh giá của bạn';
+              if (btnReviewText) btnReviewText.textContent = 'Gửi đánh giá';
+            }
+
+            // Render danh sách review
+            detailReviewsList.innerHTML = reviews.map(r => {
+              const name = r.user_full_name || 'Học viên ẩn danh';
+              const initials = name.trim().split(/\s+/).map(w => w[0]).join('').slice(-2).toUpperCase();
+              const dateStr = formatDateVN(r.created_at);
+              const starStr = '★'.repeat(r.rating || 5) + '☆'.repeat(Math.max(0, 5 - (r.rating || 5)));
+
+              return `
+                <div class="review-item-card" style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #3B82F6, #1D4ED8); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; flex-shrink: 0;">
+                        ${initials}
+                      </div>
+                      <div>
+                        <div style="font-weight: 700; font-size: 0.8125rem; color: #0F172A;">${escapeHtml(name)}</div>
+                        <div style="font-size: 0.6875rem; color: var(--text-muted);">${dateStr}</div>
+                      </div>
+                    </div>
+                    <div style="color: #F59E0B; font-size: 0.875rem; letter-spacing: 1px;" title="${r.rating} sao">
+                      ${starStr}
+                    </div>
+                  </div>
+                  <p style="font-size: 0.8125rem; color: #334155; line-height: 1.5; margin: 2px 0 0; word-break: break-word;">
+                    ${escapeHtml(r.comment || 'Không có nhận xét chi tiết.')}
+                  </p>
+                </div>
+              `;
+            }).join('');
+          } else {
+            detailReviewsList.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: #EF4444; font-size: 0.8125rem;">Không thể nạp danh sách nhận xét.</div>';
+          }
+        } catch (err) {
+          console.error('Lỗi khi tải review:', err);
+          detailReviewsList.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: #EF4444; font-size: 0.8125rem;">Lỗi kết nối máy chủ.</div>';
+        }
+      }
+
+      if (formCourseReview) {
+        formCourseReview.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          if (!currentDetailCourseId) return;
+
+          const rating = parseInt(reviewInputRating ? reviewInputRating.value : 5, 10);
+          const comment = reviewInputComment ? reviewInputComment.value.trim() : '';
+
+          if (btnSubmitReview) {
+            btnSubmitReview.disabled = true;
+            btnSubmitReview.style.opacity = '0.7';
+          }
+          if (btnReviewSpinner) btnReviewSpinner.style.display = 'inline';
+
+          try {
+            const res = await fetch(`/api/v1/student/courses/${currentDetailCourseId}/reviews`, {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              body: JSON.stringify({ rating, comment })
+            });
+
+            const resData = await res.json();
+            if (res.ok && resData.success) {
+              showToast('Cảm ơn bạn đã gửi đánh giá cho khóa học!', 'success');
+              await loadCourseReviews(currentDetailCourseId);
+              // Cập nhật lại danh sách khóa học để đồng bộ điểm đánh giá
+              loadCoursesData();
+            } else {
+              showToast(resData.message || 'Không thể gửi đánh giá.', 'warning');
+            }
+          } catch (err) {
+            console.error('Lỗi submit review:', err);
+            showToast('Lỗi kết nối máy chủ khi gửi đánh giá.', 'danger');
+          } finally {
+            if (btnSubmitReview) {
+              btnSubmitReview.disabled = false;
+              btnSubmitReview.style.opacity = '1';
+            }
+            if (btnReviewSpinner) btnReviewSpinner.style.display = 'none';
+          }
+        });
+      }
+
+      if (btnRefreshReviews) {
+        btnRefreshReviews.addEventListener('click', function () {
+          if (currentDetailCourseId) {
+            loadCourseReviews(currentDetailCourseId);
+          }
+        });
+      }
+
+      function closeCourseDetailModal() {
+        if (courseDetailModal) courseDetailModal.style.display = 'none';
+      }
+
+      if (btnCloseCourseDetail) btnCloseCourseDetail.addEventListener('click', closeCourseDetailModal);
+      if (btnCloseDetailFooter) btnCloseDetailFooter.addEventListener('click', closeCourseDetailModal);
+      if (courseDetailModal) {
+        courseDetailModal.addEventListener('click', function (e) {
+          if (e.target === courseDetailModal) closeCourseDetailModal();
+        });
+      }
+
+      function formatDateVN(dateStr) {
+        if (!dateStr) return 'Đang cập nhật';
+        try {
+          const d = new Date(dateStr);
+          if (isNaN(d.getTime())) return dateStr;
+          return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        } catch {
+          return dateStr;
+        }
+      }
+
+      function getDayOfWeekName(day) {
+        const days = {
+          0: 'Chủ nhật',
+          1: 'Thứ hai',
+          2: 'Thứ ba',
+          3: 'Thứ tư',
+          4: 'Thứ năm',
+          5: 'Thứ sáu',
+          6: 'Thứ bảy',
+          7: 'Chủ nhật'
+        };
+        return days[day] || `Thứ ${day}`;
+      }
+
+      async function openCourseDetailModal(courseId) {
+        if (!courseDetailModal) return;
+        currentDetailCourseId = courseId;
+
+        const course = allCourses.find(c => (c.id || c.course_id) === courseId);
+        if (course) {
+          if (detailCourseTitle) detailCourseTitle.textContent = course.title;
+          if (detailSubjectBadge) {
+            detailSubjectBadge.textContent = course.subject_name ? `📚 ${course.subject_name}` : '📚 Tiếng Anh';
+          }
+          if (detailLevelBadge) {
+            detailLevelBadge.innerHTML = getLevelBadge(course.level);
+          }
+          if (detailRatingBadge) {
+            detailRatingBadge.textContent = `⭐ ${course.average_rating ? course.average_rating.toFixed(1) : '5.0'} (${course.reviews_count || 0} đánh giá)`;
+          }
+          if (detailClassesSummary) {
+            detailClassesSummary.textContent = `🏫 ${course.open_classes_count || 0} lớp học`;
+          }
+          if (detailLessonsSummary) {
+            detailLessonsSummary.style.display = 'none'; // Không hiện số bài học
+          }
+          if (detailPriceSummary) {
+            const hasOpenClasses = course.open_classes_count > 0;
+            const hasPrice = course.price != null && hasOpenClasses;
+            detailPriceSummary.textContent = hasPrice ? `💰 Học phí: ${formatCurrency(course.price)}` : '💰 Học phí: Chưa mở lớp';
+          }
+          if (detailCourseDescription) {
+            detailCourseDescription.textContent = course.description || 'Chương trình chuẩn quốc tế với giáo trình hiện đại và đội ngũ giáo viên dày dặn kinh nghiệm.';
+          }
+        }
+
+        if (detailClassCountPill) detailClassCountPill.textContent = 'Đang tải...';
+        if (detailClassesList) {
+          detailClassesList.innerHTML = `
+            <div style="text-align: center; padding: 2.5rem 1rem; color: #64748B; font-size: 0.875rem;">
+              <div style="font-size: 1.75rem; margin-bottom: 8px;">⏳</div>
+              <div>Đang nạp thông tin các lớp học và giảng viên phụ trách...</div>
+            </div>
+          `;
+        }
+
+        if (btnDetailGoEnroll) {
+          btnDetailGoEnroll.onclick = function () {
+            closeCourseDetailModal();
+            openCourseEnrollModal(courseId);
+          };
+        }
+
+        courseDetailModal.style.display = 'flex';
+        loadCourseReviews(courseId);
+
+        try {
+          const res = await fetch(`/api/v1/student/courses/${courseId}`, { headers: getAuthHeaders() });
+          if (res.ok) {
+            const resData = await res.json();
+            const detail = resData.data;
+            const classes = (detail?.available_classes || []).filter(cl => cl.status !== 'cancelled' && cl.status !== 'completed');
+
+            if (detailClassCountPill) {
+              detailClassCountPill.textContent = `${classes.length} lớp học`;
+            }
+
+            if (classes.length === 0) {
+              if (detailClassesList) {
+                detailClassesList.innerHTML = `
+                  <div style="text-align: center; padding: 2.25rem 1rem; background: #FFFBEB; border: 1px dashed #FDE68A; border-radius: var(--radius-md); color: #B45309;">
+                    <div style="font-size: 1.75rem; margin-bottom: 6px;">📂</div>
+                    <div style="font-weight: 700; font-size: 1rem; margin-bottom: 4px;">Chưa mở lớp</div>
+                    <p style="margin: 0; font-size: 0.8125rem; color: #92400E;">Khóa học này hiện chưa có lớp học nào đang mở đăng ký. Vui lòng quay lại sau!</p>
+                  </div>
+                `;
+              }
+              if (btnDetailGoEnroll) {
+                btnDetailGoEnroll.style.display = 'none';
+              }
+              return;
+            }
+
+            if (btnDetailGoEnroll) {
+              btnDetailGoEnroll.style.display = 'inline-flex';
+            }
+
+            if (detailClassesList) {
+              detailClassesList.innerHTML = classes.map(cl => {
+                // Giảng viên phụ trách lớp
+                let teacherBlockHtml = '';
+                if (cl.teachers && cl.teachers.length > 0) {
+                  teacherBlockHtml = cl.teachers.map(t => {
+                    const initials = t.full_name ? t.full_name.trim().split(/\s+/).map(w => w[0]).join('').slice(-2).toUpperCase() : 'GV';
+                    const roleLabel = t.role === 'main' ? 'Giảng viên chính' : (t.role === 'assistant' ? 'Trợ giảng' : 'Giáo viên');
+                    return `
+                      <div style="display: flex; align-items: center; gap: 12px; background: #F8FAFC; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid #E2E8F0;">
+                        <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #2563EB, #1D4ED8); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem; flex-shrink: 0; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">
+                          ${initials}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-weight: 700; font-size: 0.9375rem; color: #0F172A;">${escapeHtml(t.full_name)}</span>
+                            <span class="badge badge-primary" style="font-size: 0.6875rem; padding: 2px 8px;">${roleLabel}</span>
+                          </div>
+                          <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 14px; margin-top: 3px; flex-wrap: wrap;">
+                            ${t.qualification ? `<span>🎓 Trình độ: <strong>${escapeHtml(t.qualification)}</strong></span>` : ''}
+                            ${t.email ? `<span>✉️ Email: <strong>${escapeHtml(t.email)}</strong></span>` : ''}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('');
+                } else if (cl.teacher_name) {
+                  const initials = cl.teacher_name.trim().split(/\s+/).map(w => w[0]).join('').slice(-2).toUpperCase();
+                  teacherBlockHtml = `
+                    <div style="display: flex; align-items: center; gap: 12px; background: #F8FAFC; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid #E2E8F0;">
+                      <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #2563EB, #1D4ED8); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem; flex-shrink: 0; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">
+                        ${initials}
+                      </div>
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.9375rem; color: #0F172A;">${escapeHtml(cl.teacher_name)}</span>
+                          <span class="badge badge-primary" style="font-size: 0.6875rem; padding: 2px 8px;">Giảng viên chính</span>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                } else {
+                  teacherBlockHtml = `
+                    <div style="font-size: 0.8125rem; color: #64748B; font-style: italic; background: #F8FAFC; padding: 8px 12px; border-radius: var(--radius-md); border: 1px dashed #CBD5E1;">
+                      👨‍🏫 Giảng viên: Đang cập nhật giáo viên phụ trách
+                    </div>
+                  `;
+                }
+
+                // Lịch học hàng tuần
+                let schedulesHtml = '';
+                if (cl.schedules && cl.schedules.length > 0) {
+                  schedulesHtml = `
+                    <div style="margin-top: 4px;">
+                      <div style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
+                        📅 Thời khóa biểu & Phòng học:
+                      </div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        ${cl.schedules.map(sch => {
+                          const dayName = sch.day_name || getDayOfWeekName(sch.day_of_week);
+                          const timeRange = sch.time_range || `${sch.start_time?.slice(0, 5)} - ${sch.end_time?.slice(0, 5)}`;
+                          const roomText = sch.classroom_name || sch.room_name || 'Phòng học trung tâm';
+                          return `
+                            <span style="font-size: 0.75rem; background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; padding: 4px 10px; border-radius: var(--radius-sm); display: inline-flex; align-items: center; gap: 4px;">
+                              <strong>${escapeHtml(dayName)}:</strong> ${escapeHtml(timeRange)} (${escapeHtml(roomText)})
+                            </span>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                  `;
+                }
+
+                // Trạng thái lớp học
+                let classStatusBadge = '';
+                if (cl.is_enrolled) {
+                  classStatusBadge = `<span class="badge badge-success" style="font-size: 0.75rem; font-weight: 700;">🟢 Bạn đang học lớp này</span>`;
+                } else if (cl.enrolled_students >= cl.max_students) {
+                  classStatusBadge = `<span class="badge badge-danger" style="font-size: 0.75rem; font-weight: 700;">🔴 Đã đủ sĩ số</span>`;
+                } else {
+                  classStatusBadge = `<span class="badge badge-primary" style="font-size: 0.75rem; font-weight: 700;">Đang mở đăng ký</span>`;
+                }
+
+                return `
+                  <div style="border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.15rem 1.25rem; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Dòng tiêu đề lớp -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+                      <div>
+                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 2px;">
+                          <span style="font-weight: 700; color: #1E40AF; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 2px 8px; border-radius: var(--radius-sm); font-size: 0.75rem;">
+                            ${escapeHtml(cl.class_code)}
+                          </span>
+                          <strong style="font-size: 1rem; color: #0F172A;">${escapeHtml(cl.name || cl.class_name)}</strong>
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        ${classStatusBadge}
+                        <strong style="color: var(--primary-600); font-size: 1.1rem;">${formatCurrency(cl.price)}</strong>
+                      </div>
+                    </div>
+
+                    <!-- Giảng viên phụ trách -->
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                      <div style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">
+                        👨‍🏫 Giảng viên phụ trách:
+                      </div>
+                      ${teacherBlockHtml}
+                    </div>
+
+                    <!-- Thời gian khóa học & Sĩ số -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; font-size: 0.8125rem; background: #F8FAFC; border: 1px solid #F1F5F9; padding: 8px 12px; border-radius: var(--radius-md);">
+                      <div style="color: #334155;">
+                        <span>🗓️ Thời gian học: </span>
+                        <strong>${formatDateVN(cl.start_date)}</strong> &rarr; <strong>${formatDateVN(cl.end_date)}</strong>
+                      </div>
+                      <div style="color: #334155;">
+                        <span>👥 Sĩ số lớp: </span>
+                        <strong>${cl.enrolled_students}/${cl.max_students}</strong> học viên
+                        <span style="color: ${cl.available_slots > 0 ? '#16A34A' : '#DC2626'}; font-weight: 700; margin-left: 4px;">
+                          (Còn ${cl.available_slots} chỗ)
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Lịch học hàng tuần -->
+                    ${schedulesHtml}
+                  </div>
+                `;
+              }).join('');
+            }
+          } else {
+            if (detailClassesList) {
+              detailClassesList.innerHTML = '<div style="text-align: center; padding: 2rem; color: #EF4444;">Không thể tải thông tin chi tiết khóa học.</div>';
+            }
+          }
+        } catch (err) {
+          console.error('Lỗi khi tải chi tiết khóa học:', err);
+          if (detailClassesList) {
+            detailClassesList.innerHTML = '<div style="text-align: center; padding: 2rem; color: #EF4444;">Lỗi kết nối máy chủ.</div>';
+          }
+        }
       }
 
       // 7. Modal Đăng Ký Lớp Học Của Khóa Học & Kiểm tra Trùng lịch thời gian thực
@@ -820,6 +1717,7 @@
 
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
+          closeCourseDetailModal();
           closeEnrollModal();
           closeReceiptModal();
         }

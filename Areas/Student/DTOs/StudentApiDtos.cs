@@ -172,6 +172,21 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public int Limit { get; set; } = 10;
     }
 
+    public class StudentSubjectListItemDto
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
+        [JsonPropertyName("courses_count")]
+        public int CoursesCount { get; set; }
+    }
+
     public class CourseListItemDto
     {
         [JsonPropertyName("id")]
@@ -308,6 +323,12 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("is_enrolled")]
         public bool IsEnrolled { get; set; }
+
+        [JsonPropertyName("teacher_name")]
+        public string? TeacherName { get; set; }
+
+        [JsonPropertyName("teachers")]
+        public List<ClassTeacherInfoDto> Teachers { get; set; } = new();
 
         [JsonPropertyName("schedules")]
         public List<ClassScheduleItemDto> Schedules { get; set; } = new();
