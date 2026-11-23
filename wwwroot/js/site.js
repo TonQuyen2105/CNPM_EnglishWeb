@@ -29,47 +29,37 @@ function redirectToLoginWithReason(reason) {
   } catch (_) {}
 }
 
-function readRawSessionUser() {
-  try {
-    const raw = localStorage.getItem('session_user');
-    if (!raw) return { exists: false, user: null, invalid: false };
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') {
-      return { exists: true, user: null, invalid: true };
-    }
-    return { exists: true, user: parsed, invalid: false };
-  } catch (_) {
-    return { exists: true, user: null, invalid: true };
+function getPortalStorageKey(role) {
+  switch (String(role || '').trim().toLowerCase()) {
+    case 'admin':
+      return 'admin_user';
+    case 'teacher':
+      return 'teacher_user';
+    case 'student':
+      return 'student_user';
+    default:
+      return null;
   }
 }
 
 /**
  * Đọc thông tin user từ localStorage theo đúng vai trò cổng hiện tại.
- * - Ưu tiên kiểm tra localStorage.getItem('session_user').
- * - Chỉ fallback sang 'student_user' khi expectedRole === 'student' và không có 'session_user'.
+ * - Chỉ đọc duy nhất key độc lập của expectedRole ('admin_user' / 'teacher_user' / 'student_user').
  * - Bắt buộc (u.role || '').toLowerCase() === expectedRole; nếu không tồn tại hoặc sai vai trò -> trả về null.
  */
 function getStrictPortalUser(expectedRole) {
   const targetRole = String(expectedRole || '').trim().toLowerCase();
-  if (!targetRole) return null;
+  const storageKey = getPortalStorageKey(targetRole);
+  if (!storageKey) return null;
 
-  const sessionState = readRawSessionUser();
-  if (sessionState.exists) {
-    if (sessionState.invalid || !sessionState.user) return null;
-    const actualRole = String(sessionState.user.role || '').trim().toLowerCase();
-    return actualRole === targetRole ? sessionState.user : null;
-  }
-
-  if (targetRole === 'student') {
-    try {
-      const studentRaw = localStorage.getItem('student_user');
-      if (!studentRaw) return null;
-      const parsed = JSON.parse(studentRaw);
-      if (parsed && typeof parsed === 'object' && String(parsed.role || '').trim().toLowerCase() === 'student') {
-        return parsed;
-      }
-    } catch (_) {}
-  }
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && String(parsed.role || '').trim().toLowerCase() === targetRole) {
+      return parsed;
+    }
+  } catch (_) {}
 
   return null;
 }
@@ -79,42 +69,15 @@ function enforcePortalRoleGuard() {
     const portalRole = getCurrentPortalRole();
     if (!portalRole) return true;
 
-    const sessionState = readRawSessionUser();
-    if (sessionState.exists) {
-      const actualRole = sessionState.user ? String(sessionState.user.role || '').trim().toLowerCase() : '';
-      if (sessionState.invalid || actualRole !== portalRole) {
-        if (portalRole === 'student') {
-          try { localStorage.removeItem('student_user'); } catch (_) {}
-        }
-        redirectToLoginWithReason('role_changed');
-        return false;
-      }
-      return true;
-    }
-
-    if (portalRole === 'student') {
-      try {
-        const studentRaw = localStorage.getItem('student_user');
-        if (studentRaw) {
-          const parsed = JSON.parse(studentRaw);
-          const studentRole = parsed && typeof parsed === 'object'
-            ? String(parsed.role || '').trim().toLowerCase()
-            : '';
-          if (studentRole && studentRole !== 'student') {
-            localStorage.removeItem('student_user');
-            redirectToLoginWithReason('role_changed');
-            return false;
+    const user = getStrictPortalUser(portalRole);
+    if (!user) {
+      const storageKey = getPortalStorageKey(portalRole);
+      if (storageKey) {
+        try {
+          if (localStorage.getItem(storageKey) !== null) {
+            localStorage.removeItem(storageKey);
           }
-        }
-      } catch (_) {
-        try { localStorage.removeItem('student_user'); } catch (_) {}
-      }
-    }
-
-    // Chặn truy cập chưa đăng nhập vào cổng Admin hoặc Student
-    if ((portalRole === 'admin' || portalRole === 'student') && getStrictPortalUser(portalRole) === null) {
-      if (portalRole === 'student') {
-        try { localStorage.removeItem('student_user'); } catch (_) {}
+        } catch (_) {}
       }
       redirectToLoginWithReason('auth_required');
       return false;
@@ -220,67 +183,45 @@ function syncStudentUserSession() {
 
 // Chạy kiểm tra vai trò cổng & đồng bộ session ngay khi script load
 if (typeof window !== 'undefined') {
+  window.getPortalStorageKey = getPortalStorageKey;
   window.getStrictPortalUser = getStrictPortalUser;
   if (enforcePortalRoleGuard()) {
     syncStudentUserSession();
   }
 
-  // Lắng nghe thay đổi session_user từ các tab khác để chống lẫn lộn tài khoản giữa các cổng
+  // Chỉ lắng nghe thay đổi của đúng key thuộc cổng hiện tại (hoàn toàn bỏ qua 2 cổng còn lại)
   window.addEventListener('storage', (e) => {
     try {
       const portalRole = getCurrentPortalRole();
       if (!portalRole) return;
+      const myKey = getPortalStorageKey(portalRole);
+      if (!myKey) return;
 
       if (e.key === null) {
         redirectToLoginWithReason('session_changed');
         return;
       }
 
-      if (e.key === 'session_user') {
-        if (!e.newValue) {
-          if (portalRole === 'student') {
-            try { localStorage.removeItem('student_user'); } catch (_) {}
-          }
-          redirectToLoginWithReason('session_changed');
-          return;
-        }
+      if (e.key !== myKey) return;
 
-        let newUser = null;
-        let oldUser = null;
-        try { newUser = JSON.parse(e.newValue); } catch (_) {}
-        try { if (e.oldValue) oldUser = JSON.parse(e.oldValue); } catch (_) {}
-
-        const newRole = newUser && typeof newUser === 'object'
-          ? String(newUser.role || '').trim().toLowerCase()
-          : '';
-        const roleChanged = !newUser || newRole !== portalRole;
-        const userChanged = !!(oldUser && newUser && oldUser.id != null && newUser.id != null && String(oldUser.id) !== String(newUser.id));
-
-        if (roleChanged || userChanged) {
-          if (portalRole === 'student' && roleChanged) {
-            try { localStorage.removeItem('student_user'); } catch (_) {}
-          }
-          redirectToLoginWithReason('session_changed');
-        }
+      if (!e.newValue) {
+        redirectToLoginWithReason('session_changed');
         return;
       }
 
-      if (e.key === 'student_user' && portalRole === 'student') {
-        if (!e.newValue) {
-          const validStudent = getStrictPortalUser('student');
-          if (!validStudent) {
-            redirectToLoginWithReason('session_changed');
-          }
-          return;
-        }
-        try {
-          const parsed = JSON.parse(e.newValue);
-          const roleVal = parsed && typeof parsed === 'object' ? String(parsed.role || '').trim().toLowerCase() : '';
-          if (roleVal && roleVal !== 'student') {
-            localStorage.removeItem('student_user');
-            redirectToLoginWithReason('session_changed');
-          }
-        } catch (_) {}
+      let newUser = null;
+      let oldUser = null;
+      try { newUser = JSON.parse(e.newValue); } catch (_) {}
+      try { if (e.oldValue) oldUser = JSON.parse(e.oldValue); } catch (_) {}
+
+      const newRole = newUser && typeof newUser === 'object'
+        ? String(newUser.role || '').trim().toLowerCase()
+        : '';
+      const roleInvalid = !newUser || newRole !== portalRole;
+      const userChanged = !!(oldUser && newUser && oldUser.id != null && newUser.id != null && String(oldUser.id) !== String(newUser.id));
+
+      if (roleInvalid || userChanged) {
+        redirectToLoginWithReason('session_changed');
       }
     } catch (_) {}
   });
@@ -350,14 +291,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 3. Xử lý Đăng xuất (Tương thích cả file:// và chạy qua Server)
+  // 3. Xử lý Đăng xuất độc lập theo từng cổng (Tương thích cả file:// và chạy qua Server)
   const logoutBtns = document.querySelectorAll('#btn-topbar-logout, #sidebar-logout-btn, #btn-student-logout, .btn-logout, .sidebar-footer a.text-danger, a[href*="logout"]');
   logoutBtns.forEach(btn => {
+    if (btn.hasAttribute('data-teacher-logout')) return;
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
+      const portalRole = getCurrentPortalRole();
+      const storageKey = getPortalStorageKey(portalRole);
       if (window.location.protocol !== 'file:') {
         try {
-          const response = await fetch('/Account/TeacherSession', { method: 'DELETE' });
+          const logoutUrl = `/Account/Session?role=${encodeURIComponent(portalRole || '')}`;
+          const response = await fetch(logoutUrl, { method: 'DELETE', credentials: 'same-origin' });
           if (!response.ok) throw new Error('Logout failed');
         } catch (_) {
           alert('Chưa đăng xuất được. Vui lòng thử lại.');
@@ -365,8 +310,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       try {
-        localStorage.removeItem('session_user');
-        localStorage.removeItem('student_user');
+        if (storageKey) {
+          localStorage.removeItem(storageKey);
+        }
       } catch (_) {}
 
       if (window.location.protocol === 'file:') {

@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
+using CNPM_EnglishLearning.Services.Auth;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +29,8 @@ public class TeacherSessionController(ApplicationDbContext db) : ControllerBase
         if (user is null || !MatchesPassword(user, credentials.Password))
             return Unauthorized();
 
-        if (user.Role is not ("admin" or "teacher" or "student"))
+        var scheme = PortalAuthSchemes.GetSchemeForRole(user.Role);
+        if (scheme is null)
             return Forbid();
         if (user.Role == "teacher" && !await db.Teachers.AnyAsync(t => t.UserId == user.Id, cancellationToken))
             return Forbid();
@@ -40,7 +41,6 @@ public class TeacherSessionController(ApplicationDbContext db) : ControllerBase
             new Claim(ClaimTypes.Name, user.FullName),
             new Claim(ClaimTypes.Role, user.Role)
         };
-        var scheme = CookieAuthenticationDefaults.AuthenticationScheme;
         await HttpContext.SignInAsync(scheme, new ClaimsPrincipal(new ClaimsIdentity(claims, scheme)),
             new AuthenticationProperties { IsPersistent = credentials.Remember });
 
@@ -48,9 +48,14 @@ public class TeacherSessionController(ApplicationDbContext db) : ControllerBase
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Logout()
+    [HttpDelete("/Account/Session")]
+    public async Task<IActionResult> Logout([FromQuery] string? role = null)
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        var scheme = PortalAuthSchemes.GetSchemeForRole(role)
+            ?? PortalAuthSchemes.ResolveSchemeFromReferer(Request.Headers.Referer.ToString())
+            ?? PortalAuthSchemes.TeacherCookie;
+
+        await HttpContext.SignOutAsync(scheme);
         return NoContent();
     }
 

@@ -124,35 +124,22 @@
     // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
     (function syncTopbarUser() {
       try {
-        const sessionRaw = localStorage.getItem('session_user');
+        const studentRaw = localStorage.getItem('student_user');
         let u = null;
-        if (sessionRaw) {
-          const parsed = JSON.parse(sessionRaw);
-          if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+        if (studentRaw) {
+          const parsed = JSON.parse(studentRaw);
+          if (parsed && typeof parsed === 'object' && String(parsed.role || '').toLowerCase() === 'student') {
+            u = parsed;
+          } else {
             localStorage.removeItem('student_user');
-            window.location.replace('/login.html?reason=role_changed');
-            return;
-          }
-          u = parsed;
-        } else {
-          const studentRaw = localStorage.getItem('student_user');
-          if (studentRaw) {
-            const parsed = JSON.parse(studentRaw);
-            const r = parsed && parsed.role ? String(parsed.role).toLowerCase() : '';
-            if (r && r !== 'student') {
-              localStorage.removeItem('student_user');
-              window.location.replace('/login.html?reason=role_changed');
-              return;
-            }
-            if (r === 'student') u = parsed;
           }
         }
-        let name = 'Trần Hoàng';
-        let email = 'student@englishlearning.example';
-        if (u) {
-          if (u.full_name || u.name) name = u.full_name || u.name;
-          if (u.email) email = u.email;
+        if (!u) {
+          window.location.replace('/login.html?reason=auth_required');
+          return;
         }
+        let name = u.full_name || u.name || 'Trần Hoàng';
+        let email = u.email || 'student@englishlearning.example';
         const parts = name.trim().split(/\s+/);
         const initials = parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         const av = document.getElementById('user-avatar-topbar');
@@ -511,24 +498,18 @@
       // 3. User Helpers
       function getCurrentUserSession() {
         try {
-          const sessionRaw = localStorage.getItem('session_user');
-          if (sessionRaw) {
-            const parsed = JSON.parse(sessionRaw);
-            if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
-              localStorage.removeItem('student_user');
-              window.location.replace('/login.html?reason=role_changed');
-              return null;
-            }
-            return parsed;
-          }
           if (typeof window.getStrictPortalUser === 'function') {
-            return window.getStrictPortalUser('student');
+            const u = window.getStrictPortalUser('student');
+            if (u) return u;
+          } else {
+            const studentRaw = localStorage.getItem('student_user');
+            if (studentRaw) {
+              const parsed = JSON.parse(studentRaw);
+              if (parsed && String(parsed.role || '').toLowerCase() === 'student') return parsed;
+            }
           }
-          const studentRaw = localStorage.getItem('student_user');
-          if (studentRaw) {
-            const parsed = JSON.parse(studentRaw);
-            if (parsed && String(parsed.role || '').toLowerCase() === 'student') return parsed;
-          }
+          localStorage.removeItem('student_user');
+          window.location.replace('/login.html?reason=auth_required');
         } catch (_) {}
         return null;
       }
@@ -693,7 +674,7 @@
               const updatedData = json.data || payload;
               initialProfileData = updatedData;
 
-              // Đồng bộ session storage (chỉ lưu khi vẫn là phiên học viên)
+              // Đồng bộ riêng key student_user (không đụng 2 cổng còn lại)
               const stored = getCurrentUserSession();
               if (stored) {
                 stored.role = 'student';
@@ -701,7 +682,6 @@
                 stored.phone_number = phoneNumber;
                 stored.avatar_url = avatarUrl;
                 localStorage.setItem('student_user', JSON.stringify(stored));
-                localStorage.setItem('session_user', JSON.stringify(stored));
               }
 
               populateProfileUI(updatedData);
@@ -712,7 +692,7 @@
             }
           } catch (err) {
             console.error('Lỗi cập nhật hồ sơ:', err);
-            // Lưu cục bộ nếu lỗi mạng (chỉ lưu khi vẫn là phiên học viên)
+            // Lưu cục bộ vào riêng student_user nếu lỗi mạng
             const stored = getCurrentUserSession();
             if (stored) {
               stored.role = 'student';
@@ -720,7 +700,6 @@
               stored.phone_number = phoneNumber;
               stored.avatar_url = avatarUrl;
               localStorage.setItem('student_user', JSON.stringify(stored));
-              localStorage.setItem('session_user', JSON.stringify(stored));
             }
             populateProfileUI(payload);
             showToast('Đã lưu thông tin hồ sơ trên trình duyệt của bạn!', 'success');

@@ -678,14 +678,16 @@
             phone_number: user.phoneNumber || user.phone_number || '',
             avatar_url: user.avatarUrl || user.avatar_url || ''
           };
-          // Lưu thông tin hiển thị cho các cổng Admin / Teacher / Student (xác thực server dùng Cookie)
+          // Lưu thông tin phiên độc lập theo từng phân hệ (không ghi đè 2 cổng còn lại)
           try {
-            localStorage.setItem('session_user', JSON.stringify(userPayload));
-            if (role === 'student') {
+            if (role === 'admin') {
+              localStorage.setItem('admin_user', JSON.stringify(userPayload));
+            } else if (role === 'teacher') {
+              localStorage.setItem('teacher_user', JSON.stringify(userPayload));
+            } else if (role === 'student') {
               localStorage.setItem('student_user', JSON.stringify(userPayload));
-            } else {
-              localStorage.removeItem('student_user');
             }
+            localStorage.removeItem('session_user');
           } catch (_) {}
 
           toast.success(`Đăng nhập thành công! Xin chào ${userPayload.full_name || userPayload.email}.`, 'Đăng nhập thành công');

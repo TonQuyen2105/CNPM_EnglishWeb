@@ -335,35 +335,22 @@
     // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
     (function syncTopbarUser() {
       try {
-        const sessionRaw = localStorage.getItem('session_user');
+        const studentRaw = localStorage.getItem('student_user');
         let u = null;
-        if (sessionRaw) {
-          const parsed = JSON.parse(sessionRaw);
-          if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+        if (studentRaw) {
+          const parsed = JSON.parse(studentRaw);
+          if (parsed && typeof parsed === 'object' && String(parsed.role || '').toLowerCase() === 'student') {
+            u = parsed;
+          } else {
             localStorage.removeItem('student_user');
-            window.location.replace('/login.html?reason=role_changed');
-            return;
-          }
-          u = parsed;
-        } else {
-          const studentRaw = localStorage.getItem('student_user');
-          if (studentRaw) {
-            const parsed = JSON.parse(studentRaw);
-            const r = parsed && parsed.role ? String(parsed.role).toLowerCase() : '';
-            if (r && r !== 'student') {
-              localStorage.removeItem('student_user');
-              window.location.replace('/login.html?reason=role_changed');
-              return;
-            }
-            if (r === 'student') u = parsed;
           }
         }
-        let name = 'Trần Hoàng';
-        let email = 'student@englishlearning.example';
-        if (u) {
-          if (u.full_name || u.name) name = u.full_name || u.name;
-          if (u.email) email = u.email;
+        if (!u) {
+          window.location.replace('/login.html?reason=auth_required');
+          return;
         }
+        let name = u.full_name || u.name || 'Trần Hoàng';
+        let email = u.email || 'student@englishlearning.example';
         const parts = name.trim().split(/\s+/);
         const initials = parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         const av = document.getElementById('user-avatar-topbar');
@@ -508,25 +495,14 @@
       function getStoredUser() {
         let user = null;
         try {
-          const sessionRaw = localStorage.getItem('session_user');
-          if (sessionRaw) {
-            const parsed = JSON.parse(sessionRaw);
-            if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
-              localStorage.removeItem('student_user');
-              window.location.replace('/login.html?reason=role_changed');
-              return null;
-            }
-            user = parsed;
+          if (typeof window.getStrictPortalUser === 'function') {
+            user = window.getStrictPortalUser('student');
           } else {
             const studentRaw = localStorage.getItem('student_user');
             if (studentRaw) {
               const parsed = JSON.parse(studentRaw);
               if (parsed && String(parsed.role || '').toLowerCase() === 'student') {
                 user = parsed;
-              } else if (parsed && parsed.role) {
-                localStorage.removeItem('student_user');
-                window.location.replace('/login.html?reason=role_changed');
-                return null;
               }
             }
           }
@@ -534,15 +510,13 @@
           console.warn('Lỗi đọc session học sinh:', e);
         }
 
-        if (!user || user.full_name === 'Học viên Demo' || user.id === 8 || !user.full_name) {
-          user = Object.assign({
-            id: 8,
-            role: 'student',
-            full_name: 'Trần Hoàng',
-            email: 'student@englishlearning.example',
-            streak_days: 5
-          }, user || {});
-          user.role = 'student';
+        if (!user) {
+          localStorage.removeItem('student_user');
+          window.location.replace('/login.html?reason=auth_required');
+          return null;
+        }
+        user.role = 'student';
+        if (!user.full_name || user.full_name === 'Học viên Demo') {
           user.full_name = 'Trần Hoàng';
         }
         return user;
@@ -574,11 +548,8 @@
 
       if (!studentUser) return;
       updateTopbarProfile(studentUser);
-      if (localStorage.getItem('session_user')) {
-        studentUser.role = 'student';
-        localStorage.setItem('session_user', JSON.stringify(studentUser));
-        localStorage.setItem('student_user', JSON.stringify(studentUser));
-      }
+      studentUser.role = 'student';
+      localStorage.setItem('student_user', JSON.stringify(studentUser));
 
       // Đồng bộ profile trực tiếp từ Database Supabase
       async function syncUserProfile() {
@@ -603,9 +574,6 @@
               updateTopbarProfile(studentUser);
               if (typeof window.getStrictPortalUser !== 'function' || window.getStrictPortalUser('student')) {
                 studentUser.role = 'student';
-                if (localStorage.getItem('session_user')) {
-                  localStorage.setItem('session_user', JSON.stringify(studentUser));
-                }
                 localStorage.setItem('student_user', JSON.stringify(studentUser));
               }
             }
@@ -619,10 +587,13 @@
       // Xử lý Đăng xuất
       const logoutBtn = document.getElementById('btn-topbar-logout');
       if (logoutBtn) {
-        logoutBtn.addEventListener('click', function () {
+        logoutBtn.addEventListener('click', async function (e) {
+          e.preventDefault();
+          try {
+            await fetch('/Account/Session?role=student', { method: 'DELETE', credentials: 'same-origin' });
+          } catch (_) {}
           localStorage.removeItem('student_user');
-          localStorage.removeItem('session_user');
-          window.location.href = '../../../index.html';
+          window.location.href = '/';
         });
       }
 

@@ -287,35 +287,22 @@
   <script>
     (function syncTopbarUser() {
       try {
-        const sessionRaw = localStorage.getItem('session_user');
+        const studentRaw = localStorage.getItem('student_user');
         let u = null;
-        if (sessionRaw) {
-          const parsed = JSON.parse(sessionRaw);
-          if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
+        if (studentRaw) {
+          const parsed = JSON.parse(studentRaw);
+          if (parsed && typeof parsed === 'object' && String(parsed.role || '').toLowerCase() === 'student') {
+            u = parsed;
+          } else {
             localStorage.removeItem('student_user');
-            window.location.replace('/login.html?reason=role_changed');
-            return;
-          }
-          u = parsed;
-        } else {
-          const studentRaw = localStorage.getItem('student_user');
-          if (studentRaw) {
-            const parsed = JSON.parse(studentRaw);
-            const r = parsed && parsed.role ? String(parsed.role).toLowerCase() : '';
-            if (r && r !== 'student') {
-              localStorage.removeItem('student_user');
-              window.location.replace('/login.html?reason=role_changed');
-              return;
-            }
-            if (r === 'student') u = parsed;
           }
         }
-        let name = 'Trần Hoàng';
-        let email = 'student@englishlearning.example';
-        if (u) {
-          if (u.full_name || u.name) name = u.full_name || u.name;
-          if (u.email) email = u.email;
+        if (!u) {
+          window.location.replace('/login.html?reason=auth_required');
+          return;
         }
+        let name = u.full_name || u.name || 'Trần Hoàng';
+        let email = u.email || 'student@englishlearning.example';
         const av = document.getElementById('user-avatar-topbar');
         const un = document.getElementById('user-name-topbar');
         const em = document.getElementById('user-email-topbar');
@@ -337,22 +324,22 @@
         window.location.replace('/login.html?reason=session_changed');
         return;
       }
-      if (e.key === 'session_user') {
-        if (!e.newValue) {
-          localStorage.removeItem('student_user');
-          window.location.replace('/login.html?reason=session_changed');
-          return;
-        }
-        try {
-          const u = JSON.parse(e.newValue);
-          if (!u || String(u.role || '').toLowerCase() !== 'student') {
-            localStorage.removeItem('student_user');
-            window.location.replace('/login.html?reason=session_changed');
-          }
-        } catch (_) {
-          localStorage.removeItem('student_user');
+      if (e.key !== 'student_user') return;
+      if (!e.newValue) {
+        window.location.replace('/login.html?reason=session_changed');
+        return;
+      }
+      try {
+        const u = JSON.parse(e.newValue);
+        let oldU = null;
+        try { if (e.oldValue) oldU = JSON.parse(e.oldValue); } catch (_) {}
+        const roleInvalid = !u || String(u.role || '').toLowerCase() !== 'student';
+        const userChanged = !!(oldU && u && oldU.id != null && u.id != null && String(oldU.id) !== String(u.id));
+        if (roleInvalid || userChanged) {
           window.location.replace('/login.html?reason=session_changed');
         }
+      } catch (_) {
+        window.location.replace('/login.html?reason=session_changed');
       }
     });
 
@@ -381,6 +368,18 @@
         if (menuNotif) menuNotif.classList.remove('show');
         if (menuAvatar) menuAvatar.classList.remove('show');
       });
+
+      const logoutBtn = document.getElementById('btn-topbar-logout');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async function (e) {
+          e.preventDefault();
+          try {
+            await fetch('/Account/Session?role=student', { method: 'DELETE', credentials: 'same-origin' });
+          } catch (_) {}
+          try { localStorage.removeItem('student_user'); } catch (_) {}
+          window.location.href = '/';
+        });
+      }
     });
   </script>
 
@@ -859,27 +858,15 @@
         let studentName = 'Trần Hoàng';
         let studentEmail = 'student@englishlearning.example';
         try {
-          const sessionRaw = localStorage.getItem('session_user');
-          let u = null;
-          if (sessionRaw) {
-            const parsed = JSON.parse(sessionRaw);
-            if (!parsed || String(parsed.role || '').toLowerCase() !== 'student') {
-              localStorage.removeItem('student_user');
-              window.location.replace('/login.html?reason=role_changed');
-              return;
-            }
-            u = parsed;
-          } else {
-            const studentRaw = localStorage.getItem('student_user');
-            if (studentRaw) {
-              const parsed = JSON.parse(studentRaw);
-              if (parsed && String(parsed.role || '').toLowerCase() === 'student') u = parsed;
-            }
+          const studentRaw = localStorage.getItem('student_user');
+          const u = studentRaw ? JSON.parse(studentRaw) : null;
+          if (!u || String(u.role || '').toLowerCase() !== 'student') {
+            localStorage.removeItem('student_user');
+            window.location.replace('/login.html?reason=auth_required');
+            return;
           }
-          if (u) {
-            if (u.full_name || u.name) studentName = u.full_name || u.name;
-            if (u.email) studentEmail = u.email;
-          }
+          if (u.full_name || u.name) studentName = u.full_name || u.name;
+          if (u.email) studentEmail = u.email;
         } catch (e) {}
 
         const dateStr = formatDate(p.paid_at || p.created_at);

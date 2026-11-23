@@ -237,9 +237,9 @@ document.querySelectorAll('[data-teacher-logout]').forEach(node => {
   node.addEventListener('click', async event => {
     event.preventDefault();
     try {
-      const response = await fetch('/Account/TeacherSession', { method: 'DELETE' });
+      const response = await fetch('/Account/TeacherSession?role=teacher', { method: 'DELETE', credentials: 'same-origin' });
       if (!response.ok) throw new Error('Unable to sign out');
-      localStorage.removeItem('session_user');
+      localStorage.removeItem('teacher_user');
       window.location.href = '/';
     } catch (_) {
       teacherContent.textContent = 'Chưa đăng xuất được. Vui lòng thử lại.';

@@ -1,3 +1,4 @@
+using CNPM_EnglishLearning.Services.Auth;
 using CNPM_EnglishLearning.Services.Interfaces;
 using CNPM_EnglishLearning.Services.Implementations;
 using CNPM_EnglishLearning.Data;
@@ -51,29 +52,80 @@ static bool IsApiRequest(HttpRequest request) =>
     || request.Path.StartsWithSegments("/Admin/api", StringComparison.OrdinalIgnoreCase)
     || request.Headers.Accept.Any(a => a is not null && a.Contains("application/json", StringComparison.OrdinalIgnoreCase));
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+static void ConfigurePortalCookie(CookieAuthenticationOptions options, string cookieName)
+{
+    options.Cookie.Name = cookieName;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.LoginPath = "/login.html";
+    options.AccessDeniedPath = "/login.html";
+    options.Events.OnRedirectToLogin = context =>
     {
-        options.LoginPath = "/login.html";
-        options.Events.OnRedirectToLogin = context =>
-        {
-            if (IsApiRequest(context.Request))
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            else
-                context.Response.Redirect(context.RedirectUri);
+        if (IsApiRequest(context.Request))
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        else
+            context.Response.Redirect(context.RedirectUri);
 
-            return Task.CompletedTask;
-        };
-        options.Events.OnRedirectToAccessDenied = context =>
-        {
-            if (IsApiRequest(context.Request))
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            else
-                context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        if (IsApiRequest(context.Request))
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        else
+            context.Response.Redirect(context.RedirectUri);
 
-            return Task.CompletedTask;
+        return Task.CompletedTask;
+    };
+}
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = PortalAuthSchemes.PortalSelector;
+        options.DefaultAuthenticateScheme = PortalAuthSchemes.PortalSelector;
+        options.DefaultChallengeScheme = PortalAuthSchemes.PortalSelector;
+        options.DefaultForbidScheme = PortalAuthSchemes.PortalSelector;
+    })
+    .AddPolicyScheme(PortalAuthSchemes.PortalSelector, "Portal Cookie Selector", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            var path = context.Request.Path;
+
+            if (path.StartsWithSegments("/Admin", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWithSegments("/Areas/Admin", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase))
+                return PortalAuthSchemes.AdminCookie;
+
+            if (path.StartsWithSegments("/Teacher", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWithSegments("/Areas/Teacher", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWithSegments("/api/teacher", StringComparison.OrdinalIgnoreCase))
+                return PortalAuthSchemes.TeacherCookie;
+
+            if (path.StartsWithSegments("/Student", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWithSegments("/Areas/Student", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWithSegments("/api/v1/student", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWithSegments("/api/student", StringComparison.OrdinalIgnoreCase))
+                return PortalAuthSchemes.StudentCookie;
+
+            if (path.StartsWithSegments("/api/lessons", StringComparison.OrdinalIgnoreCase))
+            {
+                var referer = context.Request.Headers.Referer.ToString();
+                if (referer.Contains("/Teacher", StringComparison.OrdinalIgnoreCase))
+                    return PortalAuthSchemes.TeacherCookie;
+                if (referer.Contains("/Student", StringComparison.OrdinalIgnoreCase))
+                    return PortalAuthSchemes.StudentCookie;
+                if (context.Request.Cookies.ContainsKey(PortalAuthSchemes.StudentCookieName))
+                    return PortalAuthSchemes.StudentCookie;
+                return PortalAuthSchemes.TeacherCookie;
+            }
+
+            return PortalAuthSchemes.TeacherCookie;
         };
-    });
+    })
+    .AddCookie(PortalAuthSchemes.AdminCookie, options => ConfigurePortalCookie(options, PortalAuthSchemes.AdminCookieName))
+    .AddCookie(PortalAuthSchemes.TeacherCookie, options => ConfigurePortalCookie(options, PortalAuthSchemes.TeacherCookieName))
+    .AddCookie(PortalAuthSchemes.StudentCookie, options => ConfigurePortalCookie(options, PortalAuthSchemes.StudentCookieName));
 
 // Register HtmlViewEngine to render static .html views seamlessly alongside .cshtml
 builder.Services.Configure<MvcViewOptions>(options =>

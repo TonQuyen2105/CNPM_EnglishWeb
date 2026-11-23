@@ -801,8 +801,8 @@
               token: token
             };
 
-            localStorage.setItem('session_user', JSON.stringify(sessionData));
             localStorage.setItem('student_user', JSON.stringify(sessionData));
+            localStorage.removeItem('session_user');
             localStorage.setItem('auth_token', token);
 
             toast.success(`Chào mừng ${user.full_name}! Đang chuyển hướng vào hệ thống...`, 'Đăng ký thành công');
