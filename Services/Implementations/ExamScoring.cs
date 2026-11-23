@@ -33,7 +33,7 @@ public static class ExamScoring
                 throw new GradingValidationException($"Câu #{question.Id} chưa có bộ đáp án điền từ hợp lệ.");
             var text = NormalizeText(answer.TextAnswer ?? "");
             if (text.Length == 0) return 0;
-            return accepted.Any(k => string.Equals(text, NormalizeText(k.AnswerText),
+            return accepted.Any(k => string.Equals(text, NormalizeText(k.AnswerText ?? string.Empty),
                 k.IsCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)) ? question.Points : 0;
         }
         throw new GradingValidationException("Loại câu hỏi không hỗ trợ chấm tự động.");

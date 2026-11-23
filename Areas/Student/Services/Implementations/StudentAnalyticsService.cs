@@ -33,7 +33,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     p.LessonId,
                     l.Title,
                     l.CourseId,
-                    ContentType = l.ContentType.ToLower(),
+                    ContentType = (l.ContentType ?? string.Empty).ToLower(),
                     Score = (double?)(p.Score ?? 100m) ?? 100.0,
                     CompletedAt = p.CompletedAt ?? now
                 }

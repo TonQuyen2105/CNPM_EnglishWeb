@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.Mail;
 using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -9,6 +10,7 @@ using Npgsql;
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "admin")]
     public class UsersController : Controller
     {
         private const int MaxFullNameLength = 100;

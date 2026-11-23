@@ -29,6 +29,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add MVC services to the container
 builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache();
 
 // Cấu hình CORS mở cho mọi nguồn (hỗ trợ Live Server port 5500, file://, hoặc localhost:5000)
 builder.Services.AddCors(options =>
@@ -45,13 +46,18 @@ builder.Services.AddScoped<CNPM_EnglishLearning.Services.Lessons.LessonFileStore
 builder.Services.AddScoped<CNPM_EnglishLearning.Services.Lessons.SupabaseLessonStorage>();
 builder.Services.AddHttpClient("LessonStorage", client => client.Timeout = TimeSpan.FromMinutes(10))
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+static bool IsApiRequest(HttpRequest request) =>
+    request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase)
+    || request.Path.StartsWithSegments("/Admin/api", StringComparison.OrdinalIgnoreCase)
+    || request.Headers.Accept.Any(a => a is not null && a.Contains("application/json", StringComparison.OrdinalIgnoreCase));
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/login.html";
         options.Events.OnRedirectToLogin = context =>
         {
-            if (context.Request.Path.StartsWithSegments("/api"))
+            if (IsApiRequest(context.Request))
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             else
                 context.Response.Redirect(context.RedirectUri);
@@ -60,7 +66,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
         options.Events.OnRedirectToAccessDenied = context =>
         {
-            if (context.Request.Path.StartsWithSegments("/api"))
+            if (IsApiRequest(context.Request))
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
             else
                 context.Response.Redirect(context.RedirectUri);
@@ -218,6 +224,18 @@ app.Use(async (context, next) =>
 });
 
 // Keep Teacher entry links canonical before legacy static Views can be served.
+var teacherAssets = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+{
+    "/css/teacher.css", "/js/teacher.js", "/js/teacher-exams.js", "/wwwroot/js/teacher-exams.js",
+    "/js/teacher-questions.js", "/wwwroot/js/teacher-questions.js", "/js/teacher-lessons.js", "/wwwroot/js/teacher-lessons.js",
+    "/js/teacher-gradebook.js", "/wwwroot/js/teacher-gradebook.js", "/wwwroot/css/teacher.css", "/wwwroot/js/teacher.js"
+};
+var teacherPages = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+{
+    "/dashboard.html", "/classes.html", "/class-detail.html", "/schedule.html", "/lessons.html",
+    "/questions.html", "/exams.html", "/grading.html", "/results.html", "/profile.html"
+};
+
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path;
@@ -226,8 +244,7 @@ app.Use(async (context, next) =>
     var teacherApi = path.StartsWithSegments("/api/teacher", StringComparison.OrdinalIgnoreCase);
     var loginPage = path.Equals(new PathString("/login.html"), StringComparison.OrdinalIgnoreCase)
         || path.Equals(new PathString("/login"), StringComparison.OrdinalIgnoreCase);
-    var teacherAsset = new[] { "/css/teacher.css", "/js/teacher.js", "/js/teacher-exams.js", "/wwwroot/js/teacher-exams.js", "/js/teacher-questions.js", "/wwwroot/js/teacher-questions.js", "/js/teacher-lessons.js", "/wwwroot/js/teacher-lessons.js", "/js/teacher-gradebook.js", "/wwwroot/js/teacher-gradebook.js", "/wwwroot/css/teacher.css", "/wwwroot/js/teacher.js" }
-        .Contains(path.Value, StringComparer.OrdinalIgnoreCase);
+    var teacherAsset = path.Value is not null && teacherAssets.Contains(path.Value);
     if (teacherPage || teacherApi || loginPage || teacherAsset)
         context.Response.OnStarting(() =>
         {
@@ -240,12 +257,7 @@ app.Use(async (context, next) =>
         if (path.StartsWithSegments("/Areas/Teacher/Views", StringComparison.OrdinalIgnoreCase, out var remaining)
             || path.StartsWithSegments("/Teacher/Views", StringComparison.OrdinalIgnoreCase, out remaining))
         {
-            var pages = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "/dashboard.html", "/classes.html", "/class-detail.html", "/schedule.html", "/lessons.html",
-                "/questions.html", "/exams.html", "/grading.html", "/results.html", "/profile.html"
-            };
-            if (remaining.Value is not null && pages.Contains(remaining.Value))
+            if (remaining.Value is not null && teacherPages.Contains(remaining.Value))
             {
                 context.Response.Redirect("/Teacher" + remaining.Value.ToLowerInvariant() + context.Request.QueryString);
                 return;

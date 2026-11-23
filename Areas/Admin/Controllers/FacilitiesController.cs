@@ -1,5 +1,6 @@
 using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -7,6 +8,7 @@ using Npgsql;
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "admin")]
     public class FacilitiesController : Controller
     {
         // Khớp [MaxLength] của Entity Classroom (Name = 50, Location = 100). Description không giới hạn ở DB nên đặt trần hợp lý.

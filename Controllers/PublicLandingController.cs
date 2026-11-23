@@ -2,6 +2,7 @@ using CNPM_EnglishLearning.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CNPM_EnglishLearning.Controllers
 {
@@ -10,14 +11,20 @@ namespace CNPM_EnglishLearning.Controllers
     [Route("api/public")]
     public class PublicLandingController : ControllerBase
     {
+        private const string LandingCacheKey = "public_landing_payload_v1";
+        private static readonly TimeSpan LandingCacheDuration = TimeSpan.FromSeconds(45);
+
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _cache;
         private readonly ILogger<PublicLandingController> _logger;
 
         public PublicLandingController(
             ApplicationDbContext context,
+            IMemoryCache cache,
             ILogger<PublicLandingController> logger)
         {
             _context = context;
+            _cache = cache;
             _logger = logger;
         }
 
@@ -25,10 +32,16 @@ namespace CNPM_EnglishLearning.Controllers
         /// GET /api/public/landing
         /// Trả về dữ liệu công khai trực tiếp từ PostgreSQL cho Landing Page (index.html):
         /// chỉ số tổng quan, khóa học đang mở, giảng viên tiêu biểu và đánh giá học viên.
+        /// Có cache bộ nhớ 45 giây để tránh chạy 9 câu SQL trên mỗi lượt F5 trang chủ.
         /// </summary>
         [HttpGet("landing")]
         public async Task<IActionResult> GetLandingData(CancellationToken cancellationToken)
         {
+            if (_cache.TryGetValue(LandingCacheKey, out object? cachedPayload) && cachedPayload is not null)
+            {
+                return Ok(cachedPayload);
+            }
+
             try
             {
                 var totalStudents = await _context.Users.AsNoTracking()
@@ -169,7 +182,7 @@ namespace CNPM_EnglishLearning.Controllers
                     createdAt = r.CreatedAt
                 }).ToList();
 
-                return Ok(new
+                var payload = new
                 {
                     success = true,
                     stats = new
@@ -184,7 +197,14 @@ namespace CNPM_EnglishLearning.Controllers
                     courses = featuredCourses,
                     teachers,
                     reviews
+                };
+
+                _cache.Set(LandingCacheKey, payload, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = LandingCacheDuration
                 });
+
+                return Ok(payload);
             }
             catch (OperationCanceledException)
             {

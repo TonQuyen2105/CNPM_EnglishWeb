@@ -55,7 +55,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     LessonId = l.Id,
                     Title = l.Title,
                     OrderIndex = l.OrderIndex,
-                    ContentType = l.ContentType,
+                    ContentType = l.ContentType ?? string.Empty,
                     IsCompleted = prog?.IsCompleted ?? false,
                     Score = prog?.Score,
                     CompletedAt = prog?.CompletedAt
@@ -172,7 +172,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 CourseTitle = lessonInfo.CourseTitle,
                 Title = lesson.Title,
                 OrderIndex = lesson.OrderIndex,
-                ContentType = lesson.ContentType,
+                ContentType = lesson.ContentType ?? string.Empty,
                 Content = parsedText ?? string.Empty, // Đã lọc trường Text, loại bỏ hoàn toàn JSON/EL_LESSON_MEDIA_V1
                 MediaPdfUrl = mediaPdfUrl,
                 MediaPdfName = mediaPdfName,
@@ -184,7 +184,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 CompletedAt = progress?.CompletedAt,
                 IsClassClosed = isClassClosed,
                 ClassStatus = classStatus,
-                Attachments = StudentExtendedStore.GetLessonAttachments(lesson.Id, lesson.Title, lesson.ContentType),
+                Attachments = StudentExtendedStore.GetLessonAttachments(lesson.Id, lesson.Title, lesson.ContentType ?? string.Empty),
                 PracticeQuestions = practiceQuestionDtos
             };
 

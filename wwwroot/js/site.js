@@ -111,6 +111,15 @@ function enforcePortalRoleGuard() {
       }
     }
 
+    // Chặn truy cập chưa đăng nhập vào cổng Admin hoặc Student
+    if ((portalRole === 'admin' || portalRole === 'student') && getStrictPortalUser(portalRole) === null) {
+      if (portalRole === 'student') {
+        try { localStorage.removeItem('student_user'); } catch (_) {}
+      }
+      redirectToLoginWithReason('auth_required');
+      return false;
+    }
+
     return true;
   } catch (_) {
     return true;

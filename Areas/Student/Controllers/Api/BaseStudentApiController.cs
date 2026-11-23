@@ -62,16 +62,19 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
                 }
             }
 
-            // 2. Kiểm tra ClaimsPrincipal (nếu ứng dụng cấu hình Middleware Authentication)
-            var claimIdStr = User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                             ?? User?.FindFirstValue("sub")
-                             ?? User?.FindFirstValue("user_id")
-                             ?? User?.FindFirstValue("id");
-
-            if (int.TryParse(claimIdStr, out var claimUserId) && claimUserId > 0)
+            // 2. Kiểm tra ClaimsPrincipal (chỉ chấp nhận Cookie/Claims của vai trò student, tuyệt đối không lấy ID từ admin/teacher)
+            if (User?.IsInRole("student") == true)
             {
-                _resolvedStudentId = claimUserId;
-                return _resolvedStudentId.Value;
+                var claimIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                                 ?? User.FindFirstValue("sub")
+                                 ?? User.FindFirstValue("user_id")
+                                 ?? User.FindFirstValue("id");
+
+                if (int.TryParse(claimIdStr, out var claimUserId) && claimUserId > 0)
+                {
+                    _resolvedStudentId = claimUserId;
+                    return _resolvedStudentId.Value;
+                }
             }
 
             // 3. Kiểm tra Header X-User-Id hoặc Query ?user_id= (hỗ trợ tích hợp Frontend/Testing nhanh)

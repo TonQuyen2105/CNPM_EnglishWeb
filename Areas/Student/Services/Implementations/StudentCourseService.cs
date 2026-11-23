@@ -35,7 +35,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             if (!string.IsNullOrWhiteSpace(query.Level))
             {
                 var normalizedLevel = query.Level.Trim().ToLower();
-                coursesQuery = coursesQuery.Where(c => c.Level.ToLower() == normalizedLevel);
+                coursesQuery = coursesQuery.Where(c => c.Level != null && c.Level.ToLower() == normalizedLevel);
             }
 
             if (!string.IsNullOrWhiteSpace(query.Search))
@@ -197,7 +197,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     LessonId = l.Id,
                     Title = l.Title,
                     OrderIndex = l.OrderIndex,
-                    ContentType = l.ContentType,
+                    ContentType = l.ContentType ?? string.Empty,
                     IsCompleted = prog?.IsCompleted ?? false,
                     Score = prog?.Score,
                     CompletedAt = prog?.CompletedAt

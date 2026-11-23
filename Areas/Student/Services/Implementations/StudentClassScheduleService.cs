@@ -278,7 +278,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         ClassLessonId = l.Id,
                         LessonId = l.Id,
                         LessonTitle = l.Title,
-                        ContentType = l.ContentType,
+                        ContentType = l.ContentType ?? string.Empty,
                         OrderIndex = l.OrderIndex,
                         ScheduleDate = classInfo.StartDate.Date.AddDays(index * 2),
                         SessionStatus = (progress?.IsCompleted ?? false) ? SessionCompleted : SessionScheduled,
@@ -422,7 +422,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 ClassName = fallbackLesson.ClassName,
                 LessonId = fallbackLesson.Lesson.Id,
                 LessonTitle = fallbackLesson.Lesson.Title,
-                ContentType = fallbackLesson.Lesson.ContentType,
+                ContentType = fallbackLesson.Lesson.ContentType ?? string.Empty,
                 Content = ParseLessonContent(fallbackLesson.Lesson.Content).TextContent ?? fallbackLesson.Lesson.Content,
                 ScheduleDate = fallbackLesson.StartDate.Date,
                 Status = lessonCompleted ? SessionCompleted : SessionScheduled,
@@ -435,7 +435,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 Attachments = StudentExtendedStore.GetLessonAttachments(
                     fallbackLesson.Lesson.Id,
                     fallbackLesson.Lesson.Title,
-                    fallbackLesson.Lesson.ContentType)
+                    fallbackLesson.Lesson.ContentType ?? string.Empty)
             };
 
             return ServiceResult<ClassLessonSessionDetailDto>.Ok(fallbackDto, "Lấy chi tiết buổi học thành công.");

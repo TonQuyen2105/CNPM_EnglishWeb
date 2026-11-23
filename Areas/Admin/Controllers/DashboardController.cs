@@ -1,10 +1,12 @@
 using CNPM_EnglishLearning.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "admin")]
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _context;
