@@ -278,6 +278,7 @@ app.Use(async (context, next) =>
 // Keep Teacher entry links canonical before legacy static Views can be served.
 var teacherAssets = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 {
+    "/js/site.js", "/wwwroot/js/site.js",
     "/css/teacher.css", "/js/teacher.js", "/js/teacher-exams.js", "/wwwroot/js/teacher-exams.js",
     "/js/teacher-questions.js", "/wwwroot/js/teacher-questions.js", "/js/teacher-lessons.js", "/wwwroot/js/teacher-lessons.js",
     "/js/teacher-gradebook.js", "/wwwroot/js/teacher-gradebook.js", "/wwwroot/css/teacher.css", "/wwwroot/js/teacher.js"

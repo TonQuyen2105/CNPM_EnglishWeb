@@ -189,6 +189,27 @@ if (typeof window !== 'undefined') {
     syncStudentUserSession();
   }
 
+  // Bọc window.fetch riêng cho cổng Admin để tự động đăng nhập lại khi Cookie EL.Admin.Auth hết hạn/thiếu (401/403)
+  if (getCurrentPortalRole() === 'admin' && typeof window.fetch === 'function' && !window.__adminFetchAuthWrapped) {
+    window.__adminFetchAuthWrapped = true;
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = async function (input, init) {
+      const res = await originalFetch(input, init);
+      try {
+        const rawUrl = typeof input === 'string'
+          ? input
+          : (input && typeof input.url === 'string' ? input.url : '');
+        const pathname = rawUrl ? new URL(rawUrl, window.location.origin).pathname : '';
+        const isAdminApi = /^\/(Admin\/api|api\/admin)(\/|$)/i.test(pathname);
+        if (isAdminApi && (res.status === 401 || res.status === 403)) {
+          try { localStorage.removeItem('admin_user'); } catch (_) {}
+          redirectToLoginWithReason('auth_required');
+        }
+      } catch (_) {}
+      return res;
+    };
+  }
+
   // Chỉ lắng nghe thay đổi của đúng key thuộc cổng hiện tại (hoàn toàn bỏ qua 2 cổng còn lại)
   window.addEventListener('storage', (e) => {
     try {
