@@ -97,9 +97,8 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 return ServiceResult<StudentLoginResponseDto>.Forbidden($"Cổng đăng nhập này chỉ dành riêng cho Học sinh. Tài khoản của bạn mang vai trò '{user.Role}' không có quyền truy cập vào phân hệ này.");
             }
 
-            // Đọc phone_number từ entity hoặc fallback từ store mở rộng
-            var ext = StudentExtendedStore.GetOrCreateUserProfileExtension(user.Id);
-            var phoneNumber = user.PhoneNumber ?? ext.PhoneNumber;
+            // Đọc phone_number từ entity
+            var phoneNumber = user.PhoneNumber ?? string.Empty;
 
             var userDto = new StudentLoginUserDto
             {
@@ -193,11 +192,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             Db.Users.Add(newUser);
             await Db.SaveChangesAsync();
-
-            // Đồng bộ vào StudentExtendedStore
-            var ext = StudentExtendedStore.GetOrCreateUserProfileExtension(newUser.Id);
-            ext.PhoneNumber = newUser.PhoneNumber ?? string.Empty;
-            ext.LearningGoal = "Học giao tiếp và luyện thi chứng chỉ";
 
             var userDto = new StudentLoginUserDto
             {

@@ -279,46 +279,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
         }
 
         /// <summary>
-        /// 2.3. Gửi yêu cầu đăng ký tư vấn khóa học.
-        /// </summary>
-        public async Task<ServiceResult<ConsultationRecord>> CreateConsultationAsync(int? studentId, CreateConsultationRequestDto request)
-        {
-            if (string.IsNullOrWhiteSpace(request.FullName) || string.IsNullOrWhiteSpace(request.PhoneNumber))
-            {
-                return ServiceResult<ConsultationRecord>.BadRequest("Họ tên và số điện thoại là bắt buộc khi đăng ký tư vấn.");
-            }
-
-            string? courseTitle = null;
-            if (request.CourseId > 0)
-            {
-                var course = await Db.Courses.AsNoTracking()
-                    .Where(c => c.Id == request.CourseId)
-                    .Select(c => new { c.Id, c.Title })
-                    .FirstOrDefaultAsync();
-
-                if (course == null)
-                {
-                    return ServiceResult<ConsultationRecord>.NotFound($"Không tìm thấy khóa học có ID = {request.CourseId}.");
-                }
-                courseTitle = course.Title;
-            }
-
-            var record = StudentExtendedStore.AddConsultation(new ConsultationRecord
-            {
-                UserId = studentId,
-                CourseId = request.CourseId,
-                CourseTitle = courseTitle,
-                FullName = request.FullName.Trim(),
-                PhoneNumber = request.PhoneNumber.Trim(),
-                Email = request.Email?.Trim() ?? string.Empty,
-                Note = request.Note?.Trim(),
-                Status = "pending"
-            });
-
-            return ServiceResult<ConsultationRecord>.Created(record, "Gửi yêu cầu đăng ký tư vấn khóa học thành công.");
-        }
-
-        /// <summary>
         /// 2.4. Đăng ký tham gia lớp học (Kiểm tra sĩ số tối đa & kiểm tra trùng lịch học cá nhân).
         /// </summary>
         public async Task<ServiceResult<EnrollmentResultDto>> EnrollClassAsync(int studentId, CreateEnrollmentRequestDto request)

@@ -343,26 +343,6 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
         public string? Location { get; set; }
     }
 
-    public class CreateConsultationRequestDto
-    {
-        [JsonPropertyName("course_id")]
-        public int CourseId { get; set; }
-
-        [Required(ErrorMessage = "Vui lòng nhập họ và tên.")]
-        [JsonPropertyName("full_name")]
-        public string FullName { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Vui lòng nhập số điện thoại.")]
-        [JsonPropertyName("phone_number")]
-        public string PhoneNumber { get; set; } = string.Empty;
-
-        [JsonPropertyName("email")]
-        public string? Email { get; set; }
-
-        [JsonPropertyName("note")]
-        public string? Note { get; set; }
-    }
-
     public class CreateEnrollmentRequestDto
     {
         [Required]
@@ -1105,9 +1085,6 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("saved_text_answer")]
         public string? SavedTextAnswer { get; set; }
-
-        [JsonPropertyName("saved_audio_url")]
-        public string? SavedAudioUrl { get; set; }
     }
 
     public class QuestionOptionSafeDto
@@ -1133,9 +1110,6 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("text_answer")]
         public string? TextAnswer { get; set; }
-
-        [JsonPropertyName("audio_url")]
-        public string? AudioUrl { get; set; }
     }
 
     public class SaveExamAnswerResponseDto
@@ -1151,9 +1125,6 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("text_answer")]
         public string? TextAnswer { get; set; }
-
-        [JsonPropertyName("audio_url")]
-        public string? AudioUrl { get; set; }
 
         [JsonPropertyName("saved_at")]
         public DateTime SavedAt { get; set; } = DateTime.UtcNow;
@@ -1346,9 +1317,6 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("text_answer")]
         public string? TextAnswer { get; set; }
-
-        [JsonPropertyName("student_audio_url")]
-        public string? StudentAudioUrl { get; set; }
 
         [JsonPropertyName("correct_option_id")]
         public int? CorrectOptionId { get; set; }
@@ -1626,9 +1594,6 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("phone_number")]
         public string PhoneNumber { get; set; } = string.Empty;
-
-        [JsonPropertyName("learning_goal")]
-        public string LearningGoal { get; set; } = string.Empty;
     }
 
     public class UpdateStudentProfileRequestDto
@@ -1644,9 +1609,6 @@ namespace CNPM_EnglishLearning.Areas.Student.DTOs
 
         [JsonPropertyName("phone_number")]
         public string? PhoneNumber { get; set; }
-
-        [JsonPropertyName("learning_goal")]
-        public string? LearningGoal { get; set; }
 
         [JsonPropertyName("avatar_url")]
         public string? AvatarUrl { get; set; }

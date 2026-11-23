@@ -29,16 +29,13 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                 return ServiceResult<StudentProfileDto>.NotFound($"Không tìm thấy thông tin học sinh có ID = {studentId}.");
             }
 
-            var ext = StudentExtendedStore.GetOrCreateUserProfileExtension(studentId);
-
             var dto = new StudentProfileDto
             {
                 Id = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
                 AvatarUrl = user.AvatarUrl,
-                PhoneNumber = user.PhoneNumber ?? ext.PhoneNumber,
-                LearningGoal = ext.LearningGoal
+                PhoneNumber = user.PhoneNumber ?? string.Empty
             };
 
             return ServiceResult<StudentProfileDto>.Ok(dto, "Lấy thông tin hồ sơ học sinh thành công.");
@@ -90,19 +87,13 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             await Db.SaveChangesAsync();
 
-            var ext = StudentExtendedStore.UpdateUserProfileExtension(
-                studentId,
-                user.PhoneNumber,
-                request.LearningGoal);
-
             var dto = new StudentProfileDto
             {
                 Id = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
                 AvatarUrl = user.AvatarUrl,
-                PhoneNumber = user.PhoneNumber ?? ext.PhoneNumber,
-                LearningGoal = ext.LearningGoal
+                PhoneNumber = user.PhoneNumber ?? string.Empty
             };
 
             return ServiceResult<StudentProfileDto>.Ok(dto, "Cập nhật thông tin hồ sơ cá nhân thành công.");

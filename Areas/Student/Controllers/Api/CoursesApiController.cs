@@ -37,18 +37,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
         }
 
         /// <summary>
-        /// 2.3. Gửi yêu cầu đăng ký tư vấn khóa học.
-        /// Endpoint: POST /api/v1/student/consultations
-        /// </summary>
-        [HttpPost("consultations")]
-        public async Task<IActionResult> CreateConsultation([FromBody] CreateConsultationRequestDto request)
-        {
-            var studentId = await TryResolveOptionalStudentIdAsync();
-            var result = await Services.Courses.CreateConsultationAsync(studentId, request);
-            return ToActionResult(result);
-        }
-
-        /// <summary>
         /// 2.4. Đăng ký tham gia lớp học (Enrollment & Payment).
         /// Endpoint: POST /api/v1/student/enrollments
         /// </summary>

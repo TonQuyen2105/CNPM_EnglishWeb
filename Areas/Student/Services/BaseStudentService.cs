@@ -36,7 +36,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Services
 
         protected const string QuestionTypeMultipleChoice = "multiple_choice";
         protected const string QuestionTypeFillBlank = "fill_blank";
-        protected const string QuestionTypePronunciation = "pronunciation";
         protected const string QuestionTypeEssay = "essay";
 
         protected BaseStudentService(ApplicationDbContext db)

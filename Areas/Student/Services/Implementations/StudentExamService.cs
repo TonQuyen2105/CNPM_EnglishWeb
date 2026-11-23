@@ -314,7 +314,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
             var questionDtos = examQuestions.Select(eq =>
             {
                 savedAnswersMap.TryGetValue(eq.QuestionId, out var savedAns);
-                var savedAudio = StudentExtendedStore.GetExamAnswerAudioUrl(activeSession.Id, eq.QuestionId);
 
                 return new ExamQuestionSessionDto
                 {
@@ -326,8 +325,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     AudioUrl = eq.AudioUrl,
                     Options = optionsByQuestion.GetValueOrDefault(eq.QuestionId, new List<QuestionOptionSafeDto>()),
                     SavedSelectedOptionId = savedAns?.SelectedOptionId,
-                    SavedTextAnswer = savedAns?.TextAnswer,
-                    SavedAudioUrl = savedAudio
+                    SavedTextAnswer = savedAns?.TextAnswer
                 };
             }).ToList();
 
@@ -427,19 +425,12 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
 
             await Db.SaveChangesAsync();
 
-            // Lưu file ghi âm nếu là câu hỏi phát âm (pronunciation) theo Gap Analysis #3
-            if (request.AudioUrl != null)
-            {
-                StudentExtendedStore.SetExamAnswerAudioUrl(userExamId, request.QuestionId, request.AudioUrl);
-            }
-
             var response = new SaveExamAnswerResponseDto
             {
                 UserExamId = userExamId,
                 QuestionId = request.QuestionId,
                 SelectedOptionId = answerEntity.SelectedOptionId,
                 TextAnswer = answerEntity.TextAnswer,
-                AudioUrl = StudentExtendedStore.GetExamAnswerAudioUrl(userExamId, request.QuestionId),
                 SavedAt = DateTime.UtcNow
             };
 
@@ -447,7 +438,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
         }
 
         /// <summary>
-        /// 6.4. Nộp bài thi & Chấm điểm tự động (multiple_choice, fill_blank; chuyển pending_review nếu có essay/pronunciation).
+        /// 6.4. Nộp bài thi & Chấm điểm tự động (multiple_choice, fill_blank; chuyển pending_review nếu có bài luận essay).
         /// </summary>
         public async Task<ServiceResult<SubmitExamResultDto>> SubmitExamAsync(int studentId, int userExamId)
         {
@@ -588,7 +579,7 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                         rawEarnedPoints += eq.Points;
                     }
                 }
-                else if (qType == QuestionTypeEssay || qType == QuestionTypePronunciation)
+                else if (qType == QuestionTypeEssay)
                 {
                     pendingReviewCount++;
                     answerEntity.ScoreEarned = null;
@@ -885,7 +876,6 @@ namespace CNPM_EnglishLearning.Areas.Student.Services.Implementations
                     Feedback = userAns?.Feedback,
                     SelectedOptionId = userAns?.SelectedOptionId,
                     TextAnswer = userAns?.TextAnswer,
-                    StudentAudioUrl = StudentExtendedStore.GetExamAnswerAudioUrl(userExamId, eq.QuestionId),
                     CorrectOptionId = correctOption?.Id,
                     CorrectAnswerText = refAnswer?.AnswerText ?? correctOption?.OptionText,
                     ReferenceAudioUrl = refAnswer?.ReferenceAudioUrl,
