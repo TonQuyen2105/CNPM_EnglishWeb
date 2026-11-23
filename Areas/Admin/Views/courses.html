@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Khóa học - EnglishAdmin</title>
+  <title>Môn học - EnglishAdmin</title>
   
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
@@ -55,12 +55,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item active">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -143,7 +143,7 @@
           <div class="breadcrumb" style="font-size: 0.875rem;">
             <span>Quản trị hệ thống</span>
             <span style="color: var(--text-muted); margin: 0 6px;">/</span>
-            <span style="font-weight: 600; color: var(--text-primary);">Khóa học</span>
+            <span style="font-weight: 600; color: var(--text-primary);">Môn học</span>
           </div>
         </div>
 
@@ -211,18 +211,18 @@
         
   <div class="page-header">
     <div>
-      <h1 class="page-header-title">Quản lý Khóa học</h1>
-      <p class="page-header-subtitle" id="courses-subtitle">Đang tải danh sách khóa học theo môn học...</p>
+      <h1 class="page-header-title">Quản lý Môn học</h1>
+      <p class="page-header-subtitle" id="courses-subtitle">Đang tải danh sách môn học và tổng học phí theo khóa học...</p>
     </div>
     <div class="page-header-actions">
       <button type="button" class="btn btn-primary" id="btn-open-create-course" data-modal-target="modal-create-course">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Tạo khóa học mới
+        Tạo môn học mới
       </button>
     </div>
   </div>
 
-  <!-- Bảng tổng hợp Khóa học theo Môn học (Subject) -->
+  <!-- Bảng tổng hợp Khóa học + Tổng tiền các môn học -->
   <div id="subject-totals-summary" style="margin-bottom: 1.5rem;"></div>
 
   <!-- Thanh lọc & tìm kiếm -->
@@ -231,29 +231,29 @@
       <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.75rem; align-items: end;">
         <div class="form-group" style="margin: 0;">
           <label class="form-label" style="font-size: 0.8125rem;">Tìm kiếm</label>
-          <input type="text" id="filter-search" class="form-control" placeholder="Tên khóa học, môn học, mô tả...">
+          <input type="text" id="filter-search" class="form-control" placeholder="Tên môn học, khóa học, mô tả...">
         </div>
         <div class="form-group" style="margin: 0;">
-          <label class="form-label" style="font-size: 0.8125rem;">Môn học</label>
+          <label class="form-label" style="font-size: 0.8125rem;">Khóa học</label>
           <select id="filter-subject" class="form-control">
-            <option value="0">Tất cả môn học</option>
+            <option value="0">Tất cả khóa học</option>
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
-          <label class="form-label" style="font-size: 0.8125rem;">Trình độ</label>
+          <label class="form-label" style="font-size: 0.8125rem;">Cấp độ</label>
           <select id="filter-level" class="form-control">
-            <option value="all">Tất cả trình độ</option>
-            <option value="beginner">Cơ bản</option>
-            <option value="intermediate">Trung cấp</option>
-            <option value="advanced">Nâng cao</option>
+            <option value="all">Tất cả cấp độ</option>
+            <option value="beginner">Cơ bản (Beginner)</option>
+            <option value="intermediate">Trung cấp (Intermediate)</option>
+            <option value="advanced">Nâng cao (Advanced)</option>
           </select>
         </div>
         <div class="form-group" style="margin: 0;">
           <label class="form-label" style="font-size: 0.8125rem;">Trạng thái</label>
           <select id="filter-published" class="form-control">
             <option value="all">Tất cả</option>
-            <option value="published">Đang mở</option>
-            <option value="draft">Bản nháp</option>
+            <option value="published">Đang mở (Published)</option>
+            <option value="draft">Bản nháp (Draft)</option>
           </select>
         </div>
         <div>
@@ -265,7 +265,7 @@
 
   <div id="courses-grid" class="grid grid-cols-3 gap-6">
     <div class="card" style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: var(--text-muted);">
-      Đang tải dữ liệu khóa học...
+      Đang tải dữ liệu môn học...
     </div>
   </div>
 
@@ -273,60 +273,60 @@
     </div>
   </div>
 
-  <!-- Modal Tạo Khóa Học Mới -->
+  <!-- Modal Tạo Môn Học Mới -->
   <div class="modal-backdrop" id="modal-create-course">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Tạo khóa học mới</h3>
+        <h3 class="modal-title">Tạo môn học mới</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
       <form id="create-course-form">
         <div class="modal-body">
           <div id="create-course-error" style="display: none; margin-bottom: 1rem; padding: 0.625rem 0.875rem; border-radius: 0.375rem; background: #FEE2E2; color: #991B1B; font-size: 0.8125rem;"></div>
           <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên khóa học <span style="color:red;">*</span></label>
-            <input type="text" id="create-title" class="form-control" placeholder="Ví dụ: Luyện Thi IELTS 7.0+ Toàn Diện" maxlength="200" required>
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên môn học <span style="color:red;">*</span></label>
+            <input type="text" id="create-title" class="form-control" placeholder="Ví dụ: Toán CC1 / Luyện Thi IELTS 7.0+" maxlength="200" required>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Môn học trực thuộc <span style="color:red;">*</span></label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học trực thuộc <span style="color:red;">*</span></label>
               <select id="create-subject-id" class="form-control" required>
-                <option value="">-- Chọn môn học --</option>
+                <option value="">-- Chọn khóa học --</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Cấp độ khóa học <span style="color:red;">*</span></label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Cấp độ môn học <span style="color:red;">*</span></label>
               <select id="create-level" class="form-control" required>
-                <option value="beginner">Cơ bản</option>
-                <option value="intermediate">Trung cấp</option>
-                <option value="advanced">Nâng cao</option>
+                <option value="beginner">Cơ bản (Beginner)</option>
+                <option value="intermediate">Trung cấp (Intermediate)</option>
+                <option value="advanced">Nâng cao (Advanced)</option>
               </select>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí (VNĐ) <span style="color:red;">*</span></label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học phí môn học (VNĐ) <span style="color:red;">*</span></label>
               <input type="number" id="create-price" class="form-control" min="0" max="99999999.99" step="1000" value="0" placeholder="Ví dụ: 3500000" required>
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái phát hành</label>
               <select id="create-is-published" class="form-control">
-                <option value="true">Đang mở</option>
-                <option value="false">Bản nháp</option>
+                <option value="true">Đang mở (Published)</option>
+                <option value="false">Bản nháp (Draft)</option>
               </select>
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin: 0;">Mô tả chung khóa học</label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin: 0;">Mô tả chung môn học</label>
               <button type="button" class="btn btn-sm btn-secondary" id="btn-suggest-create-desc">Gợi ý mô tả phù hợp</button>
             </div>
-            <textarea id="create-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả tóm tắt nội dung và đối tượng phù hợp của khóa học..."></textarea>
+            <textarea id="create-description" class="form-control" rows="4" maxlength="4000" placeholder="Mô tả tóm tắt nội dung và đối tượng phù hợp của môn học..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" id="btn-save-course" class="btn btn-primary">Lưu khóa học</button>
+          <button type="submit" id="btn-save-course" class="btn btn-primary">Lưu môn học</button>
         </div>
       </form>
     </div>
@@ -445,9 +445,9 @@
       ];
 
       const LEVEL_META = {
-        beginner: { label: 'Cơ bản', badge: 'badge-primary' },
-        intermediate: { label: 'Trung cấp', badge: 'badge-success' },
-        advanced: { label: 'Nâng cao', badge: 'badge-warning' }
+        beginner: { label: 'Cơ bản (Beginner)', badge: 'badge-info' },
+        intermediate: { label: 'Trung cấp (Intermediate)', badge: 'badge-primary' },
+        advanced: { label: 'Nâng cao (Advanced)', badge: 'badge-warning' }
       };
 
       const gridEl = document.getElementById('courses-grid');
@@ -506,26 +506,26 @@
         container.innerHTML = `
           <div class="card" style="padding: 1rem 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-              <strong style="font-size: 0.9375rem; color: var(--text-primary);">Tổng hợp Khóa học theo Môn học</strong>
-              <a href="/Admin/subjects.html" style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">+ Quản lý Môn học →</a>
+              <strong style="font-size: 0.9375rem; color: var(--text-primary);">Tổng hợp Khóa học &amp; Tổng tiền các môn học</strong>
+              <a href="/Admin/subjects.html" style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">+ Quản lý Khóa học →</a>
             </div>
             <div class="grid grid-cols-3 gap-4">
               ${filtered.map(s => {
                 const cList = Array.isArray(s.courses) ? s.courses : [];
                 const detailsHtml = cList.length > 0
                   ? cList.map(c => `<div style="display: flex; justify-content: space-between; font-size: 0.78rem; padding: 2px 0;"><span>&bull; ${escapeHtml(c.title)}</span><strong>${formatCurrency(c.price)}</strong></div>`).join('')
-                  : '<div style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Chưa có khóa học nào thuộc môn học này</div>';
+                  : '<div style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Chưa có môn học nào trong khóa học này</div>';
                 return `
                   <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; background: var(--neutral-50, #F8FAFC); display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                        <strong style="font-size: 0.92rem; color: var(--primary-700, #1D4ED8);">Môn: ${escapeHtml(s.name)}</strong>
-                        <span class="badge badge-primary">${cList.length} khóa học</span>
+                        <strong style="font-size: 0.92rem; color: var(--primary-700, #1D4ED8);">Khóa: ${escapeHtml(s.name)}</strong>
+                        <span class="badge badge-info">${cList.length} môn học</span>
                       </div>
                       <div style="margin-bottom: 0.5rem;">${detailsHtml}</div>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); padding-top: 0.45rem; font-weight: 700; font-size: 0.85rem; color: #047857;">
-                      <span>Tổng học phí các khóa:</span>
+                      <span>Tổng tiền khóa học:</span>
                       <span>${formatCurrency(s.totalPrice)}</span>
                     </div>
                   </div>
@@ -544,8 +544,8 @@
         const currentFilter = subjectEl.value !== '0' ? subjectEl.value : (pendingInitialSubjectId || '0');
         const currentCreate = createSubjectEl.value;
 
-        subjectEl.innerHTML = '<option value="0">Tất cả môn học</option>' +
-          subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
+        subjectEl.innerHTML = '<option value="0">Tất cả khóa học</option>' +
+          subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)} — Tổng: ${formatCurrency(s.totalPrice)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
         if (currentFilter && subjects.some(s => String(s.id) === String(currentFilter))) {
           subjectEl.value = String(currentFilter);
         } else if (urlSubjectId && !lookupsLoaded && subjects.some(s => String(s.id) === String(urlSubjectId))) {
@@ -553,7 +553,7 @@
         }
         pendingInitialSubjectId = null;
 
-        createSubjectEl.innerHTML = '<option value="">-- Chọn môn học --</option>' +
+        createSubjectEl.innerHTML = '<option value="">-- Chọn khóa học --</option>' +
           subjects.map(s => `<option value="${s.id}">${escapeHtml(s.name)}${s.isActive ? '' : ' (Tạm ẩn)'}</option>`).join('');
         if (currentCreate) createSubjectEl.value = currentCreate;
 
@@ -567,8 +567,8 @@
           gridEl.innerHTML = `
             <div class="card" style="grid-column: 1 / -1;">
               <div class="empty-state" style="padding: 2.5rem 1rem;">
-                <div class="empty-state-title">Chưa có khóa học nào phù hợp</div>
-                <div class="empty-state-text" style="margin-bottom: 0;">Hãy thử thay đổi bộ lọc hoặc bấm "Tạo khóa học mới".</div>
+                <div class="empty-state-title">Chưa có môn học nào phù hợp</div>
+                <div class="empty-state-text" style="margin-bottom: 0;">Hãy thử thay đổi bộ lọc hoặc bấm "Tạo môn học mới".</div>
               </div>
             </div>`;
           return;
@@ -576,10 +576,10 @@
 
         gridEl.innerHTML = items.map((c, idx) => {
           const grad = GRADIENTS[idx % GRADIENTS.length];
-          const lv = LEVEL_META[(c.level || 'beginner').toLowerCase()] || { label: c.level || 'Cơ bản', badge: 'badge-primary' };
+          const lv = LEVEL_META[(c.level || 'beginner').toLowerCase()] || { label: c.level || 'Cơ bản', badge: 'badge-info' };
           const statusBadge = c.isPublished
             ? '<span class="badge badge-success" style="align-self: flex-start;">Đang mở</span>'
-            : '<span class="badge badge-neutral" style="align-self: flex-start; background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.35);">Bản nháp</span>';
+            : '<span class="badge badge-secondary" style="align-self: flex-start; background: rgba(255,255,255,0.2); color: #fff;">Bản nháp</span>';
           const rawDesc = c.description ? String(c.description) : 'Chưa có mô tả mục tiêu cho khóa học này.';
           const shortDesc = escapeHtml(rawDesc.length > 130 ? rawDesc.slice(0, 127) + '...' : rawDesc);
 
@@ -588,16 +588,19 @@
               <div style="height: 140px; background: ${grad}; color: white; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
                   ${statusBadge}
-                  <span style="font-size: 0.75rem; opacity: 0.9;">Môn: ${escapeHtml(c.subjectName)}</span>
+                  <span style="font-size: 0.75rem; opacity: 0.9;">${escapeHtml(c.subjectName)}</span>
                 </div>
                 <h3 style="color: white; margin: 0; font-size: 1.125rem; line-height: 1.3;">${escapeHtml(c.title)}</h3>
               </div>
               <div class="card-body" style="flex: 1;">
                 <span class="badge ${lv.badge}">${escapeHtml(lv.label)}</span>
                 <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.625rem; min-height: 2.5rem;">${shortDesc}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
-                  <span style="font-size: 0.8125rem; color: var(--text-muted);">${Number(c.classCount || 0)} lớp &bull; ${Number(c.lessonCount || 0)} bài học</span>
-                  <strong style="color: var(--primary-700, #1D4ED8); font-size: 0.9rem;">${formatCurrency(c.price)}</strong>
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+                  <span style="font-size: 0.8125rem; color: var(--text-muted);">${Number(c.lessonCount || 0)} bài học &bull; ${Number(c.classCount || 0)} lớp</span>
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.78rem; color: var(--text-secondary);">Học phí môn: <strong>${formatCurrency(c.price)}</strong></div>
+                    <strong style="color: #047857; font-size: 0.85rem;">Tổng khóa ${escapeHtml(c.subjectName)}: ${formatCurrency(c.subjectTotalPrice ?? c.price)}</strong>
+                  </div>
                 </div>
               </div>
               <div class="card-footer" style="display: flex; flex-direction: column; gap: 6px;">
@@ -648,7 +651,7 @@
           }
           const items = Array.isArray(data.items) ? data.items : [];
           const publishedCount = items.filter(x => x.isPublished).length;
-          subtitleEl.textContent = `Hiện có ${items.length} khóa học (${publishedCount} đang mở) trong hệ thống`;
+          subtitleEl.textContent = `Hiện có ${items.length} môn học (${publishedCount} đang mở) trong hệ thống`;
           renderCourses(items);
           hasLoadedOnce = true;
         } catch (err) {

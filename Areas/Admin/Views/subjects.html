@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Môn học đào tạo - EnglishAdmin</title>
+  <title>Khóa học đào tạo - EnglishAdmin</title>
   
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
@@ -55,12 +55,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item active">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -143,7 +143,7 @@
           <div class="breadcrumb" style="font-size: 0.875rem;">
             <span>Quản trị hệ thống</span>
             <span style="color: var(--text-muted); margin: 0 6px;">/</span>
-            <span style="font-weight: 600; color: var(--text-primary);">Môn học đào tạo</span>
+            <span style="font-weight: 600; color: var(--text-primary);">Khóa học</span>
           </div>
         </div>
 
@@ -211,13 +211,13 @@
         
   <div class="page-header">
     <div>
-      <h1 class="page-header-title">Quản lý Môn học</h1>
-      <p class="page-header-subtitle">Tạo và quản lý danh mục môn học đào tạo, làm cơ sở tổ chức các khóa học trực thuộc</p>
+      <h1 class="page-header-title">Quản lý Khóa học</h1>
+      <p class="page-header-subtitle">Tạo khóa học tổng trước, sau đó tạo các môn học trực thuộc để tự động cộng tổng học phí khóa học</p>
     </div>
     <div class="page-header-actions">
       <button type="button" class="btn btn-primary" id="btn-open-create-subject" data-modal-target="modal-subject">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Thêm môn học mới
+        Tạo khóa học mới
       </button>
     </div>
   </div>
@@ -229,7 +229,7 @@
         <span class="input-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </span>
-        <input type="text" id="subjects-search-input" class="form-control" placeholder="Tìm theo tên môn, mã môn hoặc mô tả...">
+        <input type="text" id="subjects-search-input" class="form-control" placeholder="Tìm theo tên khóa học, mã khóa hoặc mô tả...">
       </div>
       <div style="display: flex; gap: 0.75rem; align-items: center;">
         <select id="subjects-status-filter" class="form-control" style="min-width: 200px;">
@@ -244,7 +244,7 @@
 
   <div class="grid grid-cols-4 gap-6" id="subjects-grid">
     <div class="card" style="padding: 2rem; grid-column: span 4; text-align: center; color: var(--text-muted);">
-      Đang tải danh sách môn học từ cơ sở dữ liệu...
+      Đang tải danh sách khóa học từ cơ sở dữ liệu...
     </div>
   </div>
 
@@ -252,11 +252,11 @@
     </div>
   </div>
 
-  <!-- Modal Thêm / Cập nhật Môn Học -->
+  <!-- Modal Thêm / Cập nhật Khóa Học -->
   <div class="modal-backdrop" id="modal-subject">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title" id="subject-modal-title">Thêm môn học mới</h3>
+        <h3 class="modal-title" id="subject-modal-title">Tạo khóa học mới</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
       <form id="subject-form">
@@ -264,28 +264,28 @@
         <div class="modal-body">
           <div id="subject-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
           <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên môn học <span class="required" style="color:red;">*</span></label>
-            <input type="text" id="subject-name" class="form-control" placeholder="Ví dụ: Tiếng Anh Chuyên Ngành Y Dược" maxlength="100" required>
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Tên khóa học <span class="required" style="color:red;">*</span></label>
+            <input type="text" id="subject-name" class="form-control" placeholder="Ví dụ: Khóa Toán / Tiếng Anh Chuyên Ngành" maxlength="100" required>
           </div>
           <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mã môn học viết tắt <span class="required" style="color:red;">*</span></label>
-            <input type="text" id="subject-code" class="form-control" placeholder="Ví dụ: MED" maxlength="20" required>
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mã khóa học viết tắt <span class="required" style="color:red;">*</span></label>
+            <input type="text" id="subject-code" class="form-control" placeholder="Ví dụ: TOAN" maxlength="20" required>
           </div>
           <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Mô tả chương trình đào tạo</label>
             <textarea id="subject-description" class="form-control" rows="3" maxlength="1000" placeholder="Mô tả mục tiêu, đối tượng người học..."></textarea>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái môn học</label>
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái khóa học</label>
             <select id="subject-active" class="form-control">
-              <option value="true">Đang giảng dạy</option>
+              <option value="true">Đang giảng dạy (Hoạt động)</option>
               <option value="false">Tạm dừng mở lớp</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" class="btn btn-primary" id="subject-submit-btn">Lưu môn học</button>
+          <button type="submit" class="btn btn-primary" id="subject-submit-btn">Lưu khóa học</button>
         </div>
       </form>
     </div>
@@ -423,8 +423,8 @@
         document.getElementById('subject-code').value = '';
         document.getElementById('subject-description').value = '';
         document.getElementById('subject-active').value = 'true';
-        document.getElementById('subject-modal-title').textContent = 'Thêm môn học mới';
-        document.getElementById('subject-submit-btn').textContent = 'Lưu môn học';
+        document.getElementById('subject-modal-title').textContent = 'Tạo khóa học mới';
+        document.getElementById('subject-submit-btn').textContent = 'Lưu khóa học';
         showFormError('');
       }
 
@@ -436,7 +436,7 @@
         document.getElementById('subject-code').value = item.code || '';
         document.getElementById('subject-description').value = item.description || '';
         document.getElementById('subject-active').value = item.isActive ? 'true' : 'false';
-        document.getElementById('subject-modal-title').textContent = `Cập nhật môn học: ${item.name}`;
+        document.getElementById('subject-modal-title').textContent = `Cập nhật khóa học: ${item.name}`;
         document.getElementById('subject-submit-btn').textContent = 'Lưu thay đổi';
         showFormError('');
         openModal('modal-subject');
@@ -451,8 +451,8 @@
         if (!Array.isArray(items) || items.length === 0) {
           grid.innerHTML =
             '<div class="card" style="padding: 2.5rem; grid-column: span 4; text-align: center;">' +
-            '<div style="font-weight: 700; margin-bottom: 0.25rem;">Chưa có môn học nào phù hợp</div>' +
-            '<div style="font-size: 0.875rem; color: var(--text-muted);">Hãy bấm "Thêm môn học mới" để tạo môn học trước, sau đó thêm các khóa học trực thuộc.</div>' +
+            '<div style="font-weight: 700; margin-bottom: 0.25rem;">Chưa có khóa học nào phù hợp</div>' +
+            '<div style="font-size: 0.875rem; color: var(--text-muted);">Hãy bấm "Tạo khóa học mới" để tạo khóa học trước, sau đó thêm các môn học trực thuộc.</div>' +
             '</div>';
           return;
         }
@@ -468,7 +468,7 @@
           const childCourses = Array.isArray(s.courses) ? s.courses : [];
           const coursesListHtml = childCourses.length > 0
             ? `<div style="background: var(--neutral-50, #F8FAFC); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.6rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.8rem;">
-                 <div style="font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Các khóa học thuộc môn học (${childCourses.length}):</div>
+                 <div style="font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Các môn học thuộc khóa (${childCourses.length}):</div>
                  ${childCourses.map(c => `
                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 2px 0;">
                      <span style="color: var(--text-primary);">&bull; ${escapeHtml(c.title)}</span>
@@ -476,12 +476,12 @@
                    </div>
                  `).join('')}
                  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); margin-top: 6px; padding-top: 6px; font-weight: 700; color: #047857;">
-                   <span>Tổng học phí các khóa:</span>
+                   <span>Tổng tiền khóa học:</span>
                    <span>${formatCurrency(s.totalPrice)}</span>
                  </div>
                </div>`
             : `<div style="background: var(--neutral-50, #F8FAFC); border: 1px dashed var(--border-color); border-radius: 8px; padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.78rem; color: var(--text-muted);">
-                 Chưa có khóa học nào. Bấm "Xem / Thêm khóa học" để tạo khóa học cho môn học này.
+                 Chưa có môn học nào. Bấm "Xem / Thêm môn học" để tạo môn học cho khóa học này.
                </div>`;
 
           return `
@@ -497,8 +497,8 @@
               </div>
               <div>
                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-                  <span>Số khóa học: <strong>${s.courseCount ?? 0} khóa</strong></span>
-                  <a href="/Admin/courses.html?subjectId=${encodeURIComponent(s.id)}" style="color: var(--primary-600); font-weight: 600; text-decoration: none;">Xem / Thêm khóa học →</a>
+                  <span>Số môn học: <strong>${s.courseCount ?? 0} môn</strong></span>
+                  <a href="/Admin/courses.html?subjectId=${encodeURIComponent(s.id)}" style="color: var(--primary-600); font-weight: 600; text-decoration: none;">Xem / Thêm môn học →</a>
                 </div>
                 <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; display: flex; justify-content: space-between; gap: 6px;">
                   <button type="button" class="btn btn-sm btn-secondary" data-edit-subject="${s.id}">Chỉnh sửa</button>

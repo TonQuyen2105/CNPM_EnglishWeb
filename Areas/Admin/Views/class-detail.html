@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -55,12 +55,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -218,10 +218,10 @@
     <div class="page-header-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
       <div id="detail-class-status-badge"></div>
       <select id="detail-quick-status" class="form-control" style="width: auto; min-width: 170px; padding: 0.45rem 0.75rem; font-size: 0.8125rem;" title="Đổi nhanh trạng thái lớp" disabled>
-        <option value="upcoming">Sắp khai giảng</option>
-        <option value="ongoing">Đang diễn ra</option>
-        <option value="completed">Đã kết thúc</option>
-        <option value="cancelled">Đã hủy</option>
+        <option value="upcoming">Sắp khai giảng (Upcoming)</option>
+        <option value="ongoing">Đang diễn ra (Ongoing)</option>
+        <option value="completed">Đã kết thúc (Completed)</option>
+        <option value="cancelled">Đã hủy (Cancelled)</option>
       </select>
       <button type="button" class="btn btn-secondary" id="btn-open-edit-class" disabled>Chỉnh sửa lớp</button>
       <a href="#" class="btn btn-primary" id="btn-export-class-csv" style="pointer-events: none; opacity: 0.6;">Xuất CSV bảng điểm</a>
@@ -287,6 +287,7 @@
   <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;">
       <h3 class="card-title" id="detail-students-heading" style="margin: 0;">Danh sách học viên trong lớp</h3>
+      <button type="button" class="btn btn-sm btn-primary" id="btn-open-enroll-student" disabled>+ Ghi danh học viên</button>
     </div>
     <div class="table-container">
       <table class="table" style="min-width: 780px;">
@@ -373,7 +374,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên chính</label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên chính (Main)</label>
               <select id="ec-main-teacher-id" class="form-control">
                 <option value="">-- Chưa phân công --</option>
               </select>
@@ -439,6 +440,38 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
           <button type="submit" class="btn btn-primary" id="assign-teacher-submit-btn">Xác nhận</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Ghi danh nhanh học viên -->
+  <div class="modal-backdrop" id="modal-quick-enroll">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Ghi danh học viên vào lớp</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form id="quick-enroll-form">
+        <div class="modal-body">
+          <div id="quick-enroll-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Chọn học viên <span style="color:red;">*</span></label>
+            <select id="enroll-student-id" class="form-control" required>
+              <option value="">-- Đang tải danh sách học viên --</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái ghi danh</label>
+            <select id="enroll-status" class="form-control">
+              <option value="active">Đang học (Active)</option>
+              <option value="completed">Hoàn thành (Completed)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="quick-enroll-submit-btn">Xác nhận ghi danh</button>
         </div>
       </form>
     </div>
@@ -589,6 +622,7 @@
       let currentDetail = null;
       let coursesCache = [];
       let teachersCache = [];
+      let availableStudentsCache = [];
       let hasLoadedOnce = false;
       let loadController = null;
       let isExportingCsv = false;
@@ -667,11 +701,11 @@
       function renderEnrollmentStatusBadge(status) {
         switch ((status || '').toLowerCase()) {
           case 'active':
-            return '<span class="badge badge-success">Đang học</span>';
+            return '<span class="badge badge-success">Đang học (Active)</span>';
           case 'completed':
-            return '<span class="badge badge-primary">Hoàn thành</span>';
+            return '<span class="badge badge-primary">Hoàn thành (Completed)</span>';
           case 'cancelled':
-            return '<span class="badge badge-danger">Đã hủy</span>';
+            return '<span class="badge badge-danger">Đã hủy (Cancelled)</span>';
           default:
             return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
         }
@@ -716,7 +750,7 @@
         }
       }
 
-      function populateLookupDropdowns(courses, teachers) {
+      function populateLookupDropdowns(courses, teachers, availableStudents) {
         if (Array.isArray(courses)) {
           coursesCache = courses;
           const courseSel = document.getElementById('ec-course-id');
@@ -733,6 +767,17 @@
               const qual = t.qualification ? ` (${escapeHtml(t.qualification)})` : '';
               return `<option value="${t.id}">${escapeHtml(t.fullName)}${qual}</option>`;
             }).join('');
+        }
+
+        if (Array.isArray(availableStudents)) {
+          availableStudentsCache = availableStudents;
+          const stuSel = document.getElementById('enroll-student-id');
+          if (availableStudentsCache.length === 0) {
+            stuSel.innerHTML = '<option value="">-- Không còn học viên khả dụng --</option>';
+          } else {
+            stuSel.innerHTML = '<option value="">-- Chọn học viên --</option>' +
+              availableStudentsCache.map(s => `<option value="${s.id}">${escapeHtml(s.fullName)} (${escapeHtml(s.email)})</option>`).join('');
+          }
         }
       }
 
@@ -818,7 +863,7 @@
                 <strong>Bài ${item.lessonOrder ?? (idx + 1)}: ${escapeHtml(item.lessonTitle)}</strong>
                 ${item.contentType ? `<div style="font-size: 0.75rem; color: var(--text-muted);">Loại: ${escapeHtml(item.contentType)}</div>` : ''}
               </td>
-              <td>${item.scheduleDate && formatDate(item.scheduleDate) !== '--' ? escapeHtml(formatDate(item.scheduleDate)) : '<span class="text-muted">Chưa xếp ngày</span>'}</td>
+              <td>${item.scheduleDate ? formatDate(item.scheduleDate) : '<span class="text-muted">Chưa ấn định</span>'}</td>
               <td style="font-size: 0.8125rem;">${metaHtml}</td>
               <td>${renderClassLessonStatusBadge(item.status)}</td>
               <td style="font-size: 0.8125rem; max-width: 260px;">${notesHtml}</td>
@@ -881,19 +926,24 @@
         const currentStatus = (info?.status || '').toLowerCase();
         if (currentStatus === 'completed') return;
         const sel = document.getElementById('ec-status');
-        if (!sel) return;
+        const startEl = document.getElementById('ec-start-date');
+        if (!sel || !startEl) return;
         const upcomingOpt = sel.querySelector('option[value="upcoming"]');
         const ongoingOpt = sel.querySelector('option[value="ongoing"]');
         if (!ongoingOpt) return;
+        const startVal = startEl.value;
+        const todayIso = toDateInputValue(new Date());
+        const hasTeacher = Boolean(document.getElementById('ec-main-teacher-id')?.value) || (Array.isArray(currentDetail?.teachersAssigned) && currentDetail.teachersAssigned.length > 0);
+        const hasSchedule = Array.isArray(currentDetail?.schedules) && currentDetail.schedules.length > 0;
         const hasStudent = (Number(info?.activeStudents) || 0) > 0;
-        const canBeOngoing = hasStudent;
+        const canBeOngoing = Boolean(startVal) && startVal <= todayIso && hasTeacher && hasSchedule && hasStudent;
         if (!canBeOngoing) {
           if (upcomingOpt) {
             upcomingOpt.disabled = false;
             upcomingOpt.textContent = 'Sắp khai giảng';
           }
           ongoingOpt.disabled = true;
-          ongoingOpt.textContent = 'Đang diễn ra (Cần có học viên đăng ký)';
+          ongoingOpt.textContent = 'Đang diễn ra (Cần đủ GV, phòng/lịch, tới ngày mở & có học viên ĐK)';
           sel.value = 'upcoming';
         } else {
           if (upcomingOpt) {
@@ -902,17 +952,18 @@
           }
           ongoingOpt.disabled = false;
           ongoingOpt.textContent = 'Đang diễn ra';
+          sel.value = 'ongoing';
         }
       }
 
-      function populateStatusSelectOptions(selectEl, currentStatus, mode = 'quick', startDateValue = null, activeStudents = 0) {
+      function populateStatusSelectOptions(selectEl, currentStatus, mode = 'quick', startDateValue = null) {
         if (!selectEl) return;
         const st = (currentStatus || 'upcoming').toLowerCase();
         if (mode === 'edit') {
           if (st === 'completed') {
             selectEl.innerHTML =
               '<option value="completed" disabled>Đã kết thúc (Hiện tại)</option>' +
-              '<option value="cancelled">Đã hủy</option>';
+              '<option value="cancelled">Đã hủy (Cancelled)</option>';
             selectEl.value = 'cancelled';
             return;
           }
@@ -925,7 +976,7 @@
         }
 
         if (st === 'ongoing') {
-          selectEl.innerHTML = '<option value="ongoing">Đang diễn ra</option>';
+          selectEl.innerHTML = '<option value="ongoing">Đang diễn ra (Ongoing)</option>';
           selectEl.value = 'ongoing';
           selectEl.disabled = true;
           selectEl.title = 'Lớp đang diễn ra không được chỉnh sửa trạng thái hoặc hủy';
@@ -933,27 +984,28 @@
         }
         if (st === 'completed') {
           selectEl.innerHTML =
-            '<option value="completed">Đã kết thúc</option>' +
-            '<option value="cancelled">Đã hủy</option>';
+            '<option value="completed">Đã kết thúc (Completed)</option>' +
+            '<option value="cancelled">Đã hủy (Cancelled)</option>';
           selectEl.value = 'completed';
           selectEl.disabled = false;
           selectEl.title = 'Lớp đã kết thúc chỉ được đổi sang Đã hủy';
           return;
         }
         if (st === 'cancelled') {
-          selectEl.innerHTML = '<option value="cancelled">Đã hủy</option>';
+          selectEl.innerHTML = '<option value="cancelled">Đã hủy (Cancelled)</option>';
           selectEl.value = 'cancelled';
           selectEl.disabled = true;
           selectEl.title = 'Lớp đã hủy không thể đổi trạng thái';
           return;
         }
 
-        const hasStudent = (Number(activeStudents) || 0) > 0;
-        const canBeOngoing = hasStudent;
+        const startIso = toDateInputValue(startDateValue);
+        const todayIso = toDateInputValue(new Date());
+        const canBeOngoing = Boolean(startIso) && startIso <= todayIso;
         selectEl.innerHTML =
-          '<option value="upcoming">Sắp khai giảng</option>' +
-          `<option value="ongoing" ${canBeOngoing ? '' : 'disabled'}>${canBeOngoing ? 'Đang diễn ra' : 'Đang diễn ra (Cần có học viên đăng ký)'}</option>` +
-          '<option value="cancelled">Đã hủy</option>';
+          '<option value="upcoming">Sắp khai giảng (Upcoming)</option>' +
+          `<option value="ongoing" ${canBeOngoing ? '' : 'disabled'}>${canBeOngoing ? 'Đang diễn ra (Ongoing)' : 'Đang diễn ra (Chưa tới ngày khai giảng)'}</option>` +
+          '<option value="cancelled">Đã hủy (Cancelled)</option>';
         selectEl.value = 'upcoming';
         selectEl.disabled = false;
         selectEl.title = 'Đổi nhanh trạng thái lớp';
@@ -1052,6 +1104,18 @@
         focusFirstField('modal-assign-teacher', 'assign-teacher-id');
       }
 
+      function openQuickEnrollModal() {
+        const form = document.getElementById('quick-enroll-form');
+        if (form) form.reset();
+        document.getElementById('enroll-status').value = 'active';
+        if (availableStudentsCache.length > 0) {
+          document.getElementById('enroll-student-id').value = '';
+        }
+        showBoxError('quick-enroll-error', '');
+        openModal('modal-quick-enroll');
+        focusFirstField('modal-quick-enroll', 'enroll-student-id');
+      }
+
       async function removeTeacherAssignment(teacherId, teacherName, role, btn) {
         const roleLabel = role === 'main' ? 'giảng viên chính' : 'trợ giảng';
         if (!confirm(`Xác nhận gỡ ${roleLabel} "${teacherName}" khỏi lớp học này?`)) return;
@@ -1081,7 +1145,7 @@
         document.getElementById('detail-class-status-badge').innerHTML = renderClassStatusBadge(info.status);
 
         const quickSel = document.getElementById('detail-quick-status');
-        populateStatusSelectOptions(quickSel, info.status, 'quick', info.startDate, info.activeStudents);
+        populateStatusSelectOptions(quickSel, info.status, 'quick', info.startDate);
 
         const stLower = (info.status || '').toLowerCase();
         const editClassBtn = document.getElementById('btn-open-edit-class');
@@ -1104,6 +1168,13 @@
         changeMainBtn.title = canModifyTeachers ? 'Đổi giảng viên chính' : 'Chỉ được thay đổi giảng viên khi lớp đang Sắp khai giảng';
         addAssistBtn.title = canModifyTeachers ? 'Thêm trợ giảng cho lớp' : 'Chỉ được thêm trợ giảng khi lớp đang Sắp khai giảng';
 
+        const enrollBtn = document.getElementById('btn-open-enroll-student');
+        const canEnroll = info.status === 'upcoming' || info.status === 'ongoing';
+        enrollBtn.disabled = !canEnroll;
+        enrollBtn.title = canEnroll
+          ? 'Ghi danh nhanh học viên vào lớp này'
+          : 'Chỉ có thể ghi danh vào lớp đang mở (upcoming / ongoing)';
+
         const exportBtn = document.getElementById('btn-export-class-csv');
         exportBtn.href = `/Admin/api/Classes/${encodeURIComponent(info.id)}/ExportCsv`;
         exportBtn.style.pointerEvents = '';
@@ -1117,7 +1188,7 @@
             ? info.averageMidtermScore
             : 'Chưa có';
 
-        populateLookupDropdowns(data.courses, data.teachers);
+        populateLookupDropdowns(data.courses, data.teachers, data.availableStudents);
         renderTeachersAssigned(data.teachersAssigned, info.status);
 
         // Lịch học trong tuần
@@ -1161,10 +1232,10 @@
               <td>${scoreDisplay}</td>
               <td>${renderEnrollmentStatusBadge(st.status)}</td>
               <td class="text-right">
-                <select class="form-control enrollment-status-select" data-enrollment-id="${st.enrollmentId}" data-prev-status="${escapeHtml(st.status)}" data-student-name="${escapeHtml(st.fullName)}" style="width: auto; display: inline-block; padding: 4px 8px; font-size: 0.8125rem;">
-                  <option value="active" ${st.status === 'active' ? 'selected' : ''}>Đang học</option>
-                  <option value="completed" ${st.status === 'completed' ? 'selected' : ''}>Hoàn thành</option>
-                  <option value="cancelled" ${st.status === 'cancelled' ? 'selected' : ''}>Đã hủy</option>
+                <select class="form-control enrollment-status-select" data-enrollment-id="${st.enrollmentId}" style="width: auto; display: inline-block; padding: 4px 8px; font-size: 0.8125rem;">
+                  <option value="active" ${st.status === 'active' ? 'selected' : ''}>Active (Đang học)</option>
+                  <option value="completed" ${st.status === 'completed' ? 'selected' : ''}>Completed (Hoàn thành)</option>
+                  <option value="cancelled" ${st.status === 'cancelled' ? 'selected' : ''}>Cancelled (Đã hủy)</option>
                 </select>
               </td>
             </tr>
@@ -1228,6 +1299,7 @@
         document.getElementById('ec-start-date').addEventListener('input', syncDetailEditStatusByStartDate);
         document.getElementById('btn-open-change-main-teacher').addEventListener('click', () => openAssignTeacherModal('main'));
         document.getElementById('btn-open-add-assistant').addEventListener('click', () => openAssignTeacherModal('assistant'));
+        document.getElementById('btn-open-enroll-student').addEventListener('click', openQuickEnrollModal);
 
         document.getElementById('btn-export-class-csv').addEventListener('click', (e) => {
           const btn = e.currentTarget;
@@ -1314,9 +1386,9 @@
             showBoxError('edit-class-error', 'Ngày kết thúc phải sau ngày khai giảng.');
             return;
           }
-          const hasActiveStudents = (Number(currentDetail?.classInfo?.activeStudents) || 0) > 0;
-          if (payload.status === 'ongoing' && !hasActiveStudents) {
-            showBoxError('edit-class-error', 'Lớp chưa có học viên đăng ký nên không thể đặt trạng thái Đang diễn ra.');
+          const todayIso = toDateInputValue(new Date());
+          if (payload.status === 'ongoing' && payload.startDate > todayIso) {
+            showBoxError('edit-class-error', 'Chưa tới ngày khai giảng nên không thể đặt trạng thái Đang diễn ra.');
             return;
           }
           if (payload.maxStudents <= 0 || payload.maxStudents > 1000) {
@@ -1379,6 +1451,40 @@
           }
         });
 
+        document.getElementById('quick-enroll-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showBoxError('quick-enroll-error', '');
+          if (!currentClassId) return;
+
+          const userId = parseInt(document.getElementById('enroll-student-id').value, 10) || 0;
+          const status = document.getElementById('enroll-status').value || 'active';
+          if (userId <= 0) {
+            showBoxError('quick-enroll-error', 'Vui lòng chọn học viên cần ghi danh.');
+            return;
+          }
+
+          const btn = document.getElementById('quick-enroll-submit-btn');
+          setBusy(btn, true, 'Đang ghi danh...');
+          setModalBusy('modal-quick-enroll', true);
+          try {
+            const res = await postJson('/Admin/api/Enrollments/Create', {
+              userId,
+              classId: currentClassId,
+              status
+            });
+            setModalBusy('modal-quick-enroll', false);
+            closeModal('modal-quick-enroll');
+            showToast(res.message || 'Ghi danh học viên thành công.');
+            await loadClassDetail();
+          } catch (err) {
+            console.error(err);
+            showBoxError('quick-enroll-error', err.message);
+          } finally {
+            setModalBusy('modal-quick-enroll', false);
+            setBusy(btn, false);
+          }
+        });
+
         document.getElementById('detail-teachers-container').addEventListener('click', (e) => {
           const removeBtn = e.target.closest('[data-remove-teacher]');
           if (!removeBtn) return;
@@ -1396,20 +1502,8 @@
         tbody.addEventListener('change', (e) => {
           const sel = e.target.closest('.enrollment-status-select');
           if (!sel) return;
-          const enrollmentId = Number(sel.getAttribute('data-enrollment-id'));
-          const newStatus = sel.value;
-          const prevStatus = sel.getAttribute('data-prev-status') || '';
-          if (newStatus === 'cancelled' && prevStatus !== 'cancelled') {
-            const stuName = sel.getAttribute('data-student-name') || `#${enrollmentId}`;
-            const clsCode = currentDetail?.classInfo?.classCode || '';
-            const ok = confirm(`Bạn có chắc chắn muốn hủy ghi danh của học viên "${stuName}"${clsCode ? ` khỏi lớp ${clsCode}` : ''} không? Các giao dịch thanh toán liên quan (nếu có) sẽ được tự động cập nhật trạng thái.`);
-            if (!ok) {
-              sel.value = prevStatus || 'active';
-              return;
-            }
-          }
           sel.disabled = true;
-          updateEnrollmentStatus(enrollmentId, newStatus, sel);
+          updateEnrollmentStatus(Number(sel.getAttribute('data-enrollment-id')), sel.value, sel);
         });
 
         document.getElementById('detail-class-lessons-tbody').addEventListener('click', (e) => {

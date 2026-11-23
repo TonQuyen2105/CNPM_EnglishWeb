@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -55,12 +55,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -253,9 +253,9 @@
       <div class="col-span-3">
         <select id="users-role-filter" class="form-control">
           <option value="all">Tất cả vai trò</option>
-          <option value="admin">Quản trị viên</option>
-          <option value="teacher">Giảng viên</option>
-          <option value="student">Học viên</option>
+          <option value="admin">Quản trị viên (Admin)</option>
+          <option value="teacher">Giảng viên (Teacher)</option>
+          <option value="student">Học viên (Student)</option>
         </select>
       </div>
       <div class="col-span-2">
@@ -330,16 +330,16 @@
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Vai trò hệ thống <span class="required" style="color:red;">*</span></label>
               <select id="user-role" class="form-control" required>
-                <option value="student">Học viên</option>
-                <option value="teacher">Giảng viên</option>
-                <option value="admin">Quản trị viên</option>
+                <option value="student">Học viên (Student)</option>
+                <option value="teacher">Giảng viên (Teacher)</option>
+                <option value="admin">Quản trị viên (Admin)</option>
               </select>
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái tài khoản</label>
             <select id="user-active" class="form-control">
-              <option value="true">Kích hoạt ngay</option>
+              <option value="true">Kích hoạt ngay (Hoạt động)</option>
               <option value="false">Tạm khóa tài khoản</option>
             </select>
           </div>
@@ -493,7 +493,7 @@
           case 'admin':
             return '<span class="badge badge-primary">Quản trị viên</span>';
           case 'teacher':
-            return '<span class="badge badge-primary">Giảng viên</span>';
+            return '<span class="badge badge-info">Giảng viên</span>';
           default:
             return '<span class="badge badge-neutral">Học viên</span>';
         }

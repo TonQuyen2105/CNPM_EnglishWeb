@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -181,12 +181,12 @@
         <div class="nav-section-title">Quản lý đào tạo</div>
         <a href="/Admin/subjects.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-          <span>Môn học</span>
+          <span>Khóa học</span>
         </a>
 
         <a href="/Admin/courses.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-          <span>Khóa học</span>
+          <span>Môn học</span>
         </a>
 
         <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -347,6 +347,10 @@
             <button type="button" class="btn btn-secondary" id="btn-export-enrollments-csv">
               Xuất CSV
             </button>
+            <button type="button" class="btn btn-primary" id="btn-open-create-enrollment" data-modal-target="modal-create-enrollment">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Ghi danh học viên mới
+            </button>
           </div>
         </div>
 
@@ -433,9 +437,9 @@
               <label class="filter-label" for="enrollments-status-filter">Trạng thái học</label>
               <select id="enrollments-status-filter" class="form-control">
                 <option value="all">Tất cả trạng thái</option>
-                <option value="active">Đang học</option>
-                <option value="completed">Hoàn thành</option>
-                <option value="cancelled">Đã hủy</option>
+                <option value="active">Đang học (Active)</option>
+                <option value="completed">Hoàn thành (Completed)</option>
+                <option value="cancelled">Đã hủy (Cancelled)</option>
               </select>
             </div>
 
@@ -504,7 +508,67 @@
     </div>
   </div>
 
-  <!-- Modal Chi Tiết Thanh Toán Học Viên (Chỉ xem / Read-only) -->
+  <!-- Modal Ghi Danh Học Viên Mới -->
+  <div class="modal-backdrop" id="modal-create-enrollment">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Ghi danh học viên vào lớp</h3>
+        <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
+      </div>
+      <form id="create-enrollment-form">
+        <div class="modal-body">
+          <div id="enrollment-form-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học viên ghi danh <span class="required" style="color:red;">*</span></label>
+            <select id="enr-user-id" class="form-control" required>
+              <option value="">-- Đang tải danh sách học viên --</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lớp học chỉ định <span class="required" style="color:red;">*</span></label>
+            <select id="enr-class-id" class="form-control" required>
+              <option value="">-- Đang tải danh sách lớp mở --</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái ghi danh</label>
+            <select id="enr-status" class="form-control">
+              <option value="active">Đang học (Active)</option>
+              <option value="completed">Đã hoàn thành (Completed)</option>
+              <option value="cancelled">Đã hủy (Cancelled)</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thanh toán học phí</label>
+              <select id="enr-payment-method" class="form-control">
+                <option value="">Chưa tạo giao dịch</option>
+                <option value="bank_transfer">Chuyển khoản (bank_transfer)</option>
+                <option value="vnpay">VNPAY (vnpay)</option>
+                <option value="momo">MoMo (momo)</option>
+                <option value="cash">Tiền mặt (cash)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái giao dịch</label>
+              <select id="enr-payment-status" class="form-control" disabled>
+                <option value="completed">Đã thanh toán (completed)</option>
+                <option value="pending">Chờ thanh toán (pending)</option>
+                <option value="failed">Thất bại (failed)</option>
+                <option value="refunded">Đã hoàn tiền (refunded)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary" id="enr-submit-btn">Xác nhận ghi danh</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Chi Tiết Thanh Toán Học Viên -->
   <div class="modal-backdrop" id="modal-payment-detail">
     <div class="modal-dialog modal-dialog-lg">
       <div class="modal-header">
@@ -549,6 +613,43 @@
             </div>
             <div id="pd-current-payment-box" style="font-size: 0.8125rem;"></div>
           </div>
+
+          <form id="pd-payment-form" style="padding: 1rem; border-radius: 10px; background: #F8FAFC; border: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+            <input type="hidden" id="pd-enrollment-id">
+            <div style="font-weight: 700; font-size: 0.875rem; margin-bottom: 0.75rem;" id="pd-form-title">Ghi nhận / Cập nhật thanh toán</div>
+            <div id="pd-form-error" style="display: none; padding: 0.625rem 0.875rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.8125rem; margin-bottom: 0.75rem;"></div>
+            <div class="grid grid-cols-3 gap-4" style="margin-bottom: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8125rem; font-weight: 600;">Hình thức thanh toán</label>
+                <select id="pd-pay-method" class="form-control" required>
+                  <option value="bank_transfer">Chuyển khoản (bank_transfer)</option>
+                  <option value="vnpay">VNPAY (vnpay)</option>
+                  <option value="momo">MoMo (momo)</option>
+                  <option value="cash">Tiền mặt (cash)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8125rem; font-weight: 600;">Trạng thái giao dịch</label>
+                <select id="pd-pay-status" class="form-control" required>
+                  <option value="completed">Đã thanh toán (completed)</option>
+                  <option value="pending">Chờ thanh toán (pending)</option>
+                  <option value="failed">Thất bại (failed)</option>
+                  <option value="refunded">Đã hoàn tiền (refunded)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8125rem; font-weight: 600;">Số tiền (VNĐ)</label>
+                <input type="number" id="pd-pay-amount" class="form-control" min="0" step="1000" required>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
+              <div class="form-group" style="flex: 1; min-width: 220px;">
+                <label class="form-label" style="font-size: 0.8125rem; font-weight: 600;">Ghi chú giao dịch</label>
+                <input type="text" id="pd-pay-note" class="form-control" placeholder="Số tham chiếu, người thu tiền hoặc ghi chú...">
+              </div>
+              <button type="submit" class="btn btn-primary" id="pd-pay-submit-btn">Lưu thanh toán</button>
+            </div>
+          </form>
 
           <div>
             <div style="font-weight: 700; font-size: 0.875rem; margin-bottom: 0.5rem;">Lịch sử thanh toán học phí của học viên này</div>
@@ -808,11 +909,11 @@
       function renderStatusBadge(status) {
         switch ((status || '').toLowerCase()) {
           case 'active':
-            return '<span class="badge badge-success">Đang học</span>';
+            return '<span class="badge badge-success">Đang học (Active)</span>';
           case 'completed':
-            return '<span class="badge badge-primary">Hoàn thành</span>';
+            return '<span class="badge badge-primary">Hoàn thành (Completed)</span>';
           case 'cancelled':
-            return '<span class="badge badge-danger">Đã hủy</span>';
+            return '<span class="badge badge-danger">Đã hủy (Cancelled)</span>';
           default:
             return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
         }
@@ -890,14 +991,43 @@
         }
       }
 
-      function populateDropdowns(classes) {
-        const classFilterSelect = document.getElementById('enrollments-class-filter');
-        if (!classFilterSelect) return;
+      function showError(msg) {
+        const box = document.getElementById('enrollment-form-error');
+        if (!box) return;
+        if (msg) {
+          box.textContent = msg;
+          box.style.display = 'block';
+        } else {
+          box.textContent = '';
+          box.style.display = 'none';
+        }
+      }
 
+      function populateDropdowns(students, classes) {
+        const userSelect = document.getElementById('enr-user-id');
+        const classSelect = document.getElementById('enr-class-id');
+        const classFilterSelect = document.getElementById('enrollments-class-filter');
+
+        const sList = Array.isArray(students) ? students : [];
         const cList = Array.isArray(classes) ? classes : [];
+        const openClasses = cList.filter(c => {
+          const st = (c.status || '').toLowerCase();
+          return st === 'upcoming' || st === 'ongoing';
+        });
+
+        const prevUser = userSelect.value;
+        const prevClass = classSelect.value;
         const prevFilterClass = classFilterSelect.value !== '0'
           ? classFilterSelect.value
           : (pendingInitialClassId || '0');
+
+        userSelect.innerHTML = sList.length === 0
+          ? '<option value="">-- Không có học viên khả dụng --</option>'
+          : sList.map(s => `<option value="${s.id}">${escapeHtml(s.fullName)} (${escapeHtml(s.email)})</option>`).join('');
+
+        classSelect.innerHTML = openClasses.length === 0
+          ? '<option value="">-- Không có lớp đang mở ghi danh --</option>'
+          : openClasses.map(c => `<option value="${c.id}">[${escapeHtml(c.classCode)}] ${escapeHtml(c.className)} (${c.activeStudents}/${c.maxStudents} HV • ${formatCurrency(c.price)})</option>`).join('');
 
         classFilterSelect.innerHTML = '<option value="0">Tất cả lớp học</option>' +
           cList.map(c => {
@@ -906,6 +1036,8 @@
             return `<option value="${c.id}">[${escapeHtml(c.classCode)}] ${escapeHtml(c.className)}${suffix}</option>`;
           }).join('');
 
+        if (prevUser && sList.some(s => String(s.id) === prevUser)) userSelect.value = prevUser;
+        if (prevClass && openClasses.some(c => String(c.id) === prevClass)) classSelect.value = prevClass;
         if (prevFilterClass && cList.some(c => String(c.id) === String(prevFilterClass))) {
           classFilterSelect.value = String(prevFilterClass);
         }
@@ -970,20 +1102,18 @@
         return params;
       }
 
-      function renderTuitionCellHtml(e) {
-        const isCancelled = e.status === 'cancelled' || e.classStatus === 'cancelled';
-        const payStatus = (e.paymentStatus || '').toLowerCase();
-        let amountHtml = '';
-        if (isCancelled) {
-          amountHtml = `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(e.price)}</span> <small class="text-muted">(0 ₫)</small>`;
-        } else if (payStatus === 'completed') {
-          const collected = e.paidAmount !== null && e.paidAmount !== undefined ? e.paidAmount : e.price;
-          amountHtml = `<strong style="color: var(--success-main, #059669); font-size: 0.875rem;">Đã thu: ${formatCurrency(collected)}</strong>`;
-        } else {
-          amountHtml = `<div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">Cần thu: ${formatCurrency(e.price)}</div>` +
-            `<div style="font-size: 0.72rem; color: var(--text-muted);">Đã thu: 0 ₫</div>`;
+      async function updateStatus(id, newStatus, sel) {
+        try {
+          const data = await postJson(`/Admin/api/Enrollments/UpdateStatus/${id}`, { status: newStatus });
+          showToast(data.message || 'Cập nhật trạng thái ghi danh thành công.');
+        } catch (err) {
+          console.error(err);
+          showToast(err.message, 'error');
+        } finally {
+          needLookups = true;
+          await loadEnrollments();
+          if (sel && sel.isConnected) sel.disabled = false;
         }
-        return `<div>${amountHtml}</div><div>${renderPaymentBadge(e.paymentStatus, e.paymentMethod, e.transactionCode)}</div>`;
       }
 
       function renderEnrollmentCards(items) {
@@ -998,13 +1128,18 @@
           } else {
             container.innerHTML = `<div class="card"><div class="empty-state" style="padding: 2.5rem 1rem;">` +
               '<div class="empty-state-title">Chưa có dữ liệu ghi danh</div>' +
-              '<div class="empty-state-text" style="margin-bottom: 0;">Chưa có học viên nào đăng ký lớp học trong hệ thống.</div>' +
+              '<div class="empty-state-text" style="margin-bottom: 0;">Nhấn "Ghi danh học viên mới" để thêm bản ghi đầu tiên.</div>' +
               '</div></div>';
           }
           return;
         }
 
         container.innerHTML = items.map(e => {
+          const isCancelled = e.status === 'cancelled' || e.classStatus === 'cancelled';
+          const amountHtml = isCancelled
+            ? `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(e.price)}</span> <small class="text-muted">(0 ₫)</small>`
+            : `<strong style="color: var(--primary-600); font-size: 0.9rem;">${formatCurrency(e.paidAmount !== null && e.paidAmount !== undefined && e.paymentStatus === 'completed' ? e.paidAmount : e.price)}</strong>`;
+
           return `
             <div class="card card-hover enrollment-row-card">
               <!-- Cột 1: Mã ĐK + Học sinh -->
@@ -1031,7 +1166,8 @@
 
               <!-- Cột 3: Học phí & Trạng thái biên lai -->
               <div class="enr-row-fee">
-                ${renderTuitionCellHtml(e)}
+                <div>${amountHtml}</div>
+                <div>${renderPaymentBadge(e.paymentStatus, e.paymentMethod, e.transactionCode)}</div>
               </div>
 
               <!-- Cột 4: Trạng thái học -->
@@ -1039,9 +1175,16 @@
                 ${renderStatusBadge(e.status)}
               </div>
 
-              <!-- Cột 5: Nút Xem chi tiết biên lai -->
+              <!-- Cột 5: Nút Xem chi tiết biên lai + Đổi trạng thái cùng hàng -->
               <div class="enr-row-actions">
-                <button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}" style="white-space: nowrap;">Chi tiết biên lai</button>
+                ${e.paymentId
+                  ? `<button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}" style="white-space: nowrap;">Chi tiết biên lai</button>`
+                  : `<button type="button" class="btn btn-sm btn-secondary" data-view-payment="${e.id}" style="white-space: nowrap;">Ghi nhận TT</button>`}
+                <select class="form-control enr-status-select" data-id="${e.id}" style="width: auto; padding: 4px 8px; font-size: 0.8125rem; height: 32px;">
+                  <option value="active" ${e.status === 'active' ? 'selected' : ''}>Active</option>
+                  <option value="completed" ${e.status === 'completed' ? 'selected' : ''}>Completed</option>
+                  <option value="cancelled" ${e.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                </select>
               </div>
             </div>
           `;
@@ -1061,7 +1204,7 @@
               '<button type="button" class="btn btn-sm btn-secondary" data-reset-filters>Đặt lại bộ lọc</button>' +
               '</div></td></tr>';
           } else {
-            tbody.innerHTML = stateRow(COLS, 'Chưa có dữ liệu ghi danh', 'Chưa có học viên nào đăng ký lớp học trong hệ thống.');
+            tbody.innerHTML = stateRow(COLS, 'Chưa có dữ liệu ghi danh', 'Nhấn "Ghi danh học viên mới" để thêm bản ghi đầu tiên.');
           }
           return;
         }
@@ -1080,11 +1223,22 @@
               <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(e.className)}</div>
             </td>
             <td>${escapeHtml(e.courseTitle)}</td>
-            <td style="white-space: nowrap;">${renderTuitionCellHtml(e)}</td>
+            <td style="white-space: nowrap;">${(e.status === 'cancelled' || e.classStatus === 'cancelled')
+              ? `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(e.price)}</span> <small class="text-muted">(0 ₫)</small>`
+              : `<strong>${formatCurrency(e.paidAmount !== null && e.paidAmount !== undefined && e.paymentStatus === 'completed' ? e.paidAmount : e.price)}</strong>`}${renderPaymentBadge(e.paymentStatus, e.paymentMethod, e.transactionCode)}</td>
             <td style="white-space: nowrap;">${formatDate(e.enrolledAt)}</td>
             <td style="white-space: nowrap;">${renderStatusBadge(e.status)}</td>
             <td class="text-right" style="white-space: nowrap;">
-              <button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}">Chi tiết biên lai</button>
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                ${e.paymentId
+                  ? `<button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}">Chi tiết biên lai</button>`
+                  : `<button type="button" class="btn btn-sm btn-secondary" data-view-payment="${e.id}">Ghi nhận TT</button>`}
+                <select class="form-control enr-status-select" data-id="${e.id}" style="width: auto; display: inline-block; padding: 4px 8px; font-size: 0.8125rem;">
+                  <option value="active" ${e.status === 'active' ? 'selected' : ''}>Active</option>
+                  <option value="completed" ${e.status === 'completed' ? 'selected' : ''}>Completed</option>
+                  <option value="cancelled" ${e.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                </select>
+              </div>
             </td>
           </tr>
         `).join('');
@@ -1112,8 +1266,8 @@
 
         try {
           const data = await fetchJson(`/Admin/api/Enrollments/List?${params.toString()}`, { signal: controller.signal });
-          if (data.classes) {
-            populateDropdowns(data.classes);
+          if (data.students || data.classes) {
+            populateDropdowns(data.students, data.classes);
             needLookups = false;
           }
           if (data.pagination && data.pagination.page) {
@@ -1167,7 +1321,7 @@
 
         const curBox = document.getElementById('pd-current-payment-box');
         if (!cur) {
-          curBox.innerHTML = '<div style="color: var(--text-muted); font-style: italic;">Hồ sơ ghi danh này chưa phát sinh giao dịch thanh toán học phí.</div>';
+          curBox.innerHTML = '<div style="color: var(--text-muted); font-style: italic;">Hồ sơ ghi danh này chưa có giao dịch thanh toán nào trong bảng payments. Bạn có thể ghi nhận ở biểu mẫu bên dưới.</div>';
         } else {
           curBox.innerHTML = `
             <div class="grid grid-cols-3 gap-4">
@@ -1180,6 +1334,13 @@
             </div>
           `;
         }
+
+        document.getElementById('pd-enrollment-id').value = String(enr.id || '');
+        document.getElementById('pd-form-title').textContent = cur ? 'Cập nhật giao dịch thanh toán' : 'Ghi nhận thanh toán học phí mới';
+        document.getElementById('pd-pay-method').value = cur?.paymentMethod || 'bank_transfer';
+        document.getElementById('pd-pay-status').value = cur?.status || 'completed';
+        document.getElementById('pd-pay-amount').value = String(cur?.amount ?? enr.tuitionFee ?? 0);
+        document.getElementById('pd-pay-note').value = cur?.note || '';
 
         const histBody = document.getElementById('pd-history-tbody');
         if (history.length === 0) {
@@ -1210,10 +1371,12 @@
         const loadingEl = document.getElementById('pd-loading');
         const contentEl = document.getElementById('pd-content');
         const errEl = document.getElementById('pd-error');
+        const formErrEl = document.getElementById('pd-form-error');
 
         loadingEl.style.display = 'block';
         contentEl.style.display = 'none';
         errEl.style.display = 'none';
+        formErrEl.style.display = 'none';
         document.getElementById('pd-modal-title').textContent = 'Chi tiết thanh toán học phí';
         document.getElementById('pd-modal-subtitle').textContent = `Hồ sơ #ENR-${enrollmentId}`;
         openModal('modal-payment-detail');
@@ -1231,6 +1394,83 @@
           showToast(err.message, 'error');
         } finally {
           if (paymentDetailController === controller) paymentDetailController = null;
+        }
+      }
+
+      async function submitPaymentDetailForm(e) {
+        e.preventDefault();
+        const enrollmentId = Number(document.getElementById('pd-enrollment-id').value);
+        if (!enrollmentId) return;
+
+        const errEl = document.getElementById('pd-form-error');
+        errEl.style.display = 'none';
+
+        const payload = {
+          paymentMethod: document.getElementById('pd-pay-method').value,
+          status: document.getElementById('pd-pay-status').value,
+          amount: Number(document.getElementById('pd-pay-amount').value) || 0,
+          note: document.getElementById('pd-pay-note').value.trim()
+        };
+
+        const btn = document.getElementById('pd-pay-submit-btn');
+        setBusy(btn, true);
+        setModalBusy('modal-payment-detail', true);
+        try {
+          const res = await postJson(`/Admin/api/Enrollments/${encodeURIComponent(enrollmentId)}/Payment`, payload);
+          showToast(res.message || 'Cập nhật thông tin thanh toán thành công.');
+          await openPaymentDetail(enrollmentId);
+          await loadEnrollments();
+        } catch (err) {
+          errEl.textContent = err.message;
+          errEl.style.display = 'block';
+          showToast(err.message, 'error');
+        } finally {
+          setModalBusy('modal-payment-detail', false);
+          setBusy(btn, false);
+        }
+      }
+
+      async function submitEnrollmentForm(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showError('');
+
+        const paymentMethod = document.getElementById('enr-payment-method').value;
+        const payload = {
+          userId: parseInt(document.getElementById('enr-user-id').value, 10) || 0,
+          classId: parseInt(document.getElementById('enr-class-id').value, 10) || 0,
+          status: document.getElementById('enr-status').value,
+          paymentMethod: paymentMethod || null,
+          paymentStatus: paymentMethod ? document.getElementById('enr-payment-status').value : null
+        };
+
+        if (payload.userId <= 0 || payload.classId <= 0) {
+          showError('Vui lòng chọn học viên và lớp học hợp lệ.');
+          return;
+        }
+        if (!['active', 'completed', 'cancelled'].includes((payload.status || '').toLowerCase())) {
+          showError('Trạng thái ghi danh không hợp lệ.');
+          return;
+        }
+
+        const submitBtn = document.getElementById('enr-submit-btn');
+        setBusy(submitBtn, true);
+        setModalBusy('modal-create-enrollment', true);
+
+        try {
+          const data = await postJson('/Admin/api/Enrollments/Create', payload);
+          setModalBusy('modal-create-enrollment', false);
+          closeModal('modal-create-enrollment');
+          showToast(data.message || 'Ghi danh học viên thành công.');
+          currentPage = 1;
+          needLookups = true;
+          await loadEnrollments();
+        } catch (err) {
+          console.error(err);
+          showError(err.message);
+        } finally {
+          setModalBusy('modal-create-enrollment', false);
+          setBusy(submitBtn, false);
         }
       }
 
@@ -1357,11 +1597,40 @@
           }
         };
 
+        const handleStatusChange = (e) => {
+          const sel = e.target.closest('.enr-status-select');
+          if (!sel) return;
+          sel.disabled = true;
+          updateStatus(Number(sel.getAttribute('data-id')), sel.value, sel);
+        };
+
         const tbody = document.getElementById('enrollments-tbody');
         const cardsContainer = document.getElementById('enrollments-cards-container');
 
         tbody.addEventListener('click', handleListClick);
+        tbody.addEventListener('change', handleStatusChange);
         cardsContainer.addEventListener('click', handleListClick);
+        cardsContainer.addEventListener('change', handleStatusChange);
+
+        document.getElementById('pd-payment-form').addEventListener('submit', submitPaymentDetailForm);
+
+        document.getElementById('enr-payment-method').addEventListener('change', (e) => {
+          document.getElementById('enr-payment-status').disabled = !e.target.value;
+        });
+
+        document.getElementById('btn-open-create-enrollment').addEventListener('click', () => {
+          const form = document.getElementById('create-enrollment-form');
+          if (form) form.reset();
+          const statusSel = document.getElementById('enr-status');
+          if (statusSel) statusSel.value = 'active';
+          document.getElementById('enr-payment-method').value = '';
+          document.getElementById('enr-payment-status').value = 'completed';
+          document.getElementById('enr-payment-status').disabled = true;
+          showError('');
+          focusFirstField('modal-create-enrollment', 'enr-user-id');
+        });
+
+        document.getElementById('create-enrollment-form').addEventListener('submit', submitEnrollmentForm);
       });
     })();
   </script>

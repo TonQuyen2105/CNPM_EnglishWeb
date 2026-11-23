@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -108,12 +108,12 @@
         <div class="nav-section-title">Quản lý đào tạo</div>
         <a href="/Admin/subjects.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-          <span>Môn học</span>
+          <span>Khóa học</span>
         </a>
 
         <a href="/Admin/courses.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-          <span>Khóa học</span>
+          <span>Môn học</span>
         </a>
 
         <a href="/Admin/course-objectives.html" class="nav-item active">
@@ -278,7 +278,7 @@
             <div class="card" style="padding: 1.5rem;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 8px; flex-wrap: wrap;">
                 <h3 class="card-title" id="co-syllabus-title" style="margin: 0;">Đề cương bài học</h3>
-                <span class="badge badge-primary">Chỉ xem</span>
+                <span class="badge badge-info">Chỉ xem (Bài học do giảng viên tạo &amp; cập nhật)</span>
               </div>
               <div id="co-lessons-list" style="display: flex; flex-direction: column; gap: 8px;">
                 <div style="color: var(--text-muted); font-size: 0.875rem;">Đang tải đề cương bài học...</div>
@@ -365,9 +365,9 @@
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Cấp độ</label>
               <select id="eo-level" class="form-control">
-                <option value="beginner">Cơ bản</option>
-                <option value="intermediate">Trung cấp</option>
-                <option value="advanced">Nâng cao</option>
+                <option value="beginner">Cơ bản (Beginner)</option>
+                <option value="intermediate">Trung cấp (Intermediate)</option>
+                <option value="advanced">Nâng cao (Advanced)</option>
               </select>
             </div>
             <div class="form-group">
@@ -378,7 +378,7 @@
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái</label>
               <select id="eo-published" class="form-control">
                 <option value="true">Đang mở tuyển sinh</option>
-                <option value="false">Bản nháp</option>
+                <option value="false">Bản nháp (Ẩn)</option>
               </select>
             </div>
           </div>
@@ -417,7 +417,7 @@
       <div class="modal-body">
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
           <span class="badge badge-primary" id="lv-order-badge">Bài --</span>
-          <span class="badge badge-primary" id="lv-type-badge">--</span>
+          <span class="badge badge-info" id="lv-type-badge">--</span>
           <span style="font-size: 0.78rem; color: var(--text-muted);" id="lv-updated-at"></span>
         </div>
         <div style="margin-bottom: 0.75rem;">
@@ -525,9 +525,9 @@
 
       function levelLabel(level) {
         switch ((level || '').toLowerCase()) {
-          case 'advanced': return 'Nâng cao';
-          case 'intermediate': return 'Trung cấp';
-          default: return 'Cơ bản';
+          case 'advanced': return 'Nâng cao (Advanced)';
+          case 'intermediate': return 'Trung cấp (Intermediate)';
+          default: return 'Cơ bản (Beginner)';
         }
       }
 

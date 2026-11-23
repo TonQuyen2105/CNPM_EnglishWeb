@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -109,11 +109,11 @@
         <div class="nav-section-title">Quản lý đào tạo</div>
         <a href="/Admin/subjects.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-          <span>Môn học</span>
+          <span>Khóa học</span>
         </a>
         <a href="/Admin/courses.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-          <span>Khóa học</span>
+          <span>Môn học</span>
         </a>
         <a href="/Admin/course-objectives.html" class="nav-item ">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
@@ -383,7 +383,7 @@
               <input type="datetime-local" id="exam-open-at" class="form-control" required>
             </div>
             <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thời gian kết thúc <span class="required" style="color:red;">*</span></label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Thời gian kết thúc (Đóng kỳ thi) <span class="required" style="color:red;">*</span></label>
               <input type="datetime-local" id="exam-close-at" class="form-control" required>
             </div>
           </div>
@@ -430,7 +430,7 @@
               <button type="button" class="btn btn-sm btn-secondary" id="ed-tab-btn-attempts">Bảng điểm &amp; Bài làm học viên (<span id="ed-tab-a-count">0</span>)</button>
               <button type="button" class="btn btn-sm btn-secondary" id="ed-tab-btn-related">Các kỳ thi cùng khóa (<span id="ed-tab-r-count">0</span>)</button>
             </div>
-            <span class="badge badge-primary">Chế độ giám sát</span>
+            <span class="badge badge-info">Chế độ giám sát (Đề thi do giảng viên khóa học tạo &amp; chấm)</span>
           </div>
 
           <div id="ed-tab-questions"></div>
@@ -609,7 +609,7 @@
           case 'open':
             return `<span class="badge badge-success">${escapeHtml(label || 'Đang mở thi')}</span>`;
           case 'scheduled':
-            return `<span class="badge badge-primary">${escapeHtml(label || 'Chờ đến giờ mở')}</span>`;
+            return `<span class="badge badge-info">${escapeHtml(label || 'Chờ đến giờ mở')}</span>`;
           case 'expired':
             return `<span class="badge badge-danger">${escapeHtml(label || 'Đã đóng kỳ thi')}</span>`;
           case 'draft':
@@ -633,14 +633,14 @@
         switch ((status || '').toLowerCase()) {
           case 'passed': return '<span class="badge badge-success">Đạt</span>';
           case 'failed': return '<span class="badge badge-danger">Chưa đạt</span>';
-          case 'submitted': return '<span class="badge badge-primary">Đã nộp</span>';
+          case 'submitted': return '<span class="badge badge-info">Đã nộp</span>';
           default: return '<span class="badge badge-warning">Đang làm</span>';
         }
       }
 
       function gradingStatusLabel(status) {
         switch ((status || '').toLowerCase()) {
-          case 'auto_graded': return '<span class="badge badge-primary">Chấm tự động</span>';
+          case 'auto_graded': return '<span class="badge badge-info">Chấm tự động</span>';
           case 'graded': return '<span class="badge badge-success">Giảng viên đã chấm</span>';
           case 'pending_review': return '<span class="badge badge-warning">Chờ giảng viên chấm</span>';
           default: return '';
@@ -752,7 +752,7 @@
             : '<span style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Chưa có GV trong khóa</span>';
 
           const structureHtml = qCount > 0
-            ? `<span class="badge badge-primary">${qCount} câu hỏi</span>
+            ? `<span class="badge badge-info">${qCount} câu hỏi</span>
                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">${e.durationMinutes} phút • Đạt ≥ ${e.passScore} đ</div>`
             : '<span class="badge badge-neutral">Chưa có câu hỏi</span>';
 
@@ -915,7 +915,7 @@
                   <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
                     <div style="font-weight: 700; font-size: 0.875rem;">Câu ${q.orderIndex || (idx + 1)}</div>
                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                      <span class="badge badge-primary">${escapeHtml(questionTypeLabel(q.questionType))}</span>
+                      <span class="badge badge-info">${escapeHtml(questionTypeLabel(q.questionType))}</span>
                       <span class="badge badge-primary">${q.points} điểm</span>
                     </div>
                   </div>
@@ -1061,7 +1061,7 @@
                 } else if (o.isSelected && !o.isCorrect) {
                   bg = '#FEF2F2'; border = '#EF4444'; tag = ' <span class="badge badge-danger">Học viên chọn (Sai)</span>';
                 } else if (o.isCorrect) {
-                  bg = '#F0FDF4'; border = '#86EFAC'; tag = ' <span class="badge badge-primary">Đáp án đúng</span>';
+                  bg = '#F0FDF4'; border = '#86EFAC'; tag = ' <span class="badge badge-info">Đáp án đúng</span>';
                 }
                 return `<div style="padding: 6px 10px; border-radius: 6px; font-size: 0.8125rem; background: ${bg}; border: 1px solid ${border};">
                   <strong>${String.fromCharCode(65 + oi)}.</strong> ${escapeHtml(o.optionText)} ${tag}
@@ -1093,7 +1093,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <strong>Câu ${item.orderIndex || (idx + 1)}</strong>
-                  <span class="badge badge-primary">${escapeHtml(questionTypeLabel(item.questionType))}</span>
+                  <span class="badge badge-info">${escapeHtml(questionTypeLabel(item.questionType))}</span>
                   ${item.isAnswered ? gradingStatusLabel(item.gradingStatus) : '<span class="badge badge-neutral">Bỏ trống</span>'}
                 </div>
                 <strong style="color: var(--primary-600); font-size: 0.875rem;">
@@ -1243,15 +1243,6 @@
           const toggleBtn = e.target.closest('[data-toggle-exam]');
           if (toggleBtn) {
             const id = Number(toggleBtn.getAttribute('data-toggle-exam'));
-            const exam = examsCache.find(x => x.id === id);
-            const isOpening = exam ? !exam.isPublished : toggleBtn.textContent.trim().toLowerCase().includes('mở');
-            if (isOpening) {
-              const titleLabel = exam ? exam.title : `#${id}`;
-              const courseLabel = exam?.courseTitle || 'Chưa gắn khóa học';
-              if (!confirm(`Bạn có chắc chắn muốn mở đề thi "${titleLabel}" (Khóa học: ${courseLabel}) cho học viên vào làm bài không?`)) {
-                return;
-              }
-            }
             toggleBtn.disabled = true;
             try {
               const res = await postJson(`/Admin/api/Exams/TogglePublish/${id}`);
@@ -1275,7 +1266,6 @@
           showFormError('');
           const id = document.getElementById('exam-id').value;
           const isEdit = Boolean(id);
-          const existingExam = isEdit ? examsCache.find(x => String(x.id) === String(id)) : null;
           const courseVal = document.getElementById('exam-course-id').value;
 
           const openAtIso = localInputToIsoUtc(document.getElementById('exam-open-at').value);
@@ -1289,12 +1279,6 @@
             description: document.getElementById('exam-description').value.trim(),
             isPublished: document.getElementById('exam-published').value === 'true'
           };
-
-          if (payload.isPublished && (!isEdit || !existingExam?.isPublished)) {
-            if (!confirm(`Bạn có chắc chắn muốn mở đề thi "${payload.title}" ngay theo lịch đã cấu hình không?`)) {
-              return;
-            }
-          }
 
           const btn = document.getElementById('exam-submit-btn');
           setBusy(btn, true);

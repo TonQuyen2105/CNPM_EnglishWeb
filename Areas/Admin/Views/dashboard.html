@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -55,12 +55,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -254,7 +254,7 @@
       <div class="stat-info">
         <span class="stat-label">Tổng lượt ghi danh</span>
         <span class="stat-value" id="kpi-active-enrollments">--</span>
-        <span class="stat-sub text-primary">Lượt đang học</span>
+        <span class="stat-sub text-primary">Lượt đang học (active)</span>
       </div>
       <div class="stat-icon accent">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
@@ -487,11 +487,11 @@
       function renderEnrollmentStatus(status) {
         switch ((status || '').toLowerCase()) {
           case 'active':
-            return '<span class="badge badge-success">Đang học</span>';
+            return '<span class="badge badge-success">Đang học (Active)</span>';
           case 'completed':
-            return '<span class="badge badge-primary">Hoàn thành</span>';
+            return '<span class="badge badge-primary">Hoàn thành (Completed)</span>';
           case 'cancelled':
-            return '<span class="badge badge-danger">Đã hủy</span>';
+            return '<span class="badge badge-danger">Đã hủy (Cancelled)</span>';
           default:
             return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
         }
@@ -582,20 +582,7 @@
           return;
         }
 
-        tbody.innerHTML = recents.map(r => {
-          const isCancelled = r.status === 'cancelled' || r.classStatus === 'cancelled';
-          const payStatus = (r.paymentStatus || '').toLowerCase();
-          let feeCellHtml = '';
-          if (isCancelled) {
-            feeCellHtml = `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(r.price)}</span> <small class="text-muted">(0 ₫)</small>`;
-          } else if (payStatus === 'completed') {
-            const paidVal = r.paymentAmount !== null && r.paymentAmount !== undefined ? r.paymentAmount : r.price;
-            feeCellHtml = `<strong>${formatCurrency(paidVal)}</strong><div style="margin-top:2px;"><span class="badge badge-success" style="font-size:0.7rem;">Đã thu</span></div>`;
-          } else {
-            const unpaidLabel = payStatus === 'pending' ? 'Chờ TT' : 'Chưa thu';
-            feeCellHtml = `<strong>${formatCurrency(r.price)}</strong><div style="margin-top:2px;"><span class="badge badge-neutral" style="font-size:0.7rem;">${unpaidLabel}</span></div>`;
-          }
-          return `
+        tbody.innerHTML = recents.map(r => `
           <tr>
             <td>
               <strong>${escapeHtml(r.studentName)}</strong><br>
@@ -608,12 +595,13 @@
               <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(r.className)}</div>
             </td>
             <td>${escapeHtml(r.courseTitle)}</td>
-            <td style="white-space: nowrap;">${feeCellHtml}</td>
+            <td style="white-space: nowrap;">${(r.status === 'cancelled' || r.classStatus === 'cancelled')
+              ? `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(r.price)}</span> <small class="text-muted">(0 ₫)</small>`
+              : `<strong>${formatCurrency(r.price)}</strong>`}</td>
             <td style="white-space: nowrap;">${formatDate(r.enrolledAt)}</td>
             <td style="white-space: nowrap;">${renderEnrollmentStatus(r.status)}</td>
           </tr>
-        `;
-        }).join('');
+        `).join('');
       }
 
       async function loadDashboard() {

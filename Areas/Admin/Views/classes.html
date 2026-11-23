@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -59,12 +59,12 @@
     <div class="nav-section-title">Quản lý đào tạo</div>
       <a href="/Admin/subjects.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
+        <span>Khóa học</span>
       </a>
     
       <a href="/Admin/courses.html" class="nav-item ">
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
+        <span>Môn học</span>
       </a>
     
       <a href="/Admin/course-objectives.html" class="nav-item ">
@@ -221,7 +221,7 @@
     <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
       <button type="button" class="btn btn-secondary" id="btn-open-manage-timeslots">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        Quản lý ca học
+        Quản lý ca học (Time Slots)
       </button>
       <button type="button" class="btn btn-primary" id="btn-open-create-class" data-modal-target="modal-create-class">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -320,14 +320,14 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Phòng học mở lớp</label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Phòng học mở lớp (kiểm tra trùng phòng)</label>
               <select id="cls-classroom-id" class="form-control">
                 <option value="">-- Chưa chọn phòng học --</option>
               </select>
             </div>
           </div>
           <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên phụ trách</label>
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Giảng viên phụ trách (Main)</label>
             <select id="cls-teacher-id" class="form-control">
               <option value="">-- Chưa phân công --</option>
             </select>
@@ -335,7 +335,7 @@
           </div>
           <div id="cls-schedule-row" class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lịch thứ học</label>
+              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lịch thứ học (lên TKB)</label>
               <select id="cls-schedule-days" class="form-control">
                 <option value="">-- Theo cấu hình phòng / Chưa xếp --</option>
                 <option value="t246">Thứ 2 - Thứ 4 - Thứ 6</option>
@@ -345,7 +345,7 @@
             </div>
             <div class="form-group">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0;">Ca học</label>
+                <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0;">Ca học (lên TKB)</label>
                 <button type="button" id="btn-inline-manage-timeslots" style="border: none; background: transparent; color: var(--primary-600, #2563EB); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0;">+ Thêm / Quản lý ca học</button>
               </div>
               <select id="cls-timeslot-id" class="form-control">
@@ -394,7 +394,7 @@
   <div class="modal-backdrop" id="modal-manage-timeslots">
     <div class="modal-dialog modal-dialog-lg" style="max-width: 820px; width: 95%;">
       <div class="modal-header">
-        <h3 class="modal-title">Quản lý danh mục ca học</h3>
+        <h3 class="modal-title">Quản lý danh mục ca học (Time Slots)</h3>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body" style="max-height: 76vh; overflow-y: auto;">
@@ -403,7 +403,7 @@
             <strong id="ts-form-heading" style="font-size: 0.9rem;">Thêm ca học mới (Ca 1, Ca 2, Ca 3...)</strong>
             <div style="display: inline-flex; gap: 6px; flex-wrap: wrap;">
               <button type="button" class="btn btn-sm btn-secondary" id="btn-seed-default-timeslots" style="border-color: #93C5FD; color: #1D4ED8; background: #EFF6FF;" title="Tạo nhanh Ca 1 -> Ca 6 mẫu vào bảng time_slots nếu vừa reset dữ liệu">⚡ Tạo nhanh Ca 1 - Ca 6 mẫu</button>
-              <button type="button" class="btn btn-sm btn-secondary" id="btn-cancel-edit-timeslot" style="display: none;">Hủy sửa</button>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-cancel-edit-timeslot" style="display: none;">Hủy sửa (Thêm mới)</button>
             </div>
           </div>
           <form id="timeslot-form">
@@ -415,22 +415,12 @@
                 <input type="text" id="ts-name" class="form-control" placeholder="VD: Ca 1, Ca 2, Ca 3..." maxlength="50" required>
               </div>
               <div class="form-group">
-                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ bắt đầu (24h) <span style="color:red;">*</span></label>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                  <select id="ts-start-hour" class="form-control" aria-label="Giờ bắt đầu (00-23)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
-                  <span style="font-weight: 700; color: var(--text-muted);">:</span>
-                  <select id="ts-start-minute" class="form-control" aria-label="Phút bắt đầu (00-59)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
-                </div>
-                <input type="hidden" id="ts-start-time" value="">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ bắt đầu <span style="color:red;">*</span></label>
+                <input type="time" id="ts-start-time" class="form-control" required>
               </div>
               <div class="form-group">
-                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ kết thúc (24h) <span style="color:red;">*</span></label>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                  <select id="ts-end-hour" class="form-control" aria-label="Giờ kết thúc (00-23)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
-                  <span style="font-weight: 700; color: var(--text-muted);">:</span>
-                  <select id="ts-end-minute" class="form-control" aria-label="Phút kết thúc (00-59)" style="padding-left: 8px; padding-right: 6px; min-width: 0;"></select>
-                </div>
-                <input type="hidden" id="ts-end-time" value="">
+                <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Giờ kết thúc <span style="color:red;">*</span></label>
+                <input type="time" id="ts-end-time" class="form-control" required>
               </div>
               <div class="form-group">
                 <label class="form-label" style="font-weight: 600; font-size: 0.8125rem;">Trạng thái</label>
@@ -455,7 +445,7 @@
             <thead>
               <tr>
                 <th>Tên ca học</th>
-                <th>Khung giờ (24h)</th>
+                <th>Khung giờ (Từ - Đến)</th>
                 <th>Lịch đang xếp</th>
                 <th>Trạng thái</th>
                 <th class="text-right">Thao tác</th>
@@ -732,28 +722,6 @@
         }, true);
       }
 
-      function parseTimeMinutes(hhmm) {
-        if (!hhmm) return null;
-        const m = String(hhmm).trim().match(/^(\d{1,2}):(\d{2})/);
-        if (!m) return null;
-        return Number(m[1]) * 60 + Number(m[2]);
-      }
-
-      function isTimeSlotOverlapping(slotA, slotB) {
-        if (!slotA || !slotB) return false;
-        const idA = Number(slotA.id || slotA.timeSlotId || 0);
-        const idB = Number(slotB.timeSlotId || slotB.id || 0);
-        if (idA > 0 && idB > 0 && idA === idB) return true;
-        const aStart = parseTimeMinutes(slotA.startTime);
-        const aEnd = parseTimeMinutes(slotA.endTime);
-        const bStart = parseTimeMinutes(slotB.startTime);
-        const bEnd = parseTimeMinutes(slotB.endTime);
-        if (aStart !== null && aEnd !== null && bStart !== null && bEnd !== null) {
-          return aStart < bEnd && bStart < aEnd;
-        }
-        return false;
-      }
-
       function updateRoomStatusPreview(autoAssignDefaultTeacher = false) {
         const roomSel = document.getElementById('cls-classroom-id');
         const box = document.getElementById('cls-room-status-box');
@@ -772,6 +740,14 @@
           return;
         }
 
+        if (autoAssignDefaultTeacher && !document.getElementById('cls-edit-id').value) {
+          const schedDaysEl = document.getElementById('cls-schedule-days');
+          const slotEl = document.getElementById('cls-timeslot-id');
+          if (schedDaysEl && !schedDaysEl.value) schedDaysEl.value = 't246';
+          if (slotEl && !slotEl.value && timeSlotsList.length > 0) slotEl.value = String(timeSlotsList[0].id);
+          syncClassStatusByStartDate();
+        }
+
         const editId = Number(document.getElementById('cls-edit-id').value) || 0;
         const editingRow = editId ? classesCache.find(x => x.id === editId) : null;
         if (editingRow && (editingRow.status || '').toLowerCase() === 'completed') {
@@ -779,10 +755,13 @@
           box.innerHTML = '';
           return;
         }
-
         const startVal = document.getElementById('cls-start-date').value;
         const endVal = document.getElementById('cls-end-date').value;
-        const overlappingClasses = (Array.isArray(room.activeClasses) ? room.activeClasses : []).filter(ac => {
+        const maxStudents = parseInt(document.getElementById('cls-max-students').value, 10) || 0;
+        const statusVal = (document.getElementById('cls-status').value || 'upcoming').toLowerCase();
+        const isTargetActive = statusVal === 'upcoming' || statusVal === 'ongoing';
+
+        const conflicts = (Array.isArray(room.activeClasses) ? room.activeClasses : []).filter(ac => {
           if (editId && ac.id === editId) return false;
           if (!startVal || !endVal) return true;
           const aStart = new Date(startVal);
@@ -792,55 +771,27 @@
           return aStart <= bEnd && bStart <= aEnd;
         });
 
-        if (autoAssignDefaultTeacher && !editId) {
-          const schedDaysEl = document.getElementById('cls-schedule-days');
-          const slotEl = document.getElementById('cls-timeslot-id');
-          if (schedDaysEl && !schedDaysEl.value) schedDaysEl.value = 't246';
-          if (slotEl && !slotEl.value && timeSlotsList.length > 0) {
-            const firstFreeSlot = timeSlotsList.find(ts => !overlappingClasses.some(ac => isTimeSlotOverlapping(ts, ac)));
-            slotEl.value = String((firstFreeSlot || timeSlotsList[0]).id);
-          }
-          syncClassStatusByStartDate();
-        }
-
-        const maxStudents = parseInt(document.getElementById('cls-max-students').value, 10) || 0;
-        const statusVal = (document.getElementById('cls-status').value || 'upcoming').toLowerCase();
-        const isTargetActive = statusVal === 'upcoming' || statusVal === 'ongoing';
-        const selectedTimeSlotId = Number(document.getElementById('cls-timeslot-id')?.value) || 0;
-        const selectedSlot = selectedTimeSlotId
-          ? (timeSlotsList.find(ts => ts.id === selectedTimeSlotId) || { id: selectedTimeSlotId })
-          : null;
-
-        const slotConflicts = selectedSlot
-          ? overlappingClasses.filter(ac => isTimeSlotOverlapping(selectedSlot, ac))
-          : [];
-
         const capacityBad = maxStudents > 0 && room.capacity < maxStudents;
-        const occupiedSummaryHtml = overlappingClasses.length > 0
-          ? overlappingClasses.map(ac => {
-              const slotTxt = ac.timeSlotName
-                ? `${ac.timeSlotName}${ac.timeRange ? ` (${ac.timeRange})` : ''}`
-                : (ac.timeRange || 'Chưa rõ ca');
-              const daysTxt = ac.daysLabel ? ` • ${ac.daysLabel}` : '';
-              return `<strong>${escapeHtml(ac.classCode)}</strong>: ${escapeHtml(slotTxt + daysTxt)}`;
-            }).join('; ')
+        const teacherNote = room.defaultTeacherName
+          ? `GV mặc định: <strong>${escapeHtml(room.defaultTeacherName)}</strong>`
+          : 'Chưa gán GV mặc định';
+        const courseNote = room.defaultCourseTitle
+          ? `Khóa: <strong>${escapeHtml(room.defaultCourseTitle)}</strong>`
           : '';
+        const schedNote = [room.scheduleDaysLabel, room.defaultTimeSlotLabel].filter(Boolean).join(' • ');
+        const metaLine = [courseNote, teacherNote, schedNote ? `Lịch: <strong>${escapeHtml(schedNote)}</strong>` : ''].filter(Boolean).join(' &bull; ');
         const todayIso = toDateInputValue(new Date());
         const expiredDateHint = endVal && endVal <= todayIso
           ? '<div style="margin-top: 4px; font-size: 0.78rem; color: #92400E;"><strong>Lưu ý:</strong> Ngày kết thúc đang chọn đã đến/qua hôm nay, sau khi lưu lớp sẽ tự động chuyển sang trạng thái <strong>Đã kết thúc</strong>. Nếu muốn mở lớp đang/sắp chạy lên Thời khóa biểu, hãy chọn ngày kết thúc sau hôm nay.</div>'
           : '';
 
-        if (isTargetActive && slotConflicts.length > 0) {
-          const hit = slotConflicts[0];
-          const hitSlotLabel = hit.timeSlotName
-            ? `${hit.timeSlotName}${hit.timeRange ? ` (${hit.timeRange})` : ''}`
-            : (hit.timeRange || '');
+        if (isTargetActive && conflicts.length > 0) {
+          const hit = conflicts[0];
           box.style.display = 'block';
           box.style.background = '#FEF2F2';
           box.style.border = '1px solid #FECACA';
           box.style.color = '#991B1B';
-          box.innerHTML = `<strong>⚠ Trùng ca học tại phòng ${escapeHtml(room.name)}:</strong> Lớp <strong>${escapeHtml(hit.classCode)}</strong> (${escapeHtml(hit.className)}) đã đăng ký ca <strong>${escapeHtml(hitSlotLabel)}</strong> (${formatDate(hit.startDate)} - ${formatDate(hit.endDate)}). Vui lòng chọn ca học khác cho lớp này.` +
-            `<br><span style="font-size: 0.78rem;">Các ca đang có lớp tại phòng ${escapeHtml(room.name)}: ${occupiedSummaryHtml}.</span>`;
+          box.innerHTML = `<strong>⚠ Không cho mở chung phòng:</strong> Phòng <strong>${escapeHtml(room.name)}</strong> đã được mở cho lớp <strong>${escapeHtml(hit.classCode)}</strong> (${escapeHtml(hit.className)}, ${formatDate(hit.startDate)} - ${formatDate(hit.endDate)}). Vui lòng chọn phòng trống khác.<br><span style="font-size: 0.78rem;">${metaLine}</span>`;
         } else if (capacityBad) {
           box.style.display = 'block';
           box.style.background = '#FFFBEB';
@@ -852,13 +803,7 @@
           box.style.background = '#ECFDF5';
           box.style.border = '1px solid #A7F3D0';
           box.style.color = '#065F46';
-          const selectedSlotDesc = selectedSlot && selectedSlot.name
-            ? ` với ca <strong>${escapeHtml(selectedSlot.name)} (${escapeHtml(selectedSlot.timeRange || '')})</strong>`
-            : '';
-          const occupiedLine = overlappingClasses.length > 0
-            ? `<br><span style="font-size: 0.78rem;">Các ca đã có lớp đăng ký trong phòng ${escapeHtml(room.name)}: ${occupiedSummaryHtml}.</span>`
-            : `<br><span style="font-size: 0.78rem;">Phòng hiện chưa có lớp nào đăng ký trùng khoảng ngày.</span>`;
-          box.innerHTML = `<strong>✓ Phòng &amp; ca học hợp lệ:</strong> Phòng <strong>${escapeHtml(room.name)}</strong> (${room.capacity} chỗ)${selectedSlotDesc} sẵn sàng mở lớp.${occupiedLine}${expiredDateHint}`;
+          box.innerHTML = `<strong>✓ Phòng trống hợp lệ:</strong> Phòng <strong>${escapeHtml(room.name)}</strong> (${room.capacity} chỗ) chưa có lớp mở trùng thời gian.<br><span style="font-size: 0.78rem;">${metaLine}</span>${expiredDateHint}`;
         }
       }
 
@@ -1075,11 +1020,8 @@
             const prevRoom = roomSelect.value;
             roomSelect.innerHTML = '<option value="">-- Chưa chọn phòng học --</option>' +
               classroomsList.map(r => {
-                const activeList = Array.isArray(r.activeClasses) ? r.activeClasses : [];
-                const distinctClassCount = new Set(activeList.map(c => c.id)).size;
-                const slotNames = [...new Set(activeList.map(c => c.timeSlotName).filter(Boolean))];
-                const statusTxt = distinctClassCount > 0
-                  ? `Đang mở ${distinctClassCount} lớp${slotNames.length > 0 ? ` (${slotNames.join(', ')})` : ''}`
+                const statusTxt = r.isOccupied && Array.isArray(r.activeClasses) && r.activeClasses.length > 0
+                  ? `⚠ Đã mở: ${r.activeClasses.map(c => c.classCode).join(', ')}`
                   : '✓ Phòng trống';
                 const teacherTxt = r.defaultTeacherName ? ` • GV: ${r.defaultTeacherName}` : '';
                 return `<option value="${r.id}">${escapeHtml(`${r.name} (${r.capacity} chỗ) — ${statusTxt}${teacherTxt}`)}</option>`;
@@ -1103,7 +1045,12 @@
           : coursesList.map(c => `<option value="${c.id}" data-price="${c.price}">${escapeHtml(c.title)} (${formatCurrency(c.price)})</option>`).join('');
 
         courseFilterEl.innerHTML = '<option value="0">Tất cả khóa học</option>' +
-          coursesList.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+          coursesList.map(c => {
+            const shortLabel = c.subjectName && c.rawTitle && c.subjectName !== c.rawTitle
+              ? `${c.subjectName} — ${c.rawTitle}`
+              : (c.rawTitle || c.title);
+            return `<option value="${c.id}">${escapeHtml(shortLabel)}</option>`;
+          }).join('');
 
         if (activeCourseFilter && coursesList.some(c => String(c.id) === String(activeCourseFilter))) {
           courseFilterEl.value = String(activeCourseFilter);
@@ -1524,7 +1471,7 @@
           updateRoomStatusPreview(false);
         });
         document.getElementById('cls-start-date').addEventListener('input', syncClassStatusByStartDate);
-        ['cls-timeslot-id', 'cls-end-date', 'cls-max-students', 'cls-status'].forEach(elId => {
+        ['cls-end-date', 'cls-max-students', 'cls-status'].forEach(elId => {
           document.getElementById(elId).addEventListener('change', () => updateRoomStatusPreview(false));
         });
 
@@ -1539,68 +1486,6 @@
         let tsController = null;
         const TS_COLS = 5;
 
-        function initTime24Picker(prefix) {
-          const hSel = document.getElementById(`ts-${prefix}-hour`);
-          const mSel = document.getElementById(`ts-${prefix}-minute`);
-          if (!hSel || !mSel) return;
-          let hHtml = '<option value="">Giờ</option>';
-          for (let h = 0; h < 24; h++) {
-            const hh = String(h).padStart(2, '0');
-            hHtml += `<option value="${hh}">${hh}</option>`;
-          }
-          hSel.innerHTML = hHtml;
-
-          let mHtml = '<option value="">Phút</option>';
-          for (let m = 0; m < 60; m++) {
-            const mm = String(m).padStart(2, '0');
-            mHtml += `<option value="${mm}">${mm}</option>`;
-          }
-          mSel.innerHTML = mHtml;
-
-          hSel.addEventListener('change', () => {
-            if (hSel.value && !mSel.value) mSel.value = '00';
-            syncTime24Value(prefix);
-          });
-          mSel.addEventListener('change', () => syncTime24Value(prefix));
-        }
-
-        function syncTime24Value(prefix) {
-          const hSel = document.getElementById(`ts-${prefix}-hour`);
-          const mSel = document.getElementById(`ts-${prefix}-minute`);
-          const hidden = document.getElementById(`ts-${prefix}-time`);
-          if (!hidden) return '';
-          const hh = hSel ? hSel.value : '';
-          const mm = mSel ? mSel.value : '';
-          const val = (hh !== '' && mm !== '') ? `${hh}:${mm}` : '';
-          hidden.value = val;
-          return val;
-        }
-
-        function setTime24Value(prefix, hhmm) {
-          const hSel = document.getElementById(`ts-${prefix}-hour`);
-          const mSel = document.getElementById(`ts-${prefix}-minute`);
-          const hidden = document.getElementById(`ts-${prefix}-time`);
-          const m = String(hhmm || '').trim().match(/^(\d{1,2}):(\d{2})/);
-          if (m) {
-            const hhNum = parseInt(m[1], 10);
-            const mmNum = parseInt(m[2], 10);
-            if (hhNum >= 0 && hhNum <= 23 && mmNum >= 0 && mmNum <= 59) {
-              const hh = String(hhNum).padStart(2, '0');
-              const mm = String(mmNum).padStart(2, '0');
-              if (hSel) hSel.value = hh;
-              if (mSel) mSel.value = mm;
-              if (hidden) hidden.value = `${hh}:${mm}`;
-              return;
-            }
-          }
-          if (hSel) hSel.value = '';
-          if (mSel) mSel.value = '';
-          if (hidden) hidden.value = '';
-        }
-
-        initTime24Picker('start');
-        initTime24Picker('end');
-
         function showTimeSlotError(msg) {
           const box = document.getElementById('timeslot-form-error');
           if (!box) return;
@@ -1613,8 +1498,8 @@
           if (form) form.reset();
           document.getElementById('ts-id').value = '';
           document.getElementById('ts-name').value = '';
-          setTime24Value('start', '');
-          setTime24Value('end', '');
+          document.getElementById('ts-start-time').value = '';
+          document.getElementById('ts-end-time').value = '';
           document.getElementById('ts-active').value = 'true';
           document.getElementById('ts-description').value = '';
           document.getElementById('ts-form-heading').textContent = 'Thêm ca học mới (Ca 1, Ca 2, Ca 3...)';
@@ -1628,8 +1513,8 @@
           if (!slot) return;
           document.getElementById('ts-id').value = String(slot.id);
           document.getElementById('ts-name').value = slot.slotName || slot.name || '';
-          setTime24Value('start', slot.startTime || '');
-          setTime24Value('end', slot.endTime || '');
+          document.getElementById('ts-start-time').value = slot.startTime || '';
+          document.getElementById('ts-end-time').value = slot.endTime || '';
           document.getElementById('ts-active').value = slot.isActive ? 'true' : 'false';
           document.getElementById('ts-description').value = slot.description || '';
           document.getElementById('ts-form-heading').textContent = `Chỉnh sửa ca học: ${slot.slotName || slot.name}`;
@@ -1682,8 +1567,6 @@
           timeSlotsList = activeSlots.map(ts => ({
             id: ts.id,
             name: ts.slotName || ts.name,
-            startTime: ts.startTime,
-            endTime: ts.endTime,
             timeRange: ts.timeRange
           }));
           const slotSelect = document.getElementById('cls-timeslot-id');
@@ -1697,7 +1580,6 @@
               slotSelect.value = String(timeSlotsList[0].id);
             }
           }
-          updateRoomStatusPreview(false);
         }
 
         async function loadTimeSlotsAdmin() {
@@ -1734,8 +1616,8 @@
           const isEdit = Boolean(id);
           const payload = {
             slotName: document.getElementById('ts-name').value.trim(),
-            startTime: syncTime24Value('start'),
-            endTime: syncTime24Value('end'),
+            startTime: document.getElementById('ts-start-time').value,
+            endTime: document.getElementById('ts-end-time').value,
             description: document.getElementById('ts-description').value.trim(),
             isActive: document.getElementById('ts-active').value === 'true'
           };
@@ -1744,13 +1626,8 @@
             showTimeSlotError('Tên ca học phải từ 1 đến 50 ký tự.');
             return;
           }
-          const time24Regex = /^([01]\d|2[0-3]):[0-5]\d$/;
-          if (!time24Regex.test(payload.startTime) || !time24Regex.test(payload.endTime)) {
-            showTimeSlotError('Vui lòng chọn đầy đủ giờ bắt đầu và giờ kết thúc theo chuẩn 24h (00:00 - 23:59).');
-            return;
-          }
-          if (payload.startTime >= payload.endTime) {
-            showTimeSlotError('Giờ kết thúc phải lớn hơn giờ bắt đầu (chuẩn 24h 00:00 - 23:59).');
+          if (!payload.startTime || !payload.endTime || payload.startTime >= payload.endTime) {
+            showTimeSlotError('Giờ kết thúc phải lớn hơn giờ bắt đầu.');
             return;
           }
 
