@@ -189,24 +189,96 @@ if (typeof window !== 'undefined') {
     syncStudentUserSession();
   }
 
-  // Bọc window.fetch riêng cho cổng Admin để tự động đăng nhập lại khi Cookie EL.Admin.Auth hết hạn/thiếu (401/403)
+  // Bọc window.fetch riêng cho cổng Admin: tự động hiện Top Progress Bar + tự đăng nhập lại khi 401/403
   if (getCurrentPortalRole() === 'admin' && typeof window.fetch === 'function' && !window.__adminFetchAuthWrapped) {
     window.__adminFetchAuthWrapped = true;
     const originalFetch = window.fetch.bind(window);
+    window.__adminSilentFetch = originalFetch;
+    let activeRequests = 0;
+    let progressVal = 0;
+    let trickleTimer = null;
+    let hideTimer = null;
+
+    function getTopProgressBar() {
+      let bar = document.getElementById('admin-top-progress');
+      if (!bar && (document.body || document.documentElement)) {
+        bar = document.createElement('div');
+        bar.id = 'admin-top-progress';
+        bar.setAttribute('aria-hidden', 'true');
+        (document.body || document.documentElement).appendChild(bar);
+      }
+      return bar;
+    }
+
+    function startTopProgress() {
+      activeRequests++;
+      if (activeRequests > 1) return;
+      if (hideTimer) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+      const bar = getTopProgressBar();
+      if (!bar) return;
+      progressVal = 24;
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      void bar.offsetWidth;
+      bar.style.transition = 'width 220ms ease-out, opacity 200ms ease';
+      bar.classList.add('is-active');
+      bar.style.width = `${progressVal}%`;
+      if (trickleTimer) clearInterval(trickleTimer);
+      trickleTimer = setInterval(() => {
+        if (progressVal < 86) {
+          progressVal += Math.max(1.5, (86 - progressVal) * 0.14);
+          bar.style.width = `${progressVal.toFixed(1)}%`;
+        }
+      }, 240);
+    }
+
+    function finishTopProgress() {
+      activeRequests = Math.max(0, activeRequests - 1);
+      if (activeRequests > 0) return;
+      if (trickleTimer) {
+        clearInterval(trickleTimer);
+        trickleTimer = null;
+      }
+      const bar = getTopProgressBar();
+      if (!bar) return;
+      progressVal = 100;
+      bar.style.width = '100%';
+      hideTimer = setTimeout(() => {
+        if (activeRequests === 0) {
+          bar.classList.remove('is-active');
+          setTimeout(() => {
+            if (activeRequests === 0) bar.style.width = '0%';
+          }, 190);
+        }
+      }, 160);
+    }
+
     window.fetch = async function (input, init) {
-      const res = await originalFetch(input, init);
+      let isAdminApi = false;
+      const isSilent = !!(init && init.__silent);
       try {
         const rawUrl = typeof input === 'string'
           ? input
           : (input && typeof input.url === 'string' ? input.url : '');
         const pathname = rawUrl ? new URL(rawUrl, window.location.origin).pathname : '';
-        const isAdminApi = /^\/(Admin\/api|api\/admin)(\/|$)/i.test(pathname);
-        if (isAdminApi && (res.status === 401 || res.status === 403)) {
+        isAdminApi = /^\/(Admin\/api|api\/admin)(\/|$)/i.test(pathname);
+      } catch (_) {}
+
+      const trackProgress = isAdminApi && !isSilent;
+      if (trackProgress) startTopProgress();
+      try {
+        const res = await originalFetch(input, init);
+        if (isAdminApi && !isSilent && (res.status === 401 || res.status === 403)) {
           try { localStorage.removeItem('admin_user'); } catch (_) {}
           redirectToLoginWithReason('auth_required');
         }
-      } catch (_) {}
-      return res;
+        return res;
+      } finally {
+        if (trackProgress) finishTopProgress();
+      }
     };
   }
 
@@ -271,16 +343,121 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. Dropdown Avatar & Notifications - Quản lý tập trung bằng Event Delegation
+  // 1b. Sidebar Accordion Group Toggle ([data-nav-group-toggle]) & Admin Hover Prefetch
   document.addEventListener('click', (e) => {
+    const groupToggle = e.target.closest('[data-nav-group-toggle]');
+    if (!groupToggle) return;
+    e.preventDefault();
+    const group = groupToggle.closest('.nav-group');
+    if (!group) return;
+    const isOpen = group.classList.toggle('is-open');
+    groupToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  if (getCurrentPortalRole() === 'admin' && window.location.protocol !== 'file:') {
+    const prefetchedAdminUrls = new Set();
+    const prefetchedApiTimestamps = new Map();
+    const API_PREFETCH_COOLDOWN_MS = 20000;
+    const ADMIN_PAGE_PREFETCH_APIS = {
+      '/Admin/dashboard.html': '/Admin/api/Dashboard/Summary',
+      '/Admin/reports.html': '/Admin/api/Reports/Summary?quarter=0',
+      '/Admin/subjects.html': '/Admin/api/Subjects/List?search=&status=all',
+      '/Admin/courses.html': '/Admin/api/Courses/List?lookups=true',
+      '/Admin/course-objectives.html': '/Admin/api/Courses/List?lookups=false',
+      '/Admin/classes.html': '/Admin/api/Classes/List',
+      '/Admin/schedules.html': '/Admin/api/Schedules/Weekly',
+      '/Admin/facilities.html': '/Admin/api/Facilities/List',
+      '/Admin/enrollments.html': '/Admin/api/Enrollments/List?page=1&pageSize=15',
+      '/Admin/teachers.html': '/Admin/api/Teachers/List?search=&verified=all',
+      '/Admin/users.html': '/Admin/api/Users/List?search=&role=all&status=all&page=1&pageSize=10',
+      '/Admin/exams.html': '/Admin/api/Exams/List?search=&courseId=0&published=all&lookups=true',
+      '/Admin/reviews.html': '/Admin/api/Reviews/List?search=&courseId=0&rating=0&page=1&pageSize=8&lookups=true'
+    };
+
+    document.addEventListener('pointerenter', (e) => {
+      if (!e.target || typeof e.target.closest !== 'function') return;
+      const link = e.target.closest('.sidebar-nav a[href^="/Admin/"][href$=".html"]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (!href || link.pathname === window.location.pathname) return;
+
+      if (!prefetchedAdminUrls.has(href)) {
+        prefetchedAdminUrls.add(href);
+        const prefetchTag = document.createElement('link');
+        prefetchTag.rel = 'prefetch';
+        prefetchTag.href = href;
+        document.head.appendChild(prefetchTag);
+      }
+
+      const apiUrl = ADMIN_PAGE_PREFETCH_APIS[link.pathname] || ADMIN_PAGE_PREFETCH_APIS[href];
+      if (apiUrl) {
+        const now = Date.now();
+        const lastFetchedAt = prefetchedApiTimestamps.get(apiUrl) || 0;
+        if (now - lastFetchedAt > API_PREFETCH_COOLDOWN_MS) {
+          prefetchedApiTimestamps.set(apiUrl, now);
+          const silentFetch = typeof window.__adminSilentFetch === 'function'
+            ? window.__adminSilentFetch
+            : window.fetch;
+          silentFetch(apiUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+          }).catch(() => {});
+        }
+      }
+    }, { capture: true, passive: true });
+  }
+
+  // 2. Dropdown Avatar, Notifications & Admin Tools Menu - Quản lý tập trung bằng Event Delegation
+  if (getCurrentPortalRole() === 'admin' && !document.getElementById('admin-tools-dropdown-style')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'admin-tools-dropdown-style';
+    styleEl.textContent = [
+      '.admin-tools-dropdown { position: relative; display: inline-flex; }',
+      '.admin-tools-menu { position: absolute; top: calc(100% + 6px); right: 0; min-width: 205px; background: #FFFFFF; border: 1px solid var(--border-color, #E2E8F0); border-radius: 10px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12); padding: 5px; z-index: 60; display: none; flex-direction: column; gap: 2px; }',
+      '.admin-tools-menu.show { display: flex; }',
+      '.admin-tools-menu > button, .admin-tools-menu > a { width: 100% !important; justify-content: flex-start !important; text-align: left !important; background: transparent !important; border: none !important; box-shadow: none !important; color: var(--text-primary, #0F172A) !important; font-size: 0.8125rem !important; font-weight: 500 !important; padding: 0.5rem 0.75rem !important; border-radius: 7px !important; height: auto !important; gap: 8px !important; display: flex !important; align-items: center !important; text-decoration: none !important; cursor: pointer; }',
+      '.admin-tools-menu > button:hover:not(:disabled), .admin-tools-menu > a:hover:not(.disabled) { background: var(--neutral-100, #F1F5F9) !important; color: var(--primary-700, #1D4ED8) !important; }',
+      '.admin-tools-menu > button.btn-primary { background: #EFF6FF !important; color: #1D4ED8 !important; font-weight: 600 !important; }',
+      '.admin-tools-menu > button:disabled { opacity: 0.5 !important; cursor: not-allowed !important; pointer-events: none !important; }'
+    ].join('\n');
+    document.head.appendChild(styleEl);
+  }
+
+  document.addEventListener('click', (e) => {
+    const toolsTrigger = e.target.closest('[data-admin-tools-toggle]');
+    const clickedToolItem = e.target.closest('.admin-tools-menu > button, .admin-tools-menu > a');
     const avatarTrigger = e.target.closest('#avatar-dropdown-btn, .user-profile-trigger');
     const notifTrigger = e.target.closest('#notifications-btn, .notification-wrapper > button');
     const avatarMenu = document.getElementById('avatar-dropdown-menu');
     const notifMenu = document.getElementById('notifications-dropdown');
 
+    if (toolsTrigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      const wrapper = toolsTrigger.closest('.admin-tools-dropdown');
+      const targetMenu = wrapper ? wrapper.querySelector('.admin-tools-menu') : null;
+      document.querySelectorAll('.admin-tools-menu.show').forEach(m => {
+        if (m !== targetMenu) m.classList.remove('show');
+      });
+      if (avatarMenu) avatarMenu.classList.remove('show');
+      if (notifMenu) notifMenu.classList.remove('show');
+      if (targetMenu) targetMenu.classList.toggle('show');
+      return;
+    }
+
+    if (clickedToolItem && !clickedToolItem.disabled) {
+      setTimeout(() => {
+        document.querySelectorAll('.admin-tools-menu.show').forEach(m => m.classList.remove('show'));
+      }, 0);
+    } else if (!e.target.closest('.admin-tools-dropdown')) {
+      document.querySelectorAll('.admin-tools-menu.show').forEach(m => m.classList.remove('show'));
+    }
+
     if (avatarTrigger) {
       e.preventDefault();
       e.stopPropagation();
+      document.querySelectorAll('.admin-tools-menu.show').forEach(m => m.classList.remove('show'));
       if (notifMenu) notifMenu.classList.remove('show');
       if (avatarMenu) avatarMenu.classList.toggle('show');
       return;
@@ -289,6 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (notifTrigger) {
       e.preventDefault();
       e.stopPropagation();
+      document.querySelectorAll('.admin-tools-menu.show').forEach(m => m.classList.remove('show'));
       if (avatarMenu) avatarMenu.classList.remove('show');
       if (notifMenu) notifMenu.classList.toggle('show');
       return;
@@ -309,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const notifMenu = document.getElementById('notifications-dropdown');
       if (avatarMenu) avatarMenu.classList.remove('show');
       if (notifMenu) notifMenu.classList.remove('show');
+      document.querySelectorAll('.admin-tools-menu.show').forEach(m => m.classList.remove('show'));
     }
   });
 
@@ -635,7 +814,7 @@ window.buildCourseDescriptionSuggestion = function (title, subjectName, level) {
         <div style="min-width: 0;">
           <div>
             <strong>Bài ${lesson.orderIndex}:</strong> ${esc(lesson.title)}
-            <span class="badge badge-info" style="margin-left: 6px;">${esc(typeLabel)}</span>
+            <span class="badge badge-primary" style="margin-left: 6px;">${esc(typeLabel)}</span>
             ${badges.join('')}
           </div>
           ${previewSub}

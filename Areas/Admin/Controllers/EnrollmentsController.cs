@@ -460,7 +460,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                         try
                         {
                             await _context.SaveChangesAsync(cancellationToken);
-                            await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+                            await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken, force: true);
                         }
                         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                         {
@@ -561,7 +561,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                 try
                 {
                     await _context.SaveChangesAsync(cancellationToken);
-                    await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+                    await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken, force: true);
                 }
                 catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
@@ -796,7 +796,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     }
                 }
                 await _context.SaveChangesAsync(cancellationToken);
-                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken, force: true);
                 await transaction.CommitAsync(cancellationToken);
 
                 return Ok(new { success = true, message = "Cập nhật trạng thái ghi danh thành công.", status = enrollment.Status });

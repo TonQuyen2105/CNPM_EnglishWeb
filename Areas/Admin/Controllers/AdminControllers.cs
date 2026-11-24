@@ -4,6 +4,7 @@ using CNPM_EnglishLearning.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
@@ -12,11 +13,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     public class ReportsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _cache;
         private readonly ILogger<ReportsController> _logger;
 
-        public ReportsController(ApplicationDbContext context, ILogger<ReportsController> logger)
+        public ReportsController(
+            ApplicationDbContext context,
+            IMemoryCache cache,
+            ILogger<ReportsController> logger)
         {
             _context = context;
+            _cache = cache;
             _logger = logger;
         }
 
@@ -24,12 +30,22 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         public IActionResult Index() => View("~/Areas/Admin/Views/reports.html");
 
         [HttpGet("/Admin/api/Reports/Summary")]
-        public async Task<IActionResult> Summary(int? year, int? quarter, CancellationToken cancellationToken)
+        public async Task<IActionResult> Summary(
+            int? year,
+            int? month,
+            int? quarter,
+            [FromQuery] bool refresh = false,
+            CancellationToken cancellationToken = default)
         {
             try
             {
+                if (refresh)
+                {
+                    await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken, force: true);
+                }
+
                 var report = await BuildReportDataAsync(year, quarter, cancellationToken);
-                return Ok(new
+                var payload = new
                 {
                     success = true,
                     selectedYear = report.SelectedYear,
@@ -40,7 +56,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     courseBreakdown = report.CourseBreakdown,
                     subjectBreakdown = report.SubjectBreakdown,
                     teacherBreakdown = report.TeacherBreakdown
-                });
+                };
+
+                return Ok(payload);
             }
             catch (OperationCanceledException)
             {

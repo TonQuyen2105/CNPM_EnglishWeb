@@ -220,6 +220,23 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
             DateTime.SpecifyKind(DateTime.UtcNow.AddHours(7).Date, DateTimeKind.Unspecified);
 
         private static int _legacyColumnsCleaned;
+        private static readonly long ClassSyncCooldownTicks = TimeSpan.FromSeconds(60).Ticks;
+        private static readonly System.Threading.SemaphoreSlim _classSyncLock = new(1, 1);
+        private static long _lastClassSyncUtcTicks;
+
+        /// <summary>
+        /// Đánh dấu cần đồng bộ lại trạng thái lớp học ở lượt truy vấn tiếp theo (sau các thao tác ghi lớp/lịch/ghi danh).
+        /// </summary>
+        public static void InvalidateClassSyncCache()
+        {
+            System.Threading.Interlocked.Exchange(ref _lastClassSyncUtcTicks, 0);
+        }
+
+        private static bool IsClassSyncWithinCooldown()
+        {
+            var lastTicks = System.Threading.Interlocked.Read(ref _lastClassSyncUtcTicks);
+            return lastTicks > 0 && (DateTime.UtcNow.Ticks - lastTicks) < ClassSyncCooldownTicks;
+        }
 
         /// <summary>
         /// Xóa các cột dư từng thêm vào bảng classrooms và course_classes để database gọn đúng model chuẩn.
@@ -259,63 +276,83 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         /// khi đã đến hoặc qua ngày kết thúc (EndDate <= hôm nay theo giờ Việt Nam UTC+7),
         /// tự động chuyển sang đang diễn ra (ongoing) khi đủ điều kiện,
         /// đồng thời dọn sạch lịch học (ClassSchedules) còn sót của các lớp đã hủy (cancelled).
-        /// Không hạ ngược lớp đang diễn ra (ongoing) về sắp khai giảng (upcoming).
+        /// Có cooldown 60 giây cho các truy vấn đọc (force = false) để giảm roundtrip sang Supabase.
         /// </summary>
         public static async Task<int> SyncExpiredClassesAsync(
             ApplicationDbContext context,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool force = false)
         {
-            await EnsureCleanDatabaseSchemaAsync(context, cancellationToken);
-
-            var tomorrowVn = DateTime.SpecifyKind(GetTodayVnDate().AddDays(1), DateTimeKind.Unspecified);
-            var nowUtc = DateTime.UtcNow;
-            var expiredCount = await context.CourseClasses
-                .Where(c => (c.Status == "upcoming" || c.Status == "ongoing") && c.EndDate < tomorrowVn)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(c => c.Status, "completed")
-                    .SetProperty(c => c.UpdatedAt, nowUtc),
-                    cancellationToken);
-
-            // Tự động chuyển các ghi danh đang active thuộc các lớp đã kết thúc (completed) sang completed
-            await context.Enrollments
-                .Where(e => e.Status == "active"
-                            && context.CourseClasses.Any(cc => cc.Id == e.ClassId && cc.Status == "completed"))
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(e => e.Status, "completed"),
-                    cancellationToken);
-
-            // Tự động chuyển lớp Sắp khai giảng (upcoming) sang Đang diễn ra (ongoing) khi đủ điều kiện
-            await context.CourseClasses
-                .Where(c => c.Status == "upcoming"
-                            && c.EndDate >= tomorrowVn
-                            && c.StartDate < tomorrowVn
-                            && context.ClassTeachers.Any(ct => ct.ClassId == c.Id)
-                            && context.ClassSchedules.Any(cs => cs.ClassId == c.Id)
-                            && context.Enrollments.Any(e => e.ClassId == c.Id && e.Status == "active"))
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(c => c.Status, "ongoing")
-                    .SetProperty(c => c.UpdatedAt, nowUtc),
-                    cancellationToken);
-
-            var cancelledScheduleIds = await (
-                from cs in context.ClassSchedules.AsNoTracking()
-                join cc in context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
-                where cc.Status == "cancelled"
-                select cs.Id
-            ).ToListAsync(cancellationToken);
-
-            if (cancelledScheduleIds.Count > 0)
+            if (!force && IsClassSyncWithinCooldown())
             {
-                await context.ClassLessons
-                    .Where(cl => cl.ScheduleId.HasValue && cancelledScheduleIds.Contains(cl.ScheduleId.Value))
-                    .ExecuteUpdateAsync(s => s.SetProperty(cl => cl.ScheduleId, (int?)null), cancellationToken);
-
-                await context.ClassSchedules
-                    .Where(cs => cancelledScheduleIds.Contains(cs.Id))
-                    .ExecuteDeleteAsync(cancellationToken);
+                return 0;
             }
 
-            return expiredCount;
+            await _classSyncLock.WaitAsync(cancellationToken);
+            try
+            {
+                if (!force && IsClassSyncWithinCooldown())
+                {
+                    return 0;
+                }
+
+                await EnsureCleanDatabaseSchemaAsync(context, cancellationToken);
+
+                var tomorrowVn = DateTime.SpecifyKind(GetTodayVnDate().AddDays(1), DateTimeKind.Unspecified);
+                var nowUtc = DateTime.UtcNow;
+                var expiredCount = await context.CourseClasses
+                    .Where(c => (c.Status == "upcoming" || c.Status == "ongoing") && c.EndDate < tomorrowVn)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(c => c.Status, "completed")
+                        .SetProperty(c => c.UpdatedAt, nowUtc),
+                        cancellationToken);
+
+                // Tự động chuyển các ghi danh đang active thuộc các lớp đã kết thúc (completed) sang completed
+                await context.Enrollments
+                    .Where(e => e.Status == "active"
+                                && context.CourseClasses.Any(cc => cc.Id == e.ClassId && cc.Status == "completed"))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(e => e.Status, "completed"),
+                        cancellationToken);
+
+                // Tự động chuyển lớp Sắp khai giảng (upcoming) sang Đang diễn ra (ongoing) khi đủ điều kiện
+                await context.CourseClasses
+                    .Where(c => c.Status == "upcoming"
+                                && c.EndDate >= tomorrowVn
+                                && c.StartDate < tomorrowVn
+                                && context.ClassTeachers.Any(ct => ct.ClassId == c.Id)
+                                && context.ClassSchedules.Any(cs => cs.ClassId == c.Id)
+                                && context.Enrollments.Any(e => e.ClassId == c.Id && e.Status == "active"))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(c => c.Status, "ongoing")
+                        .SetProperty(c => c.UpdatedAt, nowUtc),
+                        cancellationToken);
+
+                var cancelledScheduleIds = await (
+                    from cs in context.ClassSchedules.AsNoTracking()
+                    join cc in context.CourseClasses.AsNoTracking() on cs.ClassId equals cc.Id
+                    where cc.Status == "cancelled"
+                    select cs.Id
+                ).ToListAsync(cancellationToken);
+
+                if (cancelledScheduleIds.Count > 0)
+                {
+                    await context.ClassLessons
+                        .Where(cl => cl.ScheduleId.HasValue && cancelledScheduleIds.Contains(cl.ScheduleId.Value))
+                        .ExecuteUpdateAsync(s => s.SetProperty(cl => cl.ScheduleId, (int?)null), cancellationToken);
+
+                    await context.ClassSchedules
+                        .Where(cs => cancelledScheduleIds.Contains(cs.Id))
+                        .ExecuteDeleteAsync(cancellationToken);
+                }
+
+                System.Threading.Interlocked.Exchange(ref _lastClassSyncUtcTicks, DateTime.UtcNow.Ticks);
+                return expiredCount;
+            }
+            finally
+            {
+                _classSyncLock.Release();
+            }
         }
 
         /// <summary>

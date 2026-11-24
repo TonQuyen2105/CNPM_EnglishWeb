@@ -6,10 +6,10 @@
   <title>Quản lý Lớp học - EnglishAdmin</title>
   
   <!-- CSS Design System -->
-  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/base.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261124c">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -26,8 +26,99 @@
       background-color: var(--neutral-100); border-color: var(--border-color);
     }
     #modal-create-class .modal-dialog {
-      max-width: 640px;
-      width: 94%;
+      max-width: 780px;
+      width: 95%;
+    }
+    #modal-create-class .modal-body {
+      max-height: 78vh;
+      overflow-y: auto;
+    }
+    .room-picker-box {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--neutral-50, #F8FAFC);
+      padding: 0.75rem 0.875rem;
+      margin-bottom: 0.875rem;
+    }
+    .room-picker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .room-slot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.625rem;
+      max-height: 230px;
+      overflow-y: auto;
+      margin-top: 0.625rem;
+      padding-right: 2px;
+    }
+    @media (max-width: 640px) {
+      .room-slot-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .room-slot-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.625rem 0.75rem;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .room-slot-card.is-room-selected {
+      border-color: #93C5FD;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
+    }
+    .room-slot-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 0.45rem;
+    }
+    .room-slot-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .slot-chip {
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      color: var(--text-primary);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1.3;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .slot-chip:hover:not(:disabled) {
+      border-color: #2563EB;
+      background: #EFF6FF;
+      color: #1D4ED8;
+    }
+    .slot-chip.is-selected {
+      background: #2563EB;
+      border-color: #2563EB;
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+    .slot-chip.is-selected:hover:not(:disabled) {
+      background: #1D4ED8;
+      border-color: #1D4ED8;
+      color: #FFFFFF;
+    }
+    .slot-chip.is-busy,
+    .slot-chip:disabled {
+      background: #FEF2F2;
+      border-color: #FECACA;
+      color: #B91C1C;
+      opacity: 0.82;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -51,71 +142,82 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Tổng quan</div>
-      <a href="/Admin/dashboard.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Bảng điều khiển</span>
-      </a>
-    <div class="nav-section-title">Quản lý đào tạo</div>
-      <a href="/Admin/subjects.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="/Admin/courses.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Môn học</span>
-      </a>
-    
-      <a href="/Admin/course-objectives.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
-        <span>Mô tả &amp; Mục tiêu</span>
-      </a>
+        <a href="/Admin/dashboard.html" class="nav-item">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+          <span>Tổng quan</span>
+        </a>
+        <a href="/Admin/reports.html" class="nav-item">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+          <span>Báo cáo</span>
+        </a>
+        <div class="nav-group is-open" data-nav-group="training">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="true">
+            <span>Đào tạo</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/subjects.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="/Admin/courses.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+            <span>Môn học</span>
+          </a>
+          <a href="/Admin/course-objectives.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+            <span>Đề cương</span>
+          </a>
           <a href="/Admin/classes.html" class="nav-item active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
-        <span>Lớp học</span>
-      </a>
-    
-      <a href="/Admin/schedules.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Thời khóa biểu</span>
-      </a>
-    <div class="nav-section-title">Quản lý người dùng</div>
-      <a href="/Admin/users.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
-        <span>Tài khoản người dùng</span>
-      </a>
-    
-      <a href="/Admin/teachers.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
-        <span>Giảng viên</span>
-      </a>
-    
-      <a href="/Admin/enrollments.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
-        <span>Học viên & Đăng ký</span>
-      </a>
-    <div class="nav-section-title">Khảo thí & Đánh giá</div>
-      <a href="/Admin/exams.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Đề thi & Khảo thí</span>
-      </a>
-    
-      <a href="/Admin/reviews.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-        <span>Đánh giá môn học</span>
-      </a>
-    <div class="nav-section-title">Cơ sở & Báo cáo</div>
-      <a href="/Admin/facilities.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
-        <span>Phòng học & Cơ sở</span>
-      </a>
-    
-      <a href="/Admin/reports.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-        <span>Báo cáo & Thống kê</span>
-      </a>
-    
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+            <span>Lớp học</span>
+          </a>
+          <a href="/Admin/schedules.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="/Admin/facilities.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
+            <span>Phòng học</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="people">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Người dùng</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/enrollments.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
+            <span>Học viên</span>
+          </a>
+          <a href="/Admin/teachers.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
+            <span>Giảng viên</span>
+          </a>
+          <a href="/Admin/users.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+            <span>Tài khoản</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="assessment">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Khảo thí</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/exams.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Kỳ thi</span>
+          </a>
+          <a href="/Admin/reviews.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+            <span>Đánh giá</span>
+          </a>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -216,22 +318,20 @@
   <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
     <div>
       <h1 class="page-header-title">Quản lý lớp học</h1>
-      <p class="page-header-subtitle">Danh sách tất cả các lớp đang mở, đang học và sắp khai giảng</p>
     </div>
-    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <button type="button" class="btn btn-secondary" id="btn-open-manage-timeslots">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        Quản lý ca học
-      </button>
-      <button type="button" class="btn btn-primary" id="btn-open-create-class" data-modal-target="modal-create-class">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Tạo lớp học mới
-      </button>
+    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+      <div class="admin-tools-dropdown">
+        <button type="button" class="btn btn-secondary" data-admin-tools-toggle>Công cụ ▾</button>
+        <div class="admin-tools-menu">
+          <button type="button" class="btn btn-secondary" id="btn-open-manage-timeslots">Quản lý ca học</button>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" id="btn-open-create-class" data-modal-target="modal-create-class">+ Tạo lớp</button>
     </div>
   </div>
 
   <!-- Thanh tìm kiếm & lọc -->
-  <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+  <div class="card" style="padding: 0.875rem 1.25rem; margin-bottom: 1.25rem;">
     <div id="classes-course-filter-banner" style="display: none; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: #EFF6FF; border: 1px solid #BFDBFE; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8125rem;">
       <span id="classes-course-filter-label" style="color: #1E3A8A; font-weight: 600;">Đang lọc theo môn học</span>
       <button type="button" class="btn btn-sm btn-secondary" id="btn-clear-course-filter">Xem tất cả lớp</button>
@@ -257,7 +357,6 @@
           <option value="completed">Đã kết thúc</option>
           <option value="cancelled">Đã hủy</option>
         </select>
-        <button type="button" class="btn btn-sm btn-secondary" id="btn-filter-classes" style="height: 38px; padding: 0 12px; white-space: nowrap; flex: 0 0 auto;">Lọc</button>
         <button type="button" class="btn btn-sm btn-secondary" id="btn-reset-classes-filter" style="height: 38px; padding: 0 12px; white-space: nowrap; flex: 0 0 auto;">Đặt lại</button>
       </div>
     </div>
@@ -322,7 +421,7 @@
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Phòng học mở lớp</label>
               <select id="cls-classroom-id" class="form-control">
-                <option value="">-- Chưa chọn phòng học --</option>
+                <option value="">-- Chưa chọn phòng --</option>
               </select>
             </div>
           </div>
@@ -331,29 +430,38 @@
             <select id="cls-teacher-id" class="form-control">
               <option value="">-- Chưa phân công --</option>
             </select>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Nếu phòng học có giảng viên mặc định, hệ thống sẽ tự động gợi ý chọn giảng viên đó.</div>
           </div>
-          <div id="cls-schedule-row" class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
-            <div class="form-group">
+          <div id="cls-room-slot-picker" class="room-picker-box">
+            <div class="room-picker-header">
+              <div style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 0.84rem; color: var(--text-primary);">Chọn nhanh Phòng &amp; Ca học</strong>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Bấm vào ca trống để điền tự động</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-toggle-room-picker" style="padding: 2px 10px; font-size: 0.75rem;">Ẩn/Hiện bảng phòng</button>
+            </div>
+            <div id="cls-room-slot-grid" class="room-slot-grid"></div>
+          </div>
+          <div id="cls-schedule-row" class="grid grid-cols-2 gap-4" style="margin-bottom: 0.875rem;">
+            <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lịch thứ học</label>
               <select id="cls-schedule-days" class="form-control">
-                <option value="">-- Theo cấu hình phòng / Chưa xếp --</option>
+                <option value="">-- Chưa xếp thứ --</option>
                 <option value="t246">Thứ 2 - Thứ 4 - Thứ 6</option>
                 <option value="t357">Thứ 3 - Thứ 5 - Thứ 7</option>
                 <option value="all">Cả tuần (Thứ 2 - Thứ 7)</option>
               </select>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 0;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0;">Ca học</label>
-                <button type="button" id="btn-inline-manage-timeslots" style="border: none; background: transparent; color: var(--primary-600, #2563EB); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0;">+ Thêm / Quản lý ca học</button>
+                <button type="button" id="btn-inline-manage-timeslots" style="border: none; background: transparent; color: var(--primary-600, #2563EB); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0;">+ Quản lý ca</button>
               </div>
               <select id="cls-timeslot-id" class="form-control">
-                <option value="">-- Theo cấu hình phòng / Chưa xếp --</option>
+                <option value="">-- Chưa xếp ca --</option>
               </select>
             </div>
           </div>
-          <div id="cls-room-status-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.84rem; margin-bottom: 1rem;"></div>
+          <div id="cls-room-status-box" style="display: none; padding: 0.55rem 0.875rem; border-radius: var(--radius-md); font-size: 0.8125rem; margin-bottom: 0.875rem;"></div>
           <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1rem;">
             <div class="form-group">
               <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ngày khai giảng <span class="required" style="color:red;">*</span></label>
@@ -476,7 +584,7 @@
   </div>
 
   <!-- Shared Interactive Script -->
-  <script src="../../../wwwroot/js/site.js?v=20261123a"></script>
+  <script src="../../../wwwroot/js/site.js?v=20261124d"></script>
   <script>
     (function () {
       // ===== Helpers dùng chung =====
@@ -530,7 +638,7 @@
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         return `${dd}/${mm}/${d.getFullYear()}`;
       }
-      // Toast nổi góc màn hình (dùng class .toast-* trong components.css, màu theo tokens.css)
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css?v=20261124c, màu theo tokens.css?v=20261124c)
       function showToast(message, type = 'success', duration) {
         let container = document.getElementById('admin-toast-container');
         if (!container) {
@@ -754,23 +862,99 @@
         return false;
       }
 
+      function getRoomOverlappingClasses(room, startVal, endVal, editId) {
+        const list = room && Array.isArray(room.activeClasses) ? room.activeClasses : [];
+        return list.filter(ac => {
+          if (editId && ac.id === editId) return false;
+          if (!startVal || !endVal) return true;
+          const aStart = new Date(startVal);
+          const aEnd = new Date(endVal);
+          const bStart = new Date(toDateInputValue(ac.startDate));
+          const bEnd = new Date(toDateInputValue(ac.endDate));
+          return aStart <= bEnd && bStart <= aEnd;
+        });
+      }
+
+      let roomPickerCollapsed = false;
+
+      function setRoomPickerVisible(visible, resetOpen = false) {
+        const picker = document.getElementById('cls-room-slot-picker');
+        const grid = document.getElementById('cls-room-slot-grid');
+        if (!picker || !grid) return;
+        if (!visible) {
+          picker.style.display = 'none';
+          return;
+        }
+        picker.style.display = 'block';
+        if (resetOpen) roomPickerCollapsed = false;
+        grid.style.display = roomPickerCollapsed ? 'none' : 'grid';
+      }
+
+      function renderRoomSlotPicker() {
+        const grid = document.getElementById('cls-room-slot-grid');
+        if (!grid) return;
+
+        if (!Array.isArray(classroomsList) || classroomsList.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1 / -1; font-size: 0.8rem; color: var(--text-muted); padding: 0.25rem 0;">Chưa có phòng học khả dụng.</div>';
+          return;
+        }
+        if (!Array.isArray(timeSlotsList) || timeSlotsList.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1 / -1; font-size: 0.8rem; color: var(--text-muted); padding: 0.25rem 0;">Chưa có ca học hoạt động. Bấm "+ Quản lý ca" bên dưới để tạo nhanh.</div>';
+          return;
+        }
+
+        const selectedRoomId = Number(document.getElementById('cls-classroom-id')?.value) || 0;
+        const selectedSlotId = Number(document.getElementById('cls-timeslot-id')?.value) || 0;
+        const startVal = document.getElementById('cls-start-date')?.value || '';
+        const endVal = document.getElementById('cls-end-date')?.value || '';
+        const editId = Number(document.getElementById('cls-edit-id')?.value) || 0;
+        const maxStudents = parseInt(document.getElementById('cls-max-students')?.value, 10) || 0;
+
+        grid.innerHTML = classroomsList.map(r => {
+          const overlapping = getRoomOverlappingClasses(r, startVal, endVal, editId);
+          const capacityWarn = maxStudents > 0 && r.capacity < maxStudents;
+          const capBadgeClass = capacityWarn ? 'badge badge-warning' : 'badge badge-neutral';
+          const capTitle = capacityWarn
+            ? `Sức chứa ${r.capacity} chỗ nhỏ hơn sĩ số tối đa (${maxStudents})`
+            : `Sức chứa ${r.capacity} chỗ`;
+          const locSuffix = r.location ? ` • ${escapeHtml(r.location)}` : '';
+          const isRoomSelected = selectedRoomId === r.id;
+
+          const chipsHtml = timeSlotsList.map(ts => {
+            const conflicts = overlapping.filter(ac => isTimeSlotOverlapping(ts, ac));
+            if (conflicts.length > 0) {
+              const busyCodes = [...new Set(conflicts.map(c => c.classCode).filter(Boolean))].join(', ') || 'Đã có lớp';
+              const detailTooltip = conflicts.map(c => {
+                const slotPart = c.timeSlotName ? `${c.timeSlotName}${c.timeRange ? ` (${c.timeRange})` : ''}` : (c.timeRange || '');
+                const daysPart = c.daysLabel ? ` • ${c.daysLabel}` : '';
+                const datePart = `${formatDate(c.startDate)} - ${formatDate(c.endDate)}`;
+                return `Lớp ${c.classCode} (${c.className || ''}) • ${slotPart}${daysPart} • ${datePart}`;
+              }).join(' | ');
+              return `<button type="button" class="slot-chip is-busy" disabled title="${escapeHtml(detailTooltip)}">${escapeHtml(ts.name)} (Bận: ${escapeHtml(busyCodes)})</button>`;
+            }
+            const isSelected = isRoomSelected && selectedSlotId === ts.id;
+            const rangeTxt = ts.timeRange ? ` • ${escapeHtml(ts.timeRange)}` : '';
+            return `<button type="button" class="slot-chip${isSelected ? ' is-selected' : ''}" data-pick-room="${r.id}" data-pick-slot="${ts.id}" title="Chọn ${escapeHtml(r.name)} - ${escapeHtml(ts.name)} (${escapeHtml(ts.timeRange || '')})">${isSelected ? '✓ ' : ''}${escapeHtml(ts.name)}${rangeTxt}</button>`;
+          }).join('');
+
+          return `
+            <div class="room-slot-card${isRoomSelected ? ' is-room-selected' : ''}">
+              <div class="room-slot-card-head">
+                <div style="min-width: 0; font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(r.name + (r.location ? ' - ' + r.location : ''))}">
+                  ${escapeHtml(r.name)}<span style="font-weight: 400; color: var(--text-muted); font-size: 0.74rem;">${locSuffix}</span>
+                </div>
+                <span class="${capBadgeClass}" title="${escapeHtml(capTitle)}">${Number(r.capacity) || 0} chỗ</span>
+              </div>
+              <div class="room-slot-chips">${chipsHtml}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
       function updateRoomStatusPreview(autoAssignDefaultTeacher = false) {
         const roomSel = document.getElementById('cls-classroom-id');
         const box = document.getElementById('cls-room-status-box');
         if (!roomSel || !box) return;
-
-        const roomId = Number(roomSel.value);
-        if (!roomId) {
-          box.style.display = 'none';
-          box.innerHTML = '';
-          return;
-        }
-
-        const room = classroomsList.find(r => r.id === roomId);
-        if (!room) {
-          box.style.display = 'none';
-          return;
-        }
 
         const editId = Number(document.getElementById('cls-edit-id').value) || 0;
         const editingRow = editId ? classesCache.find(x => x.id === editId) : null;
@@ -780,19 +964,13 @@
           return;
         }
 
+        const roomId = Number(roomSel.value);
+        const room = roomId ? classroomsList.find(r => r.id === roomId) : null;
         const startVal = document.getElementById('cls-start-date').value;
         const endVal = document.getElementById('cls-end-date').value;
-        const overlappingClasses = (Array.isArray(room.activeClasses) ? room.activeClasses : []).filter(ac => {
-          if (editId && ac.id === editId) return false;
-          if (!startVal || !endVal) return true;
-          const aStart = new Date(startVal);
-          const aEnd = new Date(endVal);
-          const bStart = new Date(toDateInputValue(ac.startDate));
-          const bEnd = new Date(toDateInputValue(ac.endDate));
-          return aStart <= bEnd && bStart <= aEnd;
-        });
+        const overlappingClasses = room ? getRoomOverlappingClasses(room, startVal, endVal, editId) : [];
 
-        if (autoAssignDefaultTeacher && !editId) {
+        if (room && autoAssignDefaultTeacher && !editId) {
           const schedDaysEl = document.getElementById('cls-schedule-days');
           const slotEl = document.getElementById('cls-timeslot-id');
           if (schedDaysEl && !schedDaysEl.value) schedDaysEl.value = 't246';
@@ -801,6 +979,14 @@
             slotEl.value = String((firstFreeSlot || timeSlotsList[0]).id);
           }
           syncClassStatusByStartDate();
+        }
+
+        renderRoomSlotPicker();
+
+        if (!room) {
+          box.style.display = 'none';
+          box.innerHTML = '';
+          return;
         }
 
         const maxStudents = parseInt(document.getElementById('cls-max-students').value, 10) || 0;
@@ -816,49 +1002,34 @@
           : [];
 
         const capacityBad = maxStudents > 0 && room.capacity < maxStudents;
-        const occupiedSummaryHtml = overlappingClasses.length > 0
-          ? overlappingClasses.map(ac => {
-              const slotTxt = ac.timeSlotName
-                ? `${ac.timeSlotName}${ac.timeRange ? ` (${ac.timeRange})` : ''}`
-                : (ac.timeRange || 'Chưa rõ ca');
-              const daysTxt = ac.daysLabel ? ` • ${ac.daysLabel}` : '';
-              return `<strong>${escapeHtml(ac.classCode)}</strong>: ${escapeHtml(slotTxt + daysTxt)}`;
-            }).join('; ')
-          : '';
         const todayIso = toDateInputValue(new Date());
         const expiredDateHint = endVal && endVal <= todayIso
-          ? '<div style="margin-top: 4px; font-size: 0.78rem; color: #92400E;"><strong>Lưu ý:</strong> Ngày kết thúc đang chọn đã đến/qua hôm nay, sau khi lưu lớp sẽ tự động chuyển sang trạng thái <strong>Đã kết thúc</strong>. Nếu muốn mở lớp đang/sắp chạy lên Thời khóa biểu, hãy chọn ngày kết thúc sau hôm nay.</div>'
+          ? ' <span style="color: #92400E;">(Ngày kết thúc ≤ hôm nay → tự chuyển Đã kết thúc)</span>'
           : '';
 
         if (isTargetActive && slotConflicts.length > 0) {
           const hit = slotConflicts[0];
-          const hitSlotLabel = hit.timeSlotName
-            ? `${hit.timeSlotName}${hit.timeRange ? ` (${hit.timeRange})` : ''}`
-            : (hit.timeRange || '');
+          const hitSlotLabel = hit.timeSlotName || hit.timeRange || 'ca này';
           box.style.display = 'block';
           box.style.background = '#FEF2F2';
           box.style.border = '1px solid #FECACA';
           box.style.color = '#991B1B';
-          box.innerHTML = `<strong>⚠ Trùng ca học tại phòng ${escapeHtml(room.name)}:</strong> Lớp <strong>${escapeHtml(hit.classCode)}</strong> (${escapeHtml(hit.className)}) đã đăng ký ca <strong>${escapeHtml(hitSlotLabel)}</strong> (${formatDate(hit.startDate)} - ${formatDate(hit.endDate)}). Vui lòng chọn ca học khác cho lớp này.` +
-            `<br><span style="font-size: 0.78rem;">Các ca đang có lớp tại phòng ${escapeHtml(room.name)}: ${occupiedSummaryHtml}.</span>`;
+          box.innerHTML = `⚠ Trùng <strong>${escapeHtml(hitSlotLabel)}</strong> tại <strong>${escapeHtml(room.name)}</strong> với lớp <strong>${escapeHtml(hit.classCode)}</strong>. Chọn ca khác.`;
         } else if (capacityBad) {
           box.style.display = 'block';
           box.style.background = '#FFFBEB';
           box.style.border = '1px solid #FDE68A';
           box.style.color = '#92400E';
-          box.innerHTML = `<strong>⚠ Sức chứa phòng chưa đủ:</strong> Phòng ${escapeHtml(room.name)} chỉ có <strong>${room.capacity} chỗ</strong>, nhỏ hơn sĩ số tối đa (${maxStudents}).`;
+          box.innerHTML = `⚠ Phòng <strong>${escapeHtml(room.name)}</strong> (${room.capacity} chỗ) nhỏ hơn sĩ số tối đa (${maxStudents}).`;
         } else {
           box.style.display = 'block';
           box.style.background = '#ECFDF5';
           box.style.border = '1px solid #A7F3D0';
           box.style.color = '#065F46';
           const selectedSlotDesc = selectedSlot && selectedSlot.name
-            ? ` với ca <strong>${escapeHtml(selectedSlot.name)} (${escapeHtml(selectedSlot.timeRange || '')})</strong>`
+            ? ` • <strong>${escapeHtml(selectedSlot.name)}</strong>${selectedSlot.timeRange ? ` (${escapeHtml(selectedSlot.timeRange)})` : ''}`
             : '';
-          const occupiedLine = overlappingClasses.length > 0
-            ? `<br><span style="font-size: 0.78rem;">Các ca đã có lớp đăng ký trong phòng ${escapeHtml(room.name)}: ${occupiedSummaryHtml}.</span>`
-            : `<br><span style="font-size: 0.78rem;">Phòng hiện chưa có lớp nào đăng ký trùng khoảng ngày.</span>`;
-          box.innerHTML = `<strong>✓ Phòng &amp; ca học hợp lệ:</strong> Phòng <strong>${escapeHtml(room.name)}</strong> (${room.capacity} chỗ)${selectedSlotDesc} sẵn sàng mở lớp.${occupiedLine}${expiredDateHint}`;
+          box.innerHTML = `✓ Phòng <strong>${escapeHtml(room.name)}</strong> (${room.capacity} chỗ)${selectedSlotDesc} sẵn sàng.${expiredDateHint}`;
         }
       }
 
@@ -900,7 +1071,7 @@
             upcomingOpt.textContent = 'Sắp khai giảng';
           }
           ongoingOpt.disabled = true;
-          ongoingOpt.textContent = 'Đang diễn ra (Tự động khi đủ GV, phòng/lịch & có học viên ĐK)';
+          ongoingOpt.textContent = 'Đang diễn ra (tự động khi có HV)';
           sel.value = 'upcoming';
           return;
         }
@@ -917,7 +1088,7 @@
             upcomingOpt.textContent = 'Sắp khai giảng';
           }
           ongoingOpt.disabled = true;
-          ongoingOpt.textContent = 'Đang diễn ra (Cần đủ GV, phòng/lịch, tới ngày mở & có học viên ĐK)';
+          ongoingOpt.textContent = 'Đang diễn ra (tự động khi có HV)';
           sel.value = 'upcoming';
         } else {
           if (upcomingOpt) {
@@ -971,6 +1142,7 @@
         document.getElementById('cls-classroom-id').value = '';
         const schedRow = document.getElementById('cls-schedule-row');
         if (schedRow) schedRow.style.display = 'grid';
+        setRoomPickerVisible(true, true);
         const schedDaysEl = document.getElementById('cls-schedule-days');
         const slotEl = document.getElementById('cls-timeslot-id');
         if (schedDaysEl) schedDaysEl.value = '';
@@ -1019,6 +1191,7 @@
         document.getElementById('cls-submit-btn').textContent = isCompletedOnlyStatus ? 'Đổi sang Đã hủy' : 'Lưu thay đổi';
         const schedRow = document.getElementById('cls-schedule-row');
         if (schedRow) schedRow.style.display = isCompletedOnlyStatus ? 'none' : 'grid';
+        setRoomPickerVisible(!isCompletedOnlyStatus, !isCompletedOnlyStatus);
         const schedDaysEl = document.getElementById('cls-schedule-days');
         const slotEl = document.getElementById('cls-timeslot-id');
         if (schedDaysEl) schedDaysEl.value = cls.scheduleDays || '';
@@ -1061,7 +1234,7 @@
           const slotSelect = document.getElementById('cls-timeslot-id');
           if (slotSelect) {
             const prevSlot = slotSelect.value;
-            slotSelect.innerHTML = '<option value="">-- Theo cấu hình phòng / Chưa xếp --</option>' +
+            slotSelect.innerHTML = '<option value="">-- Chưa xếp ca --</option>' +
               timeSlotsList.map(ts => `<option value="${ts.id}">${escapeHtml(ts.name)} (${escapeHtml(ts.timeRange)})</option>`).join('');
             if (prevSlot && timeSlotsList.some(ts => String(ts.id) === prevSlot)) {
               slotSelect.value = prevSlot;
@@ -1073,7 +1246,7 @@
           const roomSelect = document.getElementById('cls-classroom-id');
           if (roomSelect) {
             const prevRoom = roomSelect.value;
-            roomSelect.innerHTML = '<option value="">-- Chưa chọn phòng học --</option>' +
+            roomSelect.innerHTML = '<option value="">-- Chưa chọn phòng --</option>' +
               classroomsList.map(r => {
                 const activeList = Array.isArray(r.activeClasses) ? r.activeClasses : [];
                 const distinctClassCount = new Set(activeList.map(c => c.id)).size;
@@ -1089,6 +1262,7 @@
             }
           }
         }
+        renderRoomSlotPicker();
         if (dropdownsLoaded) return;
         coursesList = Array.isArray(courses) ? courses : [];
         teachersList = Array.isArray(teachers) ? teachers : [];
@@ -1122,7 +1296,7 @@
         }
         syncCourseFilterBanner();
 
-        teacherSelect.innerHTML = '<option value="">-- Chưa phân công giảng viên --</option>' +
+        teacherSelect.innerHTML = '<option value="">-- Chưa phân công --</option>' +
           teachersList.map(t => {
             const qual = t.qualification ? ` (${escapeHtml(t.qualification)})` : '';
             return `<option value="${t.id}">${escapeHtml(t.fullName)}${qual}</option>`;
@@ -1426,10 +1600,6 @@
           loadClasses();
         };
 
-        document.getElementById('btn-filter-classes').addEventListener('click', () => {
-          debouncedLoad.cancel();
-          loadClasses();
-        });
         document.getElementById('btn-reset-classes-filter').addEventListener('click', resetAllFilters);
         document.getElementById('classes-course-filter').addEventListener('change', (e) => {
           debouncedLoad.cancel();
@@ -1519,13 +1689,43 @@
           updateRoomStatusPreview(true);
           syncClassStatusByStartDate();
         });
+        document.getElementById('cls-teacher-id').addEventListener('change', () => {
+          syncClassStatusByStartDate();
+        });
         document.getElementById('cls-start-date').addEventListener('change', () => {
           syncClassStatusByStartDate();
           updateRoomStatusPreview(false);
         });
-        document.getElementById('cls-start-date').addEventListener('input', syncClassStatusByStartDate);
+        document.getElementById('cls-start-date').addEventListener('input', () => {
+          syncClassStatusByStartDate();
+          updateRoomStatusPreview(false);
+        });
         ['cls-timeslot-id', 'cls-end-date', 'cls-max-students', 'cls-status'].forEach(elId => {
           document.getElementById(elId).addEventListener('change', () => updateRoomStatusPreview(false));
+        });
+        ['cls-end-date', 'cls-max-students'].forEach(elId => {
+          document.getElementById(elId).addEventListener('input', () => updateRoomStatusPreview(false));
+        });
+
+        document.getElementById('btn-toggle-room-picker').addEventListener('click', () => {
+          roomPickerCollapsed = !roomPickerCollapsed;
+          const grid = document.getElementById('cls-room-slot-grid');
+          if (grid) grid.style.display = roomPickerCollapsed ? 'none' : 'grid';
+        });
+
+        document.getElementById('cls-room-slot-grid').addEventListener('click', (e) => {
+          const chip = e.target.closest('[data-pick-room][data-pick-slot]');
+          if (!chip || chip.disabled) return;
+          const pickedRoomId = chip.getAttribute('data-pick-room');
+          const pickedSlotId = chip.getAttribute('data-pick-slot');
+          const roomEl = document.getElementById('cls-classroom-id');
+          const slotEl = document.getElementById('cls-timeslot-id');
+          const schedDaysEl = document.getElementById('cls-schedule-days');
+          if (roomEl) roomEl.value = String(pickedRoomId);
+          if (slotEl) slotEl.value = String(pickedSlotId);
+          if (schedDaysEl && !schedDaysEl.value) schedDaysEl.value = 't246';
+          syncClassStatusByStartDate();
+          updateRoomStatusPreview(false);
         });
 
         document.getElementById('btn-open-create-class').addEventListener('click', () => {
@@ -1689,7 +1889,7 @@
           const slotSelect = document.getElementById('cls-timeslot-id');
           if (slotSelect) {
             const prevSlot = slotSelect.value;
-            slotSelect.innerHTML = '<option value="">-- Theo cấu hình phòng / Chưa xếp --</option>' +
+            slotSelect.innerHTML = '<option value="">-- Chưa xếp ca --</option>' +
               timeSlotsList.map(ts => `<option value="${ts.id}">${escapeHtml(ts.name)} (${escapeHtml(ts.timeRange)})</option>`).join('');
             if (prevSlot && timeSlotsList.some(ts => String(ts.id) === prevSlot)) {
               slotSelect.value = prevSlot;

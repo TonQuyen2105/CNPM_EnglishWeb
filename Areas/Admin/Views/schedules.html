@@ -6,10 +6,10 @@
   <title>Thời khóa biểu - EnglishAdmin</title>
   
   <!-- CSS Design System -->
-  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/base.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261124c">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -246,63 +246,82 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Tổng quan</div>
-        <a href="/Admin/dashboard.html" class="nav-item ">
+        <a href="/Admin/dashboard.html" class="nav-item">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-          <span>Bảng điều khiển</span>
+          <span>Tổng quan</span>
         </a>
-        <div class="nav-section-title">Quản lý đào tạo</div>
-        <a href="/Admin/subjects.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-          <span>Khóa học</span>
-        </a>
-        <a href="/Admin/courses.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-          <span>Môn học</span>
-        </a>
-        <a href="/Admin/course-objectives.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
-          <span>Mô tả &amp; Mục tiêu</span>
-        </a>
-        <a href="/Admin/classes.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
-          <span>Lớp học</span>
-        </a>
-        <a href="/Admin/schedules.html" class="nav-item active">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-          <span>Thời khóa biểu</span>
-        </a>
-        <div class="nav-section-title">Quản lý người dùng</div>
-        <a href="/Admin/users.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
-          <span>Tài khoản người dùng</span>
-        </a>
-        <a href="/Admin/teachers.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
-          <span>Giảng viên</span>
-        </a>
-        <a href="/Admin/enrollments.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
-          <span>Học viên &amp; Đăng ký</span>
-        </a>
-        <div class="nav-section-title">Khảo thí &amp; Đánh giá</div>
-        <a href="/Admin/exams.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-          <span>Đề thi &amp; Khảo thí</span>
-        </a>
-        <a href="/Admin/reviews.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-          <span>Đánh giá môn học</span>
-        </a>
-        <div class="nav-section-title">Cơ sở &amp; Báo cáo</div>
-        <a href="/Admin/facilities.html" class="nav-item ">
-          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
-          <span>Phòng học &amp; Cơ sở</span>
-        </a>
-        <a href="/Admin/reports.html" class="nav-item ">
+        <a href="/Admin/reports.html" class="nav-item">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-          <span>Báo cáo &amp; Thống kê</span>
+          <span>Báo cáo</span>
         </a>
+        <div class="nav-group is-open" data-nav-group="training">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="true">
+            <span>Đào tạo</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/subjects.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="/Admin/courses.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+            <span>Môn học</span>
+          </a>
+          <a href="/Admin/course-objectives.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+            <span>Đề cương</span>
+          </a>
+          <a href="/Admin/classes.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+            <span>Lớp học</span>
+          </a>
+          <a href="/Admin/schedules.html" class="nav-item active">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="/Admin/facilities.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
+            <span>Phòng học</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="people">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Người dùng</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/enrollments.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
+            <span>Học viên</span>
+          </a>
+          <a href="/Admin/teachers.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
+            <span>Giảng viên</span>
+          </a>
+          <a href="/Admin/users.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+            <span>Tài khoản</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="assessment">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Khảo thí</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/exams.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Kỳ thi</span>
+          </a>
+          <a href="/Admin/reviews.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+            <span>Đánh giá</span>
+          </a>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -401,16 +420,17 @@
         <div class="page-header" style="flex-wrap: wrap; gap: 0.5rem;">
           <div>
             <h1 class="page-header-title">Thời khóa biểu trung tâm</h1>
-            <p class="page-header-subtitle" id="week-range-label" style="margin: 0;">Đồng bộ lịch lớp học &amp; lịch phòng học theo tuần</p>
+            <p class="page-header-subtitle" id="week-range-label" style="margin: 0;">Đang tải...</p>
           </div>
-          <div class="page-header-actions" style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-sm btn-secondary" id="btn-open-manage-timeslots">Quản lý ca học</button>
-            <button type="button" class="btn btn-sm btn-secondary" id="btn-open-auto-schedule" style="border-color: #93C5FD; color: #1D4ED8; background: #EFF6FF;">
-              Xếp lịch tự động
-            </button>
-            <button type="button" class="btn btn-sm btn-primary" id="btn-open-create-schedule" data-modal-target="modal-create-schedule">
-              + Xếp lịch học mới
-            </button>
+          <div class="page-header-actions" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <div class="admin-tools-dropdown">
+              <button type="button" class="btn btn-sm btn-secondary" data-admin-tools-toggle>Công cụ ▾</button>
+              <div class="admin-tools-menu">
+                <button type="button" class="btn btn-sm btn-secondary" id="btn-open-manage-timeslots">Quản lý ca học</button>
+                <button type="button" class="btn btn-sm btn-secondary" id="btn-open-auto-schedule">Xếp lịch tự động</button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-primary" id="btn-open-create-schedule" data-modal-target="modal-create-schedule">+ Xếp lịch</button>
           </div>
         </div>
 
@@ -421,7 +441,7 @@
               <span>⚠</span>
               <span id="schedule-conflicts-title">Phát hiện lịch trùng giảng viên</span>
             </div>
-            <span style="font-size: 0.74rem; color: #B91C1C;">Bấm "Đổi GV / Sửa" để thay thế bằng giảng viên rảnh</span>
+            <span style="font-size: 0.74rem; color: #B91C1C;">Chọn nút bên phải để đổi nhanh</span>
           </div>
           <div id="schedule-conflicts-list"></div>
         </div>
@@ -460,10 +480,10 @@
           <!-- Chú thích màu gọn -->
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
             <div class="tkb-legend">
-              <span class="tkb-legend-item"><span class="tkb-dot" style="background: #EFF6FF; border: 1px solid #93C5FD;"></span>Lớp học đang mở (Sắp / Đang diễn ra)</span>
+              <span class="tkb-legend-item"><span class="tkb-dot" style="background: #EFF6FF; border: 1px solid #93C5FD;"></span>Lớp đang mở</span>
               <span class="tkb-legend-item"><span class="tkb-dot" style="background: #FEF2F2; border: 1px solid #EF4444;"></span>Trùng lịch GV / Phòng</span>
             </div>
-            <span style="font-size: 0.74rem; color: var(--text-muted);">Bấm biểu tượng <strong>✎</strong> trên thẻ để sửa hoặc thay giảng viên khác</span>
+            <span style="font-size: 0.74rem; color: var(--text-muted);">Bấm <strong>✎</strong> trên thẻ để sửa nhanh</span>
           </div>
 
           <!-- Tab 1: Lưới Thời khóa biểu tuần -->
@@ -605,7 +625,7 @@
             <select id="es-teacher-id" class="form-control">
               <option value="">-- Giữ nguyên giảng viên hiện tại --</option>
             </select>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Hệ thống tự đánh dấu giảng viên nào đang rảnh (✓) hoặc bị trùng lịch (⚠) ở khung giờ này.</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Tự động đánh dấu giảng viên rảnh (✓) hoặc trùng lịch (⚠).</div>
           </div>
 
           <div class="grid grid-cols-3 gap-4" style="margin-bottom: 1rem;">
@@ -773,10 +793,7 @@
           <div id="auto-preview-banner" style="padding: 0.875rem 1rem; border-radius: 8px; margin-bottom: 0.875rem; font-size: 0.875rem; line-height: 1.55;"></div>
 
           <div id="auto-teacher-switch-box" style="padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: #FFFFFF; margin-bottom: 0.875rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
-            <div>
-              <strong style="font-size: 0.85rem;">Thay giáo viên khác cho lịch học này:</strong>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Nếu giảng viên hiện tại bị trùng lịch, chọn giảng viên rảnh bên cạnh rồi bấm kiểm tra lại.</div>
-            </div>
+            <strong style="font-size: 0.84rem;">Đổi giảng viên rảnh (nếu trùng lịch):</strong>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <select id="auto-override-teacher-id" class="form-control" style="min-width: 260px;"></select>
               <button type="button" class="btn btn-sm btn-secondary" id="btn-recheck-auto-teacher">Kiểm tra lại với GV này</button>
@@ -892,7 +909,7 @@
   </div>
 
   <!-- Shared Interactive Script -->
-  <script src="../../../wwwroot/js/site.js?v=20261123a"></script>
+  <script src="../../../wwwroot/js/site.js?v=20261124d"></script>
   <script>
     (function () {
       function escapeHtml(str) {
@@ -1164,8 +1181,8 @@
 
         if (label) {
           label.innerHTML = filterByWeek
-            ? `Đang lọc theo tuần: <strong>${formatFullDate(currentWeekMonday)} – ${formatFullDate(sunday)}</strong>`
-            : `Đồng bộ lịch lớp học &amp; lịch phòng học (Tuần tham chiếu: <strong>${formatFullDate(currentWeekMonday)} – ${formatFullDate(sunday)}</strong>)`;
+            ? `Tuần: <strong>${formatFullDate(currentWeekMonday)} – ${formatFullDate(sunday)}</strong>`
+            : `Tất cả lịch • Tuần: <strong>${formatFullDate(currentWeekMonday)} – ${formatFullDate(sunday)}</strong>`;
         }
         if (picker) {
           picker.value = toIsoDate(currentWeekMonday);

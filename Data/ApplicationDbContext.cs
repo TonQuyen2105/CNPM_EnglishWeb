@@ -6,10 +6,6 @@ namespace CNPM_EnglishLearning.Data;
 
 public partial class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext()
-    {
-    }
-
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
@@ -62,14 +58,6 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<UserExamAnswer> UserExamAnswers { get; set; }
 
     public virtual DbSet<UserProgress> UserProgresses { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            // Connection string is supplied by the app configuration and dependency injection.
-        }
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

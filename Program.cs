@@ -1,3 +1,5 @@
+using System.IO.Compression;
+using CNPM_EnglishLearning.Areas.Admin.Controllers;
 using CNPM_EnglishLearning.Services.Auth;
 using CNPM_EnglishLearning.Services.Interfaces;
 using CNPM_EnglishLearning.Services.Implementations;
@@ -5,7 +7,9 @@ using CNPM_EnglishLearning.Data;
 using CNPM_EnglishLearning.Models.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 
 // Kích hoạt LegacyTimestampBehavior cho Npgsql để tương thích linh hoạt với cả UTC và Unspecified DateTime
@@ -25,12 +29,45 @@ var builder = WebApplication.CreateBuilder(args.Where(arg => arg != "--seed-teac
     && arg != "--migrate-lesson-classes" && arg != "--migrate-exam-review"
     && arg != "--migrate-grade-history").ToArray());
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+var rawDefaultConn = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+var pooledNpgsqlConn = rawDefaultConn;
+if (!string.IsNullOrWhiteSpace(rawDefaultConn))
+{
+    try
+    {
+        var csb = new Npgsql.NpgsqlConnectionStringBuilder(rawDefaultConn);
+        if (csb.KeepAlive == 0)
+        {
+            csb.KeepAlive = 30;
+        }
+        pooledNpgsqlConn = csb.ConnectionString;
+    }
+    catch
+    {
+        pooledNpgsqlConn = rawDefaultConn;
+    }
+}
 
-// Add MVC services to the container
+builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
+    options.UseNpgsql(pooledNpgsqlConn));
+
+// Add MVC services, memory cache & Brotli/Gzip response compression
 builder.Services.AddControllersWithViews();
 builder.Services.AddMemoryCache();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
 
 // Cấu hình CORS mở cho mọi nguồn (hỗ trợ Live Server port 5500, file://, hoặc localhost:5000)
 builder.Services.AddCors(options =>
@@ -263,6 +300,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseResponseCompression();
 
 // Uploaded files must only be served through the authorized, range-enabled media endpoint.
 app.Use(async (context, next) =>
@@ -350,6 +388,125 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Middleware 1: Tự động vô hiệu hóa tức thì AdminReadCache (& class sync cooldown khi liên quan lớp/lịch/ghi danh)
+// ngay sau mọi thao tác ghi dữ liệu thành công trên cả 3 cổng Admin, Teacher, Student.
+app.Use(async (context, next) =>
+{
+    await next();
+
+    var method = context.Request.Method;
+    if ((HttpMethods.IsPost(method) || HttpMethods.IsPut(method) || HttpMethods.IsDelete(method) || HttpMethods.IsPatch(method))
+        && context.Response.StatusCode < 400)
+    {
+        var path = context.Request.Path;
+        if (path.StartsWithSegments("/Admin/api", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWithSegments("/api/admin", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWithSegments("/api/v1/student", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWithSegments("/api/student", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWithSegments("/api/teacher", StringComparison.OrdinalIgnoreCase))
+        {
+            var pathVal = path.Value ?? string.Empty;
+            var isReadOnlyCheck = pathVal.EndsWith("/CheckConflicts", StringComparison.OrdinalIgnoreCase)
+                || pathVal.EndsWith("/CheckRoomConflicts", StringComparison.OrdinalIgnoreCase)
+                || pathVal.EndsWith("/AutoPreview", StringComparison.OrdinalIgnoreCase);
+
+            if (!isReadOnlyCheck)
+            {
+                AdminReadCache.BumpVersion();
+                if (pathVal.Contains("class", StringComparison.OrdinalIgnoreCase)
+                    || pathVal.Contains("schedule", StringComparison.OrdinalIgnoreCase)
+                    || pathVal.Contains("enrollment", StringComparison.OrdinalIgnoreCase)
+                    || pathVal.Contains("payment", StringComparison.OrdinalIgnoreCase)
+                    || pathVal.Contains("course", StringComparison.OrdinalIgnoreCase))
+                {
+                    AdminCoreHelpers.InvalidateClassSyncCache();
+                }
+            }
+        }
+    }
+});
+
+// Middleware 2: Cache JSON phản hồi tự động theo _version cho toàn bộ GET /Admin/api/* (0 SQL, < 2ms khi HIT)
+app.Use(async (context, next) =>
+{
+    if (HttpMethods.IsGet(context.Request.Method)
+        && context.Request.Path.StartsWithSegments("/Admin/api", StringComparison.OrdinalIgnoreCase)
+        && context.User.Identity?.IsAuthenticated == true
+        && context.User.IsInRole("admin"))
+    {
+        var pathValue = context.Request.Path.Value ?? string.Empty;
+        if (!pathValue.Contains("ExportCsv", StringComparison.OrdinalIgnoreCase))
+        {
+            var rawQuery = (context.Request.QueryString.Value ?? string.Empty).TrimStart('?');
+            var isManualRefresh = string.Equals(context.Request.Query["refresh"], "true", StringComparison.OrdinalIgnoreCase);
+
+            if (isManualRefresh)
+            {
+                AdminReadCache.BumpVersion();
+                AdminCoreHelpers.InvalidateClassSyncCache();
+                await next();
+                return;
+            }
+
+            var memoryCache = context.RequestServices.GetRequiredService<IMemoryCache>();
+            var cacheKey = AdminReadCache.BuildKey("admin-api-get", pathValue.ToLowerInvariant(), rawQuery);
+
+            if (memoryCache.TryGetValue<CachedJsonResponse>(cacheKey, out var cached) && cached is not null)
+            {
+                context.Response.StatusCode = StatusCodes.Status200OK;
+                context.Response.ContentType = cached.ContentType;
+                context.Response.Headers["X-Admin-Cache"] = "HIT";
+                await context.Response.Body.WriteAsync(cached.Body, context.RequestAborted);
+                return;
+            }
+
+            var originalBodyStream = context.Response.Body;
+            using var bufferStream = new MemoryStream();
+            context.Response.Body = bufferStream;
+
+            try
+            {
+                await next();
+            }
+            finally
+            {
+                context.Response.Body = originalBodyStream;
+            }
+
+            var contentType = context.Response.ContentType ?? string.Empty;
+            if (context.Response.StatusCode == StatusCodes.Status200OK
+                && contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase)
+                && bufferStream.Length > 0
+                && bufferStream.Length <= 2 * 1024 * 1024)
+            {
+                var bytes = bufferStream.ToArray();
+                memoryCache.Set(
+                    cacheKey,
+                    new CachedJsonResponse(bytes, contentType),
+                    new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = AdminReadCache.DefaultTtl
+                    });
+            }
+
+            if (!context.Response.HasStarted)
+            {
+                context.Response.Headers["X-Admin-Cache"] = "MISS";
+            }
+
+            if (bufferStream.Length > 0)
+            {
+                bufferStream.Position = 0;
+                await bufferStream.CopyToAsync(originalBodyStream, context.RequestAborted);
+            }
+
+            return;
+        }
+    }
+
+    await next();
+});
 
 // Area routing for Admin, Teacher, and Student
 app.MapControllerRoute(

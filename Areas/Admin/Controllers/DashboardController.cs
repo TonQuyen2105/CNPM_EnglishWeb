@@ -2,6 +2,7 @@ using CNPM_EnglishLearning.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
@@ -10,11 +11,16 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _cache;
         private readonly ILogger<DashboardController> _logger;
 
-        public DashboardController(ApplicationDbContext context, ILogger<DashboardController> logger)
+        public DashboardController(
+            ApplicationDbContext context,
+            IMemoryCache cache,
+            ILogger<DashboardController> logger)
         {
             _context = context;
+            _cache = cache;
             _logger = logger;
         }
 
@@ -25,11 +31,11 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
         }
 
         [HttpGet("/Admin/api/Dashboard/Summary")]
-        public async Task<IActionResult> Summary(CancellationToken cancellationToken)
+        public async Task<IActionResult> Summary([FromQuery] bool refresh = false, CancellationToken cancellationToken = default)
         {
             try
             {
-                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken);
+                await AdminCoreHelpers.SyncExpiredClassesAsync(_context, cancellationToken, force: refresh);
 
                 // 1. KPI học viên: 1 truy vấn GROUP BY thay cho 2 truy vấn COUNT riêng lẻ
                 var studentStats = await _context.Users.AsNoTracking()
@@ -284,7 +290,7 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     };
                 }).ToList();
 
-                return Ok(new
+                var payload = new
                 {
                     success = true,
                     kpi = new
@@ -303,7 +309,9 @@ namespace CNPM_EnglishLearning.Areas.Admin.Controllers
                     totalLevelEnrollments = totalLevelCount,
                     levelDistribution,
                     recentEnrollments
-                });
+                };
+
+                return Ok(payload);
             }
             catch (OperationCanceledException)
             {
