@@ -73,6 +73,14 @@ namespace CNPM_EnglishLearning.Data
                 _viewMap["/logout"] = loginFile;
             }
 
+            var registerFile = Path.Combine(_contentRoot, "register.html");
+            if (File.Exists(registerFile))
+            {
+                _viewMap["/register.html"] = registerFile;
+                _viewMap["/register"] = registerFile;
+                _viewMap["/Account/Register"] = registerFile;
+            }
+
             var styleguideFile = Path.Combine(_contentRoot, "styleguide.html");
             if (File.Exists(styleguideFile))
             {
@@ -93,6 +101,14 @@ namespace CNPM_EnglishLearning.Data
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Chỉ phục vụ GET requests cho view HTML tĩnh, chuyển tiếp tất cả các method POST, PUT, DELETE và request /api
+            if (!HttpMethods.IsGet(context.Request.Method) || 
+                context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+            {
+                await _next(context);
+                return;
+            }
+
             var rawPath = context.Request.Path.Value ?? "";
 
             // Bỏ qua các file tĩnh tài nguyên (css, js, ảnh, font...)

@@ -13,9 +13,8 @@ namespace CNPM_EnglishLearning.Models.Entities
         [Column("question_id")]
         public int QuestionId { get; set; }
 
-        [Required]
         [Column("answer_text")]
-        public string AnswerText { get; set; } = string.Empty;
+        public string? AnswerText { get; set; }
 
         [Column("reference_audio_url")]
         public string? ReferenceAudioUrl { get; set; }

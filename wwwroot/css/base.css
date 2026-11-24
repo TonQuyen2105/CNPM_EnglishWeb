@@ -110,10 +110,15 @@ hr {
   margin: var(--space-6) 0;
 }
 
-/* Custom Scrollbar */
+/* Custom Thin Scrollbar & Tabular Numerals */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neutral-300) transparent;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -127,6 +132,12 @@ hr {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--neutral-400);
+}
+
+.stat-value,
+.kpi-value,
+.table td {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Accessibility & Utility */

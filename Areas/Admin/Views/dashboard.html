@@ -6,10 +6,10 @@
   <title>Bảng điều khiển - EnglishAdmin</title>
   
   <!-- CSS Design System -->
-  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/base.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261124c">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -35,7 +35,7 @@
     <!-- Sidebar Trắng Hiện Đại -->
     <aside class="app-sidebar" id="app-sidebar" style="background-color: #FFFFFF;">
       <div class="sidebar-header">
-        <a href="dashboard.html" class="brand-logo" style="text-decoration: none;">
+        <a href="/Admin/dashboard.html" class="brand-logo" style="text-decoration: none;">
           <div class="logo-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
@@ -47,67 +47,82 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Tổng quan</div>
-      <a href="dashboard.html" class="nav-item active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Bảng điều khiển</span>
-      </a>
-    <div class="nav-section-title">Quản lý đào tạo</div>
-      <a href="subjects.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
-      </a>
-    
-      <a href="courses.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="classes.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
-        <span>Lớp học</span>
-      </a>
-    
-      <a href="schedules.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Thời khóa biểu</span>
-      </a>
-    <div class="nav-section-title">Quản lý người dùng</div>
-      <a href="users.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
-        <span>Tài khoản người dùng</span>
-      </a>
-    
-      <a href="teachers.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
-        <span>Giảng viên</span>
-      </a>
-    
-      <a href="enrollments.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
-        <span>Học viên & Đăng ký</span>
-      </a>
-    <div class="nav-section-title">Khảo thí & Đánh giá</div>
-      <a href="exams.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Đề thi & Khảo thí</span>
-      </a>
-    
-      <a href="reviews.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-        <span>Đánh giá khóa học</span>
-      </a>
-    <div class="nav-section-title">Cơ sở & Báo cáo</div>
-      <a href="facilities.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
-        <span>Phòng học & Cơ sở</span>
-      </a>
-    
-      <a href="reports.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-        <span>Báo cáo & Thống kê</span>
-      </a>
-    
+        <a href="/Admin/dashboard.html" class="nav-item active">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+          <span>Tổng quan</span>
+        </a>
+        <a href="/Admin/reports.html" class="nav-item">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+          <span>Báo cáo</span>
+        </a>
+        <div class="nav-group" data-nav-group="training">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Đào tạo</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/subjects.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="/Admin/courses.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+            <span>Môn học</span>
+          </a>
+          <a href="/Admin/course-objectives.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+            <span>Đề cương</span>
+          </a>
+          <a href="/Admin/classes.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+            <span>Lớp học</span>
+          </a>
+          <a href="/Admin/schedules.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="/Admin/facilities.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
+            <span>Phòng học</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="people">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Người dùng</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/enrollments.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
+            <span>Học viên</span>
+          </a>
+          <a href="/Admin/teachers.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
+            <span>Giảng viên</span>
+          </a>
+          <a href="/Admin/users.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+            <span>Tài khoản</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="assessment">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Khảo thí</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/exams.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Kỳ thi</span>
+          </a>
+          <a href="/Admin/reviews.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+            <span>Đánh giá</span>
+          </a>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -190,7 +205,7 @@
                 <div style="font-weight: 700; font-size: 0.875rem;">Quản trị viên</div>
                 <span class="badge badge-primary" style="margin-top: 4px;">Super Admin</span>
               </div>
-              <a href="users.html" class="dropdown-item">
+              <a href="/Admin/users.html" class="dropdown-item">
                 <span>Quản lý người dùng</span>
               </a>
               <div class="dropdown-divider"></div>
@@ -205,20 +220,20 @@
       <!-- Vùng Nội Dung Chính -->
       <main class="page-container" id="app-main-content">
         
-  <div class="page-header">
+  <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
     <div>
       <h1 class="page-header-title">Bảng điều khiển Quản trị</h1>
-      <p class="page-header-subtitle">Tổng hợp chỉ số vận hành trung tâm và các hạng mục cần xử lý</p>
     </div>
-    <div class="page-header-actions">
-      <button type="button" class="btn btn-secondary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-        <span>Làm mới dữ liệu</span>
-      </button>
-      <a href="classes.html" class="btn btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        <span>Mở lớp học mới</span>
-      </a>
+    <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+      <div class="admin-tools-dropdown">
+        <button type="button" class="btn btn-secondary" data-admin-tools-toggle>Công cụ ▾</button>
+        <div class="admin-tools-menu">
+          <button type="button" class="btn btn-secondary" id="btn-refresh-dashboard">
+            <span id="btn-refresh-dashboard-label">Làm mới dữ liệu</span>
+          </button>
+        </div>
+      </div>
+      <a href="/Admin/classes.html" class="btn btn-primary">+ Tạo lớp</a>
     </div>
   </div>
 
@@ -226,9 +241,9 @@
   <div class="grid grid-cols-4 gap-6" style="margin-bottom: 2rem;">
     <div class="stat-card">
       <div class="stat-info">
-        <span class="stat-label">Tổng học sinh</span>
-        <span class="stat-value">40</span>
-        <span class="stat-sub text-success">↗ 40 tài khoản đang hoạt động</span>
+        <span class="stat-label">Tổng học viên</span>
+        <span class="stat-value" id="kpi-total-students">--</span>
+        <span class="stat-sub text-success" id="kpi-active-students-sub">Đang tải...</span>
       </div>
       <div class="stat-icon primary">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
@@ -237,20 +252,9 @@
 
     <div class="stat-card">
       <div class="stat-info">
-        <span class="stat-label">Đội ngũ giảng viên</span>
-        <span class="stat-value">6</span>
-        <span class="stat-sub text-warning">⚠️ 2 hồ sơ chờ duyệt</span>
-      </div>
-      <div class="stat-icon accent">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-info">
-        <span class="stat-label">Lớp đang diễn ra</span>
-        <span class="stat-value">5</span>
-        <span class="stat-sub text-muted">3 lớp sắp khai giảng</span>
+        <span class="stat-label">Lớp đang mở</span>
+        <span class="stat-value" id="kpi-ongoing-classes">--</span>
+        <span class="stat-sub text-muted" id="kpi-upcoming-classes-sub">Đang tải...</span>
       </div>
       <div class="stat-icon warning">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
@@ -259,9 +263,20 @@
 
     <div class="stat-card">
       <div class="stat-info">
+        <span class="stat-label">Tổng lượt ghi danh</span>
+        <span class="stat-value" id="kpi-active-enrollments">--</span>
+        <span class="stat-sub text-primary">Lượt đang học</span>
+      </div>
+      <div class="stat-icon accent">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-info">
         <span class="stat-label">Doanh thu ước tính</span>
-        <span class="stat-value" style="font-size: 1.5rem;">154.500.000 ₫</span>
-        <span class="stat-sub text-success">↗ Ước tính từ 48 lượt đăng ký</span>
+        <span class="stat-value" style="font-size: 1.5rem;" id="kpi-estimated-revenue">--</span>
+        <span class="stat-sub text-success" id="kpi-revenue-sub">Đang tải...</span>
       </div>
       <div class="stat-icon success">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
@@ -271,113 +286,51 @@
 
   <!-- 2 Biểu đồ thống kê -->
   <div class="grid grid-cols-12 gap-6" style="margin-bottom: 2rem;">
-    <div class="col-span-8 card" style="padding: 1.5rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <div class="col-span-8 card" style="padding: 1.5rem; min-width: 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem;">
         <div>
           <h3 class="card-title">Số lượng học viên đăng ký theo tháng</h3>
-          <div class="card-subtitle">Thống kê dữ liệu đăng ký lớp học trong 6 tháng gần nhất</div>
+          <div class="card-subtitle">Thống kê lượt ghi danh 12 tháng trong năm</div>
         </div>
-        <span class="badge badge-primary">Năm 2026</span>
+        <span class="badge badge-primary" id="chart-year-badge">Năm --</span>
       </div>
-      <div style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
-        <div style="text-align: center;"><div style="height: 90px; width: 36px; background: var(--primary-500); border-radius: 4px; margin: 0 auto;"></div><span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; display: block;">T5 (18)</span></div>
-        <div style="text-align: center;"><div style="height: 120px; width: 36px; background: var(--primary-500); border-radius: 4px; margin: 0 auto;"></div><span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; display: block;">T6 (24)</span></div>
-        <div style="text-align: center;"><div style="height: 155px; width: 36px; background: var(--primary-500); border-radius: 4px; margin: 0 auto;"></div><span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; display: block;">T7 (31)</span></div>
-        <div style="text-align: center;"><div style="height: 140px; width: 36px; background: var(--primary-500); border-radius: 4px; margin: 0 auto;"></div><span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; display: block;">T8 (28)</span></div>
-        <div style="text-align: center;"><div style="height: 190px; width: 36px; background: var(--primary-600); border-radius: 4px; margin: 0 auto;"></div><span style="font-size: 0.75rem; font-weight: 700; color: var(--primary-600); margin-top: 6px; display: block;">T9 (45)</span></div>
-        <div style="text-align: center;"><div style="height: 160px; width: 36px; background: var(--primary-500); border-radius: 4px; margin: 0 auto;"></div><span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; display: block;">T10 (36)</span></div>
+      <div id="monthly-chart-container" style="height: 224px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding: 8px 2px 24px 2px; border-bottom: 1px solid var(--border-color); overflow-x: auto; overflow-y: hidden;">
+        <div style="width: 100%; text-align: center; color: var(--text-muted); align-self: center;">Đang tải biểu đồ...</div>
       </div>
     </div>
 
-    <div class="col-span-4 card" style="padding: 1.5rem;">
+    <div class="col-span-4 card" style="padding: 1.5rem; min-width: 0;">
       <div style="margin-bottom: 1.25rem;">
         <h3 class="card-title">Cấp độ đào tạo</h3>
-        <div class="card-subtitle">Phân bổ 12 khóa học theo trình độ</div>
+        <div class="card-subtitle" id="level-dist-subtitle">Phân bổ lượt ghi danh theo trình độ</div>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 1.5rem;">
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 4px;">
-            <span>Cơ bản (Beginner)</span>
-            <strong>4 khóa (33%)</strong>
-          </div>
-          <div class="progress"><div class="progress-bar" style="width: 33%; background-color: #3B82F6;"></div></div>
-        </div>
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 4px;">
-            <span>Trung cấp (Intermediate)</span>
-            <strong>5 khóa (42%)</strong>
-          </div>
-          <div class="progress"><div class="progress-bar" style="width: 42%; background-color: #F59E0B;"></div></div>
-        </div>
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 4px;">
-            <span>Nâng cao (Advanced)</span>
-            <strong>3 khóa (25%)</strong>
-          </div>
-          <div class="progress"><div class="progress-bar" style="width: 25%; background-color: #EF4444;"></div></div>
-        </div>
+      <div id="level-distribution-container" style="display: flex; flex-direction: column; gap: 14px; margin-top: 1.5rem;">
+        <div style="color: var(--text-muted); font-size: 0.875rem;">Đang tải dữ liệu...</div>
       </div>
     </div>
   </div>
 
   <!-- Bảng Đăng ký mới nhất -->
   <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h3 class="card-title">Đăng ký mới nhất</h3>
-      <a href="enrollments.html" class="btn btn-sm btn-secondary">Xem tất cả</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+      <h3 class="card-title" style="margin: 0;">10 đăng ký mới nhất</h3>
+      <a href="/Admin/enrollments.html" class="btn btn-sm btn-secondary">Xem tất cả</a>
     </div>
     <div class="table-container">
-      <table class="table">
+      <table class="table" style="min-width: 680px;">
         <thead>
           <tr>
             <th>Học viên</th>
-            <th>Mã lớp</th>
-            <th>Khóa học</th>
+            <th>Lớp học</th>
+            <th>Môn học</th>
             <th>Học phí</th>
             <th>Ngày đăng ký</th>
             <th>Trạng thái</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="recent-enrollments-tbody">
           <tr>
-            <td><strong>Nguyễn Hoàng Anh</strong><br><small class="text-muted">student@el.com</small></td>
-            <td><span class="badge badge-primary">COMM-01</span></td>
-            <td>Tiếng Anh Giao Tiếp Cơ Bản</td>
-            <td>2.500.000 ₫</td>
-            <td>24/10/2026</td>
-            <td><span class="badge badge-success">Đã hoàn thành</span></td>
-          </tr>
-          <tr>
-            <td><strong>Trần Phương Nam</strong><br><small class="text-muted">nam.tran@el.com</small></td>
-            <td><span class="badge badge-primary">IELTS-B01</span></td>
-            <td>Luyện Thi IELTS 6.5+</td>
-            <td>5.800.000 ₫</td>
-            <td>23/10/2026</td>
-            <td><span class="badge badge-success">Đã hoàn thành</span></td>
-          </tr>
-          <tr>
-            <td><strong>Lê Thị Kim Ngân</strong><br><small class="text-muted">ngan.le@el.com</small></td>
-            <td><span class="badge badge-primary">TOEIC-A01</span></td>
-            <td>TOEIC 750+ Cấp Tốc</td>
-            <td>3.200.000 ₫</td>
-            <td>22/10/2026</td>
-            <td><span class="badge badge-warning">Chờ thanh toán</span></td>
-          </tr>
-          <tr>
-            <td><strong>Vũ Mai Linh</strong><br><small class="text-muted">linh.vu@el.com</small></td>
-            <td><span class="badge badge-primary">COMM-01</span></td>
-            <td>Tiếng Anh Giao Tiếp Cơ Bản</td>
-            <td>2.500.000 ₫</td>
-            <td>21/10/2026</td>
-            <td><span class="badge badge-success">Đã hoàn thành</span></td>
-          </tr>
-          <tr>
-            <td><strong>Đặng Quốc Bảo</strong><br><small class="text-muted">bao.dang@el.com</small></td>
-            <td><span class="badge badge-primary">IELTS-B01</span></td>
-            <td>Luyện Thi IELTS 6.5+</td>
-            <td>5.800.000 ₫</td>
-            <td>20/10/2026</td>
-            <td><span class="badge badge-success">Đã hoàn thành</span></td>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải dữ liệu từ hệ thống...</td>
           </tr>
         </tbody>
       </table>
@@ -389,6 +342,358 @@
   </div>
 
   <!-- Shared Interactive Script -->
-  <script src="../../../wwwroot/js/site.js"></script>
+  <script src="../../../wwwroot/js/site.js?v=20261124d"></script>
+  <script>
+    (function () {
+      // ===== Helpers dùng chung =====
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      // Gọi API JSON: tự parse lỗi { success:false, message } và ném Error(message) thân thiện.
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
+      }
+
+      // Định dạng dd/MM/yyyy (không phụ thuộc locale của trình duyệt)
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '--';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
+      }
+      // Toast nổi góc màn hình (dùng class .toast-* trong components.css?v=20261124c, màu theo tokens.css?v=20261124c)
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      // Chống double-submit: disable nút + đổi chữ, khôi phục khi busy = false
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      // Skeleton loading cho bảng
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      // Hàng thông báo trạng thái (empty / error) trong bảng
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      // Gắn nút "Thử lại" vào hàng lỗi
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+      let loadController = null;
+      let lastDashboardData = null;
+
+      function bindModalKeyboardAndGuard() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          const openModals = Array.from(document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.show'));
+          const topModal = openModals[openModals.length - 1];
+          if (topModal && topModal.dataset.busy !== 'true') {
+            topModal.classList.remove('open', 'show');
+          }
+        });
+      }
+
+      function renderEnrollmentStatus(status) {
+        switch ((status || '').toLowerCase()) {
+          case 'active':
+            return '<span class="badge badge-success">Đang học</span>';
+          case 'completed':
+            return '<span class="badge badge-primary">Hoàn thành</span>';
+          case 'cancelled':
+            return '<span class="badge badge-danger">Đã hủy</span>';
+          default:
+            return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
+        }
+      }
+
+      function renderLoadingState() {
+        document.getElementById('monthly-chart-container').innerHTML =
+          '<div class="skeleton skeleton-rect" style="width: 100%; height: 100%;"></div>';
+        document.getElementById('level-distribution-container').innerHTML =
+          '<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div>';
+        document.getElementById('recent-enrollments-tbody').innerHTML = skeletonRows(6, 5);
+      }
+
+      function renderKpi(kpi) {
+        document.getElementById('kpi-total-students').textContent = kpi.totalStudents ?? 0;
+        document.getElementById('kpi-active-students-sub').textContent = `↗ ${kpi.activeStudents ?? 0} tài khoản đang hoạt động`;
+        document.getElementById('kpi-ongoing-classes').textContent = kpi.ongoingClasses ?? 0;
+        document.getElementById('kpi-upcoming-classes-sub').textContent = `${kpi.upcomingClasses ?? 0} lớp sắp khai giảng`;
+        document.getElementById('kpi-active-enrollments').textContent = kpi.activeEnrollments ?? 0;
+        document.getElementById('kpi-estimated-revenue').textContent = formatCurrency(kpi.estimatedRevenue);
+        document.getElementById('kpi-revenue-sub').textContent = kpi.revenueSource === 'payments'
+          ? `↗ Từ ${kpi.revenueEnrollmentCount ?? 0} giao dịch đã thanh toán`
+          : `↗ Từ ${kpi.revenueEnrollmentCount ?? 0} lượt ghi danh hợp lệ`;
+      }
+
+      function renderMonthlyChart(data) {
+        const container = document.getElementById('monthly-chart-container');
+        document.getElementById('chart-year-badge').textContent = `Năm ${data.chartYear || new Date().getFullYear()}`;
+        const monthly = Array.isArray(data.monthlyEnrollments) ? data.monthlyEnrollments : [];
+        if (monthly.length === 0) {
+          container.innerHTML = '<div style="width: 100%; text-align: center; color: var(--text-muted); align-self: center; font-size: 0.875rem;">Chưa có dữ liệu ghi danh trong năm.</div>';
+          return;
+        }
+        const maxCount = Math.max(1, ...monthly.map(m => m.count || 0));
+        const chartMaxHeight = Math.max(100, Math.min(155, (container.clientHeight || 224) - 68));
+
+        container.innerHTML = monthly.map(m => {
+          const count = Number(m.count) || 0;
+          const barHeight = count > 0 ? Math.max(16, Math.round((count / maxCount) * chartMaxHeight)) : 4;
+          const isPeak = count > 0 && count === maxCount;
+          const bgColor = count === 0 ? 'var(--neutral-200)' : (isPeak ? 'var(--primary-600)' : 'var(--primary-500)');
+          const textStyle = isPeak ? 'font-weight: 700; color: var(--primary-600);' : 'color: var(--text-muted);';
+          return `
+            <div style="flex: 1 0 26px; text-align: center; min-width: 26px;" title="${escapeHtml(m.label)}: ${count} lượt">
+              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">${count}</div>
+              <div style="height: ${barHeight}px; width: 70%; max-width: 32px; background: ${bgColor}; border-radius: 4px 4px 0 0; margin: 0 auto; transition: height 0.25s ease;"></div>
+              <span style="font-size: 0.75rem; ${textStyle} margin-top: 6px; display: block;">${escapeHtml(m.label)}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderLevelDistribution(data) {
+        const container = document.getElementById('level-distribution-container');
+        const levels = Array.isArray(data.levelDistribution) ? data.levelDistribution : [];
+        document.getElementById('level-dist-subtitle').textContent =
+          `Phân bổ ${data.totalLevelEnrollments ?? 0} lượt ghi danh theo trình độ`;
+
+        if (levels.length === 0) {
+          container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem;">Chưa có dữ liệu phân bổ trình độ.</div>';
+          return;
+        }
+
+        const levelColors = { beginner: '#3B82F6', intermediate: '#F59E0B', advanced: '#EF4444', other: '#64748B' };
+
+        container.innerHTML = levels.map(lv => {
+          const pct = Math.max(0, Math.min(100, Number(lv.percentage) || 0));
+          return `
+            <div>
+              <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 0.8125rem; margin-bottom: 4px;">
+                <span>${escapeHtml(lv.label)}</span>
+                <strong style="white-space: nowrap;">${Number(lv.count) || 0} lượt (${pct}%)</strong>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${levelColors[lv.level] || '#3B82F6'};"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderRecentEnrollments(items) {
+        const tbody = document.getElementById('recent-enrollments-tbody');
+        const recents = Array.isArray(items) ? items : [];
+
+        if (recents.length === 0) {
+          tbody.innerHTML = stateRow(6, 'Chưa có dữ liệu ghi danh', 'Các lượt ghi danh mới nhất sẽ hiển thị tại đây.');
+          return;
+        }
+
+        tbody.innerHTML = recents.map(r => {
+          const isCancelled = r.status === 'cancelled' || r.classStatus === 'cancelled';
+          const payStatus = (r.paymentStatus || '').toLowerCase();
+          let feeCellHtml = '';
+          if (isCancelled) {
+            feeCellHtml = `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(r.price)}</span> <small class="text-muted">(0 ₫)</small>`;
+          } else if (payStatus === 'completed') {
+            const paidVal = r.paymentAmount !== null && r.paymentAmount !== undefined ? r.paymentAmount : r.price;
+            feeCellHtml = `<strong>${formatCurrency(paidVal)}</strong><div style="margin-top:2px;"><span class="badge badge-success" style="font-size:0.7rem;">Đã thu</span></div>`;
+          } else {
+            const unpaidLabel = payStatus === 'pending' ? 'Chờ TT' : 'Chưa thu';
+            feeCellHtml = `<strong>${formatCurrency(r.price)}</strong><div style="margin-top:2px;"><span class="badge badge-neutral" style="font-size:0.7rem;">${unpaidLabel}</span></div>`;
+          }
+          return `
+          <tr>
+            <td>
+              <strong>${escapeHtml(r.studentName)}</strong><br>
+              <small class="text-muted">${escapeHtml(r.studentEmail)}</small>
+            </td>
+            <td>
+              <a href="/Admin/class-detail.html?id=${encodeURIComponent(r.classId)}" style="text-decoration: none;">
+                <span class="badge badge-primary">${escapeHtml(r.classCode)}</span>
+              </a>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(r.className)}</div>
+            </td>
+            <td>${escapeHtml(r.courseTitle)}</td>
+            <td style="white-space: nowrap;">${feeCellHtml}</td>
+            <td style="white-space: nowrap;">${formatDate(r.enrolledAt)}</td>
+            <td style="white-space: nowrap;">${renderEnrollmentStatus(r.status)}</td>
+          </tr>
+        `;
+        }).join('');
+      }
+
+      async function loadDashboard(forceRefresh = false) {
+        const isManualRefresh = forceRefresh === true;
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        const refreshBtn = document.getElementById('btn-refresh-dashboard');
+        const refreshLabel = document.getElementById('btn-refresh-dashboard-label');
+        if (refreshBtn) refreshBtn.disabled = true;
+        if (refreshLabel) refreshLabel.textContent = 'Đang làm mới...';
+        renderLoadingState();
+
+        try {
+          const summaryUrl = isManualRefresh ? '/Admin/api/Dashboard/Summary?refresh=true' : '/Admin/api/Dashboard/Summary';
+          const data = await fetchJson(summaryUrl, { signal: controller.signal });
+          lastDashboardData = data;
+          renderKpi(data.kpi || {});
+          renderMonthlyChart(data);
+          renderLevelDistribution(data);
+          renderRecentEnrollments(data.recentEnrollments);
+        } catch (err) {
+          if (isAbortError(err)) return;
+          lastDashboardData = null;
+          console.error('Lỗi tải Dashboard:', err);
+          document.getElementById('kpi-total-students').textContent = '--';
+          document.getElementById('kpi-active-students-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('kpi-ongoing-classes').textContent = '--';
+          document.getElementById('kpi-upcoming-classes-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('kpi-active-enrollments').textContent = '--';
+          document.getElementById('kpi-estimated-revenue').textContent = '--';
+          document.getElementById('kpi-revenue-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('chart-year-badge').textContent = 'Lỗi tải';
+          document.getElementById('level-dist-subtitle').textContent = 'Không thể tải dữ liệu phân bổ';
+          document.getElementById('monthly-chart-container').innerHTML = '<div style="width: 100%; text-align: center; color: var(--danger-text); align-self: center; font-size: 0.875rem;">Không thể tải biểu đồ.</div>';
+          document.getElementById('level-distribution-container').innerHTML = '<div style="color: var(--danger-text); font-size: 0.875rem;">Không thể tải phân bổ trình độ.</div>';
+          document.getElementById('recent-enrollments-tbody').innerHTML = errorRowWithRetry(6, err.message);
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            if (refreshBtn) refreshBtn.disabled = false;
+            if (refreshLabel) refreshLabel.textContent = 'Làm mới dữ liệu';
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        bindModalKeyboardAndGuard();
+        loadDashboard();
+
+        const refreshBtn = document.getElementById('btn-refresh-dashboard');
+        if (refreshBtn) {
+          refreshBtn.addEventListener('click', () => loadDashboard(true));
+        }
+
+        document.getElementById('recent-enrollments-tbody').addEventListener('click', (e) => {
+          if (e.target.closest('[data-retry-load]')) loadDashboard(true);
+        });
+
+        const debouncedResize = debounce(() => {
+          if (lastDashboardData) {
+            renderMonthlyChart(lastDashboardData);
+          }
+        }, 180);
+        window.addEventListener('resize', debouncedResize);
+      });
+    })();
+  </script>
 </body>
 </html>

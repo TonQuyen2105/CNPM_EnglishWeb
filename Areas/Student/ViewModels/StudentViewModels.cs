@@ -6,7 +6,7 @@ namespace CNPM_EnglishLearning.Areas.Student.ViewModels
     {
         public int EnrolledClassesCount { get; set; }
         public int MasteredVocabularies { get; set; } = 180;
-        public double AverageScore { get; set; } = 8.5;
+        public double? AverageScore { get; set; } = null;
         public int StudyStreakDays { get; set; } = 5;
         public List<CourseClass> OngoingClasses { get; set; } = new();
     }

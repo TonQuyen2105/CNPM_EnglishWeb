@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CNPM_EnglishLearning.Data;
@@ -5,6 +6,7 @@ using CNPM_EnglishLearning.Data;
 namespace CNPM_EnglishLearning.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "admin")]
     [Route("[area]/[controller]")]
     public class TestDbController : Controller
     {

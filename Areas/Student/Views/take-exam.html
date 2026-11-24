@@ -3,32 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Phòng làm bài thi - EnglishStudent</title>
   
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261122a">
 
   <style>
+    /* Topbar Navigation */
     .student-navbar-wrapper {
-      position: sticky; top: 0; z-index: var(--z-sticky);
+      position: sticky; top: 0; z-index: var(--z-sticky, 1000);
       background-color: #FFFFFF; border-bottom: 1px solid var(--border-color);
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .student-nav-container {
-      max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 64px;
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      max-width: 1400px; margin: 0 auto; padding: 0 1rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
     }
     .student-nav-menu {
-      display: flex; align-items: center; gap: 0.25rem; overflow-x: auto;
+      display: flex; align-items: center; gap: 3px; flex-shrink: 0; flex-wrap: nowrap;
     }
     .student-nav-link {
-      display: flex; align-items: center; gap: 6px; padding: 8px 12px;
-      border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 4px; padding: 6px 9px;
+      border-radius: var(--radius-md); font-size: 0.8125rem; font-weight: 600;
       color: var(--text-secondary); text-decoration: none; white-space: nowrap;
-      transition: all var(--transition-fast);
+      transition: all var(--transition-fast); flex-shrink: 0;
     }
     .student-nav-link:hover {
       background-color: var(--neutral-100); color: var(--primary-600);
@@ -37,15 +41,128 @@
       background-color: var(--primary-50); color: var(--primary-600); font-weight: 700;
     }
     .student-streak-pill {
-      display: flex; align-items: center; gap: 4px; padding: 4px 10px;
+      display: flex; align-items: center; gap: 4px; padding: 4px 8px;
       background: linear-gradient(135deg, #FEF3C7, #FDE68A);
       border: 1px solid #FCD34D; border-radius: var(--radius-full);
-      font-size: 0.75rem; font-weight: 700; color: #92400E;
+      font-size: 0.75rem; font-weight: 700; color: #92400E; flex-shrink: 0;
     }
     .notification-wrapper { position: relative; }
     .notification-badge-dot {
-      position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
-      border-radius: 50%; background-color: var(--danger-main); border: 2px solid white;
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px; background-color: var(--danger-500);
+      border-radius: 50%; border: 1.5px solid #FFFFFF;
+    }
+    .user-profile-trigger:hover {
+      background-color: var(--neutral-100);
+    }
+
+    /* Exam UI Custom Styles */
+    .exam-header-bar {
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      padding: 1.125rem 1.5rem;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .exam-timer-pill {
+      font-size: 1.1875rem;
+      font-weight: 800;
+      color: #DC2626;
+      background: #FEF2F2;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid #FCA5A5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.02em;
+    }
+    .exam-timer-warning {
+      color: #991B1B !important;
+      background: #FEE2E2 !important;
+      animation: pulseAlert 1.5s infinite;
+    }
+    @keyframes pulseAlert {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .palette-btn {
+      height: 40px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      border: 1px solid var(--border-color);
+      background-color: #F8FAFC;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+    }
+    .palette-btn:hover {
+      background-color: #E2E8F0;
+      border-color: #CBD5E1;
+    }
+    .palette-btn.active {
+      border: 2px solid var(--primary-600) !important;
+      color: var(--primary-600) !important;
+      background-color: var(--primary-50) !important;
+      box-shadow: 0 0 0 1px var(--primary-600);
+    }
+    .palette-btn.answered {
+      background-color: #ECFDF5;
+      border-color: #A7F3D0;
+      color: #065F46;
+    }
+    .palette-btn.answered.active {
+      border: 2px solid var(--primary-600) !important;
+      color: var(--primary-600) !important;
+      background-color: #E0E7FF !important;
+    }
+    .option-label {
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background: #FFFFFF;
+    }
+    .option-label:hover {
+      background: var(--neutral-50);
+      border-color: #CBD5E1;
+    }
+    .option-label.selected {
+      border: 2px solid var(--primary-600);
+      background: var(--primary-50);
+      color: var(--primary-700);
+    }
+    .modal-overlay-custom {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1050;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-dialog-custom {
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      max-width: 500px;
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
     }
   </style>
 </head>
@@ -53,209 +170,1008 @@
   <!-- Student Top Navbar -->
   <header class="student-navbar-wrapper">
     <div class="student-nav-container">
-      <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
         <!-- Logo -->
-        <a href="dashboard.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <a href="dashboard.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0;">
+          <div style="width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
               <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
             </svg>
           </div>
-          <span style="font-size: 1.0625rem; font-weight: 800; color: var(--primary-700); white-space: nowrap;">EnglishStudent</span>
+          <span class="student-brand-title" style="font-weight: 800; font-size: 1.125rem; color: #1E40AF; letter-spacing: -0.02em;">EnglishStudent</span>
         </a>
 
         <!-- Desktop Nav Links -->
         <nav class="student-nav-menu">
-          
-      <a href="dashboard.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Trang chủ</span>
-      </a>
-    
-      <a href="courses.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="my-classes.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Lớp của tôi</span>
-      </a>
-    
-      <a href="schedule.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Lịch học</span>
-      </a>
-    
-      <a href="flashcards.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
-        <span>Flashcards</span>
-      </a>
-    
-      <a href="exams.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Luyện thi</span>
-      </a>
-    
-      <a href="progress.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></span>
-        <span>Tiến độ</span>
-      </a>
-    
+          <a href="dashboard.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+            <span>Trang chủ</span>
+          </a>
+          <a href="courses.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="my-classes.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Lớp của tôi</span>
+          </a>
+          <a href="schedule.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="flashcards.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
+            <span>Flashcards</span>
+          </a>
+          <a href="exams.html" class="student-nav-link active">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Luyện thi</span>
+          </a>
         </nav>
       </div>
 
       <!-- Right Controls -->
-      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span>5 ngày</span>
-        </div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
 
-        <!-- Bell -->
+        <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
-          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo" style="background: none; border: 1px solid var(--border-color); border-radius: var(--radius-md); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); position: relative;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
+            <span class="notification-badge-dot" id="notif-badge-dot" style="display: none;"></span>
           </button>
-          <div class="dropdown-menu" id="notifications-dropdown" style="width: 300px; right: 0;">
+          <div class="dropdown-menu" id="notifications-dropdown" style="width: 320px; right: 0;">
             <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.8125rem;">
               Thông báo học tập
             </div>
-            <div style="max-height: 250px; overflow-y: auto;">
-              <a href="flashcards.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
+            <div id="notif-list-container" style="max-height: 260px; overflow-y: auto;">
+              <a href="flashcards.html?mode=due" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
                 <strong style="display: block; font-size: 0.75rem; color: var(--primary-600);">🎯 Ôn tập từ vựng hôm nay</strong>
-                <small style="color: var(--text-muted);">Bạn có 25 từ vựng đến hạn ôn tập</small>
+                <small id="notif-flashcards-text" style="color: var(--text-muted);">Bạn có danh sách từ vựng cần ôn luyện</small>
               </a>
               <a href="schedule.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
-                <strong style="display: block; font-size: 0.75rem;">⏰ Buổi học lúc 18:00</strong>
-                <small style="color: var(--text-muted);">Lớp Giao Tiếp COMM-01 tại Phòng LAB-01</small>
+                <strong id="notif-session-title" style="display: block; font-size: 0.75rem;">⏰ Buổi học sắp tới</strong>
+                <small id="notif-session-text" style="color: var(--text-muted);">Kiểm tra thời khóa biểu trong tuần</small>
               </a>
             </div>
           </div>
         </div>
 
-        <!-- Student Profile -->
+        <!-- Student Profile Dropdown -->
         <div class="dropdown">
-          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white;">HA</div>
-            <div style="text-align: left; line-height: 1.2;" class="d-none d-md-block">
-              <div style="font-size: 0.8125rem; font-weight: 600;">Nguyễn Hoàng Anh</div>
-              <div style="font-size: 0.7rem; color: var(--text-muted);">student@el.com</div>
+          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 7px; cursor: pointer; padding: 4px 6px; border-radius: var(--radius-md); max-width: 200px;">
+            <div class="avatar avatar-sm" id="user-avatar-topbar" style="background-color: var(--primary-600); color: white; font-weight: 700; width: 34px; height: 34px; flex-shrink: 0;">TH</div>
+            <div style="text-align: left; line-height: 1.2; min-width: 0;" class="d-none d-md-block">
+              <div id="user-name-topbar" style="font-size: 0.8125rem; font-weight: 600; color: #0F172A; max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Trần Hoàng</div>
+              <div id="user-email-topbar" style="font-size: 0.7rem; color: var(--text-muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">student@englishlearning.example</div>
             </div>
-            <span style="color: var(--text-muted);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
+            <span style="color: var(--text-muted); flex-shrink: 0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </span>
           </div>
 
-          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 200px; right: 0;">
-            <div style="padding: 0.625rem 1rem; border-bottom: 1px solid var(--border-color);">
-              <div style="font-weight: 700; font-size: 0.875rem;">Nguyễn Hoàng Anh</div>
-              <span class="badge badge-primary" style="margin-top: 4px;">Học viên năng động</span>
+          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 220px; right: 0;">
+            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);">
+              <div style="font-weight: 700; font-size: 0.875rem;" id="user-name-dropdown">Trần Hoàng</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;" id="user-email-dropdown">student@englishlearning.example</div>
+              <span class="badge badge-primary" id="user-role-badge">Học viên chính thức</span>
             </div>
-            <a href="profile.html" class="dropdown-item">
-              <span>Hồ sơ cá nhân</span>
-            </a>
-            <a href="my-classes.html" class="dropdown-item">
-              <span>Lớp của tôi</span>
-            </a>
-            <a href="results.html" class="dropdown-item">
-              <span>Kết quả bài thi</span>
-            </a>
+            <a href="profile.html" class="dropdown-item"><span>Hồ sơ cá nhân</span></a>
+            <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
+            <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
+            <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
-            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout">
-              <span>Đăng xuất</span>
-            </a>
+            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
         </div>
       </div>
     </div>
   </header>
 
+  <script>
+    (function syncTopbarUser() {
+      try {
+        const studentRaw = localStorage.getItem('student_user');
+        let u = null;
+        if (studentRaw) {
+          const parsed = JSON.parse(studentRaw);
+          if (parsed && typeof parsed === 'object' && String(parsed.role || '').toLowerCase() === 'student') {
+            u = parsed;
+          } else {
+            localStorage.removeItem('student_user');
+          }
+        }
+        if (!u) {
+          window.location.replace('/login.html?reason=auth_required');
+          return;
+        }
+        let name = u.full_name || u.name || 'Trần Hoàng';
+        let email = u.email || 'student@englishlearning.example';
+        const parts = name.trim().split(/\s+/);
+        const initials = parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        const av = document.getElementById('user-avatar-topbar');
+        const nm = document.getElementById('user-name-topbar');
+        const em = document.getElementById('user-email-topbar');
+        const dn = document.getElementById('user-name-dropdown');
+        const de = document.getElementById('user-email-dropdown');
+        if (av) av.textContent = initials;
+        if (nm) nm.textContent = name;
+        if (em) { em.textContent = email; em.title = email; }
+        if (dn) dn.textContent = name;
+        if (de) de.textContent = email;
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Page Content Container -->
   <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
     
-  <div class="page-header" style="background: white; border-bottom: 2px solid var(--primary-600); padding: 1rem 1.5rem; position: sticky; top: 64px; z-index: 10;">
-    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-      <div>
-        <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0;">Kiểm tra định kỳ giữa khóa COMM</h2>
-        <span style="font-size: 0.8125rem; color: var(--text-muted);">Đã làm: 12 / 40 câu</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="font-size: 1.25rem; font-weight: 800; color: #DC2626; background: #FEF2F2; padding: 6px 14px; border-radius: 8px; border: 1px solid #FCA5A5;">
-          ⏱ 34:25
+    <!-- Loading Overlay -->
+    <div id="exam-loading-overlay" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; padding: 3rem;">
+      <div class="loading-spinner" style="width: 44px; height: 44px; border: 4px solid var(--primary-100); border-top-color: var(--primary-600); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <p style="margin-top: 1rem; color: var(--text-secondary); font-weight: 600;">Đang khởi tạo phòng thi trực tuyến...</p>
+    </div>
+
+    <!-- Error State Container -->
+    <div id="exam-error-container" style="display: none; background: #FFFFFF; border: 1px solid #FECACA; border-radius: var(--radius-lg); padding: 3rem 1.5rem; text-align: center;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">⚠️</div>
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: #DC2626; margin-bottom: 0.5rem;" id="exam-error-title">Không thể bắt đầu bài thi</h3>
+      <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem;" id="exam-error-desc">Vui lòng kiểm tra lại trạng thái bài thi hoặc liên hệ ban đào tạo.</p>
+      <a href="exams.html" class="btn btn-secondary">Quay lại danh sách bài thi</a>
+    </div>
+
+    <!-- Exam Content Area (Hidden initially) -->
+    <div id="exam-content-area" style="display: none;">
+      
+      <!-- Top Exam Header Bar -->
+      <div class="exam-header-bar">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span class="badge badge-primary" id="exam-badge-type">Đề thi</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;" id="exam-attempt-pill">Lần làm bài: 1</span>
+          </div>
+          <h1 style="font-size: 1.1875rem; font-weight: 700; margin: 0; color: #0F172A;" id="exam-title-display">Đang tải đề thi...</h1>
+          <span style="font-size: 0.8125rem; color: var(--text-muted);" id="exam-progress-counter">Đã làm: 0 / 0 câu</span>
         </div>
-        <a href="results.html" class="btn btn-primary">Nộp bài thi</a>
+
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div class="exam-timer-pill" id="exam-timer-box" title="Thời gian làm bài còn lại">
+            <span id="exam-timer-clock">⏱ 00:00</span>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-submit-exam-top">Nộp bài thi</button>
+        </div>
       </div>
+
+      <!-- Main Layout: Question Left (Col 8), Palette Right (Col 4) -->
+      <div class="grid grid-cols-12 gap-6">
+        
+        <!-- Question Workspace (Left Col 8) -->
+        <div class="col-span-8 card" style="padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 480px; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+          <div>
+            <!-- Question Meta Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+              <div style="font-size: 0.875rem; color: var(--text-muted); font-weight: 600;" id="question-header-text">
+                Câu hỏi số 1 trong 3:
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="badge" id="question-type-badge" style="background: #E0E7FF; color: #3730A3; font-weight: 700;">Tự luận (Essay)</span>
+                <span class="badge badge-success" id="question-points-badge">2.5 điểm</span>
+              </div>
+            </div>
+
+            <!-- Audio Player (if present) -->
+            <div id="question-audio-wrapper" style="display: none; margin-bottom: 1.25rem; background: #F8FAFC; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color);">
+              <audio id="question-audio-player" controls style="width: 100%; height: 36px;"></audio>
+            </div>
+
+            <!-- Question Prompt Content -->
+            <div id="question-prompt-text" style="font-size: 1.0625rem; font-weight: 500; line-height: 1.65; color: #1E293B; margin-bottom: 1.75rem; white-space: pre-line;">
+              Đang tải nội dung câu hỏi...
+            </div>
+
+            <!-- Dynamic Answer Form Area -->
+            <div id="question-answer-area">
+              <!-- Rendered dynamically for essay, multiple choice, or fill blank -->
+            </div>
+          </div>
+
+          <!-- Bottom Navigation & Auto-save Status -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+            <button type="button" class="btn btn-secondary" id="btn-prev-question" style="display: flex; align-items: center; gap: 6px;">
+              ← Câu trước
+            </button>
+
+            <!-- Auto-save Indicator -->
+            <div id="auto-save-status" style="font-size: 0.8125rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+              <span>✓ Đã lưu nháp</span>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="btn-next-question" style="display: flex; align-items: center; gap: 6px;">
+              Câu tiếp theo →
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Navigation Palette (Right Col 4) -->
+        <div class="col-span-4">
+          <div class="card" style="padding: 1.5rem; position: sticky; top: 80px; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 class="card-title" style="margin: 0; font-size: 1rem;">Danh sách câu hỏi</h3>
+              <span style="font-size: 0.75rem; color: var(--text-muted);" id="palette-summary-count">0 / 0 câu</span>
+            </div>
+
+            <!-- Palette Legend -->
+            <div style="display: flex; gap: 12px; margin-bottom: 1rem; font-size: 0.75rem; color: var(--text-muted);">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span style="width: 10px; height: 10px; border-radius: 2px; background: #ECFDF5; border: 1px solid #A7F3D0;"></span>
+                <span>Đã làm</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span style="width: 10px; height: 10px; border-radius: 2px; background: #F8FAFC; border: 1px solid #CBD5E1;"></span>
+                <span>Chưa làm</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span style="width: 10px; height: 10px; border-radius: 2px; background: var(--primary-50); border: 2px solid var(--primary-600);"></span>
+                <span>Đang xem</span>
+              </div>
+            </div>
+
+            <!-- Buttons Grid -->
+            <div id="palette-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1.5rem;">
+              <!-- Generated via JS -->
+            </div>
+
+            <!-- Bottom Palette Action -->
+            <button type="button" class="btn btn-primary" id="btn-submit-exam-palette" style="width: 100%; text-align: center;">
+              Xem lại & Nộp bài thi
+            </button>
+          </div>
+        </div>
+
+      </div>
+
     </div>
-  </div>
-
-  <div class="grid grid-cols-12 gap-6" style="margin-top: 1.5rem;">
-    <!-- Nội dung câu hỏi -->
-    <div class="col-span-8 card" style="padding: 2rem;">
-      <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Câu hỏi số 13 trong 40:</div>
-      <p style="font-size: 1.125rem; font-weight: 600; line-height: 1.6; color: var(--text-primary); margin-bottom: 1.5rem;">
-        Could you please tell me how _______ to the nearest subway station from here?
-      </p>
-
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <label style="padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-          <input type="radio" name="q13" value="A">
-          <span>A. get</span>
-        </label>
-        <label style="padding: 12px 16px; border: 2px solid var(--primary-600); background: var(--primary-50); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-          <input type="radio" name="q13" value="B" checked>
-          <span><strong>B. to get (Đã chọn)</strong></span>
-        </label>
-        <label style="padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-          <input type="radio" name="q13" value="C">
-          <span>C. getting</span>
-        </label>
-        <label style="padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-          <input type="radio" name="q13" value="D">
-          <span>D. got</span>
-        </label>
-      </div>
-
-      <div style="display: flex; justify-content: space-between; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-        <button class="btn btn-secondary">← Câu trước</button>
-        <button class="btn btn-primary">Câu tiếp theo →</button>
-      </div>
-    </div>
-
-    <!-- Bảng câu hỏi -->
-    <div class="col-span-4 card" style="padding: 1.5rem;">
-      <h3 class="card-title" style="margin-bottom: 1rem;">Danh sách câu hỏi</h3>
-      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
-        <button class="btn btn-sm btn-success">1</button>
-        <button class="btn btn-sm btn-success">2</button>
-        <button class="btn btn-sm btn-success">3</button>
-        <button class="btn btn-sm btn-success">4</button>
-        <button class="btn btn-sm btn-success">5</button>
-        <button class="btn btn-sm btn-success">6</button>
-        <button class="btn btn-sm btn-success">7</button>
-        <button class="btn btn-sm btn-success">8</button>
-        <button class="btn btn-sm btn-success">9</button>
-        <button class="btn btn-sm btn-success">10</button>
-        <button class="btn btn-sm btn-success">11</button>
-        <button class="btn btn-sm btn-success">12</button>
-        <button class="btn btn-sm btn-primary">13</button>
-        <button class="btn btn-sm btn-secondary">14</button>
-        <button class="btn btn-sm btn-secondary">15</button>
-      </div>
-    </div>
-  </div>
 
   </main>
+
+  <!-- Submit Confirmation Modal -->
+  <div id="submit-confirm-modal" class="modal-overlay-custom" style="display: none;">
+    <div class="modal-dialog-custom" style="padding: 1.75rem;">
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: #EFF6FF; color: var(--primary-600); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+          📝
+        </div>
+        <h3 style="font-size: 1.1875rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;">Xác nhận nộp bài thi?</h3>
+        <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0;" id="submit-modal-summary">
+          Bạn đã hoàn thành 0 / 0 câu hỏi. Sau khi nộp, bạn sẽ không thể chỉnh sửa đáp án đã chọn.
+        </p>
+      </div>
+
+      <div style="background: #F8FAFC; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.8125rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: var(--text-muted);">Số câu đã trả lời:</span>
+          <strong id="modal-answered-count" style="color: #059669;">0 câu</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Số câu chưa trả lời:</span>
+          <strong id="modal-unanswered-count" style="color: #DC2626;">0 câu</strong>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-submit" style="flex: 1;">Tiếp tục làm bài</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-submit" style="flex: 1;">Xác nhận nộp bài</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post-Submit Success Modal -->
+  <div id="submit-result-modal" class="modal-overlay-custom" style="display: none;">
+    <div class="modal-dialog-custom" style="padding: 2rem; text-align: center;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 1.75rem;">
+        ✓
+      </div>
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;">Nộp bài thi thành công!</h3>
+      <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;" id="submit-result-message">
+        Bài thi tự luận của bạn đã được ghi nhận. Hệ thống đã chuyển bài làm cho giảng viên chấm điểm chi tiết.
+      </p>
+
+      <div style="background: #F8FAFC; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: var(--text-muted);">Trạng thái chấm:</span>
+          <span class="badge" id="modal-result-status-badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">Chờ chấm bài</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;" id="modal-result-score-row">
+          <span style="color: var(--text-muted);">Điểm số:</span>
+          <strong id="modal-result-score-text">Đang cập nhật</strong>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <a href="exams.html" class="btn btn-secondary" style="flex: 1;">Về danh sách đề thi</a>
+        <a href="results.html" id="modal-result-detail-link" class="btn btn-primary" style="flex: 1;">Xem kết quả bài thi</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Xác Nhận Rời Phòng Thi (Tự Động Nộp Bài) -->
+  <div id="leave-exam-confirm-modal" class="modal-overlay-custom" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div class="card" style="max-width: 480px; width: 100%; padding: 2rem; border-radius: var(--radius-xl); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); border: 1.5px solid #F59E0B; background: white;">
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: #FEF3C7; color: #D97706; display: inline-flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 1rem;">
+          ⚠️
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: #0F172A; margin-bottom: 0.5rem;">Cảnh báo: Bạn đang làm bài thi!</h3>
+        <p style="font-size: 0.875rem; color: #475569; margin: 0; line-height: 1.6;">
+          Hệ thống không cho phép tự ý chuyển trang trong quá trình thi. Nếu bạn rời khỏi trang, hệ thống sẽ <strong>tự động nộp bài thi hiện tại</strong> của bạn ngay lập tức.
+        </p>
+      </div>
+
+      <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 0.875rem 1rem; margin-bottom: 1.5rem; font-size: 0.8125rem; color: #92400E;">
+        💡 Bạn có chắc chắn muốn nộp bài thi và rời khỏi phòng thi không?
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-leave-exam" style="flex: 1; font-weight: 600;">Tiếp tục làm bài</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-leave-exam" style="flex: 1; font-weight: 700; background: #D97706; border-color: #D97706;">Xác nhận nộp & Rời đi</button>
+      </div>
+    </div>
+  </div>
 
   <footer style="margin-top: auto; border-top: 1px solid var(--border-color); background: white; padding: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
     © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
   </footer>
+
+  <!-- Script tương tác làm bài thi trực tuyến & Auto-save -->
+  <script>
+    (function initExamRoom() {
+      const urlParams = new URLSearchParams(window.location.search);
+      // Mặc định nạp đề thi số 11 (bài thi tự luận mới cho user 8) nếu không truyền examId
+      const examId = parseInt(urlParams.get('examId') || '11', 10);
+
+      let examSession = null;
+      let currentIndex = 0;
+      let timerInterval = null;
+      let saveDebounceTimer = null;
+      let isSavingAnswer = false;
+
+      // DOM Elements
+      const loadingEl = document.getElementById('exam-loading-overlay');
+      const errorEl = document.getElementById('exam-error-container');
+      const errorTitle = document.getElementById('exam-error-title');
+      const errorDesc = document.getElementById('exam-error-desc');
+      const contentEl = document.getElementById('exam-content-area');
+
+      const titleDisplay = document.getElementById('exam-title-display');
+      const attemptPill = document.getElementById('exam-attempt-pill');
+      const progressCounter = document.getElementById('exam-progress-counter');
+      const timerClock = document.getElementById('exam-timer-clock');
+      const timerBox = document.getElementById('exam-timer-box');
+
+      const qHeaderText = document.getElementById('question-header-text');
+      const qTypeBadge = document.getElementById('question-type-badge');
+      const qPointsBadge = document.getElementById('question-points-badge');
+      const qPromptText = document.getElementById('question-prompt-text');
+      const qAnswerArea = document.getElementById('question-answer-area');
+      const autoSaveStatus = document.getElementById('auto-save-status');
+
+      const btnPrev = document.getElementById('btn-prev-question');
+      const btnNext = document.getElementById('btn-next-question');
+      const paletteGrid = document.getElementById('palette-grid');
+      const paletteSummary = document.getElementById('palette-summary-count');
+
+      const btnSubmitTop = document.getElementById('btn-submit-exam-top');
+      const btnSubmitPalette = document.getElementById('btn-submit-exam-palette');
+      const confirmModal = document.getElementById('submit-confirm-modal');
+      const btnCancelSubmit = document.getElementById('btn-cancel-submit');
+      const btnConfirmSubmit = document.getElementById('btn-confirm-submit');
+      const resultModal = document.getElementById('submit-result-modal');
+
+      // Ràng buộc phòng thi & Điều hướng khi rời trang
+      let isExamSubmitted = false;
+      let pendingLeaveUrl = null;
+      const leaveModal = document.getElementById('leave-exam-confirm-modal');
+      const btnCancelLeave = document.getElementById('btn-cancel-leave-exam');
+      const btnConfirmLeave = document.getElementById('btn-confirm-leave-exam');
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function (m) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+        });
+      }
+
+      // Khởi tạo phiên làm bài thi
+      async function startSession() {
+        try {
+          const res = await fetch(`/api/v1/student/exams/${examId}/start`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + (localStorage.getItem('student_token') || 'token-student-8')
+            }
+          });
+
+          const json = await res.json();
+          if (!json.success || !json.data) {
+            throw new Error(json.message || 'Không thể khởi tạo phiên thi');
+          }
+
+          examSession = json.data;
+          renderSessionData();
+        } catch (err) {
+          if (loadingEl) loadingEl.style.display = 'none';
+          if (errorEl) {
+            errorEl.style.display = 'block';
+            if (errorTitle) errorTitle.textContent = 'Lỗi truy cập phòng thi';
+            if (errorDesc) errorDesc.textContent = err.message || 'Bài thi không khả dụng hoặc đã hết lượt làm bài.';
+          }
+        }
+      }
+
+      function renderSessionData() {
+        if (!examSession) return;
+
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (contentEl) contentEl.style.display = 'block';
+
+        if (titleDisplay) titleDisplay.textContent = examSession.exam_title || 'Bài thi trực tuyến';
+        if (attemptPill) attemptPill.textContent = `Lần làm bài: ${examSession.attempt_number || 1}`;
+
+        // Đếm ngược thời gian
+        startCountdown(examSession.remaining_seconds || 3600);
+
+        // Hiển thị câu hỏi đầu tiên
+        currentIndex = 0;
+        renderCurrentQuestion();
+        renderPalette();
+        updateProgressCounters();
+
+        // Thiết lập bộ bảo vệ chống điều hướng trái phép khi đang thi
+        setupNavigationGuards();
+
+        if (urlParams.get('testLeaveModal') === '1') {
+          setTimeout(() => { if (leaveModal) leaveModal.style.display = 'flex'; }, 800);
+        }
+      }
+
+      function startCountdown(totalSeconds) {
+        let sec = totalSeconds;
+        function updateDisplay() {
+          if (sec < 0) {
+            sec = 0;
+            clearInterval(timerInterval);
+            alert('Hết thời gian làm bài thi! Hệ thống sẽ tự động nộp bài của bạn.');
+            submitExam(true);
+            return;
+          }
+          const m = Math.floor(sec / 60);
+          const s = sec % 60;
+          const fmt = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+          if (timerClock) timerClock.textContent = `⏱ ${fmt}`;
+
+          if (sec <= 300) {
+            timerBox?.classList.add('exam-timer-warning');
+          }
+          sec--;
+        }
+
+        updateDisplay();
+        timerInterval = setInterval(updateDisplay, 1000);
+      }
+
+      function getCurrentQuestion() {
+        if (!examSession || !examSession.questions) return null;
+        return examSession.questions[currentIndex];
+      }
+
+      function renderCurrentQuestion() {
+        const q = getCurrentQuestion();
+        if (!q) return;
+
+        const totalQ = examSession.questions.length;
+        if (qHeaderText) qHeaderText.textContent = `Câu hỏi số ${currentIndex + 1} trong ${totalQ}:`;
+        if (qPointsBadge) qPointsBadge.textContent = `${q.points || 1} điểm`;
+
+        const qType = (q.question_type || 'essay').toLowerCase();
+        if (qTypeBadge) {
+          if (qType === 'essay') {
+            qTypeBadge.textContent = 'Tự luận (Essay)';
+            qTypeBadge.style.background = '#E0E7FF';
+            qTypeBadge.style.color = '#3730A3';
+          } else if (qType === 'multiple_choice') {
+            qTypeBadge.textContent = 'Trắc nghiệm';
+            qTypeBadge.style.background = '#FEF3C7';
+            qTypeBadge.style.color = '#92400E';
+          } else {
+            qTypeBadge.textContent = 'Điền từ';
+            qTypeBadge.style.background = '#F3E8FF';
+            qTypeBadge.style.color = '#6B21A8';
+          }
+        }
+
+        if (qPromptText) qPromptText.textContent = q.question_text || '';
+
+        // Audio
+        const audioWrapper = document.getElementById('question-audio-wrapper');
+        const audioPlayer = document.getElementById('question-audio-player');
+        if (q.audio_url && audioWrapper && audioPlayer) {
+          audioPlayer.src = q.audio_url;
+          audioWrapper.style.display = 'block';
+        } else if (audioWrapper) {
+          audioWrapper.style.display = 'none';
+        }
+
+        // Render Answer Controls
+        renderAnswerControls(q);
+
+        // Update Prev / Next buttons
+        if (btnPrev) {
+          btnPrev.disabled = (currentIndex === 0);
+          btnPrev.style.opacity = (currentIndex === 0) ? '0.5' : '1';
+        }
+        if (btnNext) {
+          if (currentIndex === totalQ - 1) {
+            btnNext.textContent = 'Xem lại & Nộp bài ✓';
+          } else {
+            btnNext.textContent = 'Câu tiếp theo →';
+          }
+        }
+
+        // Highlight palette
+        updatePaletteActive();
+      }
+
+      function renderAnswerControls(q) {
+        if (!qAnswerArea) return;
+        const qType = (q.question_type || 'essay').toLowerCase();
+
+        if (qType === 'essay') {
+          const currentText = q.saved_text_answer || '';
+          const words = countWords(currentText);
+          const chars = currentText.length;
+
+          qAnswerArea.innerHTML = `
+            <div style="margin-top: 1rem;">
+              <label style="display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; color: #1E293B;">
+                Nội dung bài viết luận của bạn (Tiếng Anh):
+              </label>
+              <textarea id="essay-answer-textarea" class="form-control" rows="12" placeholder="Write your full essay answer here in English. Be clear, concise, and well-structured..." style="width: 100%; padding: 1rem; border-radius: 8px; border: 1.5px solid var(--border-color); font-family: inherit; font-size: 0.9375rem; line-height: 1.6; resize: vertical;">${escapeHtml(currentText)}</textarea>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 0.8125rem; color: var(--text-muted);">
+                <span id="essay-stats-text">Số từ: <strong>${words}</strong> từ | Số ký tự: <strong>${chars}</strong></span>
+                <span style="font-style: italic;">Hệ thống tự động lưu nháp khi nhập liệu</span>
+              </div>
+            </div>
+          `;
+
+          const textarea = document.getElementById('essay-answer-textarea');
+          if (textarea) {
+            textarea.addEventListener('input', function() {
+              const val = this.value;
+              q.saved_text_answer = val;
+              const w = countWords(val);
+              const c = val.length;
+              const statsEl = document.getElementById('essay-stats-text');
+              if (statsEl) statsEl.innerHTML = `Số từ: <strong>${w}</strong> từ | Số ký tự: <strong>${c}</strong>`;
+
+              renderPalette();
+              updateProgressCounters();
+              triggerAutoSave(q.question_id, null, val);
+            });
+
+            textarea.addEventListener('blur', function() {
+              triggerAutoSave(q.question_id, null, this.value, true);
+            });
+          }
+
+        } else if (qType === 'multiple_choice') {
+          const options = q.options || [];
+          const selectedId = q.saved_selected_option_id;
+
+          let html = `<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 1rem;">`;
+          const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+          options.forEach((opt, idx) => {
+            const letter = letters[idx] || (idx + 1);
+            const isChecked = (opt.id === selectedId);
+            html += `
+              <label class="option-label ${isChecked ? 'selected' : ''}" data-opt-id="${opt.id}">
+                <input type="radio" name="option_choice" value="${opt.id}" ${isChecked ? 'checked' : ''} style="cursor: pointer;">
+                <span style="font-weight: 700; width: 20px;">${letter}.</span>
+                <span style="flex: 1;">${escapeHtml(opt.option_text)}</span>
+              </label>
+            `;
+          });
+          html += `</div>`;
+          qAnswerArea.innerHTML = html;
+
+          qAnswerArea.querySelectorAll('.option-label').forEach(label => {
+            label.addEventListener('click', function() {
+              const optId = parseInt(this.getAttribute('data-opt-id'), 10);
+              q.saved_selected_option_id = optId;
+
+              qAnswerArea.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+              this.classList.add('selected');
+              const radio = this.querySelector('input[type="radio"]');
+              if (radio) radio.checked = true;
+
+              renderPalette();
+              updateProgressCounters();
+              triggerAutoSave(q.question_id, optId, null, true);
+            });
+          });
+
+        } else if (qType === 'fill_blank') {
+          const currentText = q.saved_text_answer || '';
+          qAnswerArea.innerHTML = `
+            <div style="margin-top: 1rem;">
+              <label style="display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; color: #1E293B;">
+                Đáp án của bạn:
+              </label>
+              <input type="text" id="fill-blank-input" class="form-control" value="${escapeHtml(currentText)}" placeholder="Nhập từ hoặc cụm từ phù hợp..." style="padding: 10px 14px; border-radius: 8px; font-size: 0.9375rem; width: 100%; max-width: 450px;">
+            </div>
+          `;
+
+          const input = document.getElementById('fill-blank-input');
+          if (input) {
+            input.addEventListener('input', function() {
+              const val = this.value;
+              q.saved_text_answer = val;
+              renderPalette();
+              updateProgressCounters();
+              triggerAutoSave(q.question_id, null, val);
+            });
+            input.addEventListener('blur', function() {
+              triggerAutoSave(q.question_id, null, this.value, true);
+            });
+          }
+        }
+      }
+
+      function countWords(str) {
+        if (!str) return 0;
+        const matches = str.trim().match(/\S+/g);
+        return matches ? matches.length : 0;
+      }
+
+      function triggerAutoSave(questionId, selectedOptionId, textAnswer, immediate = false) {
+        if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+
+        if (autoSaveStatus) {
+          autoSaveStatus.innerHTML = '<span style="color: #D97706;">⏳ Đang lưu nháp...</span>';
+        }
+
+        const doSave = async () => {
+          if (!examSession) return;
+          try {
+            isSavingAnswer = true;
+            await fetch(`/api/v1/student/user-exams/${examSession.user_exam_id}/answers`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + (localStorage.getItem('student_token') || 'token-student-8')
+              },
+              body: JSON.stringify({
+                question_id: questionId,
+                selected_option_id: selectedOptionId,
+                text_answer: textAnswer
+              })
+            });
+            if (autoSaveStatus) {
+              const now = new Date();
+              const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              autoSaveStatus.innerHTML = `<span style="color: var(--success-main);">✓ Đã lưu nháp (${timeStr})</span>`;
+            }
+          } catch (e) {
+            if (autoSaveStatus) {
+              autoSaveStatus.innerHTML = '<span style="color: var(--danger-500);">⚠️ Lưu nháp lỗi</span>';
+            }
+          } finally {
+            isSavingAnswer = false;
+          }
+        };
+
+        if (immediate) {
+          doSave();
+        } else {
+          saveDebounceTimer = setTimeout(doSave, 800);
+        }
+      }
+
+      function hasAnswered(q) {
+        if (!q) return false;
+        if (q.question_type === 'multiple_choice') {
+          return q.saved_selected_option_id != null;
+        }
+        return (q.saved_text_answer && q.saved_text_answer.trim().length > 0);
+      }
+
+      function renderPalette() {
+        if (!paletteGrid || !examSession || !examSession.questions) return;
+        paletteGrid.innerHTML = '';
+
+        examSession.questions.forEach((q, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'palette-btn';
+          btn.textContent = (idx + 1);
+
+          if (hasAnswered(q)) {
+            btn.classList.add('answered');
+          }
+          if (idx === currentIndex) {
+            btn.classList.add('active');
+          }
+
+          btn.addEventListener('click', () => {
+            // Lưu nháp câu hiện tại trước khi chuyển câu
+            flushCurrentAnswer();
+            currentIndex = idx;
+            renderCurrentQuestion();
+          });
+
+          paletteGrid.appendChild(btn);
+        });
+      }
+
+      function updatePaletteActive() {
+        if (!paletteGrid) return;
+        const btns = paletteGrid.querySelectorAll('.palette-btn');
+        btns.forEach((b, idx) => {
+          b.classList.toggle('active', idx === currentIndex);
+        });
+      }
+
+      function updateProgressCounters() {
+        if (!examSession || !examSession.questions) return;
+        const total = examSession.questions.length;
+        const answered = examSession.questions.filter(hasAnswered).length;
+
+        if (progressCounter) progressCounter.textContent = `Đã làm: ${answered} / ${total} câu`;
+        if (paletteSummary) paletteSummary.textContent = `${answered} / ${total} câu`;
+      }
+
+      function flushCurrentAnswer() {
+        const q = getCurrentQuestion();
+        if (!q) return;
+        const qType = (q.question_type || 'essay').toLowerCase();
+        if (qType === 'essay') {
+          const ta = document.getElementById('essay-answer-textarea');
+          if (ta) triggerAutoSave(q.question_id, null, ta.value, true);
+        } else if (qType === 'fill_blank') {
+          const inp = document.getElementById('fill-blank-input');
+          if (inp) triggerAutoSave(q.question_id, null, inp.value, true);
+        }
+      }
+
+      // Prev / Next Question Actions
+      if (btnPrev) {
+        btnPrev.addEventListener('click', () => {
+          if (currentIndex > 0) {
+            flushCurrentAnswer();
+            currentIndex--;
+            renderCurrentQuestion();
+          }
+        });
+      }
+
+      if (btnNext) {
+        btnNext.addEventListener('click', () => {
+          if (!examSession || !examSession.questions) return;
+          flushCurrentAnswer();
+          if (currentIndex < examSession.questions.length - 1) {
+            currentIndex++;
+            renderCurrentQuestion();
+          } else {
+            // Đang ở câu cuối -> Mở hộp thoại nộp bài
+            openSubmitModal();
+          }
+        });
+      }
+
+      // Submit Confirmation Dialog
+      function openSubmitModal() {
+        flushCurrentAnswer();
+        if (!examSession || !examSession.questions) return;
+        const total = examSession.questions.length;
+        const answered = examSession.questions.filter(hasAnswered).length;
+        const unanswered = total - answered;
+
+        const summaryEl = document.getElementById('submit-modal-summary');
+        const ansEl = document.getElementById('modal-answered-count');
+        const unansEl = document.getElementById('modal-unanswered-count');
+
+        if (summaryEl) {
+          summaryEl.textContent = `Bạn đã hoàn thành ${answered} / ${total} câu hỏi. Sau khi nộp, bạn sẽ không thể chỉnh sửa đáp án đã chọn.`;
+        }
+        if (ansEl) ansEl.textContent = `${answered} câu`;
+        if (unansEl) unansEl.textContent = `${unanswered} câu`;
+
+        if (confirmModal) confirmModal.style.display = 'flex';
+      }
+
+      if (btnSubmitTop) btnSubmitTop.addEventListener('click', openSubmitModal);
+      if (btnSubmitPalette) btnSubmitPalette.addEventListener('click', openSubmitModal);
+
+      if (btnCancelSubmit) {
+        btnCancelSubmit.addEventListener('click', () => {
+          if (confirmModal) confirmModal.style.display = 'none';
+        });
+      }
+
+      if (btnConfirmSubmit) {
+        btnConfirmSubmit.addEventListener('click', () => {
+          submitExam(false);
+        });
+      }
+
+      // Bộ bảo vệ điều hướng: Chặn rời trang khi đang thi và yêu cầu xác nhận nộp bài
+      let guardsInitialized = false;
+      function setupNavigationGuards() {
+        if (guardsInitialized) return;
+        guardsInitialized = true;
+
+        // 1. Chặn click vào mọi liên kết ngoài khi đang thi
+        document.addEventListener('click', function (e) {
+          if (isExamSubmitted || !examSession) return;
+
+          const anchor = e.target.closest('a');
+          if (!anchor) return;
+
+          // Bỏ qua nếu link nằm trong modal kết quả sau khi nộp
+          if (anchor.closest('#submit-result-modal')) return;
+
+          const href = anchor.getAttribute('href');
+          if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+          try {
+            const targetUrl = new URL(anchor.href, window.location.href);
+            if (targetUrl.href !== window.location.href) {
+              e.preventDefault();
+              e.stopPropagation();
+              pendingLeaveUrl = targetUrl.href;
+              if (leaveModal) leaveModal.style.display = 'flex';
+            }
+          } catch (err) {}
+        }, true);
+
+        // 2. Nút tiếp tục làm bài (Hủy rời phòng thi)
+        if (btnCancelLeave) {
+          btnCancelLeave.addEventListener('click', function () {
+            pendingLeaveUrl = null;
+            if (leaveModal) leaveModal.style.display = 'none';
+          });
+        }
+
+        // 3. Nút xác nhận nộp & rời phòng thi
+        if (btnConfirmLeave) {
+          btnConfirmLeave.addEventListener('click', async function () {
+            if (btnConfirmLeave) {
+              btnConfirmLeave.disabled = true;
+              btnConfirmLeave.textContent = 'Đang nộp bài...';
+            }
+            flushCurrentAnswer();
+            await submitExam(false, pendingLeaveUrl || 'exams.html');
+          });
+        }
+
+        // 4. Bắt phím quay lại / lịch sử trình duyệt (popstate)
+        window.history.pushState({ inExam: true }, '');
+        window.addEventListener('popstate', function () {
+          if (!isExamSubmitted && examSession) {
+            window.history.pushState({ inExam: true }, '');
+            pendingLeaveUrl = 'exams.html';
+            if (leaveModal) leaveModal.style.display = 'flex';
+          }
+        });
+
+        // 5. Cảnh báo beforeunload khi reload hoặc đóng tab
+        window.addEventListener('beforeunload', function (e) {
+          if (!isExamSubmitted && examSession) {
+            e.preventDefault();
+            e.returnValue = 'Bạn đang trong quá trình làm bài thi. Rời khỏi trang sẽ làm nộp bài thi của bạn!';
+            return e.returnValue;
+          }
+        });
+      }
+
+      async function submitExam(isAutoExpired = false, redirectUrl = null) {
+        if (!examSession) return;
+        if (confirmModal) confirmModal.style.display = 'none';
+        if (leaveModal) leaveModal.style.display = 'none';
+
+        if (btnConfirmSubmit) {
+          btnConfirmSubmit.disabled = true;
+          btnConfirmSubmit.textContent = 'Đang nộp bài...';
+        }
+
+        try {
+          if (timerInterval) clearInterval(timerInterval);
+
+          const res = await fetch(`/api/v1/student/user-exams/${examSession.user_exam_id}/submit`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + (localStorage.getItem('student_token') || 'token-student-8')
+            }
+          });
+
+          const json = await res.json();
+          if (!json.success || !json.data) {
+            throw new Error(json.message || 'Không thể nộp bài thi');
+          }
+
+          isExamSubmitted = true;
+          const result = json.data;
+
+          if (redirectUrl) {
+            window.location.href = redirectUrl;
+            return;
+          }
+
+          showResultModal(result);
+        } catch (err) {
+          alert('Có lỗi khi nộp bài: ' + (err.message || 'Vui lòng thử lại.'));
+          if (btnConfirmSubmit) {
+            btnConfirmSubmit.disabled = false;
+            btnConfirmSubmit.textContent = 'Xác nhận nộp bài';
+          }
+          if (btnConfirmLeave) {
+            btnConfirmLeave.disabled = false;
+            btnConfirmLeave.textContent = 'Xác nhận nộp & Rời đi';
+          }
+        }
+      }
+
+      function showResultModal(result) {
+        const msgEl = document.getElementById('submit-result-message');
+        const statusBadge = document.getElementById('modal-result-status-badge');
+        const scoreRow = document.getElementById('modal-result-score-row');
+        const scoreText = document.getElementById('modal-result-score-text');
+        const detailLink = document.getElementById('modal-result-detail-link');
+
+        if (detailLink) {
+          detailLink.href = `result-detail.html?userExamId=${result.user_exam_id}`;
+        }
+
+        const isPending = (result.grading_status === 'pending_review' || result.pending_review_questions > 0);
+
+        if (isPending) {
+          if (msgEl) {
+            msgEl.textContent = 'Bài thi của bạn đã được nộp thành công! Do bài thi có phần tự luận (Essay), kết quả chính thức và nhận xét chi tiết sẽ được giảng viên chấm và công bố sau.';
+          }
+          if (statusBadge) {
+            statusBadge.textContent = 'Chờ giảng viên chấm điểm';
+            statusBadge.style.background = '#FEF3C7';
+            statusBadge.style.color = '#92400E';
+          }
+          if (scoreText) scoreText.textContent = 'Đang chờ chấm';
+        } else {
+          if (msgEl) {
+            msgEl.textContent = `Bạn đã hoàn thành bài thi với điểm số ${result.total_score} / 10 điểm. Đạt ${result.correct_answers_count} / ${result.total_questions} câu trả lời đúng.`;
+          }
+          if (statusBadge) {
+            const isPassed = (result.status === 'passed');
+            statusBadge.textContent = isPassed ? 'Đạt chuẩn' : 'Chưa đạt';
+            statusBadge.style.background = isPassed ? '#ECFDF5' : '#FEE2E2';
+            statusBadge.style.color = isPassed ? '#065F46' : '#991B1B';
+          }
+          if (scoreText) {
+            scoreText.textContent = `${result.total_score} / 10`;
+          }
+        }
+
+        if (resultModal) resultModal.style.display = 'flex';
+      }
+
+      // Khởi động
+      startSession();
+    })();
+  </script>
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>

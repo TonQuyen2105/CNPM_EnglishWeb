@@ -6,7 +6,12 @@ namespace CNPM_EnglishLearning.Services.Implementations
 {
     public class AuthService : IAuthService
     {
-        private readonly ApplicationDbContext _context = new();
+        private readonly ApplicationDbContext _context;
+
+        public AuthService(ApplicationDbContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
 
         public User? Authenticate(string email, string password)
         {
@@ -27,7 +32,12 @@ namespace CNPM_EnglishLearning.Services.Implementations
 
     public class CourseService : ICourseService
     {
-        private readonly ApplicationDbContext _context = new();
+        private readonly ApplicationDbContext _context;
+
+        public CourseService(ApplicationDbContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
 
         public List<Course> GetAllCourses() => _context.Courses.Where(c => c.IsPublished).ToList();
 
@@ -39,7 +49,12 @@ namespace CNPM_EnglishLearning.Services.Implementations
 
     public class ExamService : IExamService
     {
-        private readonly ApplicationDbContext _context = new();
+        private readonly ApplicationDbContext _context;
+
+        public ExamService(ApplicationDbContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
 
         public List<Exam> GetAvailableExams() => _context.Exams.Where(e => e.IsPublished).ToList();
 

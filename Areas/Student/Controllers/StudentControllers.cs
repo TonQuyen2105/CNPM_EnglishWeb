@@ -39,7 +39,12 @@ namespace CNPM_EnglishLearning.Areas.Student.Controllers
     [Area("Student")]
     public class FlashcardsController : Controller
     {
-        private readonly ApplicationDbContext _context = new();
+        private readonly ApplicationDbContext _context;
+
+        public FlashcardsController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public IActionResult Index() => View("~/Areas/Student/Views/flashcards.html", _context.Flashcards);
     }

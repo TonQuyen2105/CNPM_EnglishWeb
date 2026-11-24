@@ -80,20 +80,28 @@ namespace CNPM_EnglishLearning.Data
                 new ClassTeacher { Id = 3, ClassId = 3, TeacherId = 2, Role = "main", AssignedAt = pastMonth }
             });
 
-            // 9. class_schedules
+            // 9. class_schedules (ISO: 1=Thứ 2, 3=Thứ 4, 5=Thứ 6 -> EF Core HasConversion lưu DB 2, 4, 6)
             context.ClassSchedules.AddRange(new List<ClassSchedule>
             {
-                new ClassSchedule { Id = 1, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 2, CreatedAt = pastMonth },
-                new ClassSchedule { Id = 2, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 4, CreatedAt = pastMonth },
-                new ClassSchedule { Id = 3, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 6, CreatedAt = pastMonth }
+                new ClassSchedule { Id = 1, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 1, CreatedAt = pastMonth },
+                new ClassSchedule { Id = 2, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 3, CreatedAt = pastMonth },
+                new ClassSchedule { Id = 3, ClassId = 1, ClassroomId = 1, TimeSlotId = 2, DayOfWeek = 5, CreatedAt = pastMonth }
             });
 
-            // 10. enrollments (LƯU Ý: Không có bảng thanh toán, doanh thu ước tính lấy từ price của lớp)
+            // 10. enrollments
             context.Enrollments.AddRange(new List<Enrollment>
             {
                 new Enrollment { Id = 1, UserId = 5, ClassId = 1, EnrolledAt = now.AddDays(-18), Status = "active" },
                 new Enrollment { Id = 2, UserId = 6, ClassId = 2, EnrolledAt = now.AddDays(-14), Status = "active" },
                 new Enrollment { Id = 3, UserId = 7, ClassId = 3, EnrolledAt = now.AddDays(-2), Status = "active" }
+            });
+
+            // 11. payments: đồng bộ giao dịch thanh toán theo bảng public.payments
+            context.Payments.AddRange(new List<Payment>
+            {
+                new Payment { Id = 1, UserId = 5, ClassId = 1, EnrollmentId = 1, TransactionCode = "PAY-INIT-0001", Amount = 4500000m, PaymentMethod = "bank_transfer", Status = "completed", PaidAt = now.AddDays(-18), CreatedAt = now.AddDays(-18), UpdatedAt = now.AddDays(-18) },
+                new Payment { Id = 2, UserId = 6, ClassId = 2, EnrollmentId = 2, TransactionCode = "PAY-INIT-0002", Amount = 5200000m, PaymentMethod = "vnpay", Status = "completed", PaidAt = now.AddDays(-14), CreatedAt = now.AddDays(-14), UpdatedAt = now.AddDays(-14) },
+                new Payment { Id = 3, UserId = 7, ClassId = 3, EnrollmentId = 3, TransactionCode = "PAY-INIT-0003", Amount = 3800000m, PaymentMethod = "momo", Status = "completed", PaidAt = now.AddDays(-2), CreatedAt = now.AddDays(-2), UpdatedAt = now.AddDays(-2) }
             });
 
             // 11. flashcards

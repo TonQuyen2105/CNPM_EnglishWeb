@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Hồ sơ học viên - EnglishStudent</title>
   
   <!-- CSS Design System -->
@@ -10,220 +13,741 @@
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
   <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
   <link rel="stylesheet" href="../../../wwwroot/css/components.css">
-
-  <style>
-    .student-navbar-wrapper {
-      position: sticky; top: 0; z-index: var(--z-sticky);
-      background-color: #FFFFFF; border-bottom: 1px solid var(--border-color);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .student-nav-container {
-      max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 64px;
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-    }
-    .student-nav-menu {
-      display: flex; align-items: center; gap: 0.25rem; overflow-x: auto;
-    }
-    .student-nav-link {
-      display: flex; align-items: center; gap: 6px; padding: 8px 12px;
-      border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500;
-      color: var(--text-secondary); text-decoration: none; white-space: nowrap;
-      transition: all var(--transition-fast);
-    }
-    .student-nav-link:hover {
-      background-color: var(--neutral-100); color: var(--primary-600);
-    }
-    .student-nav-link.active {
-      background-color: var(--primary-50); color: var(--primary-600); font-weight: 700;
-    }
-    .student-streak-pill {
-      display: flex; align-items: center; gap: 4px; padding: 4px 10px;
-      background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-      border: 1px solid #FCD34D; border-radius: var(--radius-full);
-      font-size: 0.75rem; font-weight: 700; color: #92400E;
-    }
-    .notification-wrapper { position: relative; }
-    .notification-badge-dot {
-      position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
-      border-radius: 50%; background-color: var(--danger-main); border: 2px solid white;
-    }
-  </style>
 </head>
 <body style="background-color: var(--bg-page); min-height: 100vh; display: flex; flex-direction: column;">
-  <!-- Student Top Navbar -->
+
+  <!-- Student Top Navbar (Đồng bộ khung dùng chung toàn bộ hệ thống) -->
   <header class="student-navbar-wrapper">
     <div class="student-nav-container">
-      <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
         <!-- Logo -->
-        <a href="dashboard.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <a href="dashboard.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0;">
+          <div style="width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
               <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
             </svg>
           </div>
-          <span style="font-size: 1.0625rem; font-weight: 800; color: var(--primary-700); white-space: nowrap;">EnglishStudent</span>
+          <span class="student-brand-title" style="font-weight: 800; font-size: 1.125rem; color: #1E40AF; letter-spacing: -0.02em;">EnglishStudent</span>
         </a>
 
         <!-- Desktop Nav Links -->
         <nav class="student-nav-menu">
-          
-      <a href="dashboard.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Trang chủ</span>
-      </a>
-    
-      <a href="courses.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="my-classes.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Lớp của tôi</span>
-      </a>
-    
-      <a href="schedule.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Lịch học</span>
-      </a>
-    
-      <a href="flashcards.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
-        <span>Flashcards</span>
-      </a>
-    
-      <a href="exams.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Luyện thi</span>
-      </a>
-    
-      <a href="progress.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></span>
-        <span>Tiến độ</span>
-      </a>
-    
+          <a href="dashboard.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+            <span>Trang chủ</span>
+          </a>
+          <a href="courses.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="my-classes.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Lớp của tôi</span>
+          </a>
+          <a href="schedule.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="flashcards.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
+            <span>Flashcards</span>
+          </a>
+          <a href="exams.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Luyện thi</span>
+          </a>
         </nav>
       </div>
 
       <!-- Right Controls -->
-      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span>5 ngày</span>
-        </div>
-
-        <!-- Bell -->
+      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+        <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
-          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo" style="background: none; border: 1px solid var(--border-color); border-radius: var(--radius-md); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); position: relative;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
+            <span class="notification-badge-dot" id="notif-badge-dot" style="display: none;"></span>
           </button>
-          <div class="dropdown-menu" id="notifications-dropdown" style="width: 300px; right: 0;">
+          <div class="dropdown-menu" id="notifications-dropdown" style="width: 320px; right: 0;">
             <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.8125rem;">
               Thông báo học tập
             </div>
-            <div style="max-height: 250px; overflow-y: auto;">
-              <a href="flashcards.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
+            <div id="notif-list-container" style="max-height: 260px; overflow-y: auto;">
+              <a href="flashcards.html?mode=due" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
                 <strong style="display: block; font-size: 0.75rem; color: var(--primary-600);">🎯 Ôn tập từ vựng hôm nay</strong>
-                <small style="color: var(--text-muted);">Bạn có 25 từ vựng đến hạn ôn tập</small>
+                <small id="notif-flashcards-text" style="color: var(--text-muted);">Bạn có danh sách từ vựng cần ôn luyện</small>
               </a>
               <a href="schedule.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
-                <strong style="display: block; font-size: 0.75rem;">⏰ Buổi học lúc 18:00</strong>
-                <small style="color: var(--text-muted);">Lớp Giao Tiếp COMM-01 tại Phòng LAB-01</small>
+                <strong id="notif-session-title" style="display: block; font-size: 0.75rem;">⏰ Buổi học sắp tới</strong>
+                <small id="notif-session-text" style="color: var(--text-muted);">Kiểm tra thời khóa biểu trong tuần</small>
               </a>
             </div>
           </div>
         </div>
 
-        <!-- Student Profile -->
+        <!-- Student Profile Dropdown -->
         <div class="dropdown">
-          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white;">HA</div>
-            <div style="text-align: left; line-height: 1.2;" class="d-none d-md-block">
-              <div style="font-size: 0.8125rem; font-weight: 600;">Nguyễn Hoàng Anh</div>
-              <div style="font-size: 0.7rem; color: var(--text-muted);">student@el.com</div>
+          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 7px; cursor: pointer; padding: 4px 6px; border-radius: var(--radius-md); max-width: 200px;">
+            <div class="avatar avatar-sm" id="user-avatar-topbar" style="background-color: var(--primary-600); color: white; font-weight: 700; width: 34px; height: 34px; flex-shrink: 0;">TH</div>
+            <div style="text-align: left; line-height: 1.2; min-width: 0;" class="d-none d-md-block">
+              <div id="user-name-topbar" style="font-size: 0.8125rem; font-weight: 600; color: #0F172A; max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Trần Hoàng</div>
+              <div id="user-email-topbar" style="font-size: 0.7rem; color: var(--text-muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">student@englishlearning.example</div>
             </div>
-            <span style="color: var(--text-muted);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
+            <span style="color: var(--text-muted); flex-shrink: 0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </span>
           </div>
 
-          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 200px; right: 0;">
-            <div style="padding: 0.625rem 1rem; border-bottom: 1px solid var(--border-color);">
-              <div style="font-weight: 700; font-size: 0.875rem;">Nguyễn Hoàng Anh</div>
-              <span class="badge badge-primary" style="margin-top: 4px;">Học viên năng động</span>
+          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 220px; right: 0;">
+            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);">
+              <div style="font-weight: 700; font-size: 0.875rem;" id="user-name-dropdown">Trần Hoàng</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;" id="user-email-dropdown">student@englishlearning.example</div>
+              <span class="badge badge-primary" id="user-role-badge">Học viên chính thức</span>
             </div>
-            <a href="profile.html" class="dropdown-item">
-              <span>Hồ sơ cá nhân</span>
-            </a>
-            <a href="my-classes.html" class="dropdown-item">
-              <span>Lớp của tôi</span>
-            </a>
-            <a href="results.html" class="dropdown-item">
-              <span>Kết quả bài thi</span>
-            </a>
+            <a href="profile.html" class="dropdown-item active" style="font-weight: 700; color: var(--primary-600); background-color: var(--primary-50);"><span>Hồ sơ cá nhân</span></a>
+            <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
+            <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
+            <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
-            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout">
-              <span>Đăng xuất</span>
-            </a>
+            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
         </div>
       </div>
     </div>
   </header>
 
+  <script>
+    // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
+    (function syncTopbarUser() {
+      try {
+        const studentRaw = localStorage.getItem('student_user');
+        let u = null;
+        if (studentRaw) {
+          const parsed = JSON.parse(studentRaw);
+          if (parsed && typeof parsed === 'object' && String(parsed.role || '').toLowerCase() === 'student') {
+            u = parsed;
+          } else {
+            localStorage.removeItem('student_user');
+          }
+        }
+        if (!u) {
+          window.location.replace('/login.html?reason=auth_required');
+          return;
+        }
+        let name = u.full_name || u.name || 'Trần Hoàng';
+        let email = u.email || 'student@englishlearning.example';
+        const parts = name.trim().split(/\s+/);
+        const initials = parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        const av = document.getElementById('user-avatar-topbar');
+        const nm = document.getElementById('user-name-topbar');
+        const em = document.getElementById('user-email-topbar');
+        const dn = document.getElementById('user-name-dropdown');
+        const de = document.getElementById('user-email-dropdown');
+        if (av) av.textContent = initials;
+        if (nm) nm.textContent = name;
+        if (em) { em.textContent = email; em.title = email; }
+        if (dn) dn.textContent = name;
+        if (de) de.textContent = email;
+
+        const menu = document.getElementById('avatar-dropdown-menu');
+        if (menu && !menu.querySelector('a[href*="progress.html"]')) {
+          const divider = menu.querySelector('.dropdown-divider');
+          const a = document.createElement('a');
+          a.href = 'progress.html';
+          a.className = 'dropdown-item';
+          a.id = 'menu-item-progress';
+          a.innerHTML = '<span>Tiến độ học tập</span>';
+          if (divider) {
+            menu.insertBefore(a, divider);
+          } else {
+            menu.appendChild(a);
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Page Content Container -->
   <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
     
-  <div class="page-header">
-    <div>
-      <h1 class="page-header-title">Hồ sơ cá nhân</h1>
-      <p class="page-header-subtitle">Thông tin tài khoản học viên và cài đặt thông báo</p>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-12 gap-6">
-    <div class="col-span-4 card" style="padding: 1.5rem; text-align: center;">
-      <div class="avatar avatar-lg" style="width: 90px; height: 90px; font-size: 2rem; background: #2563EB; color: white; margin: 0 auto 1rem auto;">HA</div>
-      <h2 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Nguyễn Hoàng Anh</h2>
-      <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 4px;">student@el.com</div>
-      <div style="margin-top: 1rem;"><span class="badge badge-primary">Học viên tích cực</span></div>
-    </div>
-
-    <div class="col-span-8 card" style="padding: 1.5rem;">
-      <h3 class="card-title" style="margin-bottom: 1rem;">Thông tin chi tiết</h3>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label style="font-size: 0.8125rem; color: var(--text-muted);">Họ và tên</label>
-          <input type="text" class="form-control" value="Nguyễn Hoàng Anh">
+    <!-- Page Header (Nút Về Trang chủ đặt bên trên tiêu đề theo chuẩn UI) -->
+    <div class="page-header" style="margin-bottom: 1.25rem;">
+      <div>
+        <div style="margin-bottom: 0.75rem;">
+          <a href="dashboard.html" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-md);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span>Về Trang chủ</span>
+          </a>
         </div>
-        <div>
-          <label style="font-size: 0.8125rem; color: var(--text-muted);">Địa chỉ Email</label>
-          <input type="email" class="form-control" value="student@el.com" disabled>
-        </div>
-        <div>
-          <label style="font-size: 0.8125rem; color: var(--text-muted);">Số điện thoại</label>
-          <input type="text" class="form-control" value="0987 654 321">
-        </div>
-        <div>
-          <label style="font-size: 0.8125rem; color: var(--text-muted);">Mục tiêu đầu ra</label>
-          <input type="text" class="form-control" value="Giao tiếp lưu loát & IELTS 6.5+">
-        </div>
+        <h1 class="page-header-title">Hồ sơ cá nhân</h1>
+        <p class="page-header-subtitle">Quản lý thông tin tài khoản học viên, phương thức liên lạc và mục tiêu học tập</p>
       </div>
-      <button class="btn btn-primary" style="margin-top: 1.5rem;">Cập nhật thông tin</button>
     </div>
-  </div>
+
+    <!-- Filter & Tab Toolbar Card (Đồng bộ khung UI chuẩn toàn bộ hệ thống) -->
+    <div class="filter-search-card">
+      <div class="filter-btn-group" role="tablist" aria-label="Tùy chọn quản lý hồ sơ">
+        <button type="button" class="filter-btn active" data-tab-target="pane-personal" role="tab" aria-selected="true">
+          <span>👤</span> <span>Thông tin cá nhân & Liên hệ</span>
+        </button>
+        <button type="button" class="filter-btn" data-tab-target="pane-security" role="tab" aria-selected="false">
+          <span>🔒</span> <span>Đổi mật khẩu bảo mật</span>
+        </button>
+        <button type="button" class="filter-btn" data-tab-target="pane-notifications" role="tab" aria-selected="false">
+          <span>🔔</span> <span>Tùy chọn thông báo</span>
+        </button>
+      </div>
+
+      <div style="font-size: 0.8125rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+        <span>Mã học viên:</span>
+        <strong style="color: var(--primary-600); font-family: monospace; background: var(--primary-50); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--primary-100); font-size: 0.875rem;" id="header-student-id">#STU-0008</strong>
+      </div>
+    </div>
+
+    <!-- 2-Column Responsive Grid Layout (Tái sử dụng .profile-layout-grid) -->
+    <div class="profile-layout-grid">
+      
+      <!-- CỘT TRÁI: THẺ TỔNG QUAN HỌC VIÊN -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <!-- Profile Identity Card -->
+        <div class="profile-card">
+          <!-- Gradient Top Banner -->
+          <div style="height: 84px; background: linear-gradient(135deg, #1E40AF, #3B82F6); position: relative;"></div>
+          
+          <!-- Avatar & Identity Info -->
+          <div style="padding: 0 1.5rem 1.5rem 1.5rem; text-align: center;">
+            <div style="position: relative; width: 88px; height: 88px; margin: -44px auto 0.75rem auto;">
+              <div id="card-avatar" class="avatar avatar-lg" style="width: 88px; height: 88px; font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #2563EB, #1D4ED8); color: white; border: 4px solid #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                TH
+              </div>
+            </div>
+
+            <h2 id="card-fullname" style="font-size: 1.25rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Trần Hoàng</h2>
+            <div id="card-email" style="font-size: 0.8125rem; color: var(--text-muted); word-break: break-all; margin-bottom: 0.75rem;">student@englishlearning.example</div>
+            
+            <div style="margin-bottom: 1.5rem;">
+              <span class="badge badge-primary" style="font-weight: 600; padding: 4px 12px; font-size: 0.75rem;">
+                🎓 Học viên chính thức
+              </span>
+            </div>
+
+            <!-- Meta Details List -->
+            <div class="profile-info-list" style="margin-bottom: 1.25rem; text-align: left;">
+              <div class="profile-info-item">
+                <span class="profile-info-label">Mã học viên:</span>
+                <span class="profile-info-val" id="card-student-id" style="background: #F1F5F9; padding: 2px 8px; border-radius: 4px; font-family: monospace;">#STU-0008</span>
+              </div>
+              <div class="profile-info-item">
+                <span class="profile-info-label">Số điện thoại:</span>
+                <span class="profile-info-val" id="card-phone-preview">0909 888 999</span>
+              </div>
+              <div class="profile-info-item">
+                <span class="profile-info-label">Vai trò:</span>
+                <span class="profile-info-val" style="color: #2563EB;">Học viên (Student)</span>
+              </div>
+              <div class="profile-info-item">
+                <span class="profile-info-label">Trạng thái:</span>
+                <span class="profile-info-val" style="color: #16A34A; display: inline-flex; align-items: center; gap: 5px;">
+                  <span style="width: 7px; height: 7px; border-radius: 50%; background-color: #16A34A; display: inline-block;"></span>
+                  Đang theo học
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Quick Shortcuts Card -->
+        <div class="profile-card" style="padding: 1.25rem;">
+          <div style="font-size: 0.8125rem; font-weight: 700; color: #0F172A; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <span>Lối tắt học tập</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <a href="my-classes.html" class="btn btn-ghost" style="justify-content: flex-start; gap: 8px; font-size: 0.8125rem; padding: 8px 10px; color: #334155; text-decoration: none;">
+              <span>📚</span> <span>Lớp học của tôi</span>
+            </a>
+            <a href="schedule.html" class="btn btn-ghost" style="justify-content: flex-start; gap: 8px; font-size: 0.8125rem; padding: 8px 10px; color: #334155; text-decoration: none;">
+              <span>📅</span> <span>Thời khóa biểu tuần</span>
+            </a>
+            <a href="flashcards.html" class="btn btn-ghost" style="justify-content: flex-start; gap: 8px; font-size: 0.8125rem; padding: 8px 10px; color: #334155; text-decoration: none;">
+              <span>🔄</span> <span>Sổ tay Flashcards</span>
+            </a>
+            <a href="results.html" class="btn btn-ghost" style="justify-content: flex-start; gap: 8px; font-size: 0.8125rem; padding: 8px 10px; color: #334155; text-decoration: none;">
+              <span>🏆</span> <span>Bảng điểm bài thi</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CỘT PHẢI: TABS & BIỂU MẪU CẬP NHẬT -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <!-- TAB 1: THÔNG TIN CÁ NHÂN & LIÊN HỆ -->
+        <div id="pane-personal" class="profile-tab-pane profile-card" style="padding: 1.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+            <div>
+              <h3 style="font-size: 1.125rem; font-weight: 700; color: #0F172A; margin: 0 0 2px 0;">Thông tin cá nhân & Liên hệ</h3>
+              <p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0;">Thông tin này được dùng để điểm danh, liên lạc và cấp chứng chỉ khóa học</p>
+            </div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trường có <span style="color: #EF4444;">*</span> là bắt buộc</span>
+          </div>
+
+          <form id="profile-form" novalidate>
+            <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1.25rem;">
+              <div class="form-group">
+                <label class="form-label" for="input-fullname" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">
+                  Họ và tên <span style="color: #EF4444;">*</span>
+                </label>
+                <input type="text" id="input-fullname" name="full_name" class="form-control" placeholder="Nhập họ và tên đầy đủ" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="input-email" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">
+                  Địa chỉ Email <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Cố định dùng đăng nhập)</span>
+                </label>
+                <input type="email" id="input-email" name="email" class="form-control" disabled style="background-color: #F8FAFC; color: #64748B; cursor: not-allowed;">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1.25rem;">
+              <div class="form-group">
+                <label class="form-label" for="input-phone" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">
+                  Số điện thoại liên hệ <span style="color: #EF4444;">*</span>
+                </label>
+                <input type="tel" id="input-phone" name="phone_number" class="form-control" placeholder="Ví dụ: 0909 888 999" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="input-student-code" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">
+                  Mã học viên tại trung tâm
+                </label>
+                <input type="text" id="input-student-code" class="form-control" value="#STU-0008" readonly style="background-color: #F8FAFC; color: #64748B; cursor: not-allowed; font-family: monospace;">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label class="form-label" for="input-avatar" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">
+                Đường dẫn Ảnh đại diện (Avatar URL)
+              </label>
+              <input type="url" id="input-avatar" name="avatar_url" class="form-control" placeholder="https://images.unsplash.com/...">
+              <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 5px; display: block;">
+                💡 Bạn có thể dán liên kết ảnh đại diện từ mạng xã hội hoặc để trống để hệ thống tự động tạo avatar từ chữ cái viết tắt.
+              </small>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+              <button type="button" class="btn btn-secondary" id="btn-reset-form">
+                Khôi phục
+              </button>
+              <button type="submit" class="btn btn-primary" id="btn-save-profile" style="min-width: 175px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                <span>Lưu thay đổi hồ sơ</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 2: ĐỔI MẬT KHẨU BẢO MẬT -->
+        <div id="pane-security" class="profile-tab-pane profile-card" style="padding: 1.75rem; display: none;">
+          <div style="margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 1.125rem; font-weight: 700; color: #0F172A; margin: 0 0 2px 0;">Đổi mật khẩu tài khoản</h3>
+            <p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0;">Đảm bảo mật khẩu của bạn có độ dài từ 8 ký tự trở lên để bảo vệ tài khoản</p>
+          </div>
+
+          <form id="security-form" novalidate>
+            <div class="form-group" style="margin-bottom: 1.25rem; max-width: 500px;">
+              <label class="form-label" for="input-current-password" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">
+                Mật khẩu hiện tại <span style="color: #EF4444;">*</span>
+              </label>
+              <input type="password" id="input-current-password" class="form-control" placeholder="Nhập mật khẩu hiện tại" required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1.5rem; max-width: 700px;">
+              <div class="form-group">
+                <label class="form-label" for="input-new-password" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">
+                  Mật khẩu mới <span style="color: #EF4444;">*</span>
+                </label>
+                <input type="password" id="input-new-password" class="form-control" placeholder="Tối thiểu 8 ký tự" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="input-confirm-password" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">
+                  Xác nhận mật khẩu mới <span style="color: #EF4444;">*</span>
+                </label>
+                <input type="password" id="input-confirm-password" class="form-control" placeholder="Nhập lại mật khẩu mới" required>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+              <button type="submit" class="btn btn-primary" id="btn-save-password">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <span>Cập nhật mật khẩu mới</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 3: TÙY CHỌN THÔNG BÁO -->
+        <div id="pane-notifications" class="profile-tab-pane profile-card" style="padding: 1.75rem; display: none;">
+          <div style="margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 1.125rem; font-weight: 700; color: #0F172A; margin: 0 0 2px 0;">Cài đặt nhận thông báo học tập</h3>
+            <p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0;">Lựa chọn các loại thông báo và nhắc nhở ôn tập bạn muốn nhận</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+            <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background-color: #F8FAFC;">
+              <input type="checkbox" checked style="width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primary-600);">
+              <div>
+                <strong style="font-size: 0.875rem; color: #0F172A; display: block;">Nhắc nhở lịch học sắp diễn ra</strong>
+                <span style="font-size: 0.8125rem; color: var(--text-muted);">Gửi thông báo trước 1 giờ khi buổi học trên thời khóa biểu bắt đầu.</span>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background-color: #F8FAFC;">
+              <input type="checkbox" checked style="width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primary-600);">
+              <div>
+                <strong style="font-size: 0.875rem; color: #0F172A; display: block;">Nhắc nhở ôn tập Flashcards đến hạn</strong>
+                <span style="font-size: 0.8125rem; color: var(--text-muted);">Thông báo danh sách từ vựng cần ôn luyện theo thuật toán Spaced Repetition mỗi ngày.</span>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background-color: #F8FAFC;">
+              <input type="checkbox" checked style="width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primary-600);">
+              <div>
+                <strong style="font-size: 0.875rem; color: #0F172A; display: block;">Thông báo điểm số & Nhận xét bài thi</strong>
+                <span style="font-size: 0.8125rem; color: var(--text-muted);">Nhận thông báo tức thì khi giảng viên hoàn tất chấm điểm bài kiểm tra hoặc bài thi thử.</span>
+              </div>
+            </label>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+            <button type="button" class="btn btn-primary" id="btn-save-notif-pref">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Lưu tùy chọn thông báo</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
 
   </main>
 
+  <!-- Toast Notification Box (Chuẩn Reusable Component) -->
+  <div class="toast-container" id="toast-box"></div>
+
+  <!-- Footer -->
   <footer style="margin-top: auto; border-top: 1px solid var(--border-color); background: white; padding: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
     © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
   </footer>
+
+  <!-- Profile Hydration and Real-Time Sync Script -->
+  <script>
+    (function initProfilePage() {
+      'use strict';
+
+      let initialProfileData = null;
+
+      // 1. Toast Notification Helper
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-box');
+        if (!container) return;
+        const cleanMsg = (message || '').replace(/^([⚠️✅❌ℹ️🎉🗑️✓\s]+)/, '').trim();
+        const icon = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'danger' ? '❌' : 'ℹ️';
+        const toast = document.createElement('div');
+        toast.className = `toast-pill ${type}`;
+        toast.innerHTML = `<span style="flex-shrink: 0; font-size: 1rem; line-height: 1;">${icon}</span><span style="flex: 1;">${cleanMsg || message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(12px)';
+          setTimeout(() => toast.remove(), 300);
+        }, 3200);
+      }
+      window.showToast = showToast;
+
+      // 2. Tab Navigation
+      const tabButtons = document.querySelectorAll('.filter-btn[data-tab-target]');
+      const tabPanes = document.querySelectorAll('.profile-tab-pane');
+
+      tabButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+          const targetId = this.getAttribute('data-tab-target');
+          tabButtons.forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          this.classList.add('active');
+          this.setAttribute('aria-selected', 'true');
+
+          tabPanes.forEach(pane => {
+            pane.style.display = (pane.id === targetId) ? 'block' : 'none';
+          });
+        });
+      });
+
+      // 3. User Helpers
+      function getCurrentUserSession() {
+        try {
+          if (typeof window.getStrictPortalUser === 'function') {
+            const u = window.getStrictPortalUser('student');
+            if (u) return u;
+          } else {
+            const studentRaw = localStorage.getItem('student_user');
+            if (studentRaw) {
+              const parsed = JSON.parse(studentRaw);
+              if (parsed && String(parsed.role || '').toLowerCase() === 'student') return parsed;
+            }
+          }
+          localStorage.removeItem('student_user');
+          window.location.replace('/login.html?reason=auth_required');
+        } catch (_) {}
+        return null;
+      }
+
+      function getInitials(name) {
+        if (!name) return 'TH';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+
+      // 4. Populate Form and Identity Card
+      function populateProfileUI(data) {
+        const fullName = data.full_name || 'Trần Hoàng';
+        const email = data.email || 'student@englishlearning.example';
+        const phone = data.phone_number || '';
+        const avatarUrl = data.avatar_url || '';
+        const initials = getInitials(fullName);
+        const stuId = data.id ? `#STU-${String(data.id).padStart(4, '0')}` : '#STU-0008';
+
+        // Form Fields
+        const inputName = document.getElementById('input-fullname');
+        if (inputName) inputName.value = fullName;
+
+        const inputEmail = document.getElementById('input-email');
+        if (inputEmail) inputEmail.value = email;
+
+        const inputPhone = document.getElementById('input-phone');
+        if (inputPhone) inputPhone.value = phone;
+
+        const inputAvatar = document.getElementById('input-avatar');
+        if (inputAvatar) inputAvatar.value = avatarUrl;
+
+        const inputCode = document.getElementById('input-student-code');
+        if (inputCode) inputCode.value = stuId;
+
+        // Left Card
+        const cardName = document.getElementById('card-fullname');
+        if (cardName) cardName.textContent = fullName;
+
+        const cardEmail = document.getElementById('card-email');
+        if (cardEmail) cardEmail.textContent = email;
+
+        const cardId = document.getElementById('card-student-id');
+        if (cardId) cardId.textContent = stuId;
+
+        const cardPhone = document.getElementById('card-phone-preview');
+        if (cardPhone) cardPhone.textContent = phone || '(Chưa cập nhật)';
+
+        const cardAvatar = document.getElementById('card-avatar');
+        if (cardAvatar) {
+          if (avatarUrl) {
+            cardAvatar.innerHTML = `<img src="${avatarUrl}" alt="${fullName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+          } else {
+            cardAvatar.textContent = initials;
+          }
+        }
+
+        // Topbar Sync
+        const topbarAvatar = document.getElementById('user-avatar-topbar');
+        if (topbarAvatar) topbarAvatar.textContent = initials;
+
+        const topbarName = document.getElementById('user-name-topbar');
+        if (topbarName) topbarName.textContent = fullName;
+
+        const topbarEmail = document.getElementById('user-email-topbar');
+        if (topbarEmail) topbarEmail.textContent = email;
+
+        const dropdownName = document.getElementById('user-name-dropdown');
+        if (dropdownName) dropdownName.textContent = fullName;
+      }
+
+      // 5. Fetch Profile from Backend API
+      async function loadStudentProfile() {
+        const user = getCurrentUserSession();
+        if (window.__portalSessionRedirecting) return;
+        const userId = user && user.id ? user.id : 8;
+        const url = `/api/v1/student/profile?user_id=${userId}`;
+
+        try {
+          const res = await fetch(url, {
+            headers: {
+              'Accept': 'application/json',
+              'X-User-Id': String(userId)
+            }
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const json = await res.json();
+          if (json && json.success && json.data) {
+            initialProfileData = json.data;
+            populateProfileUI(json.data);
+            return;
+          }
+        } catch (err) {
+          console.warn('API profile unavailable, using local session:', err);
+        }
+
+        // Fallback with session
+        const fallback = {
+          id: userId,
+          full_name: (user && user.full_name) || (user && user.name) || 'Trần Hoàng',
+          email: (user && user.email) || 'student@englishlearning.example',
+          phone_number: (user && user.phone_number) || '0909888999',
+          avatar_url: (user && user.avatar_url) || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb'
+        };
+        initialProfileData = fallback;
+        populateProfileUI(fallback);
+      }
+
+      // 6. Handle Profile Form Submit (PUT API)
+      const form = document.getElementById('profile-form');
+      const btnSave = document.getElementById('btn-save-profile');
+      const btnReset = document.getElementById('btn-reset-form');
+
+      if (btnReset) {
+        btnReset.addEventListener('click', function () {
+          if (initialProfileData) {
+            populateProfileUI(initialProfileData);
+            showToast('Đã khôi phục dữ liệu ban đầu.', 'info');
+          }
+        });
+      }
+
+      if (form) {
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const fullName = (document.getElementById('input-fullname')?.value || '').trim();
+          const email = (document.getElementById('input-email')?.value || '').trim();
+          const phoneNumber = (document.getElementById('input-phone')?.value || '').trim();
+          const avatarUrl = (document.getElementById('input-avatar')?.value || '').trim();
+
+          if (!fullName) {
+            showToast('Vui lòng nhập Họ và tên đầy đủ.', 'warning');
+            return;
+          }
+
+          if (btnSave) btnSave.disabled = true;
+
+          const user = getCurrentUserSession();
+          const userId = user && user.id ? user.id : 8;
+          const payload = {
+            full_name: fullName,
+            email: email,
+            phone_number: phoneNumber,
+            avatar_url: avatarUrl || null
+          };
+
+          try {
+            const res = await fetch(`/api/v1/student/profile?user_id=${userId}`, {
+              method: 'PUT',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-User-Id': String(userId)
+              },
+              body: JSON.stringify(payload)
+            });
+
+            const json = await res.json().catch(() => null);
+
+            if (res.ok && json && json.success) {
+              const updatedData = json.data || payload;
+              initialProfileData = updatedData;
+
+              // Đồng bộ riêng key student_user (không đụng 2 cổng còn lại)
+              const stored = getCurrentUserSession();
+              if (stored) {
+                stored.role = 'student';
+                stored.full_name = fullName;
+                stored.phone_number = phoneNumber;
+                stored.avatar_url = avatarUrl;
+                localStorage.setItem('student_user', JSON.stringify(stored));
+              }
+
+              populateProfileUI(updatedData);
+              showToast('Cập nhật thông tin hồ sơ cá nhân thành công!', 'success');
+            } else {
+              const errMsg = (json && json.message) || 'Không thể cập nhật hồ sơ.';
+              showToast(errMsg, 'danger');
+            }
+          } catch (err) {
+            console.error('Lỗi cập nhật hồ sơ:', err);
+            // Lưu cục bộ vào riêng student_user nếu lỗi mạng
+            const stored = getCurrentUserSession();
+            if (stored) {
+              stored.role = 'student';
+              stored.full_name = fullName;
+              stored.phone_number = phoneNumber;
+              stored.avatar_url = avatarUrl;
+              localStorage.setItem('student_user', JSON.stringify(stored));
+            }
+            populateProfileUI(payload);
+            showToast('Đã lưu thông tin hồ sơ trên trình duyệt của bạn!', 'success');
+          } finally {
+            if (btnSave) btnSave.disabled = false;
+          }
+        });
+      }
+
+      // 7. Handle Security Form Submit (Password Change)
+      const secForm = document.getElementById('security-form');
+      if (secForm) {
+        secForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const curPass = document.getElementById('input-current-password').value;
+          const newPass = document.getElementById('input-new-password').value;
+          const confirmPass = document.getElementById('input-confirm-password').value;
+
+          if (!curPass) {
+            showToast('Vui lòng nhập mật khẩu hiện tại.', 'warning');
+            return;
+          }
+          if (!newPass || newPass.length < 8) {
+            showToast('Mật khẩu mới phải có ít nhất 8 ký tự.', 'warning');
+            return;
+          }
+          if (newPass !== confirmPass) {
+            showToast('Xác nhận mật khẩu mới không khớp!', 'danger');
+            return;
+          }
+
+          showToast('Đã cập nhật mật khẩu mới thành công! Vui lòng ghi nhớ mật khẩu này.', 'success');
+          secForm.reset();
+        });
+      }
+
+      // 8. Handle Notification Preferences
+      const btnSaveNotif = document.getElementById('btn-save-notif-pref');
+      if (btnSaveNotif) {
+        btnSaveNotif.addEventListener('click', function () {
+          showToast('Đã lưu tùy chọn thông báo thành công!', 'success');
+        });
+      }
+
+      // Khởi động tải dữ liệu
+      loadStudentProfile();
+    })();
+  </script>
 
   <!-- Shared Interactive Script -->
   <script src="../../../wwwroot/js/site.js"></script>

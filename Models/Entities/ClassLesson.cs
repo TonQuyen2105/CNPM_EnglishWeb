@@ -16,6 +16,9 @@ namespace CNPM_EnglishLearning.Models.Entities
         [Column("lesson_id")]
         public int LessonId { get; set; }
 
+        [Column("order_index")]
+        public int? OrderIndex { get; set; }
+
         [Column("schedule_id")]
         public int? ScheduleId { get; set; }
 

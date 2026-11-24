@@ -3,32 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Thời khóa biểu học viên - EnglishStudent</title>
   
   <!-- CSS Design System -->
   <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
   <link rel="stylesheet" href="../../../wwwroot/css/base.css">
   <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261118_02">
 
-  <style>
+  <style>        /* Topbar Navigation */
     .student-navbar-wrapper {
-      position: sticky; top: 0; z-index: var(--z-sticky);
+      position: sticky; top: 0; z-index: var(--z-sticky, 1000);
       background-color: #FFFFFF; border-bottom: 1px solid var(--border-color);
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .student-nav-container {
-      max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 64px;
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      max-width: 1400px; margin: 0 auto; padding: 0 1rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
     }
     .student-nav-menu {
-      display: flex; align-items: center; gap: 0.25rem; overflow-x: auto;
+      display: flex; align-items: center; gap: 3px; flex-shrink: 0; flex-wrap: nowrap;
     }
     .student-nav-link {
-      display: flex; align-items: center; gap: 6px; padding: 8px 12px;
-      border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 4px; padding: 6px 9px;
+      border-radius: var(--radius-md); font-size: 0.8125rem; font-weight: 600;
       color: var(--text-secondary); text-decoration: none; white-space: nowrap;
-      transition: all var(--transition-fast);
+      transition: all var(--transition-fast); flex-shrink: 0;
     }
     .student-nav-link:hover {
       background-color: var(--neutral-100); color: var(--primary-600);
@@ -37,224 +40,980 @@
       background-color: var(--primary-50); color: var(--primary-600); font-weight: 700;
     }
     .student-streak-pill {
-      display: flex; align-items: center; gap: 4px; padding: 4px 10px;
+      display: flex; align-items: center; gap: 4px; padding: 4px 8px;
       background: linear-gradient(135deg, #FEF3C7, #FDE68A);
       border: 1px solid #FCD34D; border-radius: var(--radius-full);
-      font-size: 0.75rem; font-weight: 700; color: #92400E;
+      font-size: 0.75rem; font-weight: 700; color: #92400E; flex-shrink: 0;
     }
     .notification-wrapper { position: relative; }
     .notification-badge-dot {
-      position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
-      border-radius: 50%; background-color: var(--danger-main); border: 2px solid white;
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px; background-color: var(--danger-500);
+      border-radius: 50%; border: 1.5px solid #FFFFFF;
+    }
+    .user-profile-trigger:hover {
+      background-color: var(--neutral-100);
+    }
+    @media (max-width: 1220px) {
+      .student-nav-link {
+        padding: 5px 7px;
+        font-size: 0.78125rem;
+        gap: 3px;
+      }
+      .student-nav-menu {
+        gap: 2px;
+      }
+      #user-email-topbar {
+        display: none !important;
+      }
+      #user-name-topbar {
+        max-width: 95px !important;
+      }
+    }
+    @media (max-width: 1040px) {
+      .student-nav-container {
+        padding: 0 0.5rem;
+      }
+      .student-brand-title {
+        font-size: 1rem !important;
+      }
+      .student-nav-link {
+        padding: 5px 5px;
+        font-size: 0.75rem;
+        gap: 2px;
+      }
+    }
+    .week-select-control {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: #0F172A;
+      background-color: #FFFFFF;
+      border: 1.5px solid #CBD5E1;
+      border-radius: var(--radius-md);
+      padding: 0.5rem 1rem;
+      outline: none;
+      cursor: pointer;
+      min-width: 330px;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .week-select-control:focus {
+      border-color: var(--primary-600);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .schedule-table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background: white;
+    }
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      min-width: 900px;
+    }
+    .schedule-table th, .schedule-table td {
+      border: 1px solid #E2E8F0;
+      padding: 10px 8px;
+      vertical-align: top;
+    }
+    .schedule-table thead th {
+      background-color: #F8FAFC;
+      color: #334155;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      padding: 12px 8px;
+    }
+    .schedule-table thead th.today-col {
+      background-color: #EFF6FF;
+      color: #1D4ED8;
+      border-top: 3px solid #2563EB;
+    }
+    .schedule-table tbody td.slot-col {
+      background-color: #F8FAFC;
+      width: 130px;
+      font-size: 0.8125rem;
+      text-align: center;
+      font-weight: 600;
+      color: #1E293B;
+    }
+    .schedule-session-card {
+      background: #EFF6FF;
+      border: 1.5px solid #93C5FD;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: left;
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .schedule-session-card:last-child {
+      margin-bottom: 0;
+    }
+    .schedule-session-card:hover {
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+      border-color: #3B82F6;
+      transform: translateY(-1px);
+    }
+    .schedule-session-card.status-completed {
+      background: #F0FDF4;
+      border-color: #86EFAC;
+    }
+    .schedule-session-card.status-ongoing {
+      background: #FEF3C7;
+      border-color: #FCD34D;
+    }
+
+    /* ==========================================================================
+       SHARED LOADING SCREEN / OVERLAY (Mẫu dùng chung)
+       Thiết kế: Màu tối hơn nền một chút, có độ trong suốt, bao phủ lên nội dung đang tải
+       ========================================================================== */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.45) !important;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      border-radius: inherit;
+      min-height: 200px;
+    }
+
+    .loading-card {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 2.25rem;
+      background: #FFFFFF !important;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22), 0 4px 10px rgba(15, 23, 42, 0.1);
+      text-align: center;
+      min-width: 260px;
+      animation: loadingPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .loading-spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid #E2E8F0;
+      border-top-color: #2563EB;
+      border-right-color: #3B82F6;
+      border-radius: 50%;
+      animation: appSpin 0.8s linear infinite;
+      margin-bottom: 0.875rem;
+    }
+
+    .loading-text {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: #0F172A;
+      letter-spacing: 0.2px;
+    }
+
+    .loading-subtext {
+      font-size: 0.8125rem;
+      color: #64748B;
+      margin-top: 4px;
+    }
+
+    @keyframes appSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes loadingPopIn {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
   </style>
 </head>
 <body style="background-color: var(--bg-page); min-height: 100vh; display: flex; flex-direction: column;">
   <!-- Student Top Navbar -->
+    <!-- Student Top Navbar -->
+        <!-- Student Top Navbar -->
   <header class="student-navbar-wrapper">
     <div class="student-nav-container">
-      <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
         <!-- Logo -->
-        <a href="dashboard.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-          <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <a href="dashboard.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0;">
+          <div style="width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); display: flex; align-items: center; justify-content: center; color: white;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
               <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
             </svg>
           </div>
-          <span style="font-size: 1.0625rem; font-weight: 800; color: var(--primary-700); white-space: nowrap;">EnglishStudent</span>
+          <span class="student-brand-title" style="font-weight: 800; font-size: 1.125rem; color: #1E40AF; letter-spacing: -0.02em;">EnglishStudent</span>
         </a>
 
         <!-- Desktop Nav Links -->
         <nav class="student-nav-menu">
-          
-      <a href="dashboard.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Trang chủ</span>
-      </a>
-    
-      <a href="courses.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="my-classes.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Lớp của tôi</span>
-      </a>
-    
-      <a href="schedule.html" class="student-nav-link active">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Lịch học</span>
-      </a>
-    
-      <a href="flashcards.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
-        <span>Flashcards</span>
-      </a>
-    
-      <a href="exams.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Luyện thi</span>
-      </a>
-    
-      <a href="progress.html" class="student-nav-link ">
-        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></span>
-        <span>Tiến độ</span>
-      </a>
-    
+          <a href="dashboard.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+            <span>Trang chủ</span>
+          </a>
+          <a href="courses.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="my-classes.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Lớp của tôi</span>
+          </a>
+          <a href="schedule.html" class="student-nav-link active">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="flashcards.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>
+            <span>Flashcards</span>
+          </a>
+          <a href="exams.html" class="student-nav-link">
+            <span class="nav-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Luyện thi</span>
+          </a>
         </nav>
       </div>
 
       <!-- Right Controls -->
-      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-        <div class="student-streak-pill" title="Chuỗi ngày học liên tục!">
-          <span>🔥</span>
-          <span>5 ngày</span>
-        </div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
 
-        <!-- Bell -->
+        <!-- Bell Notification -->
         <div class="dropdown notification-wrapper">
-          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button type="button" class="btn-icon" id="notifications-btn" title="Thông báo" style="background: none; border: 1px solid var(--border-color); border-radius: var(--radius-md); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); position: relative;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
+            <span class="notification-badge-dot" id="notif-badge-dot" style="display: none;"></span>
           </button>
-          <div class="dropdown-menu" id="notifications-dropdown" style="width: 300px; right: 0;">
+          <div class="dropdown-menu" id="notifications-dropdown" style="width: 320px; right: 0;">
             <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 0.8125rem;">
               Thông báo học tập
             </div>
-            <div style="max-height: 250px; overflow-y: auto;">
-              <a href="flashcards.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
+            <div id="notif-list-container" style="max-height: 260px; overflow-y: auto;">
+              <a href="flashcards.html?mode=due" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
                 <strong style="display: block; font-size: 0.75rem; color: var(--primary-600);">🎯 Ôn tập từ vựng hôm nay</strong>
-                <small style="color: var(--text-muted);">Bạn có 25 từ vựng đến hạn ôn tập</small>
+                <small id="notif-flashcards-text" style="color: var(--text-muted);">Bạn có danh sách từ vựng cần ôn luyện</small>
               </a>
               <a href="schedule.html" class="dropdown-item" style="display: block; padding: 0.625rem 1rem;">
-                <strong style="display: block; font-size: 0.75rem;">⏰ Buổi học lúc 18:00</strong>
-                <small style="color: var(--text-muted);">Lớp Giao Tiếp COMM-01 tại Phòng LAB-01</small>
+                <strong id="notif-session-title" style="display: block; font-size: 0.75rem;">⏰ Buổi học sắp tới</strong>
+                <small id="notif-session-text" style="color: var(--text-muted);">Kiểm tra thời khóa biểu trong tuần</small>
               </a>
             </div>
           </div>
         </div>
 
-        <!-- Student Profile -->
+        <!-- Student Profile Dropdown -->
         <div class="dropdown">
-          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white;">HA</div>
-            <div style="text-align: left; line-height: 1.2;" class="d-none d-md-block">
-              <div style="font-size: 0.8125rem; font-weight: 600;">Nguyễn Hoàng Anh</div>
-              <div style="font-size: 0.7rem; color: var(--text-muted);">student@el.com</div>
+          <div class="user-profile-trigger" id="avatar-dropdown-btn" role="button" tabindex="0" style="display: flex; align-items: center; gap: 7px; cursor: pointer; padding: 4px 6px; border-radius: var(--radius-md); max-width: 200px;">
+            <div class="avatar avatar-sm" id="user-avatar-topbar" style="background-color: var(--primary-600); color: white; font-weight: 700; width: 34px; height: 34px; flex-shrink: 0;">TH</div>
+            <div style="text-align: left; line-height: 1.2; min-width: 0;" class="d-none d-md-block">
+              <div id="user-name-topbar" style="font-size: 0.8125rem; font-weight: 600; color: #0F172A; max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Trần Hoàng</div>
+              <div id="user-email-topbar" style="font-size: 0.7rem; color: var(--text-muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">student@englishlearning.example</div>
             </div>
-            <span style="color: var(--text-muted);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
+            <span style="color: var(--text-muted); flex-shrink: 0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </span>
           </div>
 
-          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 200px; right: 0;">
-            <div style="padding: 0.625rem 1rem; border-bottom: 1px solid var(--border-color);">
-              <div style="font-weight: 700; font-size: 0.875rem;">Nguyễn Hoàng Anh</div>
-              <span class="badge badge-primary" style="margin-top: 4px;">Học viên năng động</span>
+          <div class="dropdown-menu" id="avatar-dropdown-menu" style="min-width: 220px; right: 0;">
+            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);">
+              <div style="font-weight: 700; font-size: 0.875rem;" id="user-name-dropdown">Trần Hoàng</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;" id="user-email-dropdown">student@englishlearning.example</div>
+              <span class="badge badge-primary" id="user-role-badge">Học viên chính thức</span>
             </div>
-            <a href="profile.html" class="dropdown-item">
-              <span>Hồ sơ cá nhân</span>
-            </a>
-            <a href="my-classes.html" class="dropdown-item">
-              <span>Lớp của tôi</span>
-            </a>
-            <a href="results.html" class="dropdown-item">
-              <span>Kết quả bài thi</span>
-            </a>
+            <a href="profile.html" class="dropdown-item"><span>Hồ sơ cá nhân</span></a>
+            <a href="my-classes.html" class="dropdown-item"><span>Lớp của tôi</span></a>
+            <a href="results.html" class="dropdown-item"><span>Kết quả bài thi</span></a>
+            <a href="progress.html" class="dropdown-item" id="menu-item-progress"><span>Tiến độ học tập</span></a>
+            <a href="invoices.html" class="dropdown-item" id="menu-item-invoices"><span>Hóa đơn</span></a>
             <div class="dropdown-divider"></div>
-            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout">
-              <span>Đăng xuất</span>
-            </a>
+            <a href="../../../index.html" class="dropdown-item text-danger" id="btn-topbar-logout"><span>Đăng xuất</span></a>
           </div>
         </div>
       </div>
     </div>
   </header>
 
+  <script>
+    // Đồng bộ tức thì thông tin học sinh từ session ngay khi tải trang (chống giật layout & hiện sai tên)
+    (function syncTopbarUser() {
+      try {
+        const studentRaw = localStorage.getItem('student_user');
+        let u = null;
+        if (studentRaw) {
+          const parsed = JSON.parse(studentRaw);
+          if (parsed && typeof parsed === 'object' && String(parsed.role || '').toLowerCase() === 'student') {
+            u = parsed;
+          } else {
+            localStorage.removeItem('student_user');
+          }
+        }
+        if (!u) {
+          window.location.replace('/login.html?reason=auth_required');
+          return;
+        }
+        let name = u.full_name || u.name || 'Trần Hoàng';
+        let email = u.email || 'student@englishlearning.example';
+        const parts = name.trim().split(/\s+/);
+        const initials = parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        const av = document.getElementById('user-avatar-topbar');
+        const nm = document.getElementById('user-name-topbar');
+        const em = document.getElementById('user-email-topbar');
+        const dn = document.getElementById('user-name-dropdown');
+        const de = document.getElementById('user-email-dropdown');
+        if (av) av.textContent = initials;
+        if (nm) nm.textContent = name;
+        if (em) { em.textContent = email; em.title = email; }
+        if (dn) dn.textContent = name;
+        if (de) de.textContent = email;
+
+        // Đảm bảo mục "Tiến độ học tập" luôn luôn có mặt trong Dropdown
+        const menu = document.getElementById('avatar-dropdown-menu');
+        if (menu && !menu.querySelector('a[href*="progress.html"]')) {
+          const divider = menu.querySelector('.dropdown-divider');
+          const a = document.createElement('a');
+          a.href = 'progress.html';
+          a.className = 'dropdown-item';
+          a.id = 'menu-item-progress';
+          a.innerHTML = '<span>Tiến độ học tập</span>';
+          if (divider) {
+            menu.insertBefore(a, divider);
+          } else {
+            menu.appendChild(a);
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  
+
   <!-- Page Content Container -->
   <main class="page-container" id="app-main-content" style="max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; flex: 1;">
     
-  <div class="page-header">
-    <div>
-      <h1 class="page-header-title">Thời khóa biểu học tập</h1>
-      <p class="page-header-subtitle">Lịch các buổi học trực tiếp tại trung tâm trong tuần này</p>
-    </div>
-  </div>
-
-  <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-      <strong>Tuần học hiện tại: 20/10/2026 - 26/10/2026</strong>
-      <div style="display: flex; gap: 8px;">
-        <button class="btn btn-sm btn-secondary">Tuần trước</button>
-        <button class="btn btn-sm btn-primary">Tuần này</button>
-        <button class="btn btn-sm btn-secondary">Tuần sau</button>
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 1.25rem;">
+      <div>
+        <h1 class="page-header-title">Thời khóa biểu học tập</h1>
+        <p class="page-header-subtitle">Theo dõi lịch học trực tiếp tại trung tâm và các buổi học định kỳ theo tuần</p>
       </div>
     </div>
 
-    <table class="table" style="text-align: center;">
-      <thead>
-        <tr>
-          <th>Ca học</th>
-          <th>Thứ 2</th>
-          <th>Thứ 3</th>
-          <th>Thứ 4</th>
-          <th>Thứ 5</th>
-          <th>Thứ 6</th>
-          <th>Thứ 7</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Sáng<br><small class="text-muted">08:30 - 10:30</small></strong></td>
-          <td>—</td>
-          <td><div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 8px; border-radius: 6px;"><strong style="color: #1D4ED8;">Workshop Speaking</strong><br><small>Phòng B202 (GV: John)</small></div></td>
-          <td>—</td>
-          <td><div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 8px; border-radius: 6px;"><strong style="color: #1D4ED8;">Club Tiếng Anh</strong><br><small>Self-Study Zone</small></div></td>
-          <td>—</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Tối 1<br><small class="text-muted">18:00 - 19:30</small></strong></td>
-          <td><div style="background: #ECFDF5; border: 1px solid #A7F3D0; padding: 8px; border-radius: 6px;"><strong style="color: #047857;">COMM-01</strong><br><small>Phòng LAB-01 (Cô Mai)</small></div></td>
-          <td>—</td>
-          <td><div style="background: #ECFDF5; border: 1px solid #A7F3D0; padding: 8px; border-radius: 6px;"><strong style="color: #047857;">COMM-01</strong><br><small>Phòng LAB-01 (Cô Mai)</small></div></td>
-          <td>—</td>
-          <td><div style="background: #ECFDF5; border: 1px solid #A7F3D0; padding: 8px; border-radius: 6px;"><strong style="color: #047857;">COMM-01</strong><br><small>Phòng LAB-01 (Cô Mai)</small></div></td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td><strong>Tối 2<br><small class="text-muted">19:30 - 21:00</small></strong></td>
-          <td>—</td>
-          <td><div style="background: #FEF3C7; border: 1px solid #FCD34D; padding: 8px; border-radius: 6px;"><strong style="color: #92400E;">TOEIC-A01</strong><br><small>Phòng B202 (Thầy Hùng)</small></div></td>
-          <td>—</td>
-          <td><div style="background: #FEF3C7; border: 1px solid #FCD34D; padding: 8px; border-radius: 6px;"><strong style="color: #92400E;">TOEIC-A01</strong><br><small>Phòng B202 (Thầy Hùng)</small></div></td>
-          <td>—</td>
-          <td><div style="background: #FEF3C7; border: 1px solid #FCD34D; padding: 8px; border-radius: 6px;"><strong style="color: #92400E;">TOEIC-A01</strong><br><small>Phòng B202 (Thầy Hùng)</small></div></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <!-- Main Schedule Card -->
+    <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      
+      <!-- Week Selector Toolbar (Form matched exactly to requirement) -->
+      <div class="schedule-toolbar">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <label for="week-select" style="font-weight: 700; font-size: 0.9375rem; color: #1E293B; margin: 0; display: flex; align-items: center; gap: 6px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Tìm theo tuần:</span>
+          </label>
+          <div style="position: relative;">
+            <select id="week-select" class="week-select-control" aria-label="Chọn tuần học">
+              <!-- Options populated dynamically: [từ ngày dd/MM/yyyy đến ngày dd/MM/yyyy] -->
+            </select>
+          </div>
+        </div>
 
-  <div class="card" style="padding: 1rem 1.25rem; background-color: var(--primary-50); border: 1px solid var(--primary-200); display: flex; align-items: center; gap: 1rem;">
-    <div style="font-size: 1.5rem;">💡</div>
-    <div style="font-size: 0.8125rem; color: var(--primary-800);">
-      <strong>Lưu ý cho học viên:</strong> Vui lòng có mặt trước giờ học 10 phút. Đối với các buổi học tại phòng LAB, bạn nên mang theo tai nghe cá nhân chuẩn jack 3.5mm hoặc Type-C để có trải nghiệm âm thanh tốt nhất.
+        <div class="schedule-nav-group" style="display: flex; gap: 8px; align-items: center; margin-left: auto; flex-wrap: wrap;">
+          <button type="button" id="btn-prev-week" class="btn btn-sm btn-secondary" style="font-weight: 600; height: 38px; padding: 0 14px;">
+            ◀ Tuần trước
+          </button>
+          <button type="button" id="btn-current-week" class="btn btn-sm btn-primary" style="font-weight: 600; height: 38px; padding: 0 16px;">
+            Tuần này
+          </button>
+          <button type="button" id="btn-next-week" class="btn btn-sm btn-secondary" style="font-weight: 600; height: 38px; padding: 0 14px;">
+            Tuần sau ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- Current Week Status Banner -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <span style="font-size: 0.8125rem; color: var(--text-muted);">Đang hiển thị lịch:</span>
+          <strong id="current-week-label" style="font-size: 0.9375rem; color: var(--primary-700); margin-left: 6px;">...</strong>
+        </div>
+        <div id="week-session-counter">
+          <span class="badge badge-info" id="badge-session-count" style="font-size: 0.75rem; padding: 4px 10px;">0 buổi học</span>
+        </div>
+      </div>
+
+      <!-- Schedule Grid Table with Shared Loading Screen Overlay -->
+      <div class="schedule-table-wrapper" id="schedule-table-container" style="position: relative; min-height: 250px;">
+        
+        <!-- Shared Loading Screen Overlay (Màu tối hơn nền một chút, bán trong suốt, bao phủ lên nội dung đang tải) -->
+        <div id="schedule-loading-overlay" class="loading-overlay" style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.45) !important; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 1000; border-radius: inherit; align-items: center; justify-content: center; flex-direction: column;">
+          <div class="loading-card" style="display: inline-flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem 2.25rem; background: #FFFFFF !important; border-radius: 16px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22); border: 1px solid #E2E8F0; text-align: center; min-width: 260px;">
+            <div class="loading-spinner" style="width: 44px; height: 44px; border: 4px solid #E2E8F0; border-top-color: #2563EB; border-right-color: #3B82F6; border-radius: 50%; animation: appSpin 0.8s linear infinite; margin-bottom: 0.875rem;"></div>
+            <div class="loading-text" style="font-size: 0.9375rem; font-weight: 700; color: #0F172A; letter-spacing: 0.2px;">Đang tải thời khóa biểu...</div>
+            <div class="loading-subtext" style="font-size: 0.8125rem; color: #64748B; margin-top: 4px;">Cập nhật lịch học theo tuần</div>
+          </div>
+        </div>
+
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th style="width: 130px;">Ca học</th>
+              <th id="th-day-2">Thứ 2</th>
+              <th id="th-day-3">Thứ 3</th>
+              <th id="th-day-4">Thứ 4</th>
+              <th id="th-day-5">Thứ 5</th>
+              <th id="th-day-6">Thứ 6</th>
+              <th id="th-day-7">Thứ 7</th>
+              <th id="th-day-1">Chủ nhật</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-table-body">
+            <!-- Dynamically populated rows: Sáng, Chiều, Tối 1, Tối 2 -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No Sessions Empty State Alert -->
+      <div id="no-sessions-alert" style="display: none; padding: 1.5rem; background-color: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: var(--radius-md); text-align: center; margin-top: 1rem;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">☕</div>
+        <h4 style="font-size: 0.9375rem; font-weight: 700; color: #334155; margin-bottom: 0.25rem;">Không có lịch học trong tuần này</h4>
+        <p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0;">Bạn có thể tận dụng thời gian để ôn tập từ vựng flashcard hoặc làm bài luyện thi thử.</p>
+      </div>
+
     </div>
-  </div>
+
+    <!-- Weekly Sessions Agenda List (Chế độ xem chi tiết các buổi học) -->
+    <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem; background: #FFFFFF; border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      <h3 style="font-size: 1rem; font-weight: 700; color: #1E293B; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+        <span>📋</span>
+        <span>Danh sách chi tiết các buổi học trong tuần</span>
+      </h3>
+      <div id="sessions-agenda-list" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Dynamically rendered session cards -->
+      </div>
+    </div>
+
+    <!-- Student Study Tips -->
+    <div class="card" style="padding: 1rem 1.25rem; background-color: var(--primary-50); border: 1px solid var(--primary-200); display: flex; align-items: center; gap: 1rem; border-radius: var(--radius-md);">
+      <div style="font-size: 1.5rem;">💡</div>
+      <div style="font-size: 0.8125rem; color: var(--primary-800); line-height: 1.5;">
+        <strong>Lưu ý cho học viên:</strong> Vui lòng có mặt trước giờ học 10 phút để ổn định vị trí. Đối với các buổi học tại phòng LAB hoặc Workshop giao tiếp, bạn nên mang theo tai nghe cá nhân chuẩn jack 3.5mm hoặc Type-C để có trải nghiệm âm thanh tốt nhất.
+      </div>
+    </div>
 
   </main>
 
   <footer style="margin-top: auto; border-top: 1px solid var(--border-color); background: white; padding: 1.5rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
-    © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Đầy đủ giao diện & dữ liệu mẫu mô phỏng.
+    © 2026 Hệ Thống Trung Tâm Tiếng Anh EnglishLearning. Dữ liệu thời khóa biểu kết nối trực tiếp hệ thống.
   </footer>
 
-  <!-- Shared Interactive Script -->
+  <!-- Keyframe animation for spinner -->
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <!-- Interactive Logic Script -->
+  <script>
+    (function () {
+      'use strict';
+
+      // 1. Quản lý phiên đăng nhập học sinh (Mặc định chuẩn hóa là Trần Hoàng - ID: 8)
+      function getStoredUser() {
+        let user = null;
+        try {
+          if (typeof window.getStrictPortalUser === 'function') {
+            user = window.getStrictPortalUser('student');
+          } else {
+            const studentRaw = localStorage.getItem('student_user');
+            if (studentRaw) {
+              const parsed = JSON.parse(studentRaw);
+              if (parsed && String(parsed.role || '').toLowerCase() === 'student') {
+                user = parsed;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Lỗi đọc session học sinh:', e);
+        }
+
+        if (!user) {
+          localStorage.removeItem('student_user');
+          window.location.replace('/login.html?reason=auth_required');
+          return null;
+        }
+        user.role = 'student';
+        if (!user.full_name || user.full_name === 'Học viên Demo') {
+          user.full_name = 'Trần Hoàng';
+        }
+        return user;
+      }
+
+      let studentUser = getStoredUser();
+
+      // Cập nhật Topbar Profile ngay lập tức
+      function updateTopbarProfile(user) {
+        if (!user) return;
+        const topbarAvatar = document.getElementById('user-avatar-topbar');
+        const topbarName = document.getElementById('user-name-topbar');
+        const topbarEmail = document.getElementById('user-email-topbar');
+        const dropdownName = document.getElementById('user-name-dropdown');
+        const streakText = document.getElementById('nav-streak-text');
+
+        const name = user.full_name || 'Trần Hoàng';
+        const parts = name.trim().split(/\s+/);
+        const initials = parts.length >= 2 
+          ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+          : name.slice(0, 2).toUpperCase();
+
+        if (topbarAvatar) topbarAvatar.textContent = initials;
+        if (topbarName) topbarName.textContent = name;
+        if (dropdownName) dropdownName.textContent = name;
+        if (topbarEmail && user.email) topbarEmail.textContent = user.email;
+        if (streakText) streakText.textContent = `${user.streak_days || 5} ngày`;
+      }
+
+      if (!studentUser) return;
+      updateTopbarProfile(studentUser);
+
+      // Đồng bộ profile trực tiếp từ Database Supabase
+      async function syncUserProfile() {
+        try {
+          const userId = studentUser.id || 8;
+          const res = await fetch(`/api/v1/student/profile?user_id=${userId}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': String(userId),
+              'Authorization': `Bearer ${userId}`
+            }
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.success && json.data) {
+              const p = json.data;
+              studentUser.full_name = p.full_name || studentUser.full_name || 'Trần Hoàng';
+              studentUser.email = p.email || studentUser.email;
+              studentUser.phone_number = p.phone_number || '';
+              studentUser.avatar_url = p.avatar_url || '';
+              
+              updateTopbarProfile(studentUser);
+              if (typeof window.getStrictPortalUser !== 'function' || window.getStrictPortalUser('student')) {
+                studentUser.role = 'student';
+                localStorage.setItem('student_user', JSON.stringify(studentUser));
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Không thể đồng bộ profile:', e);
+        }
+      }
+      syncUserProfile();
+
+      // Xử lý đăng xuất
+      const logoutBtn = document.getElementById('btn-topbar-logout');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async function (e) {
+          e.preventDefault();
+          try {
+            await fetch('/Account/Session?role=student', { method: 'DELETE', credentials: 'same-origin' });
+          } catch (_) {}
+          localStorage.removeItem('student_user');
+          window.location.href = '/';
+        });
+      }
+
+
+      // 2. Tiện ích xử lý ngày tháng
+      function padZero(num) {
+        return num < 10 ? '0' + num : String(num);
+      }
+
+      function formatDateVN(date) {
+        return `${padZero(date.getDate())}/${padZero(date.getMonth() + 1)}/${date.getFullYear()}`;
+      }
+
+      function formatDateISO(date) {
+        return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+      }
+
+      // Tìm ngày Thứ Hai của tuần chứa date
+      function getMondayOfWeek(d) {
+        const date = new Date(d);
+        const day = date.getDay(); // 0 là Chủ nhật, 1 là Thứ hai...
+        const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(date.setDate(diff));
+        monday.setHours(0, 0, 0, 0);
+        return monday;
+      }
+
+      // 3. Khởi tạo danh sách các tuần học dạng: [từ ngày dd/MM/yyyy đến ngày dd/MM/yyyy]
+      const weekSelect = document.getElementById('week-select');
+      const btnPrevWeek = document.getElementById('btn-prev-week');
+      const btnCurrentWeek = document.getElementById('btn-current-week');
+      const btnNextWeek = document.getElementById('btn-next-week');
+
+      // Xác định tuần hiện tại (bắt đầu từ Thứ Hai)
+      const now = new Date();
+      const currentMonday = getMondayOfWeek(now);
+      const currentSunday = new Date(currentMonday);
+      currentSunday.setDate(currentMonday.getDate() + 6);
+      const currentWeekKey = `${formatDateISO(currentMonday)}|${formatDateISO(currentSunday)}`;
+
+      // Tạo dải 25 tuần: từ 6 tuần trước đến 18 tuần tiếp theo
+      const pastWeeksCount = 6;
+      const futureWeeksCount = 18;
+      let currentWeekIndex = pastWeeksCount;
+
+      weekSelect.innerHTML = '';
+      for (let i = -pastWeeksCount; i <= futureWeeksCount; i++) {
+        const monday = new Date(currentMonday);
+        monday.setDate(currentMonday.getDate() + (i * 7));
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        const label = i === 0 
+          ? `Tuần này (${formatDateVN(monday)} - ${formatDateVN(sunday)})`
+          : `Từ ${formatDateVN(monday)} đến ${formatDateVN(sunday)}`;
+        const val = `${formatDateISO(monday)}|${formatDateISO(sunday)}`;
+
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = label;
+        if (i === 0) {
+          opt.selected = true;
+        }
+        weekSelect.appendChild(opt);
+      }
+
+      // 4. Định nghĩa cấu trúc ca học chuẩn
+      const TIME_SLOTS = [
+        { id: 'sang', name: 'Sáng', timeRange: '08:00 - 11:30', startHour: 8, endHour: 12 },
+        { id: 'chieu', name: 'Chiều', timeRange: '13:30 - 17:30', startHour: 12, endHour: 17.5 },
+        { id: 'toi1', name: 'Tối 1', timeRange: '18:00 - 19:30', startHour: 17.5, endHour: 19.5 },
+        { id: 'toi2', name: 'Tối 2', timeRange: '19:30 - 21:00', startHour: 19.5, endHour: 22 }
+      ];
+
+      // Hàm xác định ca học phù hợp từ chuỗi thời gian hoặc startTime
+      function matchSlotId(startTimeStr) {
+        if (!startTimeStr) return 'toi1';
+        const parts = startTimeStr.split(':');
+        const hour = parseInt(parts[0], 10) + (parseInt(parts[1] || '0', 10) / 60);
+        if (hour < 12) return 'sang';
+        if (hour < 17.5) return 'chieu';
+        if (hour < 19.5) return 'toi1';
+        return 'toi2';
+      }
+
+      // 5. Cập nhật tiêu đề cột các ngày trong tuần (Thứ 2 .. Chủ nhật)
+      function updateTableHeaderDates(mondayDate) {
+        const todayStr = formatDateISO(new Date());
+        const dayHeaders = [
+          { thId: 'th-day-2', dayName: 'Thứ 2', offset: 0 },
+          { thId: 'th-day-3', dayName: 'Thứ 3', offset: 1 },
+          { thId: 'th-day-4', dayName: 'Thứ 4', offset: 2 },
+          { thId: 'th-day-5', dayName: 'Thứ 5', offset: 3 },
+          { thId: 'th-day-6', dayName: 'Thứ 6', offset: 4 },
+          { thId: 'th-day-7', dayName: 'Thứ 7', offset: 5 },
+          { thId: 'th-day-1', dayName: 'Chủ nhật', offset: 6 }
+        ];
+
+        dayHeaders.forEach(item => {
+          const d = new Date(mondayDate);
+          d.setDate(mondayDate.getDate() + item.offset);
+          const dateStr = formatDateISO(d);
+          const isToday = (dateStr === todayStr);
+
+          const th = document.getElementById(item.thId);
+          if (th) {
+            th.className = isToday ? 'today-col' : '';
+            th.innerHTML = `
+              <div>${item.dayName}</div>
+              <div style="font-size: 0.75rem; font-weight: normal; color: ${isToday ? '#1D4ED8' : '#64748B'}; margin-top: 2px;">
+                ${padZero(d.getDate())}/${padZero(d.getMonth() + 1)} ${isToday ? '<span class="badge badge-primary" style="font-size:0.6rem; padding: 1px 4px;">Hôm nay</span>' : ''}
+              </div>
+            `;
+          }
+        });
+      }
+
+      // 6. Tải dữ liệu lịch học từ API Backend (Sử dụng Loading Screen Overlay dùng chung)
+      async function loadSchedule(startDateStr, endDateStr) {
+        const loadingOverlay = document.getElementById('schedule-loading-overlay');
+        const noSessionsAlert = document.getElementById('no-sessions-alert');
+        const currentWeekLabel = document.getElementById('current-week-label');
+        const badgeSessionCount = document.getElementById('badge-session-count');
+
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        if (noSessionsAlert) noSessionsAlert.style.display = 'none';
+
+        // Cập nhật nhãn hiển thị
+        const startParts = startDateStr.split('-');
+        const endParts = endDateStr.split('-');
+        const labelText = `${startParts[2]}/${startParts[1]}/${startParts[0]} - ${endParts[2]}/${endParts[1]}/${endParts[0]}`;
+        if (currentWeekLabel) currentWeekLabel.textContent = labelText;
+
+        // Cập nhật ngày trên header bảng
+        const monday = new Date(parseInt(startParts[0], 10), parseInt(startParts[1], 10) - 1, parseInt(startParts[2], 10));
+        updateTableHeaderDates(monday);
+
+        // Header xác thực người dùng
+        const userId = studentUser.id || 8;
+        const headers = {
+          'Content-Type': 'application/json',
+          'X-User-Id': String(userId),
+          'Authorization': `Bearer ${userId}`
+        };
+
+        const apiUrl = `/api/v1/student/schedule?start_date=${startDateStr}&end_date=${endDateStr}&user_id=${userId}`;
+
+        const minDelay = new Promise(resolve => setTimeout(resolve, 350));
+        const fetchPromise = fetch(apiUrl, { headers });
+
+        try {
+          const [res] = await Promise.all([fetchPromise, minDelay]);
+          if (!res.ok) {
+            throw new Error(`HTTP error ${res.status}`);
+          }
+          const json = await res.json();
+          if (json && json.success && json.data) {
+            // Ràng buộc: không hiển thị các lớp complete hoặc cancel
+            const activeSessions = (json.data.sessions || []).filter(s => {
+              const cs = (s.class_status || '').toLowerCase();
+              const ss = (s.session_status || s.status || '').toLowerCase();
+              return cs !== 'complete' && cs !== 'completed' && cs !== 'cancelled' && cs !== 'canceled'
+                  && ss !== 'cancelled' && ss !== 'canceled';
+            });
+            renderScheduleTable(activeSessions, monday);
+          } else {
+            renderScheduleTable([], monday);
+          }
+        } catch (err) {
+          console.error('Không thể lấy lịch học từ API:', err);
+          renderScheduleTable([], monday);
+        } finally {
+          if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }
+      }
+
+      // 7. Render lưới lịch học và danh sách buổi học
+      function renderScheduleTable(sessions, mondayDate) {
+        const tableBody = document.getElementById('schedule-table-body');
+        const agendaContainer = document.getElementById('sessions-agenda-list');
+        const noSessionsAlert = document.getElementById('no-sessions-alert');
+        const badgeSessionCount = document.getElementById('badge-session-count');
+
+        if (badgeSessionCount) {
+          badgeSessionCount.textContent = `${sessions.length} buổi học`;
+          badgeSessionCount.className = sessions.length > 0 ? 'badge badge-primary' : 'badge badge-secondary';
+        }
+
+        if (sessions.length === 0) {
+          if (noSessionsAlert) noSessionsAlert.style.display = 'block';
+        } else {
+          if (noSessionsAlert) noSessionsAlert.style.display = 'none';
+        }
+
+        // Tạo ma trận: cellMap[slotId][dayOfWeek] = Array of sessions
+        // dayOfWeek: 2=Thứ 2, 3=Thứ 3, 4=Thứ 4, 5=Thứ 5, 6=Thứ 6, 7=Thứ 7, 1=Chủ nhật
+        const cellMap = {};
+        TIME_SLOTS.forEach(slot => {
+          cellMap[slot.id] = { 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 1: [] };
+        });
+
+        sessions.forEach(sess => {
+          const slotId = matchSlotId(sess.start_time);
+          let dow = sess.day_of_week;
+          if (!dow || dow < 1 || dow > 7) {
+            // Tự tính từ schedule_date nếu thiếu
+            if (sess.schedule_date) {
+              const d = new Date(sess.schedule_date);
+              const jsDow = d.getDay();
+              dow = (jsDow === 0) ? 1 : (jsDow + 1);
+            } else {
+              dow = 2;
+            }
+          }
+          if (cellMap[slotId] && cellMap[slotId][dow]) {
+            cellMap[slotId][dow].push(sess);
+          }
+        });
+
+        // 7.1. Render các hàng của bảng
+        tableBody.innerHTML = '';
+        TIME_SLOTS.forEach(slot => {
+          const tr = document.createElement('tr');
+
+          // Cột tên ca học
+          const tdSlot = document.createElement('td');
+          tdSlot.className = 'slot-col';
+          tdSlot.innerHTML = `
+            <strong>${slot.name}</strong>
+            <div style="font-size: 0.725rem; color: #64748B; margin-top: 2px;">${slot.timeRange}</div>
+          `;
+          tr.appendChild(tdSlot);
+
+          // 7 cột từ Thứ 2 đến Chủ nhật (2, 3, 4, 5, 6, 7, 1)
+          const daysOrder = [2, 3, 4, 5, 6, 7, 1];
+          daysOrder.forEach(day => {
+            const td = document.createElement('td');
+            const daySessions = cellMap[slot.id][day] || [];
+
+            if (daySessions.length === 0) {
+              td.innerHTML = '<span class="text-muted" style="color: #CBD5E1;">—</span>';
+            } else {
+              let html = '';
+              daySessions.forEach(s => {
+                const isCompleted = (s.status === 'completed');
+                const isOngoing = (s.status === 'ongoing');
+                const cardClass = isCompleted ? 'status-completed' : (isOngoing ? 'status-ongoing' : '');
+                const statusBadge = isCompleted 
+                  ? '<span class="badge badge-success" style="font-size:0.6rem; padding: 2px 5px;">Đã học</span>'
+                  : (isOngoing ? '<span class="badge badge-warning" style="font-size:0.6rem; padding: 2px 5px;">Đang diễn ra</span>' : '<span class="badge badge-primary" style="font-size:0.6rem; padding: 2px 5px;">Sắp diễn ra</span>');
+
+                html += `
+                  <div class="schedule-session-card ${cardClass}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; margin-bottom: 4px;">
+                      <strong style="color: #1D4ED8; font-size: 0.8125rem;">${s.class_name || s.class_code}</strong>
+                      ${statusBadge}
+                    </div>
+                    <div style="font-size: 0.75rem; color: #334155; font-weight: 600; margin-bottom: 3px;">
+                      ⏰ ${s.time_slot || (s.start_time + ' - ' + s.end_time)}
+                    </div>
+                    <div style="font-size: 0.725rem; color: #475569; margin-bottom: 2px;">
+                      📍 ${s.classroom || 'Phòng học trực tuyến'}
+                    </div>
+                    <div style="font-size: 0.725rem; color: #475569;">
+                      👨‍🏫 GV: <strong>${s.teacher_name || 'Đang cập nhật'}</strong>
+                    </div>
+                    ${s.lesson_title ? `<div style="font-size: 0.7rem; color: #64748B; margin-top: 4px; border-top: 1px dashed #BFDBFE; padding-top: 3px;">📝 ${s.lesson_title}</div>` : ''}
+                  </div>
+                `;
+              });
+              td.innerHTML = html;
+            }
+            tr.appendChild(td);
+          });
+
+          tableBody.appendChild(tr);
+        });
+
+        // 7.2. Render Danh sách chi tiết các buổi học (Agenda list)
+        if (agendaContainer) {
+          if (sessions.length === 0) {
+            agendaContainer.innerHTML = `
+              <div style="text-align: center; padding: 1.5rem; color: #64748B; font-size: 0.875rem;">
+                Không có buổi học nào cần tham gia trong tuần này.
+              </div>
+            `;
+          } else {
+            let agendaHtml = '';
+            sessions.forEach(sess => {
+              const dowNames = { 2: 'Thứ Hai', 3: 'Thứ Ba', 4: 'Thứ Tư', 5: 'Thứ Năm', 6: 'Thứ Sáu', 7: 'Thứ Bảy', 1: 'Chủ Nhật' };
+              const dowTitle = dowNames[sess.day_of_week] || 'Buổi học';
+              const dateDisplay = sess.schedule_date ? sess.schedule_date.split('-').reverse().join('/') : '';
+              const isCompleted = (sess.status === 'completed');
+
+              agendaHtml += `
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: var(--radius-md); gap: 1rem;">
+                  <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; border-radius: 10px; background: #EFF6FF; border: 1px solid #BFDBFE; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #1D4ED8;">
+                      <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">${dowTitle}</span>
+                      <strong style="font-size: 1rem; line-height: 1;">${dateDisplay ? dateDisplay.split('/')[0] : '•'}</strong>
+                    </div>
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <h4 style="margin: 0; font-size: 0.9375rem; font-weight: 700; color: #0F172A;">${sess.class_name || sess.class_code}</h4>
+                        <span class="badge ${isCompleted ? 'badge-success' : 'badge-primary'}" style="font-size: 0.65rem;">
+                          ${isCompleted ? 'Đã hoàn thành' : 'Sắp diễn ra'}
+                        </span>
+                      </div>
+                      <div style="font-size: 0.8125rem; color: #475569; margin-top: 3px;">
+                        🗓️ ${dowTitle}, ngày ${dateDisplay} &bull; ⏰ ${sess.time_slot || (sess.start_time + ' - ' + sess.end_time)}
+                      </div>
+                      <div style="font-size: 0.75rem; color: #64748B; margin-top: 2px;">
+                        📍 ${sess.classroom || 'Phòng học trực tuyến'} &bull; 👨‍🏫 Giảng viên: <strong>${sess.teacher_name || 'Đang cập nhật'}</strong>
+                      </div>
+                      ${sess.lesson_title ? `<div style="font-size: 0.75rem; color: #1D4ED8; margin-top: 2px;">📖 Bài học: ${sess.lesson_title}</div>` : ''}
+                    </div>
+                  </div>
+                  <div>
+                    <a href="learn.html?classId=${sess.class_id}" class="btn btn-sm btn-primary" style="font-weight: 600;">
+                      Vào lớp học
+                    </a>
+                  </div>
+                </div>
+              `;
+            });
+            agendaContainer.innerHTML = agendaHtml;
+          }
+        }
+      }
+
+      // 8. Bắt sự kiện thay đổi tuần
+      weekSelect.addEventListener('change', function () {
+        const val = this.value;
+        if (val) {
+          const parts = val.split('|');
+          loadSchedule(parts[0], parts[1]);
+        }
+      });
+
+      // Nút "Tuần trước"
+      if (btnPrevWeek) {
+        btnPrevWeek.addEventListener('click', function () {
+          if (weekSelect.selectedIndex > 0) {
+            weekSelect.selectedIndex -= 1;
+            weekSelect.dispatchEvent(new Event('change'));
+          }
+        });
+      }
+
+      // Nút "Tuần sau"
+      if (btnNextWeek) {
+        btnNextWeek.addEventListener('click', function () {
+          if (weekSelect.selectedIndex < weekSelect.options.length - 1) {
+            weekSelect.selectedIndex += 1;
+            weekSelect.dispatchEvent(new Event('change'));
+          }
+        });
+      }
+
+      // Nút "Tuần này"
+      if (btnCurrentWeek) {
+        btnCurrentWeek.addEventListener('click', function () {
+          weekSelect.value = currentWeekKey;
+          weekSelect.dispatchEvent(new Event('change'));
+        });
+      }
+
+      // 9. Kích hoạt tải lịch cho tuần được chọn ban đầu
+      const initialParts = weekSelect.value.split('|');
+      loadSchedule(initialParts[0], initialParts[1]);
+
+    })();
+  </script>
   <script src="../../../wwwroot/js/site.js"></script>
 </body>
 </html>

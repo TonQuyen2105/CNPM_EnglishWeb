@@ -8,8 +8,8 @@
   <!-- CSS Design System -->
   <link rel="stylesheet" href="wwwroot/css/tokens.css">
   <link rel="stylesheet" href="wwwroot/css/base.css">
-  <link rel="stylesheet" href="wwwroot/css/layout.css">
-  <link rel="stylesheet" href="wwwroot/css/components.css">
+  <link rel="stylesheet" href="wwwroot/css/layout.css?v=20261122a">
+  <link rel="stylesheet" href="wwwroot/css/components.css?v=20261122a">
 
   <style>
     /* Public Navigation Bar */
@@ -372,20 +372,18 @@
       <!-- Menu links -->
       <nav class="landing-nav-links">
         <a href="#courses" class="landing-nav-link">Khóa học</a>
-        <a href="#pathway" class="landing-nav-link">Lộ trình đào tạo</a>
         <a href="#features" class="landing-nav-link">Ưu điểm</a>
         <a href="#teachers" class="landing-nav-link">Giảng viên</a>
         <a href="#reviews" class="landing-nav-link">Cảm nhận học viên</a>
-        <a href="#contact" class="landing-nav-link">Liên hệ tư vấn</a>
       </nav>
 
-      <!-- Nút Đăng nhập & Thi thử -->
+      <!-- Nút Đăng nhập & Đăng ký -->
       <div class="landing-header-actions">
         <a href="login.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
           <span>Đăng nhập</span>
         </a>
-        <a href="#contact" class="btn btn-primary">Thi thử miễn phí</a>
+        <a href="register.html" class="btn btn-primary">Đăng ký tài khoản</a>
       </div>
     </div>
   </header>
@@ -416,20 +414,20 @@
 
         <div class="hero-stats-banner">
           <div>
-            <div class="stat-number">5.000+</div>
-            <div class="stat-label">Học viên đã đào tạo</div>
+            <div class="stat-number" id="hero-stat-students">--</div>
+            <div class="stat-label">Học viên đang theo học</div>
           </div>
           <div>
-            <div class="stat-number">98.5%</div>
-            <div class="stat-label">Đạt cam kết đầu ra</div>
+            <div class="stat-number" id="hero-stat-courses">--</div>
+            <div class="stat-label">Khóa học đang tuyển sinh</div>
           </div>
           <div>
-            <div class="stat-number">8.5</div>
-            <div class="stat-label">IELTS Band cao nhất</div>
-          </div>
-          <div>
-            <div class="stat-number">100%</div>
+            <div class="stat-number" id="hero-stat-teachers">--</div>
             <div class="stat-label">Giảng viên chuẩn quốc tế</div>
+          </div>
+          <div>
+            <div class="stat-number" id="hero-stat-rating">--</div>
+            <div class="stat-label">Đánh giá trung bình</div>
           </div>
         </div>
       </div>
@@ -448,8 +446,11 @@
           <a href="login.html" class="btn btn-primary" style="width: 100%; padding: 12px; justify-content: center; font-size: 0.9375rem;">
             🚀 Đăng nhập vào Hệ thống học tập
           </a>
+          <a href="register.html" class="btn btn-secondary" style="width: 100%; padding: 10px; justify-content: center; font-size: 0.875rem;">
+            Đăng ký tài khoản học viên mới
+          </a>
           <div style="font-size: 0.75rem; text-align: center; color: var(--text-muted);">
-            Tài khoản dùng thử demo (1-Click Login): <code>admin@el.com</code>, <code>teacher@el.com</code>, <code>student@el.com</code>
+            Tài khoản demo 3 phân hệ sẵn có tại trang Đăng nhập (1-Click Fill)
           </div>
         </div>
 
@@ -474,161 +475,9 @@
       <p class="section-subtitle">Lộ trình thiết kế bài bản theo khung tham chiếu Châu Âu (CEFR), đáp ứng mục tiêu giao tiếp và chứng chỉ quốc tế.</p>
     </div>
 
-    <div class="course-grid">
-      <!-- Course 1 -->
-      <div class="course-card-public">
-        <div class="course-card-header" style="background: linear-gradient(135deg, #1E3A8A, #3B82F6);">
-          <span class="badge badge-success" style="align-self: flex-start;">Đang tuyển sinh</span>
-          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Tiếng Anh Giao Tiếp Cơ Bản</h3>
-        </div>
-        <div class="course-card-body">
-          <div>
-            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
-              <span class="badge badge-info">Cơ bản (Beginner)</span>
-              <span class="badge badge-neutral">24 buổi</span>
-            </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
-              Khóa học nền tảng chuẩn hóa 44 âm IPA, luyện phản xạ đàm thoại 20 chủ đề thông dụng trong đời sống và công sở.
-            </p>
-          </div>
-          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
-              <strong style="color: var(--primary-600); font-size: 1.25rem;">2.500.000 ₫</strong>
-            </div>
-            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Course 2 -->
-      <div class="course-card-public">
-        <div class="course-card-header" style="background: linear-gradient(135deg, #065F46, #10B981);">
-          <span class="badge badge-success" style="align-self: flex-start;">Khóa Hot</span>
-          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Luyện Thi IELTS 6.5+ / 7.5+</h3>
-        </div>
-        <div class="course-card-body">
-          <div>
-            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
-              <span class="badge badge-warning">Nâng cao (Advanced)</span>
-              <span class="badge badge-neutral">36 buổi</span>
-            </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
-              Chiến thuật giải đề Writing Task 2, Speaking Part 2-3 và phòng thi thử Mock Test 1-kèm-1 cùng giảng viên IELTS 8.5.
-            </p>
-          </div>
-          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
-              <strong style="color: var(--primary-600); font-size: 1.25rem;">5.800.000 ₫</strong>
-            </div>
-            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Course 3 -->
-      <div class="course-card-public">
-        <div class="course-card-header" style="background: linear-gradient(135deg, #7C2D12, #F97316);">
-          <span class="badge badge-success" style="align-self: flex-start;">Cam kết đầu ra</span>
-          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">TOEIC 750+ Cấp Tốc</h3>
-        </div>
-        <div class="course-card-body">
-          <div>
-            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
-              <span class="badge badge-primary">Trung cấp (Intermediate)</span>
-              <span class="badge badge-neutral">30 buổi</span>
-            </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
-              Bộ bẫy Part 5, 6, 7 độc quyền và kỹ năng nghe bắt từ khóa Part 3, 4 giúp bứt phá 200+ điểm chỉ sau 2 tháng học.
-            </p>
-          </div>
-          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
-              <strong style="color: var(--primary-600); font-size: 1.25rem;">3.200.000 ₫</strong>
-            </div>
-            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Course 4 -->
-      <div class="course-card-public">
-        <div class="course-card-header" style="background: linear-gradient(135deg, #4C1D95, #8B5CF6);">
-          <span class="badge badge-info" style="align-self: flex-start;">Dành cho bé</span>
-          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Tiếng Anh Trẻ Em Super Kids</h3>
-        </div>
-        <div class="course-card-body">
-          <div>
-            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
-              <span class="badge badge-info">Thiếu nhi (6 - 12 tuổi)</span>
-              <span class="badge badge-neutral">20 buổi</span>
-            </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
-              Phương pháp học tương tác qua bài hát, flashcard hình ảnh vui nhộn, kích thích phản xạ ngôn ngữ tự nhiên như tiếng mẹ đẻ.
-            </p>
-          </div>
-          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
-              <strong style="color: var(--primary-600); font-size: 1.25rem;">2.200.000 ₫</strong>
-            </div>
-            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Course 5 -->
-      <div class="course-card-public">
-        <div class="course-card-header" style="background: linear-gradient(135deg, #1E293B, #475569);">
-          <span class="badge badge-warning" style="align-self: flex-start;">Chuyên sâu</span>
-          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">IELTS Writing Masterclass</h3>
-        </div>
-        <div class="course-card-body">
-          <div>
-            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
-              <span class="badge badge-warning">Học thuật (Advanced)</span>
-              <span class="badge badge-neutral">28 buổi</span>
-            </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
-              Chuyên sâu Task 1 Biểu đồ & Task 2 Nghị luận xã hội với kho bài mẫu 8.0+ Band và sửa bài viết luận chi tiết từng câu.
-            </p>
-          </div>
-          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
-              <strong style="color: var(--primary-600); font-size: 1.25rem;">4.500.000 ₫</strong>
-            </div>
-            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Course 6 -->
-      <div class="course-card-public">
-        <div class="course-card-header" style="background: linear-gradient(135deg, #831843, #DB2777);">
-          <span class="badge badge-success" style="align-self: flex-start;">Người đi làm</span>
-          <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Business English Communication</h3>
-        </div>
-        <div class="course-card-body">
-          <div>
-            <div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
-              <span class="badge badge-primary">Thương mại (Intermediate)</span>
-              <span class="badge badge-neutral">24 buổi</span>
-            </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
-              Kỹ năng đàm phán hợp đồng, thuyết trình trước đối tác quốc tế, viết email chuyên nghiệp cho nhân viên công sở và quản lý.
-            </p>
-          </div>
-          <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
-              <strong style="color: var(--primary-600); font-size: 1.25rem;">3.800.000 ₫</strong>
-            </div>
-            <a href="#contact" class="btn btn-sm btn-primary">Đăng ký tư vấn</a>
-          </div>
-        </div>
+    <div class="course-grid" id="landing-courses-grid">
+      <div class="course-card-public" style="grid-column: 1 / -1; padding: 2.5rem; text-align: center; color: var(--text-muted);">
+        Đang tải danh sách khóa học từ hệ thống...
       </div>
     </div>
   </section>
@@ -694,33 +543,9 @@
       <p class="section-subtitle">100% giảng viên sở hữu chứng chỉ quốc tế IELTS 8.0+, TOEIC 980, Thạc sĩ TESOL và giáo viên bản ngữ.</p>
     </div>
 
-    <div class="teachers-grid">
-      <div class="teacher-card-public">
-        <div class="avatar avatar-xl" style="background-color: #059669; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">LM</div>
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 2px;">Cô Lê Thị Mai</h3>
-        <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">IELTS 8.5 • ThS. TESOL</div>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Chuyên gia đào tạo kỹ năng Speaking và Writing học thuật với hơn 7 năm kinh nghiệm.</p>
-      </div>
-
-      <div class="teacher-card-public">
-        <div class="avatar avatar-xl" style="background-color: #0284C7; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">JS</div>
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 2px;">Thầy John Smith</h3>
-        <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">CELTA (Cambridge) • Bản xứ London</div>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Phụ trách phát âm chuẩn IPA Anh - Anh và phản xạ đàm thoại giao tiếp tự nhiên.</p>
-      </div>
-
-      <div class="teacher-card-public">
-        <div class="avatar avatar-xl" style="background-color: #2563EB; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">VH</div>
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 2px;">Thầy Nguyễn Văn Hùng</h3>
-        <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">Thạc sĩ ĐH Ngoại Ngữ • TOEIC 980</div>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Hơn 8 năm giảng dạy TOEIC Cấp Tốc và phương pháp bóc tách bẫy đề thi độc quyền.</p>
-      </div>
-
-      <div class="teacher-card-public">
-        <div class="avatar avatar-xl" style="background-color: #7C3AED; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">TH</div>
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 2px;">Cô Trần Thu Hà</h3>
-        <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">IELTS 8.0 • Thạc sĩ Ngôn ngữ Anh</div>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">Chuyên gia bứt phá band điểm Writing Task 1 và Task 2 cho học viên mất gốc.</p>
+    <div class="teachers-grid" id="landing-teachers-grid">
+      <div class="teacher-card-public" style="grid-column: 1 / -1; color: var(--text-muted);">
+        Đang tải danh sách giảng viên...
       </div>
     </div>
   </section>
@@ -731,104 +556,13 @@
       <div class="section-header">
         <span class="section-tag">Câu chuyện thành công</span>
         <h2 class="section-title">Học Viên Nói Gì Về EnglishLearning?</h2>
-        <p class="section-subtitle">Hơn 5.000 học viên đã chinh phục mục tiêu tiếng Anh của mình cùng chúng tôi.</p>
+        <p class="section-subtitle" id="landing-reviews-subtitle">Đánh giá thực tế từ các học viên đã và đang học tại trung tâm.</p>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.75rem;">
-        <div class="card" style="padding: 1.75rem; background: white;">
-          <div style="color: #F59E0B; margin-bottom: 0.75rem; font-size: 1.25rem;">⭐⭐⭐⭐⭐</div>
-          <p style="font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem;">
-            "Em mất gốc tiếng Anh từ cấp 3. Sau khóa Giao tiếp COMM-01 của cô Mai, em đã tự tin phỏng vấn xin việc bằng tiếng Anh tại công ty đa quốc gia thành công!"
-          </p>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="avatar avatar-sm" style="background-color: var(--primary-600); color: white;">HA</div>
-            <div>
-              <strong>Nguyễn Hoàng Anh</strong>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Khóa Giao Tiếp COMM-01</div>
-            </div>
-          </div>
+      <div id="landing-reviews-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.75rem;">
+        <div class="card" style="grid-column: 1 / -1; padding: 2rem; background: white; text-align: center; color: var(--text-muted);">
+          Đang tải đánh giá của học viên...
         </div>
-
-        <div class="card" style="padding: 1.75rem; background: white;">
-          <div style="color: #F59E0B; margin-bottom: 0.75rem; font-size: 1.25rem;">⭐⭐⭐⭐⭐</div>
-          <p style="font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem;">
-            "Bộ đề thi thử IELTS tại trung tâm mô phỏng cực sát kỳ thi IDP thật. Em thi thật đạt 7.5 Overall, trong đó Writing được 7.5 nhờ các bài chữa chi tiết của cô Hà."
-          </p>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="avatar avatar-sm" style="background-color: #059669; color: white;">PN</div>
-            <div>
-              <strong>Trần Phương Nam</strong>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Đạt IELTS 7.5 (Target 6.5)</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="padding: 1.75rem; background: white;">
-          <div style="color: #F59E0B; margin-bottom: 0.75rem; font-size: 1.25rem;">⭐⭐⭐⭐⭐</div>
-          <p style="font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem;">
-            "Thầy Hùng dạy rất hài hước và nhiều mẹo loại trừ bẫy Part 5, Part 7 cực kỳ hay. Sau 2 tháng học TOEIC cấp tốc, em tăng từ 520 lên 815 điểm!"
-          </p>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="avatar avatar-sm" style="background-color: #D97706; color: white;">ML</div>
-            <div>
-              <strong>Vũ Mai Linh</strong>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Đạt TOEIC 815 Điểm</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Form Đăng ký tư vấn & Thi thử miễn phí -->
-  <section class="section-wrapper" id="contact">
-    <div style="background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); border-radius: var(--radius-2xl); padding: 4rem 3rem; color: white; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
-      <div>
-        <span class="badge" style="background: rgba(255,255,255,0.2); color: white; margin-bottom: 1rem;">Đăng ký miễn phí</span>
-        <h2 style="font-size: 2.25rem; font-weight: 800; line-height: 1.25; margin-bottom: 1rem; color: white;">
-          Nhận Tư Vấn Lộ Trình & Bài Thi Thử Xếp Lớp Ngay Hôm Nay
-        </h2>
-        <p style="color: #E2E8F0; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem;">
-          Để lại thông tin để chuyên gia học thuật của EnglishLearning liên hệ tư vấn lộ trình học phù hợp nhất với trình độ hiện tại của bạn.
-        </p>
-        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9375rem;">
-          <div>📞 Hotline tư vấn 24/7: <strong>0909 123 456</strong></div>
-          <div>📍 Trụ sở chính: Tòa nhà EnglishLearning, Q.1, TP. Hồ Chí Minh</div>
-          <div>⏰ Giờ làm việc: 08:00 - 21:30 (Thứ 2 đến Chủ nhật)</div>
-        </div>
-      </div>
-
-      <!-- Form nhập -->
-      <div style="background: white; padding: 2.25rem; border-radius: var(--radius-xl); color: var(--text-primary); box-shadow: var(--shadow-xl);">
-        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--primary-900);">Đăng ký nhận ưu đãi 20%</h3>
-        <form id="public-register-form">
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Họ và tên của bạn <span style="color:red;">*</span></label>
-            <input type="text" class="form-control" placeholder="Ví dụ: Nguyễn Văn An" required>
-          </div>
-          <div class="grid grid-cols-2 gap-3" style="margin-bottom: 1rem;">
-            <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Số điện thoại <span style="color:red;">*</span></label>
-              <input type="tel" class="form-control" placeholder="0912 345 678" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Email nhận kết quả</label>
-              <input type="email" class="form-control" placeholder="an.nguyen@gmail.com">
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom: 1.25rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Khóa học bạn đang quan tâm</label>
-            <select class="form-control">
-              <option value="comm">Tiếng Anh Giao Tiếp Thực Chiến</option>
-              <option value="ielts">Luyện Thi IELTS 6.5+ / 7.5+</option>
-              <option value="toeic">Luyện Thi TOEIC 750+ Cấp Tốc</option>
-              <option value="kids">Tiếng Anh Thiếu Nhi Super Kids</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;">
-            Gửi yêu cầu đăng ký tư vấn &rarr;
-          </button>
-        </form>
       </div>
     </div>
   </section>
@@ -862,9 +596,10 @@
         <h4 style="color: white; font-size: 0.9375rem; font-weight: 700; margin-bottom: 1rem;">Cổng trực tuyến</h4>
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.875rem;">
           <a href="login.html" style="color: #60A5FA; text-decoration: none;">Đăng nhập hệ thống</a>
-          <a href="Areas/Student/Views/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Học viên (Student)</a>
-          <a href="Areas/Teacher/Views/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Giảng viên (Teacher)</a>
-          <a href="Areas/Admin/Views/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Quản trị (Admin)</a>
+          <a href="register.html" style="color: #94A3B8; text-decoration: none;">Đăng ký tài khoản học viên</a>
+          <a href="/Areas/Student/Views/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Học viên</a>
+          <a href="/Teacher/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Giảng viên</a>
+          <a href="/Admin/dashboard.html" style="color: #94A3B8; text-decoration: none;">Cổng Quản trị</a>
         </div>
       </div>
 
@@ -883,45 +618,194 @@
     </div>
   </footer>
 
-  <!-- Notification Toast -->
-  <div class="toast-container"></div>
-
   <!-- Interactive Script -->
   <script>
-    const form = document.getElementById('public-register-form');
-    if (form) {
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Đang gửi thông tin...';
+    (function () {
+      const GRADIENTS = [
+        'linear-gradient(135deg, #1E3A8A, #3B82F6)',
+        'linear-gradient(135deg, #065F46, #10B981)',
+        'linear-gradient(135deg, #7C2D12, #F97316)',
+        'linear-gradient(135deg, #4C1D95, #8B5CF6)',
+        'linear-gradient(135deg, #1E293B, #475569)',
+        'linear-gradient(135deg, #831843, #DB2777)'
+      ];
+      const AVATAR_COLORS = ['#059669', '#0284C7', '#2563EB', '#7C3AED', '#D97706'];
 
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Gửi yêu cầu đăng ký tư vấn →';
-          form.reset();
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
 
-          // Show Toast notification
-          const container = document.querySelector('.toast-container');
-          if (container) {
-            const item = document.createElement('div');
-            item.className = 'toast toast-success';
-            item.innerHTML = `
-              <div class="toast-body">
-                <div class="toast-title" style="font-weight: 700;">Đăng ký thành công!</div>
-                <div class="toast-message" style="font-size: 0.85rem;">Cảm ơn bạn. Chuyên viên học vụ của EnglishLearning sẽ liên hệ tư vấn trong 15 phút tới.</div>
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
+      }
+
+      function getInitials(name) {
+        const parts = String(name || 'EL').trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return 'EL';
+        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+
+      function levelMeta(level) {
+        switch ((level || '').toLowerCase()) {
+          case 'advanced':
+            return { label: 'Nâng cao', cls: 'badge-warning' };
+          case 'intermediate':
+            return { label: 'Trung cấp', cls: 'badge-primary' };
+          default:
+            return { label: 'Cơ bản', cls: 'badge-success' };
+        }
+      }
+
+      function renderStats(stats) {
+        const s = stats || {};
+        document.getElementById('hero-stat-students').textContent = String(s.totalStudents ?? 0);
+        document.getElementById('hero-stat-courses').textContent = String(s.totalCourses ?? 0);
+        document.getElementById('hero-stat-teachers').textContent = String(s.totalTeachers ?? 0);
+        document.getElementById('hero-stat-rating').textContent = `${Number(s.avgRating ?? 5).toFixed(1)} ★`;
+        const reviewSub = document.getElementById('landing-reviews-subtitle');
+        if (reviewSub && (s.totalReviews ?? 0) > 0) {
+          reviewSub.textContent = `Tổng hợp từ ${s.totalReviews} lượt đánh giá thực tế (trung bình ${Number(s.avgRating ?? 5).toFixed(1)}/5 sao).`;
+        }
+      }
+
+      function renderCourses(courses) {
+        const grid = document.getElementById('landing-courses-grid');
+        if (!grid) return;
+        const list = Array.isArray(courses) ? courses : [];
+        if (list.length === 0) {
+          grid.innerHTML = '<div class="course-card-public" style="grid-column: 1 / -1; padding: 2.5rem; text-align: center; color: var(--text-muted);">Hiện chưa có khóa học nào đang mở tuyển sinh.</div>';
+          return;
+        }
+
+        grid.innerHTML = list.map((c, idx) => {
+          const grad = GRADIENTS[idx % GRADIENTS.length];
+          const lv = levelMeta(c.level);
+          const desc = (c.description || '').trim() || 'Chương trình đào tạo tiếng Anh bài bản, thực hành bám sát mục tiêu đầu ra.';
+          const shortDesc = desc.length > 150 ? desc.slice(0, 147) + '...' : desc;
+          const badgeText = c.openClassCount > 0 ? `Đang mở ${c.openClassCount} lớp` : 'Đang tuyển sinh';
+
+          return `
+            <div class="course-card-public">
+              <div class="course-card-header" style="background: ${grad};">
+                <span class="badge badge-success" style="align-self: flex-start;">${escapeHtml(badgeText)}</span>
+                <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">${escapeHtml(c.title)}</h3>
               </div>
-            `;
-            container.appendChild(item);
-            setTimeout(() => {
-              item.style.opacity = '0';
-              item.style.transition = 'all 0.3s ease';
-              setTimeout(() => item.remove(), 300);
-            }, 3500);
+              <div class="course-card-body">
+                <div>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                    <span class="badge ${lv.cls}">${escapeHtml(lv.label)}</span>
+                    <span class="badge badge-neutral">${escapeHtml(c.subjectName || 'Tiếng Anh')}</span>
+                    <span class="badge badge-neutral">${Number(c.lessonCount || 0)} bài học</span>
+                  </div>
+                  <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">${escapeHtml(shortDesc)}</p>
+                </div>
+                <div style="border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Học phí niêm yết:</div>
+                    <strong style="color: var(--primary-600); font-size: 1.25rem;">${formatCurrency(c.price)}</strong>
+                  </div>
+                  <a href="login.html" class="btn btn-sm btn-primary">Đăng ký học</a>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderTeachers(teachers) {
+        const grid = document.getElementById('landing-teachers-grid');
+        if (!grid) return;
+        const list = Array.isArray(teachers) ? teachers : [];
+        if (list.length === 0) {
+          grid.innerHTML = '<div class="teacher-card-public" style="grid-column: 1 / -1; color: var(--text-muted);">Đang cập nhật hồ sơ đội ngũ giảng viên.</div>';
+          return;
+        }
+
+        grid.innerHTML = list.map((t, idx) => {
+          const bg = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+          const bio = (t.bio || '').trim();
+          const shortBio = bio.length > 130 ? bio.slice(0, 127) + '...' : bio;
+          return `
+            <div class="teacher-card-public">
+              <div class="avatar avatar-xl" style="background-color: ${bg}; color: white; margin: 0 auto 1rem auto; font-size: 1.5rem; width: 64px; height: 64px;">${escapeHtml(getInitials(t.fullName))}</div>
+              <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 4px;">${escapeHtml(t.fullName)}</h3>
+              <div style="font-size: 0.8125rem; color: var(--primary-600); font-weight: 700; margin-bottom: 0.5rem;">${escapeHtml(t.qualification)}</div>
+              <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">${escapeHtml(shortBio)}</p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderReviews(reviews) {
+        const grid = document.getElementById('landing-reviews-grid');
+        if (!grid) return;
+        const list = Array.isArray(reviews) ? reviews : [];
+        if (list.length === 0) {
+          grid.innerHTML = '<div class="card" style="grid-column: 1 / -1; padding: 2rem; background: white; text-align: center; color: var(--text-muted);">Chưa có đánh giá khóa học nào được chia sẻ.</div>';
+          return;
+        }
+
+        grid.innerHTML = list.map((r, idx) => {
+          const stars = Math.max(1, Math.min(5, Number(r.rating) || 5));
+          const starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+          const bg = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+          return `
+            <div class="card" style="padding: 1.75rem; background: white; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="color: #F59E0B; margin-bottom: 0.75rem; font-size: 1.15rem; letter-spacing: 2px;">${starStr}</div>
+                <p style="font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem;">
+                  "${escapeHtml(r.comment)}"
+                </p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="avatar avatar-sm" style="background-color: ${bg}; color: white;">${escapeHtml(getInitials(r.studentName))}</div>
+                <div>
+                  <strong>${escapeHtml(r.studentName)}</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.courseTitle)}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      async function loadLandingData() {
+        try {
+          const res = await fetch('/api/public/landing', { headers: { Accept: 'application/json' } });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || data.success === false) {
+            throw new Error(data.message || `HTTP ${res.status}`);
           }
-        }, 600);
-      });
-    }
+          renderStats(data.stats);
+          renderCourses(data.courses);
+          renderTeachers(data.teachers);
+          renderReviews(data.reviews);
+        } catch (err) {
+          console.error('Không thể tải dữ liệu Landing Page:', err);
+          const coursesGrid = document.getElementById('landing-courses-grid');
+          if (coursesGrid) {
+            coursesGrid.innerHTML = '<div class="course-card-public" style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: var(--text-muted);">Chưa thể tải danh sách khóa học từ máy chủ. Vui lòng thử tải lại trang.</div>';
+          }
+          const teachersGrid = document.getElementById('landing-teachers-grid');
+          if (teachersGrid) {
+            teachersGrid.innerHTML = '<div class="teacher-card-public" style="grid-column: 1 / -1; color: var(--text-muted);">Chưa thể tải danh sách giảng viên.</div>';
+          }
+          const reviewsGrid = document.getElementById('landing-reviews-grid');
+          if (reviewsGrid) {
+            reviewsGrid.innerHTML = '<div class="card" style="grid-column: 1 / -1; padding: 2rem; background: white; text-align: center; color: var(--text-muted);">Chưa thể tải đánh giá học viên.</div>';
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', loadLandingData);
+    })();
   </script>
 </body>
 </html>

@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Học viên & Đăng ký - EnglishAdmin</title>
+  <title>Học viên &amp; Đăng ký - EnglishAdmin</title>
   
   <!-- CSS Design System -->
-  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/base.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261124c">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -25,6 +25,131 @@
     .user-profile-trigger:hover {
       background-color: var(--neutral-100); border-color: var(--border-color);
     }
+
+    /* Filter Card UI */
+    .filter-card {
+      padding: 0.875rem 1.25rem;
+      margin-bottom: 1.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: #FFFFFF;
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 2fr) minmax(170px, 1.2fr) minmax(160px, 1fr) minmax(170px, 1.1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .filter-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+    .filter-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.01em;
+    }
+    .filter-card .form-control {
+      height: 38px;
+      font-size: 0.875rem;
+    }
+    .filter-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .filter-actions .btn {
+      height: 38px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    @media (max-width: 1180px) {
+      .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .filter-field-search {
+        grid-column: 1 / -1;
+      }
+      .filter-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+      }
+    }
+    @media (max-width: 640px) {
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+      .filter-actions {
+        justify-content: stretch;
+      }
+      .filter-actions .btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    /* Danh sách dạng hàng ngang gọn gàng (1 hàng / học viên) */
+    #enrollments-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+    .enrollment-row-card {
+      padding: 0.75rem 1.125rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: nowrap;
+    }
+    .enr-row-student {
+      min-width: 210px;
+      max-width: 250px;
+      flex: 1.2;
+    }
+    .enr-row-class {
+      min-width: 200px;
+      flex: 1.4;
+    }
+    .enr-row-fee {
+      min-width: 145px;
+      flex: 0.9;
+      text-align: right;
+    }
+    .enr-row-status {
+      min-width: 140px;
+      flex: 0.8;
+      display: flex;
+      justify-content: center;
+    }
+    .enr-row-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 1100px) {
+      .enrollment-row-card {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+      .enr-row-fee {
+        text-align: left;
+      }
+      .enr-row-status {
+        justify-content: flex-start;
+      }
+      .enr-row-actions {
+        margin-left: auto;
+      }
+    }
   </style>
 </head>
 <body>
@@ -35,7 +160,7 @@
     <!-- Sidebar Trắng Hiện Đại -->
     <aside class="app-sidebar" id="app-sidebar" style="background-color: #FFFFFF;">
       <div class="sidebar-header">
-        <a href="dashboard.html" class="brand-logo" style="text-decoration: none;">
+        <a href="/Admin/dashboard.html" class="brand-logo" style="text-decoration: none;">
           <div class="logo-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
@@ -47,67 +172,82 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Tổng quan</div>
-      <a href="dashboard.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Bảng điều khiển</span>
-      </a>
-    <div class="nav-section-title">Quản lý đào tạo</div>
-      <a href="subjects.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
-      </a>
-    
-      <a href="courses.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="classes.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
-        <span>Lớp học</span>
-      </a>
-    
-      <a href="schedules.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Thời khóa biểu</span>
-      </a>
-    <div class="nav-section-title">Quản lý người dùng</div>
-      <a href="users.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
-        <span>Tài khoản người dùng</span>
-      </a>
-    
-      <a href="teachers.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
-        <span>Giảng viên</span>
-      </a>
-    
-      <a href="enrollments.html" class="nav-item active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
-        <span>Học viên & Đăng ký</span>
-      </a>
-    <div class="nav-section-title">Khảo thí & Đánh giá</div>
-      <a href="exams.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Đề thi & Khảo thí</span>
-      </a>
-    
-      <a href="reviews.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-        <span>Đánh giá khóa học</span>
-      </a>
-    <div class="nav-section-title">Cơ sở & Báo cáo</div>
-      <a href="facilities.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
-        <span>Phòng học & Cơ sở</span>
-      </a>
-    
-      <a href="reports.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-        <span>Báo cáo & Thống kê</span>
-      </a>
-    
+        <a href="/Admin/dashboard.html" class="nav-item">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+          <span>Tổng quan</span>
+        </a>
+        <a href="/Admin/reports.html" class="nav-item">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+          <span>Báo cáo</span>
+        </a>
+        <div class="nav-group" data-nav-group="training">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Đào tạo</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/subjects.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="/Admin/courses.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+            <span>Môn học</span>
+          </a>
+          <a href="/Admin/course-objectives.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+            <span>Đề cương</span>
+          </a>
+          <a href="/Admin/classes.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+            <span>Lớp học</span>
+          </a>
+          <a href="/Admin/schedules.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="/Admin/facilities.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
+            <span>Phòng học</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group is-open" data-nav-group="people">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="true">
+            <span>Người dùng</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/enrollments.html" class="nav-item active">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
+            <span>Học viên</span>
+          </a>
+          <a href="/Admin/teachers.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
+            <span>Giảng viên</span>
+          </a>
+          <a href="/Admin/users.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+            <span>Tài khoản</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="assessment">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Khảo thí</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/exams.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Kỳ thi</span>
+          </a>
+          <a href="/Admin/reviews.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+            <span>Đánh giá</span>
+          </a>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -139,7 +279,7 @@
           <div class="breadcrumb" style="font-size: 0.875rem;">
             <span>Quản trị hệ thống</span>
             <span style="color: var(--text-muted); margin: 0 6px;">/</span>
-            <span style="font-weight: 600; color: var(--text-primary);">Học viên & Đăng ký</span>
+            <span style="font-weight: 600; color: var(--text-primary);">Học viên &amp; Đăng ký</span>
           </div>
         </div>
 
@@ -190,7 +330,7 @@
                 <div style="font-weight: 700; font-size: 0.875rem;">Quản trị viên</div>
                 <span class="badge badge-primary" style="margin-top: 4px;">Super Admin</span>
               </div>
-              <a href="users.html" class="dropdown-item">
+              <a href="/Admin/users.html" class="dropdown-item">
                 <span>Quản lý người dùng</span>
               </a>
               <div class="dropdown-divider"></div>
@@ -205,166 +345,1013 @@
       <!-- Vùng Nội Dung Chính -->
       <main class="page-container" id="app-main-content">
         
-  <div class="page-header">
-    <div>
-      <h1 class="page-header-title">Quản lý ghi danh & học viên khóa học</h1>
-      <p class="page-header-subtitle">Hồ sơ đăng ký lớp học và danh sách học viên theo từng khóa</p>
-    </div>
-    <div class="page-header-actions">
-      <button class="btn btn-primary" data-modal-target="modal-create-enrollment">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Ghi danh học viên mới
-      </button>
-    </div>
-  </div>
+        <div class="page-header" style="flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h1 class="page-header-title">Quản lý ghi danh &amp; thanh toán học phí</h1>
+          </div>
+          <div class="page-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary" id="btn-export-enrollments-csv">Xuất CSV</button>
+          </div>
+        </div>
 
-  <div class="card" style="padding: 0; overflow: hidden;">
-    <div class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Mã ĐK</th>
-            <th>Học viên</th>
-            <th>Lớp học</th>
-            <th>Học phí</th>
-            <th>Hình thức</th>
-            <th>Ngày đóng</th>
-            <th>Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>#ENR-101</strong></td>
-            <td>Nguyễn Hoàng Anh</td>
-            <td><span class="badge badge-primary">COMM-01</span> Giao Tiếp K01</td>
-            <td><strong>2.500.000 ₫</strong></td>
-            <td>Chuyển khoản (Vietcombank)</td>
-            <td>24/10/2026</td>
-            <td><span class="badge badge-success">Đã thu học phí</span></td>
-          </tr>
-          <tr>
-            <td><strong>#ENR-102</strong></td>
-            <td>Trần Phương Nam</td>
-            <td><span class="badge badge-primary">IELTS-B01</span> IELTS 6.5+</td>
-            <td><strong>5.800.000 ₫</strong></td>
-            <td>Chuyển khoản (Techcombank)</td>
-            <td>23/10/2026</td>
-            <td><span class="badge badge-success">Đang học</span></td>
-          </tr>
-          <tr>
-            <td><strong>#ENR-103</strong></td>
-            <td>Lê Thị Kim Ngân</td>
-            <td><span class="badge badge-primary">TOEIC-A01</span> TOEIC Cấp Tốc Tối</td>
-            <td><strong>3.200.000 ₫</strong></td>
-            <td>Chuyển khoản (Momo)</td>
-            <td>22/10/2026</td>
-            <td><span class="badge badge-warning">Chờ mở lớp</span></td>
-          </tr>
-          <tr>
-            <td><strong>#ENR-104</strong></td>
-            <td>Vũ Mai Linh</td>
-            <td><span class="badge badge-primary">COMM-01</span> Giao Tiếp K01</td>
-            <td><strong>2.500.000 ₫</strong></td>
-            <td>Tiền mặt tại trung tâm</td>
-            <td>21/10/2026</td>
-            <td><span class="badge badge-success">Đang học</span></td>
-          </tr>
-          <tr>
-            <td><strong>#ENR-105</strong></td>
-            <td>Đặng Quốc Bảo</td>
-            <td><span class="badge badge-primary">IELTS-B01</span> IELTS 6.5+</td>
-            <td><strong>5.800.000 ₫</strong></td>
-            <td>Chuyển khoản (Vietcombank)</td>
-            <td>20/10/2026</td>
-            <td><span class="badge badge-success">Đang học</span></td>
-          </tr>
-          <tr>
-            <td><strong>#ENR-106</strong></td>
-            <td>Hoàng Thùy Dung</td>
-            <td><span class="badge badge-primary">KIDS-01</span> Super Kids K01</td>
-            <td><strong>2.200.000 ₫</strong></td>
-            <td>Chuyển khoản (VPBank)</td>
-            <td>19/10/2026</td>
-            <td><span class="badge badge-success">Đang học</span></td>
-          </tr>
-          <tr>
-            <td><strong>#ENR-107</strong></td>
-            <td>Phan Minh Trí</td>
-            <td><span class="badge badge-primary">COMM-02</span> Giao Tiếp Phản Xạ</td>
-            <td><strong>2.500.000 ₫</strong></td>
-            <td>Chuyển khoản (ACB)</td>
-            <td>15/09/2026</td>
-            <td><span class="badge badge-neutral">Đã hoàn thành</span></td>
-          </tr>
-          <tr>
-            <td><strong>#ENR-108</strong></td>
-            <td>Bùi Quỳnh Hoa</td>
-            <td><span class="badge badge-primary">BIZ-01</span> Business English</td>
-            <td><strong>3.800.000 ₫</strong></td>
-            <td>Chuyển khoản (MBBank)</td>
-            <td>24/10/2026</td>
-            <td><span class="badge badge-warning">Chờ mở lớp</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+        <!-- Thống kê học phí & thanh toán -->
+        <div class="grid grid-cols-4 gap-4" style="margin-bottom: 1.25rem;">
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Học viên đã đóng học phí</span>
+              <span class="stat-value text-success" id="kpi-paid-students">--</span>
+              <span class="stat-change" id="kpi-paid-enrollments-sub">-- lượt ghi danh</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Tổng học phí đã thu</span>
+              <span class="stat-value text-primary" id="kpi-collected-amount">--</span>
+              <span class="stat-change" id="kpi-paid-tx-sub">-- giao dịch hoàn tất</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Giao dịch chờ thanh toán</span>
+              <span class="stat-value" style="color: var(--warning-main, #D97706);" id="kpi-pending-payments">--</span>
+              <span class="stat-change">Trạng thái pending</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label">Chưa đóng học phí</span>
+              <span class="stat-value" style="color: var(--danger-main, #DC2626);" id="kpi-unpaid-enrollments">--</span>
+              <span class="stat-change">Ghi danh active/completed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chia tab khu vực xem: Tất cả ghi danh vs Học viên đã đóng học phí + Chuyển chế độ xem -->
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <button type="button" class="btn btn-primary" id="tab-all-enrollments" data-view-tab="all">
+              Tất cả ghi danh
+            </button>
+            <button type="button" class="btn btn-secondary" id="tab-paid-students" data-view-tab="paid">
+              Học viên đã đóng học phí (<span id="tab-paid-count">0</span>)
+            </button>
+            <button type="button" class="btn btn-secondary" id="tab-unpaid-students" data-view-tab="unpaid">
+              Chưa đóng học phí (<span id="tab-unpaid-count">0</span>)
+            </button>
+          </div>
+
+          <!-- Nút chuyển chế độ xem: Thẻ Card / Bảng -->
+          <div style="display: inline-flex; gap: 4px; background: var(--neutral-100, #F1F5F9); padding: 3px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <button type="button" class="btn btn-sm btn-primary" id="btn-view-cards" title="Xem danh sách dạng Thẻ ngang 1 hàng" style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; font-size: 0.8125rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"></rect><rect x="3" y="10" width="18" height="4" rx="1"></rect><rect x="3" y="16" width="18" height="4" rx="1"></rect></svg>
+              Dạng thẻ (1 hàng)
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-view-table" title="Xem danh sách dạng Bảng" style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; font-size: 0.8125rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              Dạng bảng
+            </button>
+          </div>
+        </div>
+
+        <!-- Thanh tìm kiếm & lọc -->
+        <div class="card filter-card">
+          <div class="filter-grid">
+            <div class="filter-field filter-field-search">
+              <div class="input-with-icon" style="width: 100%;">
+                <span class="input-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </span>
+                <input type="text" id="enrollments-search-input" class="form-control" placeholder="Tên học viên, email, mã lớp hoặc môn học...">
+              </div>
+            </div>
+
+            <div class="filter-field">
+              <select id="enrollments-class-filter" class="form-control">
+                <option value="0">Tất cả lớp học</option>
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <select id="enrollments-status-filter" class="form-control">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Đang học</option>
+                <option value="completed">Hoàn thành</option>
+                <option value="cancelled">Đã hủy</option>
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <select id="enrollments-payment-filter" class="form-control">
+                <option value="all">Tất cả thanh toán</option>
+                <option value="completed">Đã đóng học phí</option>
+                <option value="pending">Chờ thanh toán</option>
+                <option value="unpaid">Chưa đóng học phí</option>
+                <option value="failed">Thanh toán thất bại</option>
+                <option value="refunded">Đã hoàn tiền</option>
+              </select>
+            </div>
+
+            <div class="filter-actions">
+              <button type="button" class="btn btn-secondary" id="btn-reset-enrollments-filter" title="Xóa toàn bộ bộ lọc">Đặt lại</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danh sách học viên đăng ký dạng Thẻ ngang 1 hàng (Mặc định) -->
+        <div id="enrollments-cards-container" style="margin-bottom: 1.25rem;">
+          <!-- Render động qua JavaScript -->
+        </div>
+
+        <!-- Danh sách học viên đăng ký dạng Bảng -->
+        <div class="card" id="enrollments-table-card" style="padding: 0; overflow: hidden; display: none;">
+          <div class="table-container">
+            <table class="table" style="min-width: 920px;">
+              <thead>
+                <tr>
+                  <th>Mã ĐK</th>
+                  <th>Học viên</th>
+                  <th>Lớp học</th>
+                  <th>Môn học</th>
+                  <th>Học phí</th>
+                  <th>Ngày ghi danh</th>
+                  <th>Trạng thái</th>
+                  <th class="text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="enrollments-tbody">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải danh sách ghi danh...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Thanh phân trang -->
+        <div id="enrollments-pagination" style="display: none; margin-top: 1.25rem; padding: 0.875rem 1.25rem; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <div id="enrollments-page-info" style="font-size: 0.8125rem; color: var(--text-muted);">--</div>
+          <div id="enrollments-page-buttons" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+        </div>
 
       </main>
     </div>
   </div>
 
-  <!-- Modal Ghi Danh Học Viên Mới -->
-  <div class="modal-backdrop" id="modal-create-enrollment">
-    <div class="modal-dialog">
+  <!-- Modal Chi Tiết Thanh Toán Học Viên (Chỉ xem / Read-only) -->
+  <div class="modal-backdrop" id="modal-payment-detail">
+    <div class="modal-dialog modal-dialog-lg">
       <div class="modal-header">
-        <h3 class="modal-title">Ghi danh học viên vào lớp</h3>
+        <div>
+          <h3 class="modal-title" id="pd-modal-title">Chi tiết thanh toán học phí</h3>
+          <div id="pd-modal-subtitle" style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px;">--</div>
+        </div>
         <button type="button" class="modal-close" data-dismiss="modal">&times;</button>
       </div>
-      <form class="modal-form" data-modal-form>
-        <div class="modal-body">
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Học viên ghi danh <span class="required" style="color:red;">*</span></label>
-            <select class="form-control" required>
-              <option value="5">Nguyễn Hoàng Anh (student@el.com)</option>
-              <option value="6">Trần Phương Nam (nam.tran@el.com)</option>
-              <option value="7">Lê Thị Kim Ngân (ngan.le@el.com)</option>
-              <option value="8">Vũ Mai Linh (linh.vu@el.com)</option>
-              <option value="9">Đặng Quốc Bảo (bao.dang@el.com)</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Lớp học chỉ định <span class="required" style="color:red;">*</span></label>
-            <select class="form-control" required>
-              <option value="1">[COMM-01] Giao Tiếp Cơ Bản K01 (2.500.000 ₫)</option>
-              <option value="2">[IELTS-B01] Luyện Thi IELTS 6.5+ Sáng (5.800.000 ₫)</option>
-              <option value="3">[TOEIC-A01] TOEIC Cấp Tốc Tối (3.200.000 ₫)</option>
-              <option value="4">[KIDS-01] Super Kids Khởi Động K01 (2.200.000 ₫)</option>
-            </select>
-          </div>
-          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.5rem;">
-            <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Ngày ghi danh</label>
-              <input type="date" class="form-control" value="2026-10-25">
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <div id="pd-loading" style="display: none; padding: 2rem; text-align: center; color: var(--text-muted);">
+          Đang tải chi tiết thanh toán của học viên...
+        </div>
+        <div id="pd-error" style="display: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-size: 0.875rem; margin-bottom: 1rem;"></div>
+
+        <div id="pd-content" style="display: none;">
+          <div class="grid grid-cols-2 gap-4" style="margin-bottom: 1.25rem;">
+            <div style="padding: 1rem; border-radius: 10px; background: var(--neutral-50); border: 1px solid var(--border-color);">
+              <div style="font-weight: 700; font-size: 0.875rem; margin-bottom: 0.625rem; color: var(--text-primary);">Thông tin học viên</div>
+              <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8125rem;">
+                <div><span class="text-muted">Họ tên:</span> <strong id="pd-student-name">--</strong></div>
+                <div><span class="text-muted">Email:</span> <span id="pd-student-email">--</span></div>
+                <div><span class="text-muted">Trạng thái TK:</span> <span id="pd-student-active">--</span></div>
+                <div><span class="text-muted">Tổng đã đóng (tất cả lớp):</span> <strong style="color: var(--success-main, #059669);" id="pd-student-total-paid">0 ₫</strong></div>
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">Trạng thái ghi danh</label>
-              <select class="form-control">
-                <option value="active">Đang học (Active)</option>
-                <option value="pending">Chờ khai giảng</option>
-              </select>
+            <div style="padding: 1rem; border-radius: 10px; background: var(--neutral-50); border: 1px solid var(--border-color);">
+              <div style="font-weight: 700; font-size: 0.875rem; margin-bottom: 0.625rem; color: var(--text-primary);">Lớp học &amp; Ghi danh</div>
+              <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8125rem;">
+                <div><span class="text-muted">Lớp học:</span> <strong id="pd-class-info">--</strong></div>
+                <div><span class="text-muted">Môn học:</span> <span id="pd-course-title">--</span></div>
+                <div><span class="text-muted">Học phí lớp:</span> <strong id="pd-tuition-fee">--</strong></div>
+                <div><span class="text-muted">Ghi danh:</span> <span id="pd-enrollment-status">--</span> <span class="text-muted" id="pd-enrolled-at"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap;">
+              <strong style="font-size: 0.9rem;">Chi tiết giao dịch hiện tại</strong>
+              <span id="pd-current-status-badge"></span>
+            </div>
+            <div id="pd-current-payment-box" style="font-size: 0.8125rem;"></div>
+          </div>
+
+          <div>
+            <div style="font-weight: 700; font-size: 0.875rem; margin-bottom: 0.5rem;">Lịch sử thanh toán học phí của học viên này</div>
+            <div class="table-container" style="border: 1px solid var(--border-color); border-radius: 8px;">
+              <table class="table" style="min-width: 640px;">
+                <thead>
+                  <tr>
+                    <th>Mã giao dịch</th>
+                    <th>Lớp / Môn học</th>
+                    <th>Số tiền</th>
+                    <th>Hình thức</th>
+                    <th>Trạng thái</th>
+                    <th>Thời gian</th>
+                  </tr>
+                </thead>
+                <tbody id="pd-history-tbody"></tbody>
+              </table>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy bỏ</button>
-          <button type="submit" class="btn btn-primary">Xác nhận ghi danh</button>
-        </div>
-      </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+      </div>
     </div>
   </div>
 
   <!-- Shared Interactive Script -->
-  <script src="../../../wwwroot/js/site.js"></script>
+  <script src="../../../wwwroot/js/site.js?v=20261124d"></script>
+  <script>
+    (function () {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function postJson(url, payload, method = 'POST') {
+        return fetchJson(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: payload === undefined ? undefined : JSON.stringify(payload)
+        });
+      }
+
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
+      }
+
+      function formatDate(value) {
+        if (!value) return '--';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '--';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()}`;
+      }
+
+      function formatDateTime(value) {
+        if (!value) return '--';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '--';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mi = String(d.getMinutes()).padStart(2, '0');
+        return `${dd}/${mm}/${d.getFullYear()} ${hh}:${mi}`;
+      }
+
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('open', 'show');
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('open', 'show');
+      }
+
+      function setBusy(btn, busy, busyText = 'Đang lưu...') {
+        if (!btn) return;
+        if (busy) {
+          btn.dataset.origText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = busyText;
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+        }
+      }
+
+      function debounce(fn, wait = 300) {
+        let timer = null;
+        const debounced = (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), wait);
+        };
+        debounced.cancel = () => clearTimeout(timer);
+        return debounced;
+      }
+
+      function skeletonRows(cols, rows = 4) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      function skeletonCards(count = 6) {
+        return Array.from({ length: count }, () => `
+          <div class="card enrollment-row-card">
+            <div class="skeleton skeleton-text" style="width: 24%; margin: 0;"></div>
+            <div class="skeleton skeleton-text" style="width: 28%; margin: 0;"></div>
+            <div class="skeleton skeleton-text" style="width: 14%; margin: 0;"></div>
+            <div class="skeleton skeleton-text" style="width: 20%; margin: 0;"></div>
+          </div>
+        `).join('');
+      }
+
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+
+      const COLS = 8;
+      const PAGE_SIZE = 15;
+      let currentPage = 1;
+      let viewMode = 'cards'; // 'cards' | 'table'
+      let needLookups = true;
+      let hasLoadedOnce = false;
+      let loadController = null;
+      let paymentDetailController = null;
+      let isExportingCsv = false;
+      let activeViewTab = 'all';
+      const initialUrlParams = new URLSearchParams(window.location.search);
+      let pendingInitialClassId = initialUrlParams.get('classId') || '';
+
+      function syncViewModeUI() {
+        const cardsContainer = document.getElementById('enrollments-cards-container');
+        const tableCard = document.getElementById('enrollments-table-card');
+        const btnCards = document.getElementById('btn-view-cards');
+        const btnTable = document.getElementById('btn-view-table');
+
+        if (viewMode === 'cards') {
+          cardsContainer.style.display = 'flex';
+          tableCard.style.display = 'none';
+          btnCards.className = 'btn btn-sm btn-primary';
+          btnTable.className = 'btn btn-sm btn-secondary';
+        } else {
+          cardsContainer.style.display = 'none';
+          tableCard.style.display = 'block';
+          btnCards.className = 'btn btn-sm btn-secondary';
+          btnTable.className = 'btn btn-sm btn-primary';
+        }
+      }
+
+      function setModalBusy(id, busy) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        if (busy) modal.dataset.busy = 'true';
+        else delete modal.dataset.busy;
+      }
+
+      function focusFirstField(modalId, preferredId) {
+        setTimeout(() => {
+          const target = (preferredId && document.getElementById(preferredId))
+            || document.querySelector(`#${modalId} input:not([type="hidden"]):not(:disabled), #${modalId} select:not(:disabled), #${modalId} textarea:not(:disabled)`);
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 30);
+      }
+
+      function bindModalKeyboardAndGuard() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          const openModals = Array.from(document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.show'));
+          const topModal = openModals[openModals.length - 1];
+          if (!topModal || topModal.dataset.busy === 'true') return;
+          topModal.classList.remove('open', 'show');
+        });
+
+        document.addEventListener('click', (e) => {
+          const isBackdrop = e.target && e.target.classList && e.target.classList.contains('modal-backdrop');
+          const dismissBtn = !isBackdrop && e.target && e.target.closest
+            ? (e.target.closest('[data-dismiss="modal"]') || e.target.closest('.modal-close'))
+            : null;
+          if (!isBackdrop && !dismissBtn) return;
+          const modal = isBackdrop
+            ? e.target
+            : (dismissBtn.closest('.modal-backdrop') || document.querySelector('.modal-backdrop.open, .modal-backdrop.show'));
+          if (modal && modal.dataset.busy === 'true') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+      }
+
+      function renderStatusBadge(status) {
+        switch ((status || '').toLowerCase()) {
+          case 'active':
+            return '<span class="badge badge-success">Đang học</span>';
+          case 'completed':
+            return '<span class="badge badge-primary">Hoàn thành</span>';
+          case 'cancelled':
+            return '<span class="badge badge-danger">Đã hủy</span>';
+          default:
+            return `<span class="badge badge-neutral">${escapeHtml(status)}</span>`;
+        }
+      }
+
+      function paymentMethodLabel(method) {
+        const methodMap = {
+          bank_transfer: 'Chuyển khoản ngân hàng',
+          vnpay: 'Cổng VNPAY',
+          momo: 'Ví MoMo',
+          cash: 'Tiền mặt'
+        };
+        return methodMap[(method || '').toLowerCase()] || method || '--';
+      }
+
+      function renderPaymentStatusBadge(status) {
+        switch ((status || '').toLowerCase()) {
+          case 'completed':
+            return '<span class="badge badge-success">Đã đóng học phí</span>';
+          case 'pending':
+            return '<span class="badge badge-warning">Chờ thanh toán</span>';
+          case 'failed':
+            return '<span class="badge badge-danger">Thanh toán thất bại</span>';
+          case 'refunded':
+            return '<span class="badge badge-neutral">Đã hoàn tiền</span>';
+          default:
+            return '<span class="badge badge-neutral">Chưa đóng học phí</span>';
+        }
+      }
+
+      function renderPaymentBadge(paymentStatus, paymentMethod, transactionCode) {
+        const methodMap = {
+          bank_transfer: 'CK',
+          vnpay: 'VNPAY',
+          momo: 'MoMo',
+          cash: 'Tiền mặt'
+        };
+        const mLabel = methodMap[(paymentMethod || '').toLowerCase()] || '';
+        const suffix = mLabel ? ` • ${mLabel}` : '';
+        const codeHtml = transactionCode ? `<div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">${escapeHtml(transactionCode)}</div>` : '';
+        switch ((paymentStatus || '').toLowerCase()) {
+          case 'completed':
+            return `<div style="margin-top: 2px;"><span class="badge badge-success" style="font-size: 0.7rem;">Đã thu${escapeHtml(suffix)}</span>${codeHtml}</div>`;
+          case 'pending':
+            return `<div style="margin-top: 2px;"><span class="badge badge-warning" style="font-size: 0.7rem;">Chờ TT${escapeHtml(suffix)}</span>${codeHtml}</div>`;
+          case 'failed':
+            return `<div style="margin-top: 2px;"><span class="badge badge-danger" style="font-size: 0.7rem;">TT thất bại${escapeHtml(suffix)}</span>${codeHtml}</div>`;
+          case 'refunded':
+            return `<div style="margin-top: 2px;"><span class="badge badge-neutral" style="font-size: 0.7rem;">Đã hoàn tiền${escapeHtml(suffix)}</span>${codeHtml}</div>`;
+          default:
+            return '<div style="margin-top: 2px;"><span class="badge badge-neutral" style="font-size: 0.7rem;">Chưa có giao dịch</span></div>';
+        }
+      }
+
+      function renderPaymentStats(stats) {
+        if (!stats) return;
+        document.getElementById('kpi-paid-students').textContent = String(stats.totalPaidStudents ?? 0);
+        document.getElementById('kpi-paid-enrollments-sub').textContent = `${stats.totalPaidEnrollments ?? 0} lượt ghi danh`;
+        document.getElementById('kpi-collected-amount').textContent = formatCurrency(stats.totalCollectedAmount);
+        document.getElementById('kpi-paid-tx-sub').textContent = `${stats.totalPaidTransactions ?? 0} giao dịch hoàn tất`;
+        document.getElementById('kpi-pending-payments').textContent = String(stats.pendingPaymentCount ?? 0);
+        document.getElementById('kpi-unpaid-enrollments').textContent = String(stats.unpaidEnrollmentCount ?? 0);
+        document.getElementById('tab-paid-count').textContent = String(stats.totalPaidEnrollments ?? 0);
+        document.getElementById('tab-unpaid-count').textContent = String(stats.unpaidEnrollmentCount ?? 0);
+      }
+
+      function syncTabButtons() {
+        document.querySelectorAll('[data-view-tab]').forEach(btn => {
+          const isCurrent = btn.getAttribute('data-view-tab') === activeViewTab;
+          btn.className = isCurrent ? 'btn btn-primary' : 'btn btn-secondary';
+        });
+        const payFilter = document.getElementById('enrollments-payment-filter');
+        if (payFilter) {
+          payFilter.disabled = activeViewTab !== 'all';
+        }
+      }
+
+      function populateDropdowns(classes) {
+        const classFilterSelect = document.getElementById('enrollments-class-filter');
+        if (!classFilterSelect) return;
+
+        const cList = Array.isArray(classes) ? classes : [];
+        const prevFilterClass = classFilterSelect.value !== '0'
+          ? classFilterSelect.value
+          : (pendingInitialClassId || '0');
+
+        classFilterSelect.innerHTML = '<option value="0">Tất cả lớp học</option>' +
+          cList.map(c => {
+            const st = (c.status || '').toLowerCase();
+            const suffix = st === 'completed' ? ' (Đã kết thúc)' : (st === 'cancelled' ? ' (Đã hủy)' : '');
+            return `<option value="${c.id}">[${escapeHtml(c.classCode)}] ${escapeHtml(c.className)}${suffix}</option>`;
+          }).join('');
+
+        if (prevFilterClass && cList.some(c => String(c.id) === String(prevFilterClass))) {
+          classFilterSelect.value = String(prevFilterClass);
+        }
+        pendingInitialClassId = '';
+      }
+
+      function getSelectedClassId() {
+        const val = document.getElementById('enrollments-class-filter').value;
+        if (val && val !== '0') return val;
+        if (needLookups && pendingInitialClassId && pendingInitialClassId !== '0') return pendingInitialClassId;
+        return '';
+      }
+
+      function hasActiveFilter() {
+        return activeViewTab !== 'all' ||
+          !!document.getElementById('enrollments-search-input').value.trim() ||
+          !!getSelectedClassId() ||
+          document.getElementById('enrollments-status-filter').value !== 'all' ||
+          document.getElementById('enrollments-payment-filter').value !== 'all';
+      }
+
+      function renderPagination(pag) {
+        const wrap = document.getElementById('enrollments-pagination');
+        const info = document.getElementById('enrollments-page-info');
+        const btns = document.getElementById('enrollments-page-buttons');
+
+        if (!pag || !pag.totalItems || pag.totalItems === 0) {
+          wrap.style.display = 'none';
+          return;
+        }
+
+        wrap.style.display = 'flex';
+        const start = (pag.page - 1) * pag.pageSize + 1;
+        const end = Math.min(pag.page * pag.pageSize, pag.totalItems);
+        info.textContent = `Hiển thị ${start} - ${end} / ${pag.totalItems} lượt ghi danh (Trang ${pag.page}/${pag.totalPages})`;
+
+        let html = `<button type="button" class="btn btn-sm btn-secondary" data-page="${pag.page - 1}" ${pag.page <= 1 ? 'disabled' : ''}>← Trước</button>`;
+        for (let p = 1; p <= pag.totalPages; p++) {
+          if (p === 1 || p === pag.totalPages || Math.abs(p - pag.page) <= 1) {
+            html += `<button type="button" class="btn btn-sm ${p === pag.page ? 'btn-primary' : 'btn-secondary'}" data-page="${p}">${p}</button>`;
+          } else if (Math.abs(p - pag.page) === 2) {
+            html += '<span style="padding: 4px 6px; color: var(--text-muted);">...</span>';
+          }
+        }
+        html += `<button type="button" class="btn btn-sm btn-secondary" data-page="${pag.page + 1}" ${pag.page >= pag.totalPages ? 'disabled' : ''}>Sau →</button>`;
+        btns.innerHTML = html;
+      }
+
+      function buildFilterParams() {
+        const search = document.getElementById('enrollments-search-input').value.trim();
+        const status = document.getElementById('enrollments-status-filter').value;
+        const classId = getSelectedClassId();
+        const paymentStatus = activeViewTab === 'paid'
+          ? 'completed'
+          : (activeViewTab === 'unpaid' ? 'unpaid' : document.getElementById('enrollments-payment-filter').value);
+
+        const params = new URLSearchParams();
+        if (status && status !== 'all') params.set('status', status);
+        if (paymentStatus && paymentStatus !== 'all') params.set('paymentStatus', paymentStatus);
+        if (classId) params.set('classId', classId);
+        if (search) params.set('search', search);
+        return params;
+      }
+
+      function renderTuitionCellHtml(e) {
+        const isCancelled = e.status === 'cancelled' || e.classStatus === 'cancelled';
+        const payStatus = (e.paymentStatus || '').toLowerCase();
+        let amountHtml = '';
+        if (isCancelled) {
+          amountHtml = `<span class="text-muted" style="text-decoration: line-through;">${formatCurrency(e.price)}</span> <small class="text-muted">(0 ₫)</small>`;
+        } else if (payStatus === 'completed') {
+          const collected = e.paidAmount !== null && e.paidAmount !== undefined ? e.paidAmount : e.price;
+          amountHtml = `<strong style="color: var(--success-main, #059669); font-size: 0.875rem;">Đã thu: ${formatCurrency(collected)}</strong>`;
+        } else {
+          amountHtml = `<div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">Cần thu: ${formatCurrency(e.price)}</div>` +
+            `<div style="font-size: 0.72rem; color: var(--text-muted);">Đã thu: 0 ₫</div>`;
+        }
+        return `<div>${amountHtml}</div><div>${renderPaymentBadge(e.paymentStatus, e.paymentMethod, e.transactionCode)}</div>`;
+      }
+
+      function renderEnrollmentCards(items) {
+        const container = document.getElementById('enrollments-cards-container');
+        if (!items || items.length === 0) {
+          if (hasActiveFilter()) {
+            container.innerHTML = `<div class="card"><div class="empty-state" style="padding: 2.5rem 1rem;">` +
+              '<div class="empty-state-title">Không tìm thấy bản ghi ghi danh phù hợp</div>' +
+              '<div class="empty-state-text">Hãy thử đổi từ khóa tìm kiếm hoặc đặt lại bộ lọc hiện tại.</div>' +
+              '<button type="button" class="btn btn-sm btn-secondary" data-reset-filters>Đặt lại bộ lọc</button>' +
+              '</div></div>';
+          } else {
+            container.innerHTML = `<div class="card"><div class="empty-state" style="padding: 2.5rem 1rem;">` +
+              '<div class="empty-state-title">Chưa có dữ liệu ghi danh</div>' +
+              '<div class="empty-state-text" style="margin-bottom: 0;">Chưa có học viên nào đăng ký lớp học trong hệ thống.</div>' +
+              '</div></div>';
+          }
+          return;
+        }
+
+        container.innerHTML = items.map(e => {
+          return `
+            <div class="card card-hover enrollment-row-card">
+              <!-- Cột 1: Mã ĐK + Học sinh -->
+              <div class="enr-row-student">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">#ENR-${e.id}</span>
+                  <strong style="font-size: 0.9rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.studentName)}</strong>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.studentEmail)}</div>
+              </div>
+
+              <!-- Cột 2: Lớp & Môn học -->
+              <div class="enr-row-class">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <a href="/Admin/class-detail.html?id=${encodeURIComponent(e.classId)}" style="text-decoration: none; flex-shrink: 0;">
+                    <span class="badge badge-primary">${escapeHtml(e.classCode)}</span>
+                  </a>
+                  <span style="font-weight: 600; font-size: 0.8125rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(e.className)}</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(e.courseTitle)} &bull; ĐK: ${formatDate(e.enrolledAt)}
+                </div>
+              </div>
+
+              <!-- Cột 3: Học phí & Trạng thái biên lai -->
+              <div class="enr-row-fee">
+                ${renderTuitionCellHtml(e)}
+              </div>
+
+              <!-- Cột 4: Trạng thái học -->
+              <div class="enr-row-status">
+                ${renderStatusBadge(e.status)}
+              </div>
+
+              <!-- Cột 5: Nút Xem chi tiết biên lai -->
+              <div class="enr-row-actions">
+                <button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}" style="white-space: nowrap;">Chi tiết biên lai</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderEnrollments(items) {
+        const list = Array.isArray(items) ? items : [];
+        renderEnrollmentCards(list);
+
+        const tbody = document.getElementById('enrollments-tbody');
+        if (!list || list.length === 0) {
+          if (hasActiveFilter()) {
+            tbody.innerHTML = `<tr><td colspan="${COLS}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+              '<div class="empty-state-title">Không tìm thấy bản ghi ghi danh phù hợp</div>' +
+              '<div class="empty-state-text">Hãy thử đổi từ khóa tìm kiếm hoặc đặt lại bộ lọc hiện tại.</div>' +
+              '<button type="button" class="btn btn-sm btn-secondary" data-reset-filters>Đặt lại bộ lọc</button>' +
+              '</div></td></tr>';
+          } else {
+            tbody.innerHTML = stateRow(COLS, 'Chưa có dữ liệu ghi danh', 'Chưa có học viên nào đăng ký lớp học trong hệ thống.');
+          }
+          return;
+        }
+
+        tbody.innerHTML = list.map(e => `
+          <tr>
+            <td style="white-space: nowrap;"><strong>#ENR-${e.id}</strong></td>
+            <td>
+              <strong>${escapeHtml(e.studentName)}</strong><br>
+              <small class="text-muted">${escapeHtml(e.studentEmail)}</small>
+            </td>
+            <td>
+              <a href="/Admin/class-detail.html?id=${encodeURIComponent(e.classId)}" style="text-decoration: none;">
+                <span class="badge badge-primary">${escapeHtml(e.classCode)}</span>
+              </a>
+              <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(e.className)}</div>
+            </td>
+            <td>${escapeHtml(e.courseTitle)}</td>
+            <td style="white-space: nowrap;">${renderTuitionCellHtml(e)}</td>
+            <td style="white-space: nowrap;">${formatDate(e.enrolledAt)}</td>
+            <td style="white-space: nowrap;">${renderStatusBadge(e.status)}</td>
+            <td class="text-right" style="white-space: nowrap;">
+              <button type="button" class="btn btn-sm ${e.paymentStatus === 'completed' ? 'btn-primary' : 'btn-secondary'}" data-view-payment="${e.id}">Chi tiết biên lai</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      async function loadEnrollments() {
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        const tbody = document.getElementById('enrollments-tbody');
+        const cardsContainer = document.getElementById('enrollments-cards-container');
+        if (!hasLoadedOnce) {
+          tbody.innerHTML = skeletonRows(COLS, 5);
+          cardsContainer.innerHTML = skeletonCards(6);
+        } else {
+          tbody.style.opacity = '0.55';
+          cardsContainer.style.opacity = '0.55';
+        }
+
+        const params = buildFilterParams();
+        params.set('page', String(currentPage));
+        params.set('pageSize', String(PAGE_SIZE));
+        if (!needLookups) params.set('lookups', 'false');
+
+        try {
+          const data = await fetchJson(`/Admin/api/Enrollments/List?${params.toString()}`, { signal: controller.signal });
+          if (data.classes) {
+            populateDropdowns(data.classes);
+            needLookups = false;
+          }
+          if (data.pagination && data.pagination.page) {
+            currentPage = data.pagination.page;
+          }
+          renderPaymentStats(data.paymentStats);
+          renderEnrollments(data.items);
+          renderPagination(data.pagination);
+          hasLoadedOnce = true;
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải danh sách ghi danh:', err);
+          tbody.innerHTML = errorRowWithRetry(COLS, err.message);
+          cardsContainer.innerHTML = `<div class="card"><div class="empty-state" style="padding: 2rem 1rem;">` +
+            '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+            `<div class="empty-state-text">${escapeHtml(err.message)}</div>` +
+            '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+            '</div></div>';
+          document.getElementById('enrollments-pagination').style.display = 'none';
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            tbody.style.opacity = '';
+            cardsContainer.style.opacity = '';
+          }
+        }
+      }
+
+      function renderPaymentDetailModal(data) {
+        const stu = data.student || {};
+        const enr = data.enrollment || {};
+        const cur = data.currentPayment || null;
+        const history = Array.isArray(data.studentPaymentHistory) ? data.studentPaymentHistory : [];
+
+        document.getElementById('pd-modal-title').textContent = `Chi tiết thanh toán — ${stu.fullName || '--'}`;
+        document.getElementById('pd-modal-subtitle').textContent = `Hồ sơ #ENR-${enr.id || '--'} • Lớp ${enr.classCode || '--'}`;
+        document.getElementById('pd-student-name').textContent = stu.fullName || '--';
+        document.getElementById('pd-student-email').textContent = stu.email || '--';
+        document.getElementById('pd-student-active').innerHTML = stu.isActive
+          ? '<span class="badge badge-success">Đang hoạt động</span>'
+          : '<span class="badge badge-danger">Đang khóa</span>';
+        document.getElementById('pd-student-total-paid').textContent = formatCurrency(stu.totalStudentPaid);
+
+        document.getElementById('pd-class-info').textContent = `[${enr.classCode || '--'}] ${enr.className || ''}`;
+        document.getElementById('pd-course-title').textContent = enr.courseTitle || '--';
+        document.getElementById('pd-tuition-fee').textContent = formatCurrency(enr.tuitionFee);
+        document.getElementById('pd-enrollment-status').innerHTML = renderStatusBadge(enr.status);
+        document.getElementById('pd-enrolled-at').textContent = `(${formatDate(enr.enrolledAt)})`;
+
+        document.getElementById('pd-current-status-badge').innerHTML = renderPaymentStatusBadge(cur?.status);
+
+        const curBox = document.getElementById('pd-current-payment-box');
+        if (!cur) {
+          curBox.innerHTML = '<div style="color: var(--text-muted); font-style: italic;">Hồ sơ ghi danh này chưa phát sinh giao dịch thanh toán học phí.</div>';
+        } else {
+          curBox.innerHTML = `
+            <div class="grid grid-cols-3 gap-4">
+              <div><span class="text-muted">Mã giao dịch:</span><br><strong>${escapeHtml(cur.transactionCode)}</strong></div>
+              <div><span class="text-muted">Số tiền thanh toán:</span><br><strong style="color: var(--primary-600); font-size: 0.95rem;">${formatCurrency(cur.amount)}</strong></div>
+              <div><span class="text-muted">Hình thức:</span><br><strong>${escapeHtml(paymentMethodLabel(cur.paymentMethod))}</strong></div>
+              <div><span class="text-muted">Thời gian thanh toán:</span><br><span>${formatDateTime(cur.paidAt)}</span></div>
+              <div><span class="text-muted">Ngày tạo giao dịch:</span><br><span>${formatDateTime(cur.createdAt)}</span></div>
+              <div><span class="text-muted">Ghi chú:</span><br><span>${cur.note ? escapeHtml(cur.note) : '<em class="text-muted">Không có</em>'}</span></div>
+            </div>
+          `;
+        }
+
+        const histBody = document.getElementById('pd-history-tbody');
+        if (history.length === 0) {
+          histBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1rem;">Học viên chưa có giao dịch thanh toán nào.</td></tr>';
+        } else {
+          histBody.innerHTML = history.map(h => `
+            <tr>
+              <td><strong>${escapeHtml(h.transactionCode)}</strong></td>
+              <td>
+                <span class="badge badge-primary">${escapeHtml(h.classCode)}</span>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">${escapeHtml(h.courseTitle)}</div>
+              </td>
+              <td><strong>${formatCurrency(h.amount)}</strong></td>
+              <td>${escapeHtml(paymentMethodLabel(h.paymentMethod))}</td>
+              <td>${renderPaymentStatusBadge(h.status)}</td>
+              <td style="white-space: nowrap;">${formatDateTime(h.paidAt || h.createdAt)}</td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      async function openPaymentDetail(enrollmentId) {
+        if (!enrollmentId) return;
+        if (paymentDetailController) paymentDetailController.abort();
+        const controller = new AbortController();
+        paymentDetailController = controller;
+
+        const loadingEl = document.getElementById('pd-loading');
+        const contentEl = document.getElementById('pd-content');
+        const errEl = document.getElementById('pd-error');
+
+        loadingEl.style.display = 'block';
+        contentEl.style.display = 'none';
+        errEl.style.display = 'none';
+        document.getElementById('pd-modal-title').textContent = 'Chi tiết thanh toán học phí';
+        document.getElementById('pd-modal-subtitle').textContent = `Hồ sơ #ENR-${enrollmentId}`;
+        openModal('modal-payment-detail');
+
+        try {
+          const data = await fetchJson(`/Admin/api/Enrollments/PaymentDetail/${encodeURIComponent(enrollmentId)}`, { signal: controller.signal });
+          renderPaymentDetailModal(data);
+          loadingEl.style.display = 'none';
+          contentEl.style.display = 'block';
+        } catch (err) {
+          if (isAbortError(err)) return;
+          loadingEl.style.display = 'none';
+          errEl.textContent = err.message;
+          errEl.style.display = 'block';
+          showToast(err.message, 'error');
+        } finally {
+          if (paymentDetailController === controller) paymentDetailController = null;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        bindModalKeyboardAndGuard();
+        syncViewModeUI();
+        loadEnrollments();
+
+        document.getElementById('btn-view-cards').addEventListener('click', () => {
+          if (viewMode === 'cards') return;
+          viewMode = 'cards';
+          syncViewModeUI();
+        });
+
+        document.getElementById('btn-view-table').addEventListener('click', () => {
+          if (viewMode === 'table') return;
+          viewMode = 'table';
+          syncViewModeUI();
+        });
+
+        const searchInput = document.getElementById('enrollments-search-input');
+        const debouncedLoad = debounce(() => {
+          currentPage = 1;
+          loadEnrollments();
+        }, 300);
+
+        const resetAllFilters = () => {
+          debouncedLoad.cancel();
+          pendingInitialClassId = '';
+          activeViewTab = 'all';
+          syncTabButtons();
+          searchInput.value = '';
+          document.getElementById('enrollments-class-filter').value = '0';
+          document.getElementById('enrollments-status-filter').value = 'all';
+          document.getElementById('enrollments-payment-filter').value = 'all';
+          currentPage = 1;
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          loadEnrollments();
+        };
+
+        document.querySelectorAll('[data-view-tab]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-view-tab') || 'all';
+            if (tab === activeViewTab) return;
+            debouncedLoad.cancel();
+            activeViewTab = tab;
+            syncTabButtons();
+            currentPage = 1;
+            loadEnrollments();
+          });
+        });
+
+        document.getElementById('enrollments-payment-filter').addEventListener('change', () => {
+          debouncedLoad.cancel();
+          currentPage = 1;
+          loadEnrollments();
+        });
+
+        document.getElementById('btn-reset-enrollments-filter').addEventListener('click', resetAllFilters);
+        document.getElementById('enrollments-class-filter').addEventListener('change', () => {
+          debouncedLoad.cancel();
+          currentPage = 1;
+          loadEnrollments();
+        });
+        document.getElementById('enrollments-status-filter').addEventListener('change', () => {
+          debouncedLoad.cancel();
+          currentPage = 1;
+          loadEnrollments();
+        });
+        searchInput.addEventListener('input', debouncedLoad);
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            debouncedLoad.cancel();
+            currentPage = 1;
+            loadEnrollments();
+          }
+        });
+
+        document.getElementById('btn-export-enrollments-csv').addEventListener('click', (e) => {
+          if (isExportingCsv) return;
+          const btn = e.currentTarget;
+          isExportingCsv = true;
+          setBusy(btn, true, 'Đang xuất...');
+          const params = buildFilterParams();
+          const qs = params.toString();
+          window.location.href = qs ? `/Admin/api/Enrollments/ExportCsv?${qs}` : '/Admin/api/Enrollments/ExportCsv';
+          showToast('Đang tải xuống tệp CSV danh sách ghi danh...', 'info');
+          setTimeout(() => {
+            isExportingCsv = false;
+            setBusy(btn, false);
+          }, 1500);
+        });
+
+        document.getElementById('enrollments-pagination').addEventListener('click', (e) => {
+          const pageBtn = e.target.closest('[data-page]');
+          if (!pageBtn || pageBtn.disabled) return;
+          const p = Number(pageBtn.getAttribute('data-page'));
+          if (p >= 1 && p !== currentPage) {
+            currentPage = p;
+            loadEnrollments();
+          }
+        });
+
+        const handleListClick = (e) => {
+          if (e.target.closest('[data-retry-load]')) {
+            loadEnrollments();
+            return;
+          }
+          if (e.target.closest('[data-reset-filters]')) {
+            resetAllFilters();
+            return;
+          }
+          const payBtn = e.target.closest('[data-view-payment]');
+          if (payBtn) {
+            openPaymentDetail(Number(payBtn.getAttribute('data-view-payment')));
+          }
+        };
+
+        const tbody = document.getElementById('enrollments-tbody');
+        const cardsContainer = document.getElementById('enrollments-cards-container');
+
+        tbody.addEventListener('click', handleListClick);
+        cardsContainer.addEventListener('click', handleListClick);
+      });
+    })();
+  </script>
 </body>
 </html>

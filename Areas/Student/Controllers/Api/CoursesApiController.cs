@@ -1,0 +1,153 @@
+using CNPM_EnglishLearning.Areas.Student.DTOs;
+using CNPM_EnglishLearning.Data;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CNPM_EnglishLearning.Areas.Student.Controllers.Api
+{
+    /// <summary>
+    /// Nhóm 2, Nhóm 4.1 & Nhóm 8: API Khám phá Khóa học, Đề cương, Đăng ký Tư vấn, Đăng ký Lớp & Đánh giá Khóa học.
+    /// </summary>
+    public class CoursesApiController : BaseStudentApiController
+    {
+        public CoursesApiController(ApplicationDbContext db) : base(db)
+        {
+        }
+
+        /// <summary>
+        /// 2.1. Lấy danh sách khóa học (Có lọc & phân trang).
+        /// Endpoint: GET /api/v1/student/courses?subject_id=1&level=intermediate&search=IELTS&page=1&limit=10
+        /// </summary>
+        [HttpGet("courses")]
+        public async Task<IActionResult> GetCourses([FromQuery] CourseFilterQueryDto query)
+        {
+            var result = await Services.Courses.GetPublishedCoursesAsync(query);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.2. Xem chi tiết khóa học, đề cương & danh sách lớp mở đăng ký.
+        /// Endpoint: GET /api/v1/student/courses/{courseId}
+        /// </summary>
+        [HttpGet("courses/{courseId:int}")]
+        public async Task<IActionResult> GetCourseDetail([FromRoute] int courseId)
+        {
+            var studentId = await TryResolveOptionalStudentIdAsync();
+            var result = await Services.Courses.GetCourseDetailAsync(courseId, studentId);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.4. Đăng ký tham gia lớp học (Enrollment & Payment).
+        /// Endpoint: POST /api/v1/student/enrollments
+        /// </summary>
+        [HttpPost("enrollments")]
+        public async Task<IActionResult> EnrollClass([FromBody] CreateEnrollmentRequestDto request)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.EnrollClassAsync(studentId, request);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.5. Đăng ký khóa học và thanh toán.
+        /// Endpoint: POST /api/v1/student/courses/{courseId}/enroll
+        /// </summary>
+        [HttpPost("courses/{courseId:int}/enroll")]
+        public async Task<IActionResult> EnrollCourse(
+            [FromRoute] int courseId,
+            [FromBody] CreateCourseEnrollmentRequestDto request)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.EnrollCourseAsync(studentId, courseId, request);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.5b. Đăng ký nhiều khóa học / lớp học cùng lúc (Kiểm tra không trùng lịch).
+        /// Endpoint: POST /api/v1/student/enrollments/batch
+        /// </summary>
+        [HttpPost("enrollments/batch")]
+        public async Task<IActionResult> EnrollBatchClasses([FromBody] BatchEnrollmentRequestDto request)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.EnrollBatchClassesAsync(studentId, request);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.6. Lấy lịch sử giao dịch thanh toán của học sinh.
+        /// Endpoint: GET /api/v1/student/payments?page=1&limit=10&status=completed
+        /// </summary>
+        [HttpGet("payments")]
+        public async Task<IActionResult> GetPayments([FromQuery] PaymentFilterQueryDto query)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.GetStudentPaymentsAsync(studentId, query.Page, query.Limit, query.Status);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.7. Lấy chi tiết một giao dịch thanh toán.
+        /// Endpoint: GET /api/v1/student/payments/{paymentId}
+        /// </summary>
+        [HttpGet("payments/{paymentId:int}")]
+        public async Task<IActionResult> GetPaymentDetail([FromRoute] int paymentId)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.GetPaymentDetailAsync(studentId, paymentId);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 4.1. Lấy mục lục bài học của một khóa học kèm trạng thái hoàn thành.
+        /// Endpoint: GET /api/v1/student/courses/{courseId}/syllabus
+        /// </summary>
+        [HttpGet("courses/{courseId:int}/syllabus")]
+        public async Task<IActionResult> GetCourseSyllabus([FromRoute] int courseId)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Learning.GetCourseSyllabusAsync(studentId, courseId);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 8.1. Lấy danh sách đánh giá gần đây của khóa học.
+        /// Endpoint: GET /api/v1/student/courses/{courseId}/reviews?page=1&limit=10
+        /// </summary>
+        [HttpGet("courses/{courseId:int}/reviews")]
+        public async Task<IActionResult> GetCourseReviews(
+            [FromRoute] int courseId,
+            [FromQuery(Name = "page")] int page = 1,
+            [FromQuery(Name = "limit")] int limit = 10)
+        {
+            var result = await Services.Courses.GetCourseReviewsAsync(courseId, page, limit);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 8.2. Gửi đánh giá khóa học.
+        /// Endpoint: POST /api/v1/student/courses/{courseId}/reviews
+        /// </summary>
+        [HttpPost("courses/{courseId:int}/reviews")]
+        public async Task<IActionResult> SubmitCourseReview(
+            [FromRoute] int courseId,
+            [FromBody] CreateCourseReviewRequestDto request)
+        {
+            var studentId = await ResolveStudentIdAsync();
+            var result = await Services.Courses.SubmitCourseReviewAsync(studentId, courseId, request);
+            return ToActionResult(result);
+        }
+
+        /// <summary>
+        /// 2.8. Lấy danh sách các chủ đề (Subjects) kèm số lượng khóa học đang phát hành.
+        /// Endpoint: GET /api/v1/student/subjects
+        /// </summary>
+        [HttpGet("subjects")]
+        [HttpGet("courses/subjects")]
+        public async Task<IActionResult> GetSubjects()
+        {
+            var result = await Services.Courses.GetActiveSubjectsAsync();
+            return ToActionResult(result);
+        }
+    }
+}

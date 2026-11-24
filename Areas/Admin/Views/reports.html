@@ -6,10 +6,10 @@
   <title>Báo cáo & Thống kê - EnglishAdmin</title>
   
   <!-- CSS Design System -->
-  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/base.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/layout.css">
-  <link rel="stylesheet" href="../../../wwwroot/css/components.css">
+  <link rel="stylesheet" href="../../../wwwroot/css/tokens.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/base.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/layout.css?v=20261124c">
+  <link rel="stylesheet" href="../../../wwwroot/css/components.css?v=20261124c">
 
   <style>
     .notification-wrapper { position: relative; }
@@ -35,7 +35,7 @@
     <!-- Sidebar Trắng Hiện Đại -->
     <aside class="app-sidebar" id="app-sidebar" style="background-color: #FFFFFF;">
       <div class="sidebar-header">
-        <a href="dashboard.html" class="brand-logo" style="text-decoration: none;">
+        <a href="/Admin/dashboard.html" class="brand-logo" style="text-decoration: none;">
           <div class="logo-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
@@ -47,67 +47,82 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Tổng quan</div>
-      <a href="dashboard.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-        <span>Bảng điều khiển</span>
-      </a>
-    <div class="nav-section-title">Quản lý đào tạo</div>
-      <a href="subjects.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
-        <span>Môn học</span>
-      </a>
-    
-      <a href="courses.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
-        <span>Khóa học</span>
-      </a>
-    
-      <a href="classes.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
-        <span>Lớp học</span>
-      </a>
-    
-      <a href="schedules.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
-        <span>Thời khóa biểu</span>
-      </a>
-    <div class="nav-section-title">Quản lý người dùng</div>
-      <a href="users.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
-        <span>Tài khoản người dùng</span>
-      </a>
-    
-      <a href="teachers.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
-        <span>Giảng viên</span>
-      </a>
-    
-      <a href="enrollments.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
-        <span>Học viên & Đăng ký</span>
-      </a>
-    <div class="nav-section-title">Khảo thí & Đánh giá</div>
-      <a href="exams.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
-        <span>Đề thi & Khảo thí</span>
-      </a>
-    
-      <a href="reviews.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-        <span>Đánh giá khóa học</span>
-      </a>
-    <div class="nav-section-title">Cơ sở & Báo cáo</div>
-      <a href="facilities.html" class="nav-item ">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
-        <span>Phòng học & Cơ sở</span>
-      </a>
-    
-      <a href="reports.html" class="nav-item active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-        <span>Báo cáo & Thống kê</span>
-      </a>
-    
+        <a href="/Admin/dashboard.html" class="nav-item">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+          <span>Tổng quan</span>
+        </a>
+        <a href="/Admin/reports.html" class="nav-item active">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+          <span>Báo cáo</span>
+        </a>
+        <div class="nav-group" data-nav-group="training">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Đào tạo</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/subjects.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+            <span>Khóa học</span>
+          </a>
+          <a href="/Admin/courses.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+            <span>Môn học</span>
+          </a>
+          <a href="/Admin/course-objectives.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+            <span>Đề cương</span>
+          </a>
+          <a href="/Admin/classes.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+            <span>Lớp học</span>
+          </a>
+          <a href="/Admin/schedules.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+            <span>Lịch học</span>
+          </a>
+          <a href="/Admin/facilities.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
+            <span>Phòng học</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="people">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Người dùng</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/enrollments.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></span>
+            <span>Học viên</span>
+          </a>
+          <a href="/Admin/teachers.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></span>
+            <span>Giảng viên</span>
+          </a>
+          <a href="/Admin/users.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+            <span>Tài khoản</span>
+          </a>
+          </div>
+        </div>
+        <div class="nav-group" data-nav-group="assessment">
+          <button type="button" class="nav-group-toggle" data-nav-group-toggle aria-expanded="false">
+            <span>Khảo thí</span>
+            <svg class="nav-group-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="nav-group-items">
+          <a href="/Admin/exams.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></span>
+            <span>Kỳ thi</span>
+          </a>
+          <a href="/Admin/reviews.html" class="nav-item">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+            <span>Đánh giá</span>
+          </a>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -190,7 +205,7 @@
                 <div style="font-weight: 700; font-size: 0.875rem;">Quản trị viên</div>
                 <span class="badge badge-primary" style="margin-top: 4px;">Super Admin</span>
               </div>
-              <a href="users.html" class="dropdown-item">
+              <a href="/Admin/users.html" class="dropdown-item">
                 <span>Quản lý người dùng</span>
               </a>
               <div class="dropdown-divider"></div>
@@ -208,28 +223,148 @@
   <div class="page-header">
     <div>
       <h1 class="page-header-title">Báo cáo & Thống kê vận hành</h1>
-      <p class="page-header-subtitle">Chỉ số tăng trưởng học viên, doanh thu học phí và tỷ lệ hoàn thành khóa học</p>
     </div>
-    <div class="page-header-actions">
-      <button class="btn btn-secondary">Xuất file Excel</button>
+    <div class="page-header-actions" style="display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: center;">
+      <select id="report-quarter-filter" class="form-control" style="width: auto; min-width: 145px;">
+        <option value="0">Cả năm</option>
+        <option value="1">Quý 1 (T1 - T3)</option>
+        <option value="2">Quý 2 (T4 - T6)</option>
+        <option value="3">Quý 3 (T7 - T9)</option>
+        <option value="4">Quý 4 (T10 - T12)</option>
+      </select>
+      <select id="report-year-filter" class="form-control" style="width: auto; min-width: 110px;"></select>
+      <div class="admin-tools-dropdown">
+        <button type="button" class="btn btn-secondary" data-admin-tools-toggle>Công cụ ▾</button>
+        <div class="admin-tools-menu">
+          <button type="button" class="btn btn-secondary" id="btn-refresh-reports">Làm mới dữ liệu</button>
+          <button type="button" class="btn btn-secondary" id="btn-export-reports">Xuất báo cáo CSV</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="grid grid-cols-3 gap-6" style="margin-bottom: 2rem;">
+  <div class="grid grid-cols-3 gap-6" style="margin-bottom: 1.5rem;">
     <div class="card" style="padding: 1.5rem;">
-      <div style="font-size: 0.8125rem; color: var(--text-muted);">Tổng doanh thu Quý 4</div>
-      <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary-600); margin: 0.25rem 0;">154.500.000 ₫</div>
-      <span class="text-success" style="font-size: 0.75rem;">↗ Tăng 18% so với Quý trước</span>
+      <div style="font-size: 0.8125rem; color: var(--text-muted);" id="rep-revenue-label">Tổng doanh thu ước tính</div>
+      <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary-600); margin: 0.25rem 0;" id="rep-revenue">--</div>
+      <span class="text-muted" style="font-size: 0.75rem;" id="rep-revenue-sub">Đang tải dữ liệu...</span>
     </div>
     <div class="card" style="padding: 1.5rem;">
-      <div style="font-size: 0.8125rem; color: var(--text-muted);">Tỷ lệ học viên hoàn thành khóa</div>
-      <div style="font-size: 1.75rem; font-weight: 800; color: #059669; margin: 0.25rem 0;">92.5%</div>
-      <span class="text-success" style="font-size: 0.75rem;">Đạt chỉ tiêu xuất sắc</span>
+      <div style="font-size: 0.8125rem; color: var(--text-muted);">Tỷ lệ học viên hoàn thành môn</div>
+      <div style="font-size: 1.75rem; font-weight: 800; color: #059669; margin: 0.25rem 0;" id="rep-completion-rate">--</div>
+      <span class="text-muted" style="font-size: 0.75rem;" id="rep-completion-sub">Đang tải dữ liệu...</span>
     </div>
     <div class="card" style="padding: 1.5rem;">
-      <div style="font-size: 0.8125rem; color: var(--text-muted);">Học viên tái đăng ký khóa mới</div>
-      <div style="font-size: 1.75rem; font-weight: 800; color: #7C3AED; margin: 0.25rem 0;">64.8%</div>
-      <span class="text-success" style="font-size: 0.75rem;">Tỷ lệ giữ chân cao</span>
+      <div style="font-size: 0.8125rem; color: var(--text-muted);">Học viên tái đăng ký môn mới</div>
+      <div style="font-size: 1.75rem; font-weight: 800; color: #7C3AED; margin: 0.25rem 0;" id="rep-retention-rate">--</div>
+      <span class="text-muted" style="font-size: 0.75rem;" id="rep-retention-sub">Đang tải dữ liệu...</span>
+    </div>
+  </div>
+
+  <!-- Biểu đồ doanh thu & ghi danh theo tháng -->
+  <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;">
+      <div>
+        <h3 class="card-title">Xu hướng doanh thu & lượt ghi danh</h3>
+        <div class="card-subtitle" id="rep-trend-subtitle">Biểu đồ theo từng tháng trong kỳ báo cáo</div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <span class="badge badge-primary" id="rep-students-badge">-- học viên hoạt động</span>
+        <span class="badge badge-primary" id="rep-rating-badge">★ -- / 5.0</span>
+      </div>
+    </div>
+    <div id="rep-monthly-chart" style="height: 210px; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+      <div style="width: 100%; text-align: center; color: var(--text-muted); align-self: center;">Đang tải biểu đồ...</div>
+    </div>
+  </div>
+
+  <!-- Bảng phân tích doanh thu theo Môn học / Khóa học / Giảng viên -->
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+      <div>
+        <h3 class="card-title" style="margin: 0;" id="rep-table-title">Hiệu quả tuyển sinh &amp; doanh thu theo môn học</h3>
+        <div class="card-subtitle" id="rep-table-subtitle">Tổng hợp theo các lượt ghi danh hợp lệ (active / completed)</div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <input type="text" id="report-table-search" class="form-control" placeholder="Tìm nhanh môn học, khóa học, giảng viên..." style="width: 245px; height: 34px; font-size: 0.8125rem;">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-sm btn-primary" data-rep-tab="courses">Theo Môn học</button>
+          <button type="button" class="btn btn-sm btn-secondary" data-rep-tab="subjects">Theo Khóa học</button>
+          <button type="button" class="btn btn-sm btn-secondary" data-rep-tab="teachers">Theo Giảng viên</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 1: Môn học -->
+    <div id="rep-panel-courses" class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Môn học</th>
+            <th>Khóa học</th>
+            <th>Số lớp</th>
+            <th>Ghi danh</th>
+            <th>Hoàn thành</th>
+            <th>Đánh giá TB</th>
+            <th class="text-right">Doanh thu ước tính</th>
+          </tr>
+        </thead>
+        <tbody id="rep-courses-tbody">
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải dữ liệu báo cáo...</td>
+          </tr>
+        </tbody>
+        <tfoot id="rep-courses-tfoot"></tfoot>
+      </table>
+    </div>
+
+    <!-- Tab 2: Khóa học -->
+    <div id="rep-panel-subjects" class="table-container" style="display: none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Khóa học</th>
+            <th>Số môn / Lớp</th>
+            <th>Ghi danh</th>
+            <th>Hoàn thành</th>
+            <th>Tỷ trọng doanh thu</th>
+            <th class="text-right">Doanh thu ước tính</th>
+          </tr>
+        </thead>
+        <tbody id="rep-subjects-tbody">
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải...</td>
+          </tr>
+        </tbody>
+        <tfoot id="rep-subjects-tfoot"></tfoot>
+      </table>
+    </div>
+
+    <!-- Tab 3: Giảng viên -->
+    <div id="rep-panel-teachers" style="display: none;">
+      <div style="padding: 0.75rem 1.5rem; background: #EFF6FF; border-bottom: 1px solid #BFDBFE; font-size: 0.8rem; color: #1E3A8A;">
+        <strong>Logic phân bổ doanh thu:</strong> Doanh thu và lượt học viên từng lớp học được ghi nhận cho giảng viên chính đứng lớp (chia đều nếu lớp có nhiều giảng viên chính; chỉ tính trợ giảng nếu lớp không có GV chính). Lớp chưa phân công giảng viên được tách dòng riêng để đối soát 100% với tổng doanh thu kỳ.
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Giảng viên</th>
+              <th>Lớp đứng chính / Tổng</th>
+              <th>Ghi danh</th>
+              <th>Hoàn thành</th>
+              <th>Tỷ trọng doanh thu</th>
+              <th class="text-right">Doanh thu phân bổ</th>
+            </tr>
+          </thead>
+          <tbody id="rep-teachers-tbody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Đang tải...</td>
+            </tr>
+          </tbody>
+          <tfoot id="rep-teachers-tfoot"></tfoot>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -238,6 +373,513 @@
   </div>
 
   <!-- Shared Interactive Script -->
-  <script src="../../../wwwroot/js/site.js"></script>
+  <script src="../../../wwwroot/js/site.js?v=20261124d"></script>
+  <script>
+    (function () {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function isAbortError(err) {
+        return !!err && err.name === 'AbortError';
+      }
+
+      async function fetchJson(url, options = {}) {
+        let res;
+        try {
+          res = await fetch(url, options);
+        } catch (err) {
+          if (isAbortError(err)) throw err;
+          throw new Error('Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.');
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || `Máy chủ trả về lỗi HTTP ${res.status}.`);
+        }
+        return data;
+      }
+
+      function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN').format(Number(val) || 0) + ' ₫';
+      }
+
+      function formatCompactCurrency(val) {
+        const num = Number(val) || 0;
+        if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)} tỷ`;
+        if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)} tr`;
+        if (num >= 1_000) return `${Math.round(num / 1_000)} k`;
+        return String(num);
+      }
+
+      function showToast(message, type = 'success', duration) {
+        let container = document.getElementById('admin-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'admin-toast-container';
+          container.className = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const titles = { success: 'Thành công', error: 'Có lỗi xảy ra', warning: 'Lưu ý', info: 'Thông báo' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${titles[type] ? type : 'info'}`;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.innerHTML =
+          '<div class="toast-content"><div class="toast-title"></div><div class="toast-message"></div></div>' +
+          '<button type="button" class="toast-close" aria-label="Đóng">&times;</button>';
+        toast.querySelector('.toast-title').textContent = titles[type] || titles.info;
+        toast.querySelector('.toast-message').textContent = message;
+        const remove = () => {
+          toast.classList.add('toast-hiding');
+          setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        setTimeout(remove, duration || (type === 'error' ? 4500 : 3500));
+      }
+
+      function skeletonRows(cols, rows = 5) {
+        const cell = '<td><div class="skeleton skeleton-text"></div></td>';
+        return Array.from({ length: rows }, () => `<tr>${cell.repeat(cols)}</tr>`).join('');
+      }
+
+      function stateRow(cols, title, text, tone = 'muted') {
+        const color = tone === 'danger' ? 'var(--danger-text)' : 'var(--text-primary)';
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          `<div class="empty-state-title" style="color: ${color};">${escapeHtml(title)}</div>` +
+          `<div class="empty-state-text" style="margin-bottom: 0;">${escapeHtml(text)}</div>` +
+          '</div></td></tr>';
+      }
+
+      function errorRowWithRetry(cols, message) {
+        return `<tr><td colspan="${cols}"><div class="empty-state" style="padding: 2rem 1rem;">` +
+          '<div class="empty-state-title" style="color: var(--danger-text);">Không thể tải dữ liệu</div>' +
+          `<div class="empty-state-text">${escapeHtml(message)}</div>` +
+          '<button type="button" class="btn btn-sm btn-secondary" data-retry-load>Thử lại</button>' +
+          '</div></td></tr>';
+      }
+
+      const COLS = 7;
+      let loadController = null;
+      let hasInitializedFilters = false;
+      let activeReportTab = 'courses';
+      let cachedCourseBreakdown = [];
+      let cachedSubjectBreakdown = [];
+      let cachedTeacherBreakdown = [];
+      let cachedPeriodRevenue = 0;
+
+      function populateYearFilter(years, selectedYear) {
+        const yearSel = document.getElementById('report-year-filter');
+        const list = Array.isArray(years) && years.length > 0 ? years : [selectedYear || new Date().getFullYear()];
+        yearSel.innerHTML = list.map(y => `<option value="${y}">Năm ${y}</option>`).join('');
+        if (selectedYear && list.includes(Number(selectedYear))) {
+          yearSel.value = String(selectedYear);
+        }
+        hasInitializedFilters = true;
+      }
+
+      function renderKpi(data) {
+        const kpi = data.kpi || {};
+        cachedPeriodRevenue = Number(kpi.periodRevenue) || 0;
+        const periodText = data.selectedQuarter > 0
+          ? `Quý ${data.selectedQuarter} / ${data.selectedYear}`
+          : `Năm ${data.selectedYear}`;
+
+        document.getElementById('rep-revenue-label').textContent = `Tổng doanh thu (${periodText})`;
+        document.getElementById('rep-revenue').textContent = formatCurrency(kpi.periodRevenue);
+
+        const growthEl = document.getElementById('rep-revenue-sub');
+        if (kpi.revenueGrowthPercent !== null && kpi.revenueGrowthPercent !== undefined) {
+          const sign = kpi.revenueGrowthPercent >= 0 ? '+' : '';
+          growthEl.className = kpi.revenueGrowthPercent >= 0 ? 'text-success' : 'text-danger';
+          growthEl.textContent = `${kpi.revenueGrowthPercent >= 0 ? '↗' : '↘'} ${sign}${kpi.revenueGrowthPercent}% so với kỳ trước (${kpi.validEnrollmentCount ?? 0} lượt ghi danh)`;
+        } else {
+          growthEl.className = 'text-muted';
+          growthEl.textContent = `Từ ${kpi.validEnrollmentCount ?? 0} lượt ghi danh hợp lệ trong kỳ`;
+        }
+
+        const compEl = document.getElementById('rep-completion-sub');
+        document.getElementById('rep-completion-rate').textContent = `${kpi.completionRate ?? 0}%`;
+        compEl.className = (kpi.completionRate ?? 0) >= 50 ? 'text-success' : 'text-muted';
+        compEl.textContent = `${kpi.completedCount ?? 0} / ${kpi.validEnrollmentCount ?? 0} lượt ghi danh đã hoàn thành`;
+
+        const retEl = document.getElementById('rep-retention-sub');
+        document.getElementById('rep-retention-rate').textContent = `${kpi.retentionRate ?? 0}%`;
+        retEl.className = (kpi.retentionRate ?? 0) > 0 ? 'text-success' : 'text-muted';
+        retEl.textContent = `${kpi.returningStudents ?? 0} / ${kpi.totalEnrolledStudents ?? 0} học viên học từ 2 lớp trở lên`;
+
+        document.getElementById('rep-students-badge').textContent = `${kpi.activeStudents ?? 0} học viên • ${kpi.openClasses ?? 0} lớp mở`;
+        document.getElementById('rep-rating-badge').textContent = `★ ${kpi.overallRating ?? 0} / 5.0 (${kpi.totalReviewCount ?? 0} đánh giá)`;
+        document.getElementById('rep-trend-subtitle').textContent = `Doanh thu & lượt ghi danh từng tháng (${periodText})`;
+      }
+
+      function renderMonthlyChart(items) {
+        const box = document.getElementById('rep-monthly-chart');
+        const list = Array.isArray(items) ? items : [];
+        if (list.length === 0) {
+          box.innerHTML = '<div style="width: 100%; text-align: center; color: var(--text-muted); align-self: center;">Chưa có dữ liệu biểu đồ.</div>';
+          return;
+        }
+
+        const maxRev = Math.max(0, ...list.map(x => Number(x.revenue) || 0));
+        const maxCnt = Math.max(0, ...list.map(x => Number(x.enrollments) || 0));
+        const useCountScale = maxRev === 0 && maxCnt > 0;
+        box.innerHTML = list.map(m => {
+          const rev = Number(m.revenue) || 0;
+          const cnt = Number(m.enrollments) || 0;
+          const barHeight = useCountScale
+            ? (cnt > 0 ? Math.max(18, Math.round((cnt / maxCnt) * 145)) : 4)
+            : (rev > 0 ? Math.max(18, Math.round((rev / Math.max(1, maxRev)) * 145)) : 4);
+          const hasValue = useCountScale ? cnt > 0 : rev > 0;
+          const isPeak = useCountScale
+            ? (cnt > 0 && cnt === maxCnt)
+            : (rev > 0 && rev === maxRev);
+          const bg = !hasValue ? 'var(--neutral-200)' : (isPeak ? 'var(--primary-600)' : 'var(--primary-500)');
+          const topLabel = useCountScale
+            ? (cnt > 0 ? `${cnt} lượt` : '0')
+            : (rev > 0 ? formatCompactCurrency(rev) : '0');
+          return `
+            <div style="flex: 1; text-align: center; min-width: 32px;" title="${escapeHtml(m.label)}: ${formatCurrency(rev)} (${cnt} lượt)">
+              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">${escapeHtml(topLabel)}</div>
+              <div style="height: ${barHeight}px; width: 65%; max-width: 38px; background: ${bg}; border-radius: 4px 4px 0 0; margin: 0 auto; transition: height 0.3s ease;"></div>
+              <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-top: 6px; display: block;">${escapeHtml(m.label)}</span>
+              <span style="font-size: 0.68rem; color: var(--text-muted);">${cnt} lượt</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderBreakdown(items, isFiltered = false) {
+        const tbody = document.getElementById('rep-courses-tbody');
+        const tfoot = document.getElementById('rep-courses-tfoot');
+        const list = Array.isArray(items) ? items : [];
+        if (list.length === 0) {
+          tbody.innerHTML = stateRow(
+            COLS,
+            isFiltered ? 'Không tìm thấy môn học phù hợp' : 'Chưa có môn học nào',
+            isFiltered ? 'Hãy thử đổi từ khóa tìm kiếm.' : 'Dữ liệu phân tích theo môn học sẽ hiển thị tại đây.'
+          );
+          if (tfoot) tfoot.innerHTML = '';
+          return;
+        }
+
+        tbody.innerHTML = list.map(c => {
+          const ratingHtml = c.averageRating !== null && c.averageRating !== undefined
+            ? `<span style="color: #D97706; font-weight: 600;">★ ${c.averageRating}</span>`
+            : '<span class="text-muted">--</span>';
+
+          return `
+            <tr>
+              <td>
+                <a href="/Admin/course-detail.html?id=${encodeURIComponent(c.courseId)}" style="font-weight: 600; color: var(--primary-600); text-decoration: none;">
+                  ${escapeHtml(c.courseTitle)}
+                </a>
+              </td>
+              <td><span class="badge badge-neutral">${escapeHtml(c.subjectName)}</span></td>
+              <td>${c.classCount ?? 0} lớp</td>
+              <td><strong>${c.enrollmentCount ?? 0}</strong> lượt</td>
+              <td>${c.completedCount ?? 0} (${c.completionRate ?? 0}%)</td>
+              <td>${ratingHtml}</td>
+              <td class="text-right"><strong>${formatCurrency(c.revenue)}</strong></td>
+            </tr>
+          `;
+        }).join('');
+
+        if (tfoot) {
+          const totalClasses = list.reduce((sum, x) => sum + (Number(x.classCount) || 0), 0);
+          const totalEnrollments = list.reduce((sum, x) => sum + (Number(x.enrollmentCount) || 0), 0);
+          const totalCompleted = list.reduce((sum, x) => sum + (Number(x.completedCount) || 0), 0);
+          const totalRevenue = list.reduce((sum, x) => sum + (Number(x.revenue) || 0), 0);
+          const totalRate = totalEnrollments > 0 ? Math.round((totalCompleted * 1000) / totalEnrollments) / 10 : 0;
+          tfoot.innerHTML = `
+            <tr style="background: var(--neutral-50, #F8FAFC); border-top: 2px solid var(--border-color); font-weight: 700;">
+              <td colspan="2">Tổng cộng đối soát (${list.length} môn học)</td>
+              <td>${totalClasses} lớp</td>
+              <td>${totalEnrollments} lượt</td>
+              <td>${totalCompleted} (${totalRate}%)</td>
+              <td>--</td>
+              <td class="text-right" style="color: var(--primary-600);">${formatCurrency(totalRevenue)}</td>
+            </tr>
+          `;
+        }
+      }
+
+      function renderSubjectBreakdown(items, isFiltered = false) {
+        const tbody = document.getElementById('rep-subjects-tbody');
+        const tfoot = document.getElementById('rep-subjects-tfoot');
+        const list = Array.isArray(items) ? items : [];
+        if (list.length === 0) {
+          tbody.innerHTML = stateRow(
+            6,
+            isFiltered ? 'Không tìm thấy khóa học phù hợp' : 'Chưa có dữ liệu khóa học',
+            isFiltered ? 'Hãy thử đổi từ khóa tìm kiếm.' : 'Dữ liệu doanh thu theo khóa học sẽ hiển thị tại đây.'
+          );
+          if (tfoot) tfoot.innerHTML = '';
+          return;
+        }
+
+        tbody.innerHTML = list.map(s => {
+          const share = Math.max(0, Math.min(100, Number(s.revenueSharePercent) || 0));
+          return `
+            <tr>
+              <td>
+                <a href="/Admin/courses.html?subjectId=${encodeURIComponent(s.subjectId)}" style="font-weight: 600; color: var(--primary-600); text-decoration: none;">
+                  ${escapeHtml(s.subjectName)}
+                </a>
+                ${s.isActive ? '' : ' <span class="badge badge-neutral">Tạm ẩn</span>'}
+              </td>
+              <td>${s.courseCount ?? 0} môn &bull; ${s.classCount ?? 0} lớp</td>
+              <td><strong>${s.enrollmentCount ?? 0}</strong> lượt</td>
+              <td>${s.completedCount ?? 0} (${s.completionRate ?? 0}%)</td>
+              <td style="min-width: 140px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; height: 8px; background: var(--neutral-200); border-radius: 99px; overflow: hidden;">
+                    <div style="width: ${share}%; height: 100%; background: var(--primary-600);"></div>
+                  </div>
+                  <span style="font-size: 0.78rem; font-weight: 600; min-width: 42px;">${share}%</span>
+                </div>
+              </td>
+              <td class="text-right"><strong>${formatCurrency(s.revenue)}</strong></td>
+            </tr>
+          `;
+        }).join('');
+
+        if (tfoot) {
+          const totalCourses = list.reduce((sum, x) => sum + (Number(x.courseCount) || 0), 0);
+          const totalClasses = list.reduce((sum, x) => sum + (Number(x.classCount) || 0), 0);
+          const totalEnrollments = list.reduce((sum, x) => sum + (Number(x.enrollmentCount) || 0), 0);
+          const totalCompleted = list.reduce((sum, x) => sum + (Number(x.completedCount) || 0), 0);
+          const totalRevenue = list.reduce((sum, x) => sum + (Number(x.revenue) || 0), 0);
+          const totalRate = totalEnrollments > 0 ? Math.round((totalCompleted * 1000) / totalEnrollments) / 10 : 0;
+          const totalShare = cachedPeriodRevenue > 0 ? Math.min(100, Math.round((totalRevenue / cachedPeriodRevenue) * 1000) / 10) : 0;
+          tfoot.innerHTML = `
+            <tr style="background: var(--neutral-50, #F8FAFC); border-top: 2px solid var(--border-color); font-weight: 700;">
+              <td>Tổng cộng đối soát (${list.length} khóa học)</td>
+              <td>${totalCourses} môn &bull; ${totalClasses} lớp</td>
+              <td>${totalEnrollments} lượt</td>
+              <td>${totalCompleted} (${totalRate}%)</td>
+              <td>${totalShare}%</td>
+              <td class="text-right" style="color: var(--primary-600);">${formatCurrency(totalRevenue)}</td>
+            </tr>
+          `;
+        }
+      }
+
+      function renderTeacherBreakdown(items, isFiltered = false) {
+        const tbody = document.getElementById('rep-teachers-tbody');
+        const tfoot = document.getElementById('rep-teachers-tfoot');
+        const list = Array.isArray(items) ? items : [];
+        if (list.length === 0) {
+          tbody.innerHTML = stateRow(
+            6,
+            isFiltered ? 'Không tìm thấy giảng viên phù hợp' : 'Chưa có dữ liệu giảng viên',
+            isFiltered ? 'Hãy thử đổi từ khóa tìm kiếm.' : 'Dữ liệu doanh thu phân bổ theo giảng viên sẽ hiển thị tại đây.'
+          );
+          if (tfoot) tfoot.innerHTML = '';
+          return;
+        }
+
+        tbody.innerHTML = list.map(t => {
+          const share = Math.max(0, Math.min(100, Number(t.revenueSharePercent) || 0));
+          const isUnassigned = !t.teacherId || t.teacherId <= 0;
+          const nameCell = isUnassigned
+            ? `<span style="color: var(--text-muted); font-style: italic;">${escapeHtml(t.teacherName)}</span>`
+            : `<a href="/Admin/schedules.html?teacherId=${encodeURIComponent(t.teacherId)}" style="font-weight: 600; color: var(--primary-600); text-decoration: none;">${escapeHtml(t.teacherName)}</a>
+               <div style="font-size: 0.75rem; color: var(--text-muted);">${t.qualification ? escapeHtml(t.qualification) : 'Chưa cập nhật bằng cấp'} ${t.isVerified ? '• Đã xác minh' : ''}</div>`;
+
+          return `
+            <tr>
+              <td>${nameCell}</td>
+              <td>${isUnassigned ? `${t.assignedClassCount ?? 0} lớp` : `<strong>${t.mainClassCount ?? 0}</strong> / ${t.assignedClassCount ?? 0} lớp`}</td>
+              <td><strong>${t.enrollmentCount ?? 0}</strong> lượt</td>
+              <td>${t.completedCount ?? 0} (${t.completionRate ?? 0}%)</td>
+              <td style="min-width: 140px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; height: 8px; background: var(--neutral-200); border-radius: 99px; overflow: hidden;">
+                    <div style="width: ${share}%; height: 100%; background: #059669;"></div>
+                  </div>
+                  <span style="font-size: 0.78rem; font-weight: 600; min-width: 42px;">${share}%</span>
+                </div>
+              </td>
+              <td class="text-right"><strong>${formatCurrency(t.revenue)}</strong></td>
+            </tr>
+          `;
+        }).join('');
+
+        if (tfoot) {
+          const totalMain = list.reduce((sum, x) => sum + (Number(x.mainClassCount) || 0), 0);
+          const totalAssigned = list.reduce((sum, x) => sum + (Number(x.assignedClassCount) || 0), 0);
+          const totalEnrollments = list.reduce((sum, x) => sum + (Number(x.enrollmentCount) || 0), 0);
+          const totalCompleted = list.reduce((sum, x) => sum + (Number(x.completedCount) || 0), 0);
+          const totalRevenue = list.reduce((sum, x) => sum + (Number(x.revenue) || 0), 0);
+          const totalRate = totalEnrollments > 0 ? Math.round((totalCompleted * 1000) / totalEnrollments) / 10 : 0;
+          const totalShare = cachedPeriodRevenue > 0 ? Math.min(100, Math.round((totalRevenue / cachedPeriodRevenue) * 1000) / 10) : 0;
+          tfoot.innerHTML = `
+            <tr style="background: var(--neutral-50, #F8FAFC); border-top: 2px solid var(--border-color); font-weight: 700;">
+              <td>Tổng cộng đối soát (${list.length} dòng)</td>
+              <td>${totalMain} / ${totalAssigned} lớp</td>
+              <td>${totalEnrollments} lượt</td>
+              <td>${totalCompleted} (${totalRate}%)</td>
+              <td>${totalShare}%</td>
+              <td class="text-right" style="color: var(--primary-600);">${formatCurrency(totalRevenue)}</td>
+            </tr>
+          `;
+        }
+      }
+
+      function applyReportTableFilter() {
+        const searchEl = document.getElementById('report-table-search');
+        const keyword = (searchEl ? searchEl.value : '').trim().toLowerCase();
+        const isFiltered = keyword.length > 0;
+
+        if (activeReportTab === 'courses') {
+          const filtered = isFiltered
+            ? cachedCourseBreakdown.filter(c =>
+                (c.courseTitle || '').toLowerCase().includes(keyword) ||
+                (c.subjectName || '').toLowerCase().includes(keyword))
+            : cachedCourseBreakdown;
+          renderBreakdown(filtered, isFiltered);
+        } else if (activeReportTab === 'subjects') {
+          const filtered = isFiltered
+            ? cachedSubjectBreakdown.filter(s => (s.subjectName || '').toLowerCase().includes(keyword))
+            : cachedSubjectBreakdown;
+          renderSubjectBreakdown(filtered, isFiltered);
+        } else if (activeReportTab === 'teachers') {
+          const filtered = isFiltered
+            ? cachedTeacherBreakdown.filter(t =>
+                (t.teacherName || '').toLowerCase().includes(keyword) ||
+                (t.qualification || '').toLowerCase().includes(keyword))
+            : cachedTeacherBreakdown;
+          renderTeacherBreakdown(filtered, isFiltered);
+        }
+      }
+
+      function switchReportTab(tab) {
+        activeReportTab = ['courses', 'subjects', 'teachers'].includes(tab) ? tab : 'courses';
+        const titles = {
+          courses: 'Hiệu quả tuyển sinh & doanh thu theo môn học',
+          subjects: 'Thống kê doanh thu theo Khóa học',
+          teachers: 'Thống kê doanh thu phân bổ theo Giảng viên'
+        };
+        const placeholders = {
+          courses: 'Tìm nhanh theo tên môn học, khóa học...',
+          subjects: 'Tìm nhanh theo tên khóa học...',
+          teachers: 'Tìm nhanh theo tên giảng viên, trình độ...'
+        };
+        document.getElementById('rep-table-title').textContent = titles[activeReportTab] || titles.courses;
+        const searchEl = document.getElementById('report-table-search');
+        if (searchEl) searchEl.placeholder = placeholders[activeReportTab] || placeholders.courses;
+        ['courses', 'subjects', 'teachers'].forEach(key => {
+          document.getElementById(`rep-panel-${key}`).style.display = key === activeReportTab ? 'block' : 'none';
+        });
+        document.querySelectorAll('[data-rep-tab]').forEach(btn => {
+          btn.className = btn.getAttribute('data-rep-tab') === activeReportTab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary';
+        });
+        applyReportTableFilter();
+      }
+
+      async function loadReports(forceRefresh = false) {
+        const isManualRefresh = forceRefresh === true;
+        if (loadController) loadController.abort();
+        const controller = new AbortController();
+        loadController = controller;
+
+        const refreshBtn = document.getElementById('btn-refresh-reports');
+        if (refreshBtn) refreshBtn.disabled = true;
+
+        document.getElementById('rep-monthly-chart').innerHTML =
+          '<div class="skeleton skeleton-rect" style="height: 100%;"></div>';
+        document.getElementById('rep-courses-tbody').innerHTML = skeletonRows(COLS, 5);
+        document.getElementById('rep-subjects-tbody').innerHTML = skeletonRows(6, 4);
+        document.getElementById('rep-teachers-tbody').innerHTML = skeletonRows(6, 4);
+        ['rep-courses-tfoot', 'rep-subjects-tfoot', 'rep-teachers-tfoot'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = '';
+        });
+
+        try {
+          const params = new URLSearchParams();
+          const yearVal = document.getElementById('report-year-filter').value;
+          const quarterVal = document.getElementById('report-quarter-filter').value;
+          if (hasInitializedFilters && yearVal) params.set('year', yearVal);
+          if (quarterVal) params.set('quarter', quarterVal);
+          if (isManualRefresh) params.set('refresh', 'true');
+
+          const data = await fetchJson(`/Admin/api/Reports/Summary?${params.toString()}`, { signal: controller.signal });
+          cachedCourseBreakdown = Array.isArray(data.courseBreakdown) ? data.courseBreakdown : [];
+          cachedSubjectBreakdown = Array.isArray(data.subjectBreakdown) ? data.subjectBreakdown : [];
+          cachedTeacherBreakdown = Array.isArray(data.teacherBreakdown) ? data.teacherBreakdown : [];
+          populateYearFilter(data.availableYears, data.selectedYear);
+          renderKpi(data);
+          renderMonthlyChart(data.monthlyTrend);
+          renderBreakdown(cachedCourseBreakdown, false);
+          renderSubjectBreakdown(cachedSubjectBreakdown, false);
+          renderTeacherBreakdown(cachedTeacherBreakdown, false);
+          applyReportTableFilter();
+        } catch (err) {
+          if (isAbortError(err)) return;
+          console.error('Lỗi tải báo cáo:', err);
+          cachedCourseBreakdown = [];
+          cachedSubjectBreakdown = [];
+          cachedTeacherBreakdown = [];
+          cachedPeriodRevenue = 0;
+          document.getElementById('rep-revenue').textContent = '--';
+          document.getElementById('rep-revenue-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('rep-completion-rate').textContent = '--';
+          document.getElementById('rep-completion-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('rep-retention-rate').textContent = '--';
+          document.getElementById('rep-retention-sub').textContent = 'Không thể tải dữ liệu';
+          document.getElementById('rep-monthly-chart').innerHTML = '';
+          document.getElementById('rep-courses-tbody').innerHTML = errorRowWithRetry(COLS, err.message);
+          document.getElementById('rep-subjects-tbody').innerHTML = errorRowWithRetry(6, err.message);
+          document.getElementById('rep-teachers-tbody').innerHTML = errorRowWithRetry(6, err.message);
+          ['rep-courses-tfoot', 'rep-subjects-tfoot', 'rep-teachers-tfoot'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
+          });
+          showToast(err.message, 'error');
+        } finally {
+          if (loadController === controller) {
+            loadController = null;
+            if (refreshBtn) refreshBtn.disabled = false;
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadReports();
+
+        document.querySelectorAll('[data-rep-tab]').forEach(btn => {
+          btn.addEventListener('click', () => switchReportTab(btn.getAttribute('data-rep-tab')));
+        });
+
+        document.getElementById('report-table-search').addEventListener('input', applyReportTableFilter);
+        document.getElementById('report-year-filter').addEventListener('change', () => loadReports(false));
+        document.getElementById('report-quarter-filter').addEventListener('change', () => loadReports(false));
+        document.getElementById('btn-refresh-reports').addEventListener('click', () => loadReports(true));
+
+        document.getElementById('btn-export-reports').addEventListener('click', () => {
+          const params = new URLSearchParams();
+          const yearVal = document.getElementById('report-year-filter').value;
+          const quarterVal = document.getElementById('report-quarter-filter').value;
+          if (yearVal) params.set('year', yearVal);
+          if (quarterVal) params.set('quarter', quarterVal);
+          window.location.href = `/Admin/api/Reports/ExportCsv?${params.toString()}`;
+          showToast('Đang tải xuống tệp báo cáo CSV...', 'info');
+        });
+
+        ['rep-courses-tbody', 'rep-subjects-tbody', 'rep-teachers-tbody'].forEach(id => {
+          document.getElementById(id).addEventListener('click', (e) => {
+            if (e.target.closest('[data-retry-load]')) loadReports(true);
+          });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
